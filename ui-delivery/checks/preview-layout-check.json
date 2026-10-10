@@ -1,0 +1,1568 @@
+{
+  "createdAt": "2026-09-30T06:24:38.363Z",
+  "checks": [
+    {
+      "label": "首页 320×568",
+      "viewport": [
+        320,
+        568
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.000002720879337,
+        "right": 20.999938409185955,
+        "top": 7.999988786679102,
+        "bottom": 7.999988786679102
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 360×640",
+      "viewport": [
+        360,
+        640
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.000009854059282,
+        "right": 21.000037109967945,
+        "top": 7.999990774923222,
+        "bottom": 8.000045286740544
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.00000114113479,
+        "right": 21.00000114113479,
+        "top": 8.000011030969638,
+        "bottom": 8.000085204730993
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 430×932",
+      "viewport": [
+        430,
+        932
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.9999989871975,
+        "right": 20.9999989871975,
+        "top": 8.000056041738267,
+        "bottom": 7.999990209575845
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 768×1024",
+      "viewport": [
+        768,
+        1024
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.99999523727121,
+        "right": 20.99999523727121,
+        "top": 8.000036514254054,
+        "bottom": 8.000036514254054
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 1119×1293",
+      "viewport": [
+        1119,
+        1293
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.000064917431654,
+        "right": 21.000016135546595,
+        "top": 7.999985240352725,
+        "bottom": 7.999985240352725
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 1440×900",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "首页 1440×1050",
+      "viewport": [
+        1440,
+        1050
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "defects": []
+    },
+    {
+      "label": "home 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.00000114113479,
+        "right": 21.00000114113479,
+        "top": 8.000011030969638,
+        "bottom": 8.000085204730993
+      },
+      "defects": []
+    },
+    {
+      "label": "observations 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "observations",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "reports 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "reports",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "therapies 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "therapies",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "records 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "records",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "detail 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "analyte 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "analyte",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "correction 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "correction",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "history 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "history",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "alerts 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "alerts",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "alert-detail 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "alert-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "summaries 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "summaries",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "summary-detail 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "summary-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "account 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "account",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "data-use 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "data-use",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "login 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "login",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "associations 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "associations",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "association-new 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "association-new",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "association-detail 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "association-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "drafts 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "drafts",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "access 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "access",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "service 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "service",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "missing 390×844",
+      "viewport": [
+        390,
+        844
+      ],
+      "page": "missing",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "home 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 21.000064917431654,
+        "right": 21.000016135546595,
+        "top": 7.999985240352725,
+        "bottom": 7.999985240352725
+      },
+      "defects": []
+    },
+    {
+      "label": "observations 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "observations",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "reports 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "reports",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "therapies 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "therapies",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "records 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "records",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "detail 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "analyte 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "analyte",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "correction 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "correction",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "history 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "history",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "alerts 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "alerts",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "alert-detail 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "alert-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "summaries 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "summaries",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "summary-detail 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "summary-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "account 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "account",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "data-use 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "data-use",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "login 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "login",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "associations 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "associations",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "association-new 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "association-new",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "association-detail 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "association-detail",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "drafts 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "drafts",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "access 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "access",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "service 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "service",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "missing 1280×720",
+      "viewport": [
+        1280,
+        720
+      ],
+      "page": "missing",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": null,
+      "defects": []
+    },
+    {
+      "label": "light pending",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light evaluating",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light incomplete",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light clear",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light attention",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light warning",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light urgent",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light expired",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light failed",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "light disabled",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark pending",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark evaluating",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark incomplete",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark clear",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark attention",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark warning",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark urgent",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark expired",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark failed",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    },
+    {
+      "label": "dark disabled",
+      "viewport": [
+        1440,
+        900
+      ],
+      "page": "home",
+      "rootFits": true,
+      "frameFits": true,
+      "phoneSize": [
+        390,
+        844
+      ],
+      "horizontalFits": true,
+      "homeFits": true,
+      "illustrationSpacing": {
+        "left": 20.999968097794625,
+        "right": 21.000040857210394,
+        "top": 7.999970523108484,
+        "bottom": 7.999970523108484
+      },
+      "defects": []
+    }
+  ],
+  "captureChecks": [
+    {
+      "width": 320,
+      "spacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "height": 844
+    },
+    {
+      "width": 360,
+      "spacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "height": 844
+    },
+    {
+      "width": 390,
+      "spacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "height": 844
+    },
+    {
+      "width": 430,
+      "spacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "height": 844
+    },
+    {
+      "width": 580,
+      "spacing": {
+        "left": 21,
+        "right": 21,
+        "top": 8,
+        "bottom": 8
+      },
+      "height": 844
+    }
+  ],
+  "previewChecks": 75,
+  "dialogChecks": 12,
+  "captureWidthChecks": 5,
+  "captureHeight": 844,
+  "errors": [],
+  "visualVerified": false
+}

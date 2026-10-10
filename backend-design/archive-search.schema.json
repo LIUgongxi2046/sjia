@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "archive-search.schema.json",
+  "title": "当前获准文书目录及确认文本检索",
+  "$defs": {
+    "Uuid": {"$ref": "v2-protocol.schema.json#/$defs/Uuid"},
+    "QueryText": {"type": "string", "minLength": 1, "maxLength": 200},
+    "ArchiveSearchInput": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "cursor": {"type": "string", "minLength": 1, "maxLength": 65536},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+        "query": {"$ref": "#/$defs/QueryText"},
+        "organization": {"$ref": "#/$defs/QueryText"},
+        "document_type": {"$ref": "v2-protocol.schema.json#/$defs/DocumentType"},
+        "category": {"enum": ["all", "inpatient", "outpatient", "pending"]},
+        "episode_id": {"$ref": "#/$defs/Uuid"},
+        "document_id": {"$ref": "#/$defs/Uuid"},
+        "from_time": {"$ref": "v2-protocol.schema.json#/$defs/MedicalTimeInput"},
+        "to_time": {"$ref": "v2-protocol.schema.json#/$defs/MedicalTimeInput"},
+        "from_date": {"type": "string", "format": "date"},
+        "to_date": {"type": "string", "format": "date"},
+        "confirmed_text": {"$ref": "#/$defs/QueryText"},
+        "project": {"$ref": "#/$defs/QueryText"},
+        "origin_type": {"enum": ["self_report", "report_transcription", "authorized_clinical"]},
+        "verification_status": {"enum": ["self", "unverified", "pending", "verified", "needs_correction", "revoked"]},
+        "include_unknown_time": {"type": "boolean"},
+        "unknown_organization": {"type": "boolean"},
+        "unknown_episode": {"type": "boolean"}
+      }
+    },
+    "SourcePage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["page_id", "file_page_id", "file_id", "page_order", "object_version", "checksum", "status", "media_type", "created_at", "use_authorizations", "purpose_copies"],
+      "properties": {
+        "page_id": {"$ref": "#/$defs/Uuid"}, "file_page_id": {"$ref": "#/$defs/Uuid"}, "file_id": {"$ref": "#/$defs/Uuid"},
+        "page_order": {"type": "integer", "minimum": 1}, "object_version": {"type": "string", "minLength": 1},
+        "checksum": {"$ref": "v2-protocol.schema.json#/$defs/Digest"}, "status": {"enum": ["available", "quarantined", "failed", "disposed"]},
+        "media_type": {"enum": ["image/png", "image/jpeg", "image/webp", "application/pdf", "text/plain"]},
+        "created_at": {"type": "string", "format": "date-time"},
+        "use_authorizations": {"type": "array", "items": {"$ref": "#/$defs/Authorization"}},
+        "purpose_copies": {"type": "array", "items": {"$ref": "#/$defs/Copy"}}
+      }
+    },
+    "Authorization": {
+      "type": "object", "additionalProperties": false, "required": ["authorization_id", "purpose", "environment", "evidence_ref", "valid_until"],
+      "properties": {"authorization_id": {"$ref": "#/$defs/Uuid"}, "purpose": {"type": "string", "minLength": 1}, "environment": {"type": "string", "minLength": 1}, "evidence_ref": {"type": "string", "minLength": 1}, "valid_until": {"type": ["string", "null"], "format": "date-time"}}
+    },
+    "Copy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["copy_id", "version", "purpose", "status", "review_id", "reviewed_at", "revoked_at", "identity_result", "clinical_result"],
+      "properties": {"copy_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "v2-protocol.schema.json#/$defs/Version"}, "purpose": {"type": "string", "minLength": 1}, "status": {"enum": ["pending_review", "approved", "rejected", "revoked", "disposed"]}, "review_id": {"type": ["string", "null"], "format": "uuid"}, "reviewed_at": {"type": ["string", "null"], "format": "date-time"}, "revoked_at": {"type": ["string", "null"], "format": "date-time"}, "identity_result": {"type": ["string", "null"]}, "clinical_result": {"type": ["string", "null"]}}
+    },
+    "Episode": {
+      "type": "object", "additionalProperties": false, "required": ["episode_id", "label", "episode_type", "organization", "record_version_id"],
+      "properties": {"episode_id": {"$ref": "#/$defs/Uuid"}, "label": {"type": "string"}, "episode_type": {"type": "string"},
+        "organization": {"type": ["string", "null"]}, "record_version_id": {"$ref": "#/$defs/Uuid"}}
+    },
+    "Snippet": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document_version_id", "leading_text", "matched_text", "trailing_text", "leading_truncated", "trailing_truncated", "source_scope"],
+      "properties": {
+        "document_version_id": {"$ref": "#/$defs/Uuid"}, "leading_text": {"type": "string"}, "matched_text": {"type": "string", "minLength": 1},
+        "trailing_text": {"type": "string"}, "leading_truncated": {"type": "boolean"}, "trailing_truncated": {"type": "boolean"},
+        "source_scope": {"const": "confirmed_document_text"}
+      }
+    },
+    "Item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document", "pages", "episodes", "snippet", "matched_fields", "verification_status", "limitations"],
+      "properties": {
+        "document": {"$ref": "v2-protocol.schema.json#/$defs/DocumentView"},
+        "pages": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/SourcePage"}},
+        "episodes": {"type": "array", "items": {"$ref": "#/$defs/Episode"}},
+        "snippet": {"oneOf": [{"$ref": "#/$defs/Snippet"}, {"type": "null"}]},
+        "matched_fields": {"type": "array", "uniqueItems": true, "items": {"enum": ["organization", "document_type", "confirmed_text", "episode_label"]}},
+        "verification_status": {"enum": ["unverified", "pending", "verified", "needs_correction", "revoked"]},
+        "limitations": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    },
+    "ArchiveSearchView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["patient_id", "items", "next_cursor", "snapshot_version", "facets", "matched_count", "authorized_document_count", "elapsed_ms"],
+      "properties": {
+        "patient_id": {"$ref": "#/$defs/Uuid"}, "items": {"type": "array", "items": {"$ref": "#/$defs/Item"}},
+        "next_cursor": {"type": ["string", "null"]}, "snapshot_version": {"$ref": "v2-protocol.schema.json#/$defs/Digest"},
+        "matched_count": {"type": "integer", "minimum": 0}, "authorized_document_count": {"type": "integer", "minimum": 0}, "elapsed_ms": {"type": "number", "minimum": 0},
+        "facets": {"type": "object", "additionalProperties": false, "required": ["organizations", "episodes", "unknown_organization_count", "unknown_time_count", "unknown_episode_count"],
+          "properties": {"organizations": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}, "episodes": {"type": "array", "items": {"$ref": "#/$defs/Episode"}},
+            "unknown_organization_count": {"type": "integer", "minimum": 0}, "unknown_time_count": {"type": "integer", "minimum": 0}, "unknown_episode_count": {"type": "integer", "minimum": 0}}}
+      }
+    }
+  }
+}

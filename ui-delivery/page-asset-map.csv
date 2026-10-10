@@ -1,0 +1,12 @@
+screen_id,asset_id,usage,required,notes
+S03,child-autumn-master,登录后首页角色,true,秋季男童正面形象
+TW-PANEL,child-autumn-master,儿童资料面板角色,true,与首页保持相同形象
+S02-A,child-autumn-master,患儿管理形象,true,当前患儿设计情景
+S00,brand-favicon,浏览器页签图标,true,产品页面顶部不显示常驻 Logo
+S01,brand-logo-2x,登录身份页品牌组合,true,Logo 与 sJIA 守护者联盟名称并列
+S13-A,brand-logo-2x,我的页面品牌组合,true,管理内容后方展示并保留退出入口
+S03,symptom-trio-master,三项主要症状示意,true,与儿童身体标记及症状记录关联
+TW-PANEL,symptom-trio-master,展开面板症状示意,true,标明概念部位与专业核对状态
+S00,clinical-3d-icons,全部页面主栏目及健康任务的共享图标,true,四乘四透明图标表由共享组件调用
+S00,utility-3d-icons,全部页面通用操作的共享图标,true,返回关闭拍照查看与表单操作
+S00,extended-3d-icons,全部页面资料状态及辅助操作的共享图标,true,权限与结果状态使用

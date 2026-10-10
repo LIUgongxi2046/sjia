@@ -1,0 +1,4072 @@
+{
+  "status": "PASS",
+  "capability": "DESIGN",
+  "checked_at": "2026-10-01T19:20:07.970460+08:00",
+  "command": "PYTHONPATH=.data-work/deps python3 backend-design/validate.py",
+  "environment": {
+    "cwd": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台",
+    "python": "3.12.7 (v3.12.7:0b05ead877f, Sep 30 2024, 23:18:00) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "packages": {
+      "jsonschema": "4.26.0",
+      "referencing": "0.37.0",
+      "markdown-it-py": "4.2.0",
+      "psycopg": "3.3.3"
+    }
+  },
+  "input_sha256": {
+    "sJIA合并MAS预警平台后端LLD.md": "89a06493132087103992366af9fff18380764c69096d414ce2ef8ee59d9d396b",
+    ".gitignore": "064baf0167187feb6736746d4f7126664674273b9520c86306f5e38e2246cf31",
+    "backend-design/runtime.schema.json": "5e3758c7cca43bcdc0d25d30473481ac46f8be1538ef45ff7aa42ac7f6055875",
+    "backend-design/protocol.schema.json": "bc73ba00b7421b23345c44716dd2a73a6107205aaf83457c7100e60f30e3f835",
+    "backend-design/schema.sql": "ff0068e7c93bf89d458d408ec001f052f9d2b150ae6c63bc3c393770dafd58e7",
+    "backend-design/validate.py": "01a16e1c8ce1d7613d1e6f55671069a2f409bc3992059a041a7a7a03bc7a6e8a",
+    "backend-design/handshake.md": "85fd74ceadec8892b3316b1663b822ea2889a13e221510da29ac94c26dc94674",
+    "backend-design/api-catalog.csv": "52230ab437c5b5cf85ff68573a79794bded3426c0414f04ef93885abbf5ebcbb",
+    "backend-design/requirements-validation.txt": "65cb61158f4d2b7a7f66f801ca275be37425ed975e41f7c414779e35c895517a",
+    "sJIA合并MAS预警平台PRD.md": "bc7d95cba1e3c224de7bfdbf1ee0872181a0ed0b6f0dc0b749298df2dd4034a7",
+    "sJIA合并MAS预警平台HLD.md": "ae5efee46643a5c15f2411623a145702d0eaaf26afb79d45e2525ed2b5deb67b",
+    "sJIA合并MAS预警平台数据LLD.md": "be83d82cca65202e2b16e57c4c09a82abef357e341f3c11b7d5fc87681c59c89",
+    "sJIA合并MAS预警平台页面流程.md": "58607761b0fac0fbd7b0f394b4c155d712440ab6ab4cc2b8f0fda4633fa75377",
+    "guardian-h5/原型交互说明.md": "97de35672be68972fbc1ca4db2ac063da0c19823d16617a1ad4d7a4ae70dd3ff",
+    "guardian-h5/src/app/App.tsx": "bfb4c80b81a78cccb563657de2e7ca723219bcafb4e68a68ef0049238d472ff5",
+    "guardian-h5/src/components/SaveActions.tsx": "918a52f07b5b810a8c014eaebe625bdbe4abb279c41ccd827f5171fbf5a3b8c2",
+    "guardian-h5/src/components/PhotoReview.tsx": "8e2090a60106cbaf33f4a1c2674dfbf54497f9ee47d15c110a31db79e8f53475",
+    "guardian-h5/src/components/DictionaryField.tsx": "1ad3c207ab9f6dcd996d4de4f30bdc313718584a32dc655027a02fa447755aed",
+    "data-design/schema.sql": "6753d409c23bdde92fcf2a617f4445f2842bc27ccc76a08ed1ebd4cd989b4d93",
+    "data-design/case-schema.sql": "4ffc0b3c78d5fb76a095aff00fb9034a2eec37f10c03e086d942ccb3259ecb04",
+    "data-design/queries.sql": "c03837d0f42b3249911b0ff3d3cf2735aa2adf036e67cf22f2192c09f3121669",
+    "data-design/case-queries.sql": "e522ccb46f92844c8aa58fc52ef926d8445786fc3234a761c37c680c720a5c78",
+    "data-design/dataset.schema.json": "ff5d85954ef064fc425546288a7b7b7d6fab7c2957fd2f8b87070033512aa518",
+    "data-design/case-extension.schema.json": "66a3fadfd1e984307492aec008b9de389dea72b6230115e9796cca159d4d9781",
+    "data-design/case-design-projection.json": "d8c39f3d902c5899fe9c35db85dcd51833470d966f647e636809aa11a14137e5",
+    "data-design/clinical-dataset-status.json": "51f9ee05722e960d09196720aadbb8f42993925a0c71ce698cb84d455368a7ed"
+  },
+  "document": {
+    "status": "PASS",
+    "headings": [
+      "1. 架构上下文与资产映射",
+      "2. 安全、幂等与输入边界",
+      "3. 存储结构、ORM 与字段传播",
+      "4. 接口协议与网关治理",
+      "5. 任务生命周期与结果采用",
+      "6. 并发、缓存与资源治理",
+      "7. 可观测性、运行和告警",
+      "8. 验收、设计证据与交接"
+    ],
+    "tables": 14,
+    "mermaid_blocks": 2,
+    "local_links": [
+      "backend-design/api-catalog.csv",
+      "backend-design/handshake.md",
+      "backend-design/protocol.schema.json",
+      "backend-design/runtime.schema.json",
+      "backend-design/schema.sql",
+      "backend-design/validate.py",
+      "backend-design/validation-report.json",
+      "data-design/case-schema.sql",
+      "data-design/clinical-dataset-status.json",
+      "data-design/schema.sql",
+      "demo-data/README.md",
+      "guardian-h5/原型交互说明.md",
+      "sJIA合并MAS预警平台HLD.md",
+      "sJIA合并MAS预警平台PRD.md",
+      "sJIA合并MAS预警平台数据LLD.md",
+      "sJIA合并MAS预警平台页面流程.md",
+      "ui-delivery/alerts/specifications.md",
+      "ui-delivery/assumptions-and-open-questions.md"
+    ],
+    "coverage": {
+      "FD-": 57,
+      "FR-": 12,
+      "AC-": 12,
+      "AC-H5-": 6,
+      "NFR-": 13,
+      "BQA": 18
+    },
+    "mermaid_rendering": "NOT_RUN"
+  },
+  "protocol": {
+    "status": "PASS",
+    "operations": 106,
+    "definitions": 140,
+    "resolved_schema_references": 727,
+    "runtime_schema": "PASS",
+    "business_validation": "NOT_RUN"
+  },
+  "actual_case": {
+    "status": "PASS",
+    "source": "data-design/case-design-projection.json",
+    "source_sha256": "d8c39f3d902c5899fe9c35db85dcd51833470d966f647e636809aa11a14137e5",
+    "medical_times": 33,
+    "case_entities": {
+      "profiles": 1,
+      "episodes": 2,
+      "groups": 16,
+      "statements": 37,
+      "imaging_studies": 7,
+      "image_links": 2,
+      "medication_events": 17,
+      "procedures": 3,
+      "scores": 5,
+      "followups": 9,
+      "quality_issues": 9
+    },
+    "clinical_import": "NOT_RUN",
+    "api_readback": "NOT_RUN",
+    "independent_clinical_answers": "BLOCKED"
+  },
+  "database": {
+    "status": "PASS",
+    "engine_version": "18.4 (Homebrew)",
+    "target_engine": "PostgreSQL 17",
+    "target_version_execution": "NOT_RUN",
+    "table_count": 88,
+    "tables": [
+      "access_grant",
+      "alert_decision",
+      "alert_episode",
+      "alert_evaluation",
+      "alert_evaluation_assessment",
+      "alert_evaluation_input",
+      "alert_event",
+      "alert_recipient",
+      "alert_signal_result",
+      "assessment",
+      "assessment_input",
+      "assessment_output",
+      "audit_event",
+      "candidate_confirmation",
+      "candidate_field",
+      "candidate_set",
+      "clinical_episode",
+      "clinical_statement",
+      "config_approval",
+      "config_validation",
+      "config_version",
+      "consumer_receipt",
+      "contact_version",
+      "correction_request",
+      "data_quality_issue",
+      "data_quality_issue_reference",
+      "data_use_authorization",
+      "dependency_edge",
+      "dependency_node",
+      "dictionary_alias",
+      "dictionary_entry",
+      "disposition_item",
+      "disposition_request",
+      "draft",
+      "environment_gate",
+      "external_score_component",
+      "external_score_observation",
+      "field_verification_state",
+      "file_group",
+      "file_object",
+      "file_page",
+      "followup_encounter",
+      "followup_reference",
+      "imaging_asset_link",
+      "imaging_study",
+      "imaging_study_site",
+      "ingestion_run",
+      "medical_time",
+      "medication_event",
+      "medication_event_item",
+      "normalized_measurement",
+      "notification_attempt",
+      "notification_receipt",
+      "outbox_event",
+      "patient",
+      "patient_profile_version",
+      "principal",
+      "principal_identity",
+      "procedure_event",
+      "product_event",
+      "record",
+      "record_attachment",
+      "record_field",
+      "record_field_group",
+      "record_field_group_member",
+      "record_version",
+      "relation",
+      "relation_application",
+      "release_bundle",
+      "release_component",
+      "report",
+      "retention_policy",
+      "service_role_grant",
+      "source_anchor",
+      "source_registry",
+      "source_revision",
+      "statement_evidence",
+      "summary",
+      "summary_item",
+      "task",
+      "task_attempt",
+      "unit_mapping",
+      "upload_part",
+      "verification",
+      "verification_field",
+      "verification_request",
+      "write_intent",
+      "write_request"
+    ],
+    "runtime_columns": {
+      "write_intent": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "operation_id",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "target_key",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "payload_sha256",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "normalization_version",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "generation",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "prepared_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "write_request_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "error_code",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "name": "retention_policy_id",
+          "type": "uuid",
+          "nullable": "NO"
+        }
+      ],
+      "upload_part": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "file_group_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "client_upload_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "ordinal",
+          "type": "integer",
+          "nullable": "NO"
+        },
+        {
+          "name": "declared_checksum",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "declared_size_bytes",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "declared_media_type",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "object_key",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "object_version",
+          "type": "text",
+          "nullable": "YES"
+        },
+        {
+          "name": "file_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "intent_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        }
+      ],
+      "environment_gate": [
+        {
+          "name": "environment",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "version",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "publication_epoch",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": "NO"
+        },
+        {
+          "name": "active_release_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "runtime_config_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        }
+      ],
+      "config_validation": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "config_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "config_checksum",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "environment",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "artifact_sha256",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "dataset_revision_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "evidence_ref",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "evidence_sha256",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "outcome",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "executed_by",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "revocation_reason",
+          "type": "text",
+          "nullable": "YES"
+        }
+      ],
+      "correction_request": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "record_version_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "requested_by",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "field_ids",
+          "type": "ARRAY",
+          "nullable": "NO"
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "proposed_text",
+          "type": "text",
+          "nullable": "YES"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "version",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "resolved_by",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "resolution_record_version_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "resolution_reason",
+          "type": "text",
+          "nullable": "YES"
+        }
+      ],
+      "alert_evaluation": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "environment",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "policy_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "window_policy_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "assessment_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "known_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "context_sequence",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "mode",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "decision",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "data_epoch",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "verification_epoch",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "publication_epoch",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "authorization_version",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "lease_generation",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "use_authorization_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "input_digest",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "missing_items",
+          "type": "jsonb",
+          "nullable": "NO"
+        },
+        {
+          "name": "computed_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "validity",
+          "type": "text",
+          "nullable": "NO"
+        }
+      ],
+      "alert_evaluation_input": [
+        {
+          "name": "evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "signal_id",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": "NO"
+        },
+        {
+          "name": "variable_code",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "input_role",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "record_version_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "field_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "verification_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "normalization_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "medical_time_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "source_revision_id",
+          "type": "uuid",
+          "nullable": "NO"
+        }
+      ],
+      "alert_evaluation_assessment": [
+        {
+          "name": "evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "assessment_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": "NO"
+        }
+      ],
+      "alert_signal_result": [
+        {
+          "name": "evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "signal_id",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "schema_version",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "algorithm_version",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "input_field_ids",
+          "type": "ARRAY",
+          "nullable": "NO"
+        },
+        {
+          "name": "reason_codes",
+          "type": "ARRAY",
+          "nullable": "NO"
+        },
+        {
+          "name": "pair_results",
+          "type": "jsonb",
+          "nullable": "NO"
+        }
+      ],
+      "alert_episode": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "rule_family_key",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "opened_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "last_evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "last_event_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "state_version",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "reset_evaluation_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "last_assessment_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "last_context_sequence",
+          "type": "bigint",
+          "nullable": "NO"
+        }
+      ],
+      "alert_decision": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "rule_key",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "reason_codes",
+          "type": "ARRAY",
+          "nullable": "NO"
+        },
+        {
+          "name": "episode_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "sequence",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "previous_decision_id",
+          "type": "uuid",
+          "nullable": "YES"
+        }
+      ],
+      "alert_event": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "evaluation_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "release_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "trigger_key",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "trigger_policy_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "input_snapshot",
+          "type": "jsonb",
+          "nullable": "NO"
+        },
+        {
+          "name": "validity",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        }
+      ],
+      "record_attachment": [
+        {
+          "name": "record_version_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "file_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "ordinal",
+          "type": "integer",
+          "nullable": "NO"
+        }
+      ],
+      "candidate_field": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "candidate_set_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "field_path",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "raw_text",
+          "type": "text",
+          "nullable": "YES"
+        },
+        {
+          "name": "field_config_version",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "proposed_field",
+          "type": "jsonb",
+          "nullable": "YES"
+        },
+        {
+          "name": "anchor_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "recognition_status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "confidence",
+          "type": "numeric",
+          "nullable": "YES"
+        }
+      ],
+      "relation_application": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "version",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "applicant_id",
+          "type": "uuid",
+          "nullable": "NO"
+        },
+        {
+          "name": "patient_id",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "evidence_ref",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": "NO"
+        },
+        {
+          "name": "checked_by",
+          "type": "uuid",
+          "nullable": "YES"
+        },
+        {
+          "name": "checked_at",
+          "type": "timestamp with time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": "YES"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": "NO"
+        }
+      ]
+    },
+    "critical_constraints_checked": 12,
+    "constraints": [
+      [
+        "alert_decision",
+        "c",
+        [
+          "action"
+        ],
+        null,
+        [],
+        "CHECK ((action = ANY (ARRAY['create_event'::text, 'continue_episode'::text, 'close_episode'::text, 'no_event'::text, 'blocked'::text])))"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "action"
+        ],
+        null,
+        [],
+        "NOT NULL action"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "previous_decision_id",
+          "id"
+        ],
+        null,
+        [],
+        "CHECK ((previous_decision_id IS DISTINCT FROM id))"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "sequence",
+          "previous_decision_id"
+        ],
+        null,
+        [],
+        "CHECK (((sequence = 1) = (previous_decision_id IS NULL)))"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "action",
+          "state",
+          "episode_id"
+        ],
+        null,
+        [],
+        "CHECK (((action <> ALL (ARRAY['create_event'::text, 'continue_episode'::text])) OR ((state = 'met'::text) AND (episode_id IS NOT NULL))))"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "action",
+          "state",
+          "episode_id"
+        ],
+        null,
+        [],
+        "CHECK (((action <> 'close_episode'::text) OR ((state = 'not_met'::text) AND (episode_id IS NOT NULL))))"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "action",
+          "reason_codes"
+        ],
+        null,
+        [],
+        "CHECK (((action <> 'blocked'::text) OR (cardinality(reason_codes) > 0)))"
+      ],
+      [
+        "alert_decision",
+        "f",
+        [
+          "episode_id",
+          "patient_id"
+        ],
+        "alert_episode",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (episode_id, patient_id) REFERENCES alert_episode(id, patient_id)"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL evaluation_id"
+      ],
+      [
+        "alert_decision",
+        "f",
+        [
+          "evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_decision",
+        "u",
+        [
+          "evaluation_id",
+          "rule_key"
+        ],
+        null,
+        [],
+        "UNIQUE (evaluation_id, rule_key)"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "alert_decision",
+        "u",
+        [
+          "id",
+          "patient_id",
+          "rule_key"
+        ],
+        null,
+        [],
+        "UNIQUE (id, patient_id, rule_key)"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_decision",
+        "u",
+        [
+          "patient_id",
+          "rule_key",
+          "sequence"
+        ],
+        null,
+        [],
+        "UNIQUE (patient_id, rule_key, sequence)"
+      ],
+      [
+        "alert_decision",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "alert_decision",
+        "f",
+        [
+          "previous_decision_id",
+          "patient_id",
+          "rule_key"
+        ],
+        "alert_decision",
+        [
+          "id",
+          "patient_id",
+          "rule_key"
+        ],
+        "FOREIGN KEY (previous_decision_id, patient_id, rule_key) REFERENCES alert_decision(id, patient_id, rule_key)"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "reason_codes"
+        ],
+        null,
+        [],
+        "NOT NULL reason_codes"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "rule_key"
+        ],
+        null,
+        [],
+        "NOT NULL rule_key"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "sequence"
+        ],
+        null,
+        [],
+        "CHECK ((sequence > 0))"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "sequence"
+        ],
+        null,
+        [],
+        "NOT NULL sequence"
+      ],
+      [
+        "alert_decision",
+        "c",
+        [
+          "state"
+        ],
+        null,
+        [],
+        "CHECK ((state = ANY (ARRAY['met'::text, 'not_met'::text, 'unknown'::text])))"
+      ],
+      [
+        "alert_decision",
+        "n",
+        [
+          "state"
+        ],
+        null,
+        [],
+        "NOT NULL state"
+      ],
+      [
+        "alert_episode",
+        "c",
+        [
+          "status",
+          "reset_evaluation_id"
+        ],
+        null,
+        [],
+        "CHECK (((status <> 'closed'::text) OR (reset_evaluation_id IS NOT NULL)))"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "alert_episode",
+        "u",
+        [
+          "id",
+          "patient_id"
+        ],
+        null,
+        [],
+        "UNIQUE (id, patient_id)"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "last_assessment_at"
+        ],
+        null,
+        [],
+        "NOT NULL last_assessment_at"
+      ],
+      [
+        "alert_episode",
+        "c",
+        [
+          "last_context_sequence"
+        ],
+        null,
+        [],
+        "CHECK ((last_context_sequence > 0))"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "last_context_sequence"
+        ],
+        null,
+        [],
+        "NOT NULL last_context_sequence"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "last_evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL last_evaluation_id"
+      ],
+      [
+        "alert_episode",
+        "f",
+        [
+          "last_evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (last_evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "opened_at"
+        ],
+        null,
+        [],
+        "NOT NULL opened_at"
+      ],
+      [
+        "alert_episode",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_episode",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "alert_episode",
+        "f",
+        [
+          "reset_evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (reset_evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "rule_family_key"
+        ],
+        null,
+        [],
+        "NOT NULL rule_family_key"
+      ],
+      [
+        "alert_episode",
+        "c",
+        [
+          "state_version"
+        ],
+        null,
+        [],
+        "CHECK ((state_version > 0))"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "state_version"
+        ],
+        null,
+        [],
+        "NOT NULL state_version"
+      ],
+      [
+        "alert_episode",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['open'::text, 'closed'::text, 'invalid'::text])))"
+      ],
+      [
+        "alert_episode",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "alert_episode",
+        "f",
+        [
+          "last_event_id",
+          "patient_id"
+        ],
+        "alert_event",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (last_event_id, patient_id) REFERENCES alert_event(id, patient_id)"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "assessment_at"
+        ],
+        null,
+        [],
+        "NOT NULL assessment_at"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "authorization_version"
+        ],
+        null,
+        [],
+        "CHECK ((authorization_version > 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "authorization_version"
+        ],
+        null,
+        [],
+        "NOT NULL authorization_version"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "status",
+          "policy_id",
+          "window_policy_id"
+        ],
+        null,
+        [],
+        "CHECK (((status <> 'completed'::text) OR ((policy_id IS NOT NULL) AND (window_policy_id IS NOT NULL))))"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "status",
+          "decision"
+        ],
+        null,
+        [],
+        "CHECK (((status = 'completed'::text) OR (decision = 'unknown'::text)))"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "status",
+          "validity"
+        ],
+        null,
+        [],
+        "CHECK (((status <> 'superseded'::text) OR (validity = 'invalid'::text)))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "computed_at"
+        ],
+        null,
+        [],
+        "NOT NULL computed_at"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "context_sequence"
+        ],
+        null,
+        [],
+        "CHECK ((context_sequence > 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "context_sequence"
+        ],
+        null,
+        [],
+        "NOT NULL context_sequence"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "data_epoch"
+        ],
+        null,
+        [],
+        "CHECK ((data_epoch >= 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "data_epoch"
+        ],
+        null,
+        [],
+        "NOT NULL data_epoch"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "decision"
+        ],
+        null,
+        [],
+        "CHECK ((decision = ANY (ARRAY['met'::text, 'not_met'::text, 'unknown'::text])))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "decision"
+        ],
+        null,
+        [],
+        "NOT NULL decision"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "environment"
+        ],
+        null,
+        [],
+        "NOT NULL environment"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "alert_evaluation",
+        "u",
+        [
+          "id",
+          "patient_id"
+        ],
+        null,
+        [],
+        "UNIQUE (id, patient_id)"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "input_digest"
+        ],
+        null,
+        [],
+        "NOT NULL input_digest"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "known_at"
+        ],
+        null,
+        [],
+        "NOT NULL known_at"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "lease_generation"
+        ],
+        null,
+        [],
+        "CHECK ((lease_generation > 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "lease_generation"
+        ],
+        null,
+        [],
+        "NOT NULL lease_generation"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "missing_items"
+        ],
+        null,
+        [],
+        "CHECK ((jsonb_typeof(missing_items) = 'array'::text))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "missing_items"
+        ],
+        null,
+        [],
+        "NOT NULL missing_items"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "mode"
+        ],
+        null,
+        [],
+        "CHECK ((mode = ANY (ARRAY['current'::text, 'replay'::text])))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "mode"
+        ],
+        null,
+        [],
+        "NOT NULL mode"
+      ],
+      [
+        "alert_evaluation",
+        "u",
+        [
+          "patient_id",
+          "context_sequence"
+        ],
+        null,
+        [],
+        "UNIQUE (patient_id, context_sequence)"
+      ],
+      [
+        "alert_evaluation",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_evaluation",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "alert_evaluation",
+        "f",
+        [
+          "policy_id"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (policy_id) REFERENCES config_version(id)"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "publication_epoch"
+        ],
+        null,
+        [],
+        "CHECK ((publication_epoch >= 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "publication_epoch"
+        ],
+        null,
+        [],
+        "NOT NULL publication_epoch"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['configuration_pending'::text, 'insufficient'::text, 'completed'::text, 'failed'::text, 'superseded'::text])))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "alert_evaluation",
+        "u",
+        [
+          "task_id"
+        ],
+        null,
+        [],
+        "UNIQUE (task_id)"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "task_id"
+        ],
+        null,
+        [],
+        "NOT NULL task_id"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "use_authorization_id"
+        ],
+        null,
+        [],
+        "NOT NULL use_authorization_id"
+      ],
+      [
+        "alert_evaluation",
+        "f",
+        [
+          "use_authorization_id",
+          "patient_id"
+        ],
+        "data_use_authorization",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (use_authorization_id, patient_id) REFERENCES data_use_authorization(id, patient_id)"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "validity"
+        ],
+        null,
+        [],
+        "CHECK ((validity = ANY (ARRAY['valid'::text, 'invalid'::text])))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "validity"
+        ],
+        null,
+        [],
+        "NOT NULL validity"
+      ],
+      [
+        "alert_evaluation",
+        "c",
+        [
+          "verification_epoch"
+        ],
+        null,
+        [],
+        "CHECK ((verification_epoch >= 0))"
+      ],
+      [
+        "alert_evaluation",
+        "n",
+        [
+          "verification_epoch"
+        ],
+        null,
+        [],
+        "NOT NULL verification_epoch"
+      ],
+      [
+        "alert_evaluation",
+        "f",
+        [
+          "window_policy_id"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (window_policy_id) REFERENCES config_version(id)"
+      ],
+      [
+        "alert_evaluation",
+        "f",
+        [
+          "task_id",
+          "patient_id"
+        ],
+        "task",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (task_id, patient_id) REFERENCES task(id, patient_id)"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "n",
+        [
+          "assessment_id"
+        ],
+        null,
+        [],
+        "NOT NULL assessment_id"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "f",
+        [
+          "assessment_id",
+          "patient_id"
+        ],
+        "assessment",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (assessment_id, patient_id) REFERENCES assessment(id, patient_id)"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "n",
+        [
+          "evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL evaluation_id"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "f",
+        [
+          "evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "p",
+        [
+          "evaluation_id",
+          "assessment_id",
+          "role"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (evaluation_id, assessment_id, role)"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "c",
+        [
+          "role"
+        ],
+        null,
+        [],
+        "CHECK ((length(TRIM(BOTH FROM role)) > 0))"
+      ],
+      [
+        "alert_evaluation_assessment",
+        "n",
+        [
+          "role"
+        ],
+        null,
+        [],
+        "NOT NULL role"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL evaluation_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "field_id"
+        ],
+        null,
+        [],
+        "NOT NULL field_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "field_id",
+          "record_version_id",
+          "patient_id"
+        ],
+        "record_field",
+        [
+          "id",
+          "record_version_id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (field_id, record_version_id, patient_id) REFERENCES record_field(id, record_version_id, patient_id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "c",
+        [
+          "input_role"
+        ],
+        null,
+        [],
+        "CHECK ((input_role = ANY (ARRAY['baseline'::text, 'current'::text, 'series'::text, 'context'::text])))"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "input_role"
+        ],
+        null,
+        [],
+        "NOT NULL input_role"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "medical_time_id",
+          "patient_id"
+        ],
+        "medical_time",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (medical_time_id, patient_id) REFERENCES medical_time(id, patient_id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "normalization_id",
+          "field_id",
+          "patient_id"
+        ],
+        "normalized_measurement",
+        [
+          "id",
+          "field_id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (normalization_id, field_id, patient_id) REFERENCES normalized_measurement(id, field_id, patient_id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "p",
+        [
+          "evaluation_id",
+          "signal_id",
+          "position"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (evaluation_id, signal_id, \"position\")"
+      ],
+      [
+        "alert_evaluation_input",
+        "c",
+        [
+          "position"
+        ],
+        null,
+        [],
+        "CHECK ((\"position\" >= 0))"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "position"
+        ],
+        null,
+        [],
+        "NOT NULL \"position\""
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "record_version_id"
+        ],
+        null,
+        [],
+        "NOT NULL record_version_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "signal_id"
+        ],
+        null,
+        [],
+        "NOT NULL signal_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "source_revision_id"
+        ],
+        "source_revision",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (source_revision_id) REFERENCES source_revision(id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "source_revision_id"
+        ],
+        null,
+        [],
+        "NOT NULL source_revision_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "variable_code"
+        ],
+        null,
+        [],
+        "NOT NULL variable_code"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "verification_id",
+          "field_id"
+        ],
+        "verification_field",
+        [
+          "verification_id",
+          "field_id"
+        ],
+        "FOREIGN KEY (verification_id, field_id) REFERENCES verification_field(verification_id, field_id)"
+      ],
+      [
+        "alert_evaluation_input",
+        "n",
+        [
+          "verification_id"
+        ],
+        null,
+        [],
+        "NOT NULL verification_id"
+      ],
+      [
+        "alert_evaluation_input",
+        "f",
+        [
+          "verification_id",
+          "record_version_id",
+          "patient_id"
+        ],
+        "verification",
+        [
+          "id",
+          "record_version_id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (verification_id, record_version_id, patient_id) REFERENCES verification(id, record_version_id, patient_id)"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "created_at"
+        ],
+        null,
+        [],
+        "NOT NULL created_at"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL evaluation_id"
+      ],
+      [
+        "alert_event",
+        "f",
+        [
+          "evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "alert_event",
+        "u",
+        [
+          "id",
+          "patient_id"
+        ],
+        null,
+        [],
+        "UNIQUE (id, patient_id)"
+      ],
+      [
+        "alert_event",
+        "c",
+        [
+          "input_snapshot"
+        ],
+        null,
+        [],
+        "CHECK ((jsonb_typeof(input_snapshot) = 'object'::text))"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "input_snapshot"
+        ],
+        null,
+        [],
+        "NOT NULL input_snapshot"
+      ],
+      [
+        "alert_event",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_event",
+        "u",
+        [
+          "patient_id",
+          "trigger_policy_id",
+          "trigger_key"
+        ],
+        null,
+        [],
+        "UNIQUE (patient_id, trigger_policy_id, trigger_key)"
+      ],
+      [
+        "alert_event",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "alert_event",
+        "f",
+        [
+          "release_id"
+        ],
+        "release_bundle",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (release_id) REFERENCES release_bundle(id)"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "release_id"
+        ],
+        null,
+        [],
+        "NOT NULL release_id"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "trigger_key"
+        ],
+        null,
+        [],
+        "NOT NULL trigger_key"
+      ],
+      [
+        "alert_event",
+        "f",
+        [
+          "trigger_policy_id"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (trigger_policy_id) REFERENCES config_version(id)"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "trigger_policy_id"
+        ],
+        null,
+        [],
+        "NOT NULL trigger_policy_id"
+      ],
+      [
+        "alert_event",
+        "c",
+        [
+          "validity"
+        ],
+        null,
+        [],
+        "CHECK ((validity = ANY (ARRAY['valid'::text, 'invalid'::text])))"
+      ],
+      [
+        "alert_event",
+        "n",
+        [
+          "validity"
+        ],
+        null,
+        [],
+        "NOT NULL validity"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "algorithm_version"
+        ],
+        null,
+        [],
+        "NOT NULL algorithm_version"
+      ],
+      [
+        "alert_signal_result",
+        "c",
+        [
+          "state",
+          "reason_codes"
+        ],
+        null,
+        [],
+        "CHECK (((state <> 'unknown'::text) OR (cardinality(reason_codes) > 0)))"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "evaluation_id"
+        ],
+        null,
+        [],
+        "NOT NULL evaluation_id"
+      ],
+      [
+        "alert_signal_result",
+        "f",
+        [
+          "evaluation_id",
+          "patient_id"
+        ],
+        "alert_evaluation",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (evaluation_id, patient_id) REFERENCES alert_evaluation(id, patient_id)"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "input_field_ids"
+        ],
+        null,
+        [],
+        "NOT NULL input_field_ids"
+      ],
+      [
+        "alert_signal_result",
+        "c",
+        [
+          "pair_results"
+        ],
+        null,
+        [],
+        "CHECK ((jsonb_typeof(pair_results) = 'array'::text))"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "pair_results"
+        ],
+        null,
+        [],
+        "NOT NULL pair_results"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "alert_signal_result",
+        "p",
+        [
+          "evaluation_id",
+          "signal_id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (evaluation_id, signal_id)"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "reason_codes"
+        ],
+        null,
+        [],
+        "NOT NULL reason_codes"
+      ],
+      [
+        "alert_signal_result",
+        "c",
+        [
+          "schema_version"
+        ],
+        null,
+        [],
+        "CHECK ((schema_version = 'alert-signal-1'::text))"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "schema_version"
+        ],
+        null,
+        [],
+        "NOT NULL schema_version"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "signal_id"
+        ],
+        null,
+        [],
+        "NOT NULL signal_id"
+      ],
+      [
+        "alert_signal_result",
+        "c",
+        [
+          "state"
+        ],
+        null,
+        [],
+        "CHECK ((state = ANY (ARRAY['met'::text, 'not_met'::text, 'unknown'::text])))"
+      ],
+      [
+        "alert_signal_result",
+        "n",
+        [
+          "state"
+        ],
+        null,
+        [],
+        "NOT NULL state"
+      ],
+      [
+        "candidate_field",
+        "f",
+        [
+          "anchor_id",
+          "patient_id"
+        ],
+        "source_anchor",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (anchor_id, patient_id) REFERENCES source_anchor(id, patient_id)"
+      ],
+      [
+        "candidate_field",
+        "u",
+        [
+          "candidate_set_id",
+          "field_path"
+        ],
+        null,
+        [],
+        "UNIQUE (candidate_set_id, field_path)"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "candidate_set_id"
+        ],
+        null,
+        [],
+        "NOT NULL candidate_set_id"
+      ],
+      [
+        "candidate_field",
+        "f",
+        [
+          "candidate_set_id",
+          "patient_id"
+        ],
+        "candidate_set",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (candidate_set_id, patient_id) REFERENCES candidate_set(id, patient_id)"
+      ],
+      [
+        "candidate_field",
+        "c",
+        [
+          "confidence"
+        ],
+        null,
+        [],
+        "CHECK ((((confidence)::numeric >= (0)::numeric) AND ((confidence)::numeric <= (1)::numeric)))"
+      ],
+      [
+        "candidate_field",
+        "f",
+        [
+          "field_config_version"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (field_config_version) REFERENCES config_version(id)"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "field_config_version"
+        ],
+        null,
+        [],
+        "NOT NULL field_config_version"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "field_path"
+        ],
+        null,
+        [],
+        "NOT NULL field_path"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "candidate_field",
+        "u",
+        [
+          "id",
+          "patient_id"
+        ],
+        null,
+        [],
+        "UNIQUE (id, patient_id)"
+      ],
+      [
+        "candidate_field",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "candidate_field",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "candidate_field",
+        "c",
+        [
+          "proposed_field"
+        ],
+        null,
+        [],
+        "CHECK ((jsonb_typeof(proposed_field) = 'object'::text))"
+      ],
+      [
+        "candidate_field",
+        "c",
+        [
+          "recognition_status"
+        ],
+        null,
+        [],
+        "CHECK ((recognition_status = ANY (ARRAY['recognized'::text, 'uncertain'::text, 'missing'::text, 'unlocated'::text])))"
+      ],
+      [
+        "candidate_field",
+        "n",
+        [
+          "recognition_status"
+        ],
+        null,
+        [],
+        "NOT NULL recognition_status"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "artifact_sha256"
+        ],
+        null,
+        [],
+        "NOT NULL artifact_sha256"
+      ],
+      [
+        "config_validation",
+        "c",
+        [
+          "revoked_at",
+          "revocation_reason"
+        ],
+        null,
+        [],
+        "CHECK (((revoked_at IS NULL) OR (revocation_reason IS NOT NULL)))"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "config_checksum"
+        ],
+        null,
+        [],
+        "NOT NULL config_checksum"
+      ],
+      [
+        "config_validation",
+        "f",
+        [
+          "config_id"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (config_id) REFERENCES config_version(id)"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "config_id"
+        ],
+        null,
+        [],
+        "NOT NULL config_id"
+      ],
+      [
+        "config_validation",
+        "f",
+        [
+          "dataset_revision_id"
+        ],
+        "source_revision",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (dataset_revision_id) REFERENCES source_revision(id)"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "dataset_revision_id"
+        ],
+        null,
+        [],
+        "NOT NULL dataset_revision_id"
+      ],
+      [
+        "config_validation",
+        "f",
+        [
+          "environment"
+        ],
+        "environment_gate",
+        [
+          "environment"
+        ],
+        "FOREIGN KEY (environment) REFERENCES environment_gate(environment)"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "environment"
+        ],
+        null,
+        [],
+        "NOT NULL environment"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "evidence_ref"
+        ],
+        null,
+        [],
+        "NOT NULL evidence_ref"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "evidence_sha256"
+        ],
+        null,
+        [],
+        "NOT NULL evidence_sha256"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "executed_at"
+        ],
+        null,
+        [],
+        "NOT NULL executed_at"
+      ],
+      [
+        "config_validation",
+        "f",
+        [
+          "executed_by"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (executed_by) REFERENCES principal(id)"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "executed_by"
+        ],
+        null,
+        [],
+        "NOT NULL executed_by"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "config_validation",
+        "c",
+        [
+          "outcome"
+        ],
+        null,
+        [],
+        "CHECK ((outcome = ANY (ARRAY['pass'::text, 'fail'::text])))"
+      ],
+      [
+        "config_validation",
+        "n",
+        [
+          "outcome"
+        ],
+        null,
+        [],
+        "NOT NULL outcome"
+      ],
+      [
+        "config_validation",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "status",
+          "resolved_by",
+          "resolved_at",
+          "resolution_reason"
+        ],
+        null,
+        [],
+        "CHECK (((status <> ALL (ARRAY['resolved'::text, 'rejected'::text])) OR ((resolved_by IS NOT NULL) AND (resolved_at IS NOT NULL) AND (resolution_reason IS NOT NULL))))"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "status",
+          "resolution_record_version_id"
+        ],
+        null,
+        [],
+        "CHECK (((status <> 'resolved'::text) OR (resolution_record_version_id IS NOT NULL)))"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "created_at"
+        ],
+        null,
+        [],
+        "NOT NULL created_at"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "field_ids"
+        ],
+        null,
+        [],
+        "CHECK ((cardinality(field_ids) > 0))"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "field_ids"
+        ],
+        null,
+        [],
+        "NOT NULL field_ids"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "correction_request",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "reason"
+        ],
+        null,
+        [],
+        "CHECK ((length(TRIM(BOTH FROM reason)) > 0))"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "reason"
+        ],
+        null,
+        [],
+        "NOT NULL reason"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "record_version_id"
+        ],
+        null,
+        [],
+        "NOT NULL record_version_id"
+      ],
+      [
+        "correction_request",
+        "f",
+        [
+          "record_version_id",
+          "patient_id"
+        ],
+        "record_version",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (record_version_id, patient_id) REFERENCES record_version(id, patient_id)"
+      ],
+      [
+        "correction_request",
+        "f",
+        [
+          "requested_by"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (requested_by) REFERENCES principal(id)"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "requested_by"
+        ],
+        null,
+        [],
+        "NOT NULL requested_by"
+      ],
+      [
+        "correction_request",
+        "f",
+        [
+          "resolution_record_version_id",
+          "patient_id"
+        ],
+        "record_version",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (resolution_record_version_id, patient_id) REFERENCES record_version(id, patient_id)"
+      ],
+      [
+        "correction_request",
+        "f",
+        [
+          "resolved_by"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (resolved_by) REFERENCES principal(id)"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['pending'::text, 'in_review'::text, 'resolved'::text, 'rejected'::text, 'withdrawn'::text, 'superseded'::text])))"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "correction_request",
+        "c",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "CHECK ((version > 0))"
+      ],
+      [
+        "correction_request",
+        "n",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "NOT NULL version"
+      ],
+      [
+        "environment_gate",
+        "f",
+        [
+          "active_release_id"
+        ],
+        "release_bundle",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (active_release_id) REFERENCES release_bundle(id)"
+      ],
+      [
+        "environment_gate",
+        "c",
+        [
+          "enabled",
+          "runtime_config_id"
+        ],
+        null,
+        [],
+        "CHECK (((NOT enabled) OR (runtime_config_id IS NOT NULL)))"
+      ],
+      [
+        "environment_gate",
+        "n",
+        [
+          "enabled"
+        ],
+        null,
+        [],
+        "NOT NULL enabled"
+      ],
+      [
+        "environment_gate",
+        "n",
+        [
+          "environment"
+        ],
+        null,
+        [],
+        "NOT NULL environment"
+      ],
+      [
+        "environment_gate",
+        "p",
+        [
+          "environment"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (environment)"
+      ],
+      [
+        "environment_gate",
+        "c",
+        [
+          "publication_epoch"
+        ],
+        null,
+        [],
+        "CHECK ((publication_epoch >= 0))"
+      ],
+      [
+        "environment_gate",
+        "n",
+        [
+          "publication_epoch"
+        ],
+        null,
+        [],
+        "NOT NULL publication_epoch"
+      ],
+      [
+        "environment_gate",
+        "f",
+        [
+          "runtime_config_id"
+        ],
+        "config_version",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (runtime_config_id) REFERENCES config_version(id)"
+      ],
+      [
+        "environment_gate",
+        "n",
+        [
+          "updated_at"
+        ],
+        null,
+        [],
+        "NOT NULL updated_at"
+      ],
+      [
+        "environment_gate",
+        "c",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "CHECK ((version > 0))"
+      ],
+      [
+        "environment_gate",
+        "n",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "NOT NULL version"
+      ],
+      [
+        "record_attachment",
+        "n",
+        [
+          "file_id"
+        ],
+        null,
+        [],
+        "NOT NULL file_id"
+      ],
+      [
+        "record_attachment",
+        "f",
+        [
+          "file_id",
+          "patient_id"
+        ],
+        "file_object",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (file_id, patient_id) REFERENCES file_object(id, patient_id)"
+      ],
+      [
+        "record_attachment",
+        "c",
+        [
+          "ordinal"
+        ],
+        null,
+        [],
+        "CHECK ((ordinal > 0))"
+      ],
+      [
+        "record_attachment",
+        "n",
+        [
+          "ordinal"
+        ],
+        null,
+        [],
+        "NOT NULL ordinal"
+      ],
+      [
+        "record_attachment",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "record_attachment",
+        "p",
+        [
+          "record_version_id",
+          "ordinal"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (record_version_id, ordinal)"
+      ],
+      [
+        "record_attachment",
+        "u",
+        [
+          "record_version_id",
+          "file_id"
+        ],
+        null,
+        [],
+        "UNIQUE (record_version_id, file_id)"
+      ],
+      [
+        "record_attachment",
+        "n",
+        [
+          "record_version_id"
+        ],
+        null,
+        [],
+        "NOT NULL record_version_id"
+      ],
+      [
+        "record_attachment",
+        "f",
+        [
+          "record_version_id",
+          "patient_id"
+        ],
+        "record_version",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (record_version_id, patient_id) REFERENCES record_version(id, patient_id)"
+      ],
+      [
+        "relation_application",
+        "f",
+        [
+          "applicant_id"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (applicant_id) REFERENCES principal(id)"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "applicant_id"
+        ],
+        null,
+        [],
+        "NOT NULL applicant_id"
+      ],
+      [
+        "relation_application",
+        "c",
+        [
+          "status",
+          "checked_by",
+          "checked_at"
+        ],
+        null,
+        [],
+        "CHECK (((status <> ALL (ARRAY['approved'::text, 'rejected'::text])) OR ((checked_by IS NOT NULL) AND (checked_at IS NOT NULL))))"
+      ],
+      [
+        "relation_application",
+        "f",
+        [
+          "checked_by"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (checked_by) REFERENCES principal(id)"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "created_at"
+        ],
+        null,
+        [],
+        "NOT NULL created_at"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "evidence_ref"
+        ],
+        null,
+        [],
+        "NOT NULL evidence_ref"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "relation_application",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "relation_application",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "relation_application",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'withdrawn'::text])))"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "relation_application",
+        "c",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "CHECK ((version > 0))"
+      ],
+      [
+        "relation_application",
+        "n",
+        [
+          "version"
+        ],
+        null,
+        [],
+        "NOT NULL version"
+      ],
+      [
+        "upload_part",
+        "c",
+        [
+          "status",
+          "file_id",
+          "object_version"
+        ],
+        null,
+        [],
+        "CHECK (((status <> 'stored'::text) OR ((file_id IS NOT NULL) AND (object_version IS NOT NULL))))"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "client_upload_id"
+        ],
+        null,
+        [],
+        "NOT NULL client_upload_id"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "created_at"
+        ],
+        null,
+        [],
+        "NOT NULL created_at"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "declared_checksum"
+        ],
+        null,
+        [],
+        "NOT NULL declared_checksum"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "declared_media_type"
+        ],
+        null,
+        [],
+        "NOT NULL declared_media_type"
+      ],
+      [
+        "upload_part",
+        "c",
+        [
+          "declared_size_bytes"
+        ],
+        null,
+        [],
+        "CHECK ((declared_size_bytes > 0))"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "declared_size_bytes"
+        ],
+        null,
+        [],
+        "NOT NULL declared_size_bytes"
+      ],
+      [
+        "upload_part",
+        "u",
+        [
+          "file_group_id",
+          "client_upload_id"
+        ],
+        null,
+        [],
+        "UNIQUE (file_group_id, client_upload_id)"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "file_group_id"
+        ],
+        null,
+        [],
+        "NOT NULL file_group_id"
+      ],
+      [
+        "upload_part",
+        "u",
+        [
+          "file_group_id",
+          "ordinal"
+        ],
+        null,
+        [],
+        "UNIQUE (file_group_id, ordinal)"
+      ],
+      [
+        "upload_part",
+        "f",
+        [
+          "file_group_id",
+          "patient_id"
+        ],
+        "file_group",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (file_group_id, patient_id) REFERENCES file_group(id, patient_id)"
+      ],
+      [
+        "upload_part",
+        "f",
+        [
+          "file_id",
+          "patient_id"
+        ],
+        "file_object",
+        [
+          "id",
+          "patient_id"
+        ],
+        "FOREIGN KEY (file_id, patient_id) REFERENCES file_object(id, patient_id)"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "upload_part",
+        "f",
+        [
+          "intent_id"
+        ],
+        "write_intent",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (intent_id) REFERENCES write_intent(id)"
+      ],
+      [
+        "upload_part",
+        "u",
+        [
+          "object_key"
+        ],
+        null,
+        [],
+        "UNIQUE (object_key)"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "object_key"
+        ],
+        null,
+        [],
+        "NOT NULL object_key"
+      ],
+      [
+        "upload_part",
+        "c",
+        [
+          "ordinal"
+        ],
+        null,
+        [],
+        "CHECK ((ordinal > 0))"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "ordinal"
+        ],
+        null,
+        [],
+        "NOT NULL ordinal"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "patient_id"
+        ],
+        null,
+        [],
+        "NOT NULL patient_id"
+      ],
+      [
+        "upload_part",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "upload_part",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['declared'::text, 'receiving'::text, 'stored'::text, 'failed'::text, 'uncertain'::text])))"
+      ],
+      [
+        "upload_part",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "write_intent",
+        "f",
+        [
+          "actor_id"
+        ],
+        "principal",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (actor_id) REFERENCES principal(id)"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "actor_id"
+        ],
+        null,
+        [],
+        "NOT NULL actor_id"
+      ],
+      [
+        "write_intent",
+        "u",
+        [
+          "actor_id",
+          "operation_id",
+          "target_key",
+          "request_id"
+        ],
+        null,
+        [],
+        "UNIQUE (actor_id, operation_id, target_key, request_id)"
+      ],
+      [
+        "write_intent",
+        "c",
+        [
+          "expires_at",
+          "prepared_at"
+        ],
+        null,
+        [],
+        "CHECK ((expires_at > prepared_at))"
+      ],
+      [
+        "write_intent",
+        "c",
+        [
+          "status",
+          "completed_at",
+          "write_request_id",
+          "error_code"
+        ],
+        null,
+        [],
+        "CHECK ((((status = 'prepared'::text) AND (completed_at IS NULL) AND (write_request_id IS NULL) AND (error_code IS NULL)) OR ((status = 'committed'::text) AND (completed_at IS NOT NULL) AND (write_request_id IS NOT NULL) AND (error_code IS NULL)) OR ((status = 'failed'::text) AND (completed_at IS NOT NULL) AND (write_request_id IS NULL) AND (error_code IS NOT NULL))))"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "expires_at"
+        ],
+        null,
+        [],
+        "NOT NULL expires_at"
+      ],
+      [
+        "write_intent",
+        "c",
+        [
+          "generation"
+        ],
+        null,
+        [],
+        "CHECK ((generation > 0))"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "generation"
+        ],
+        null,
+        [],
+        "NOT NULL generation"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "NOT NULL id"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "normalization_version"
+        ],
+        null,
+        [],
+        "NOT NULL normalization_version"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "operation_id"
+        ],
+        null,
+        [],
+        "NOT NULL operation_id"
+      ],
+      [
+        "write_intent",
+        "f",
+        [
+          "patient_id"
+        ],
+        "patient",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (patient_id) REFERENCES patient(id)"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "payload_sha256"
+        ],
+        null,
+        [],
+        "NOT NULL payload_sha256"
+      ],
+      [
+        "write_intent",
+        "p",
+        [
+          "id"
+        ],
+        null,
+        [],
+        "PRIMARY KEY (id)"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "prepared_at"
+        ],
+        null,
+        [],
+        "NOT NULL prepared_at"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "request_id"
+        ],
+        null,
+        [],
+        "NOT NULL request_id"
+      ],
+      [
+        "write_intent",
+        "f",
+        [
+          "retention_policy_id"
+        ],
+        "retention_policy",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (retention_policy_id) REFERENCES retention_policy(id)"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "retention_policy_id"
+        ],
+        null,
+        [],
+        "NOT NULL retention_policy_id"
+      ],
+      [
+        "write_intent",
+        "c",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "CHECK ((status = ANY (ARRAY['prepared'::text, 'committed'::text, 'failed'::text])))"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "status"
+        ],
+        null,
+        [],
+        "NOT NULL status"
+      ],
+      [
+        "write_intent",
+        "n",
+        [
+          "target_key"
+        ],
+        null,
+        [],
+        "NOT NULL target_key"
+      ],
+      [
+        "write_intent",
+        "f",
+        [
+          "write_request_id"
+        ],
+        "write_request",
+        [
+          "id"
+        ],
+        "FOREIGN KEY (write_request_id) REFERENCES write_request(id)"
+      ]
+    ],
+    "episode_unique_index": [
+      true,
+      "(status = 'open'::text)"
+    ],
+    "prepared_queries": "PASS",
+    "rows_inserted": 0,
+    "permission_and_concurrency": "NOT_RUN",
+    "command_log": ".backend-work/postgres-20261001-192004-952137/commands.json"
+  },
+  "business_acceptance": "BLOCKED",
+  "provider_calls": "NOT_RUN",
+  "visual_checks": "NOT_RUN"
+}

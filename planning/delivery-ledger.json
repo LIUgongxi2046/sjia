@@ -1,0 +1,2051 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "id": "PLAN-20261001-01",
+    "environment_ref": "environment.json"
+  },
+  "commitments": [
+    {
+      "id": "FR-01",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.1节；F01/G01",
+      "outcome": "实际身份与获准患儿关联，独立权限与撤销",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V09"
+      ]
+    },
+    {
+      "id": "FR-02",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.2节；F02/F03/F04/G02",
+      "outcome": "观察、报告与治疗原始资料准确保存和回读",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14", "V55"
+      ]
+    },
+    {
+      "id": "FR-03",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.3节；F05/G03",
+      "outcome": "历次资料、准确时间与来源可查",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V16"
+      ]
+    },
+    {
+      "id": "FR-04",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.4节；F06/F10/G06",
+      "outcome": "分类条件按固定合格输入与批准规则执行",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V18"
+      ]
+    },
+    {
+      "id": "FR-05",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.5节；F12/F10/G06",
+      "outcome": "MS七项完整贡献、总分及缺项处理可复现",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V19"
+      ]
+    },
+    {
+      "id": "FR-06",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.6节；F07/G05",
+      "outcome": "动态预警仅在有效资料与完整批准下形成事件",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V20", "V37", "V50"
+      ]
+    },
+    {
+      "id": "FR-07",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.7节；F08/G05",
+      "outcome": "获准提示及联系可查，渠道与阅读分别记录",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V22",
+        "V23", "V52"
+      ]
+    },
+    {
+      "id": "FR-08",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.8节；F11/G02/G03/G06",
+      "outcome": "更正和核对撤销立即阻止旧依据作为当前结果",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V24"
+      ]
+    },
+    {
+      "id": "FR-09",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.9节；F01/F11/G01/G06",
+      "outcome": "资料用途、权限、审计和逐对象处置可核查",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V03",
+        "V26",
+        "V29", "V56"
+      ]
+    },
+    {
+      "id": "FR-10",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.10节；F02/F03/F06/F12/G06",
+      "outcome": "只有准确字段版本获得专业核对资格",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V17", "V49"
+      ]
+    },
+    {
+      "id": "FR-11",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.11节；F09/G04",
+      "outcome": "就医摘要保留获准范围、时间、来源及当前有效性",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V25"
+      ]
+    },
+    {
+      "id": "FR-12",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.12节；F06/F07/F08/F12/G05",
+      "outcome": "准确批准文字和字段范围用于全部家庭出口",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V21", "V51"
+      ]
+    },
+    {
+      "id": "H5",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md 第8.18和12.3节；E08/CR-10",
+      "outcome": "实际手机的完整输入、恢复、提交和隐私连续性",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V05",
+        "V08",
+        "V30", "V58"
+      ]
+    },
+    {
+      "id": "UI",
+      "source_ref": "../ui-delivery/v2/requirements-review.md；UI2-01—UI2-39；FRONT第3节",
+      "outcome": "继承公共角色、品牌、三维组件和完整页面布局",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V07", "V38", "V54"
+      ]
+    },
+    {
+      "id": "VOICE",
+      "source_ref": "../ui-delivery/assumptions-and-open-questions.md A22；HLD C01；FRONT-Q16",
+      "outcome": "真实口述经本人确认后作为自报说明保存",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V15"
+      ]
+    },
+    {
+      "id": "CASE",
+      "source_ref": "../sJIA合并MAS预警平台数据LLD.md 第6节；BACK第3.2节",
+      "outcome": "完整病例领域和来源可导入并逐值回读",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V27", "V39"
+      ]
+    },
+    {
+      "id": "OPS",
+      "source_ref": "../sJIA合并MAS预警平台HLD.md 第3/7/8节；PRD NFR-04/07/08/09/10",
+      "outcome": "环境、持久化、配置、任务和恢复有实际运行证据",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V01",
+        "V02",
+        "V04",
+        "V06",
+        "V28",
+        "V33", "V34", "V35", "V36"
+      ]
+    },
+    {
+      "id": "PERFORMANCE",
+      "source_ref": "../sJIA合并MAS预警平台PRD.md NFR-06；BQA16；FRONT-Q19",
+      "outcome": "批准容量和目标下真实测量性能及预算",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V31", "V57"
+      ]
+    },
+    {
+      "id": "CLINICAL-EVAL",
+      "source_ref": "../sJIA合并MAS预警平台预警编排LLD.md 第7节；EVAL-01—EVAL-05",
+      "outcome": "独立临床答案、时点回放和家庭理解有完整证据",
+      "disposition": "IN_SCOPE",
+      "acceptance_ids": [
+        "V32", "V59"
+      ]
+    },
+    {"id":"FR-13","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.1；GR-01","outcome":"逐项事实保留医学时间、精度、原文、语境及来源","disposition":"IN_SCOPE","acceptance_ids":["V41"]},
+    {"id":"FR-14","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.2；GR-02","outcome":"批次逐页接收、处理、恢复、取消与预算可查","disposition":"IN_SCOPE","acceptance_ids":["V42"]},
+    {"id":"FR-15","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.3；GR-03","outcome":"文书分类和多次就诊归组准确保存与修订","disposition":"IN_SCOPE","acceptance_ids":["V43"]},
+    {"id":"FR-16","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.4；GR-04","outcome":"重复资料与独立采样关系可核对并使依赖失效","disposition":"IN_SCOPE","acceptance_ids":["V44"]},
+    {"id":"FR-17","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.5；GR-05","outcome":"按就诊目录和确认文本查找到准确原件","disposition":"IN_SCOPE","acceptance_ids":["V45"]},
+    {"id":"FR-18","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.6；GR-06","outcome":"新增内容和变化具有明确基准及逐条来源","disposition":"IN_SCOPE","acceptance_ids":["V46"]},
+    {"id":"FR-19","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.7；GR-07","outcome":"观察时段和真实采样间隔用于当前合格评估","disposition":"IN_SCOPE","acceptance_ids":["V47"]},
+    {"id":"FR-20","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.8；GR-08","outcome":"真实清单及评价集合具有用途、分母、患儿划分和独立答案","disposition":"IN_SCOPE","acceptance_ids":["V48"]},
+    {"id":"FR-21","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.9；GR-09","outcome":"原始资料和用途副本经过有效处理及人工复核后使用","disposition":"IN_SCOPE","acceptance_ids":["V40"]},
+    {"id":"FR-22","source_ref":"../sJIA合并MAS预警平台PRD.md 8.19.10；GR-10","outcome":"本人自主设置、暂停、延后和关闭资料提醒","disposition":"IN_SCOPE","acceptance_ids":["V53"]},
+    {"id":"COMPETITION","source_ref":"../sJIA合并MAS预警平台PRD.md AC-COMP-01；../参赛优化迭代方案.md OPT-04/05/10","outcome":"官方要求、真实演示及价值陈述具有对应证据与指定交付结果","disposition":"IN_SCOPE","acceptance_ids":["V60"]}
+  ],
+  "acceptances": [
+    {
+      "id": "V01",
+      "commitment_id": "OPS",
+      "scenario": "在明确归属的开发环境接收设计并启动实际依赖",
+      "expected_result": "版本、数据库、端口、持久目录、配置与禁用能力准确；未提供配置不能启用",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T01",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "STALE",
+      "evidence_ids": [
+        "EVID-T01"
+      ],
+      "consumer": {
+        "required": true,
+        "description": "T02与T07使用实际环境和依赖",
+        "check_id": "CHECK-T01"
+      }
+    },
+    {
+      "id": "V02",
+      "commitment_id": "OPS",
+      "scenario": "在目标PostgreSQL 17执行迁移、约束和查询核验",
+      "expected_result": "89张业务及运行表和Session结构正确；空库与有数据迁移范围分别记录",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T02",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "STALE",
+      "evidence_ids": [
+        "EVID-T02"
+      ],
+      "consumer": {
+        "required": true,
+        "description": "ORM与领域查询读取准确结构；真实病例回读另由T27验证",
+        "check_id": "CHECK-T02"
+      }
+    },
+    {
+      "id": "V03",
+      "commitment_id": "FR-09",
+      "scenario": "实际获准主体访问同一资源并执行跨患儿、岗位和字段拒绝",
+      "expected_result": "授权范围正确、临床字段按当前策略、审计持久回读；普通管理员无病例权限",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T03",
+          "kind": "BUSINESS"
+        },
+        {
+          "id": "SEC-T03",
+          "kind": "SECURITY"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "各API与Worker实际使用同一授权和投影能力",
+        "check_id": "CHECK-T03"
+      }
+    },
+    {
+      "id": "V04",
+      "commitment_id": "OPS",
+      "scenario": "保存真实来源、用途、字段、字典和运行配置后消费并停用",
+      "expected_result": "准确版本和批准被执行，未知Schema/单位拒绝，loaded_config_version与行为相符",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T04",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "实际字段服务与归一化、运行进程采用准确配置",
+        "check_id": "CHECK-T04"
+      }
+    },
+    {
+      "id": "V05",
+      "commitment_id": "H5",
+      "scenario": "实际写入响应中断、同键重放、代次过期和迟到请求竞争",
+      "expected_result": "唯一业务效果，异内容拒绝，unknown查询原意图，成功资源可重新读取",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T05",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "家庭提交协调器和实际业务写入接收请求状态",
+        "check_id": "CHECK-T05"
+      }
+    },
+    {
+      "id": "V06",
+      "commitment_id": "OPS",
+      "scenario": "实际Broker与Worker重复投递、中断、租约过期及取消",
+      "expected_result": "Outbox与业务一致，旧代次不能提交，真实终态与预算可查，未知外部副作用不盲目重放",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T06",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "OCR、评估、摘要和通知实际消费任务且重新读取结果",
+        "check_id": "CHECK-T06"
+      }
+    },
+    {
+      "id": "V07",
+      "commitment_id": "UI",
+      "scenario": "现有公共组件在全部页面检查Token、导航、样式和键盘操作",
+      "expected_result": "语义Token及品牌资产正确，控件可达、触控尺寸达标；视觉比较保持NOT_RUN",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T07",
+          "kind": "STATIC"
+        }
+      ],
+      "status": "STALE",
+      "evidence_ids": [
+        "EVID-T07"
+      ],
+      "consumer": {
+        "required": false,
+        "description": "公开布局与资产的静态及DOM检查；真实业务内容由T30复验"
+      }
+    },
+    {
+      "id": "V08",
+      "commitment_id": "H5",
+      "scenario": "接收真实协议并检查路由、上下文、提交与任务状态协调",
+      "expected_result": "DTO/Schema完整，当前身份与资源连续，页面不持久保存病例；真实登录组合由T09/T29验证",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T08",
+          "kind": "STATIC"
+        }
+      ],
+      "status": "STALE",
+      "evidence_ids": [
+        "EVID-T08"
+      ],
+      "consumer": {
+        "required": false,
+        "description": "公共前端基础结构检查；业务消费责任继续映射至功能工单和T29"
+      }
+    },
+    {
+      "id": "V09",
+      "commitment_id": "FR-01",
+      "scenario": "真实Provider登录、本人申请、获准核验、多人访问与撤销",
+      "expected_result": "CSRF与Session轮换、关联版本检查正确，待核验与撤销无病例内容，审计重读",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T09",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T09",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "监护人通过实际H5进入获准患儿并读取资料",
+        "check_id": "CHECK-T09"
+      }
+    },
+    {
+      "id": "V10",
+      "commitment_id": "FR-02",
+      "scenario": "真实家庭观察和获准字段从S04保存并打开服务器记录",
+      "expected_result": "原值、零与缺项、单位、时间精度、来源一致且保持自报和未核对",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T10",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "记录详情和后续查询使用保存的准确版本",
+        "check_id": "CHECK-T10"
+      }
+    },
+    {
+      "id": "V11",
+      "commitment_id": "FR-02",
+      "scenario": "实际输入失焦、连续编辑、刷新、恢复、放弃与正式提交",
+      "expected_result": "草稿写入串行、saved_at准确、本人患儿隔离，草稿不进入临床或正式查询",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T11",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "全部登记和更正表单恢复准确草稿并唯一提交",
+        "check_id": "CHECK-T11"
+      }
+    },
+    {
+      "id": "V12",
+      "commitment_id": "FR-02",
+      "scenario": "获准真实原件上传、重排、替换、Range读取和撤权",
+      "expected_result": "文件摘要和对象版本一致，未知PUT查原对象，每次读取授权，原件缺失准确失败",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T12",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T12",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "家庭原图查看与专业核对取得准确授权字节",
+        "check_id": "CHECK-T12"
+      }
+    },
+    {
+      "id": "V13",
+      "commitment_id": "FR-02",
+      "scenario": "真实OCR处理获准多页报告，本人逐项确认后保存",
+      "expected_result": "候选和位置正确，原值/比较符/单位/时间可回读，换组拒绝旧候选，确认不授予核对",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T13",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T13",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "正式报告、原件和来源用于详情及专业核对",
+        "check_id": "CHECK-T13"
+      }
+    },
+    {
+      "id": "V14",
+      "commitment_id": "FR-02",
+      "scenario": "真实治疗资料经照片确认或家庭记录保存并重新读取",
+      "expected_result": "原药名、状态、时间与完整原件一致；未知结束不推断持续，专业类别无家庭赋值",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T14",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "治疗详情、专业核对和摘要读取同一来源事实",
+        "check_id": "CHECK-T14"
+      }
+    },
+    {
+      "id": "V15",
+      "commitment_id": "VOICE",
+      "scenario": "实际普通话采集、拒绝、取消、超时、后台停止与确认文字",
+      "expected_result": "同源录音在服务内存转写且不持久保存；文字与Ark候选经本人确认后保存，数值与专业症状不自动赋值",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T15",
+          "kind": "BUSINESS"
+        },
+        {
+          "id": "EXT-T15",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "症状表单采用确认文字并从正式记录重新读取",
+        "check_id": "CHECK-T15"
+      }
+    },
+    {
+      "id": "V16",
+      "commitment_id": "FR-03",
+      "scenario": "实际记录执行时间筛选、历次比较、历史目录、来源跳转与游标过期",
+      "expected_result": "真实精度和来源版本完整，冲突/未知不可比较，目录准确绑定medical_time_id，当前授权重查",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T16",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "监护人从列表和历史目录进入准确原始版本",
+        "check_id": "CHECK-T16"
+      }
+    },
+    {
+      "id": "V17",
+      "commitment_id": "FR-10",
+      "scenario": "获准核对人检查实际原件并核对指定字段，执行撤销及更正竞争",
+      "expected_result": "准确版本/字段/用途取得证明，原来源不变，其他字段无资格，旧证明不能用于新版本",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T17",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "评估选值只使用有效指定字段核对",
+        "check_id": "CHECK-T17"
+      }
+    },
+    {
+      "id": "V18",
+      "commitment_id": "FR-04",
+      "scenario": "批准策略与真实边界资料执行分类并对照独立Gold",
+      "expected_result": "比较符、三值、适用前提、限定值和缺项正确；资格撤销后原值不可采用",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T18",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EVAL-T18",
+          "kind": "EVAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "受控核查可重现分类来源，家庭投影执行独立批准",
+        "check_id": "CHECK-T18"
+      }
+    },
+    {
+      "id": "V19",
+      "commitment_id": "FR-05",
+      "scenario": "固定真实七项计算MS并比较独立贡献和总分",
+      "expected_result": "Decimal及未舍入阈值比较正确，任何必需项未知无完整评分，治疗背景准确",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T19",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EVAL-T19",
+          "kind": "EVAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "授权人员回查七项证据，获准规则消费独立MS输出",
+        "check_id": "CHECK-T19"
+      }
+    },
+    {
+      "id": "V20",
+      "commitment_id": "FR-06",
+      "scenario": "真实连续资料按批准窗口和组合运行current/replay及乱序重复任务",
+      "expected_result": "完整PairResult、三值、持续周期、reset和序号正确，unknown不关闭周期，replay不发布",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T20",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EVAL-T20",
+          "kind": "EVAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "发布服务仅采用当前合格评估和明确触发决定",
+        "check_id": "CHECK-T20"
+      }
+    },
+    {
+      "id": "V21",
+      "commitment_id": "FR-12",
+      "scenario": "真实配置完成保存、批准、验证、启用、停用并读取各家庭出口",
+      "expected_result": "准确checksum和独立批准有效，缺依赖拒绝，未批准字段不存在，联系过期立即限制使用",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T21",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "首页、详情、历史、摘要和通知读取当前批准组合",
+        "check_id": "CHECK-T21"
+      }
+    },
+    {
+      "id": "V22",
+      "commitment_id": "FR-07",
+      "scenario": "家庭打开实际首页、有效提示、来源、联系，执行预加载与重复打开",
+      "expected_result": "当前事件按准确ID，资料不足与有效事件并存，clear有当前评估，只有真实阅读记录首次read_at",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T22",
+          "kind": "BUSINESS"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "监护人按当前授权查看批准文字与准确依据",
+        "check_id": "CHECK-T22"
+      }
+    },
+    {
+      "id": "V23",
+      "commitment_id": "FR-07",
+      "scenario": "指定获准接收对象通过真实渠道验证发送、未知受理、回执与撤销竞争",
+      "expected_result": "发送唯一、签名有效、未知先查询，accepted/delivered/read独立，撤销后不开始新发送",
+      "outcome_type": "EXTERNAL",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T23",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T23",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "实际接收人和家庭页面消费真实渠道事实",
+        "check_id": "EXT-T23"
+      }
+    },
+    {
+      "id": "V24",
+      "commitment_id": "FR-08",
+      "scenario": "两个实际会话更正同一版本并与核对撤销和Worker提交竞争",
+      "expected_result": "当前版本唯一，新字段未核对，旧评估/提示/摘要失效，历史保留，专业申请独立",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T24",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "家庭当前读取和任务采用阻止旧依据，摘要组合由T25/T29复验",
+        "check_id": "CHECK-T24"
+      }
+    },
+    {
+      "id": "V25",
+      "commitment_id": "FR-11",
+      "scenario": "按真实患儿和时间范围生成摘要，回查来源并新增、更正、撤权",
+      "expected_result": "范围、时区、原值、缺项和准确引用一致，旧摘要需重新生成，隐藏结果和过期联系不返回",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T25",
+          "kind": "BUSINESS"
+        },
+        {
+          "id": "CHECK-T25-SCOPE",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": ["EVID-T25-SCOPE"],
+      "consumer": {
+        "required": true,
+        "description": "监护人在H5查看就医沟通资料并返回准确来源",
+        "check_id": "CHECK-T25"
+      }
+    },
+    {
+      "id": "V26",
+      "commitment_id": "FR-09",
+      "scenario": "按批准政策对准确真实对象申请、批准及处置并查询全部副本",
+      "expected_result": "deleted/retained/awaiting_provider有真实依据，未完成副本不标完成，取消关联不等于删除",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T26",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T26",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "本人和受控岗位读取准确处置进度；恢复重放处置登记",
+        "check_id": "CHECK-T26"
+      }
+    },
+    {
+      "id": "V27",
+      "commitment_id": "CASE",
+      "scenario": "获准本地病例经Schema、来源和用途检查导入并查询全部父子实体",
+      "expected_result": "原文/数值/限定值/33项医学时间/来源/附件完整回读，未知保留，clinical_rule_eligible仍false",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T27",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "PASS",
+      "evidence_ids": [
+        "EVID-T27"
+      ],
+      "consumer": {
+        "required": true,
+        "description": "受控病例查询和逐字段家庭投影读取获准事实",
+        "check_id": "CHECK-T27"
+      }
+    },
+    {
+      "id": "V28",
+      "commitment_id": "OPS",
+      "scenario": "真实进程与数据执行隔离、日志、告警及备份恢复核验",
+      "expected_result": "配置实际生效，秘密及病例不进日志，恢复后权限/处置/停用及来源一致，目标单独验收",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T28",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T28",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "恢复服务实际重新读取获准记录，运行人员收到授权测试告警",
+        "check_id": "CHECK-T28"
+      }
+    },
+    {
+      "id": "V29",
+      "commitment_id": "FR-09",
+      "scenario": "全部原始AC和106接口职责使用实际角色、数据和服务执行组合验证",
+      "expected_result": "完整允许和拒绝路径、字段传播、来源、幂等、并发及后续采用逐项有证据",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T29",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "SEC-T29",
+          "kind": "SECURITY"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "家庭与受控支持流程使用真实持久结果完成原始AC",
+        "check_id": "CHECK-T29"
+      }
+    },
+    {
+      "id": "V30",
+      "commitment_id": "H5",
+      "scenario": "全部目标实际手机和浏览器执行AC-H5-01—06及真实语音输入",
+      "expected_result": "核心操作、键盘、网络/后台/历史恢复及账号隔离可用；记录精确设备版本；视觉单独未验收",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T30",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T30",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "实际家庭使用手机完成登记、来源、摘要和有效提示查看",
+        "check_id": "CHECK-T30"
+      }
+    },
+    {
+      "id": "V31",
+      "commitment_id": "PERFORMANCE",
+      "scenario": "批准容量、真实资料和网络下测量前后端与Worker",
+      "expected_result": "p95/p99、连接、字节、内存和真实费用与批准目标比较，未删减权限或字段",
+      "outcome_type": "QUALITY",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T31",
+          "kind": "INTEGRATION"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "指定环境容量和任务调度采用实测预算",
+        "check_id": "CHECK-T31"
+      }
+    },
+    {
+      "id": "V32",
+      "commitment_id": "CLINICAL-EVAL",
+      "scenario": "独立病例按known_at回放并观察获准家庭任务",
+      "expected_result": "EVAL-01—05具备独立答案、完整分母、缺项/分组和不确定范围；无未来资料，阅读不代替结局",
+      "outcome_type": "BUSINESS",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T32",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EVAL-T32",
+          "kind": "EVAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "临床及项目负责人依据真实评价决定准确规则和范围的启用资格",
+        "check_id": "CHECK-T32"
+      }
+    },
+    {
+      "id": "V33",
+      "commitment_id": "OPS",
+      "scenario": "获准指定环境依据制品、配置和完整验收执行交付检查",
+      "expected_result": "服务/数据/Web/临床/渠道分别记录准确状态，运行责任和恢复齐全，全部未完成承诺保留",
+      "outcome_type": "EXTERNAL",
+      "capability": "REAL",
+      "required_checks": [
+        {
+          "id": "CHECK-T33",
+          "kind": "INTEGRATION"
+        },
+        {
+          "id": "EXT-T33",
+          "kind": "EXTERNAL"
+        }
+      ],
+      "status": "NOT_RUN",
+      "evidence_ids": [],
+      "consumer": {
+        "required": true,
+        "description": "指定用户与运行人员使用准确环境，交接知识和恢复入口可核查",
+        "check_id": "EXT-T33"
+      }
+    }
+    ,{"id":"V34","commitment_id":"OPS","scenario":"逐项接收PRD 2.0、UI 2.0、现有代码及证据","expected_result":"当前系统边界、版本、全部FR及未知输入均有维护责任和后续任务","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T34","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T34"],"consumer":{"required":false,"description":"设计接收；后续采用由T35—T38验证"}}
+    ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
+    ,{"id":"V36","commitment_id":"OPS","scenario":"核对家庭与受控API、任务、权限、结果未知和恢复","expected_result":"新增接口及全部调用方具有一致Schema、幂等语义和真实业务终态","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T36","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T36"],"consumer":{"required":false,"description":"接口设计；业务使用由各功能任务验证"}}
+    ,{"id":"V37","commitment_id":"FR-06","scenario":"检查逐事实识别和N00—N11确定性编排设计","expected_result":"来源、输入资格、current/replay及失败状态完整，模型不授予专业资格","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T37","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T37"],"consumer":{"required":false,"description":"算法设计；实际采用由T41、T49、T50验证"}}
+    ,{"id":"V38","commitment_id":"UI","scenario":"逐页接收39页、状态、正式类型、接口、角色及Token","expected_result":"全部页面有正式归属和接口状态，六个受控入口不增加家庭权限","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T38","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T38"],"consumer":{"required":false,"description":"前端设计；实际使用由T54和T56验证"}}
+    ,{"id":"V39","commitment_id":"CASE","scenario":"在获准隔离数据库迁移真实旧资料并恢复和重新读取","expected_result":"数量、原值、来源、核对范围一致，未知时间不补造，重复执行不增加事实","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T39","kind":"INTEGRATION"}],"status":"STALE","evidence_ids":["EVID-T39"],"consumer":{"required":true,"description":"新旧读取服务使用准确迁移后版本","check_id":"CHECK-T39"}}
+    ,{"id":"V40","commitment_id":"FR-21","scenario":"GRAC-09：实际原件生成并复核用途副本，外发、撤销及删除后回读","expected_result":"每次外发具有准确用途、原件、副本与人工复核版本；无效动作拒绝；外部删除有真实结果","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T40-STRUCTURE","kind":"INTEGRATION"},{"id":"CHECK-T40-FRONTEND","kind":"STATIC"},{"id":"CHECK-T40-BROWSER","kind":"INTEGRATION"},{"id":"CHECK-T40-LOCAL-DISPOSITION","kind":"INTEGRATION"},{"id":"CHECK-T40","kind":"INTEGRATION"},{"id":"EXT-T40","kind":"EXTERNAL"}],"status":"NOT_RUN","evidence_ids":["EVID-T40-STRUCTURE","EVID-T40-FRONTEND","EVID-T40-BROWSER","EVID-T40-LOCAL-DISPOSITION"],"consumer":{"required":true,"description":"模型或获准导出实际使用正确用途副本","check_id":"EXT-T40"}}
+    ,{"id":"V41","commitment_id":"FR-13","scenario":"GRAC-01：真实多时点资料经模型、本人修订、采用及重新读取","expected_result":"逐项原值、单位、医学时间、精度、语境和来源一致；未知保留；跨患儿拒绝","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T41","kind":"INTEGRATION"},{"id":"EXT-T41","kind":"EXTERNAL"},{"id":"CHECK-T41-READ","kind":"INTEGRATION"},{"id":"CHECK-T41-LINKS","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T41-READ","EVID-T41-LINKS"],"consumer":{"required":true,"description":"时间轴、摘要和评估输入读取准确字段版本","check_id":"CHECK-T41"}}
+    ,{"id":"V42","commitment_id":"FR-14","scenario":"GRAC-02：真实批次上传、刷新、中断恢复、失败页重试和取消","expected_result":"完成页可恢复，数量不重复，预算与尝试来自真实任务，取消及撤权不开始新执行","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T42","kind":"INTEGRATION"},{"id":"CHECK-T42-BATCH-READ","kind":"INTEGRATION"},{"id":"CHECK-T42-BATCH-WRITE","kind":"INTEGRATION"},{"id":"CHECK-T42-PAGE-ORDER","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T42-BATCH-READ","EVID-T42-BATCH-WRITE","EVID-T42-PAGE-ORDER"],"consumer":{"required":true,"description":"家庭重新打开批次后取得原件和准确逐页结果","check_id":"CHECK-T42"}}
+    ,{"id":"V43","commitment_id":"FR-15","scenario":"GRAC-03：实际文书分类、多就诊归组、修订及回读","expected_result":"页面、文书和事实来源完整，未知明确，合法更正产生版本并使依赖失效","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T43","kind":"INTEGRATION"},{"id":"EXT-T43","kind":"EXTERNAL"},{"id":"CHECK-T43-DOCUMENT-READ","kind":"INTEGRATION"},{"id":"CHECK-T43-DOCUMENT-GROUPING","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T43-DOCUMENT-READ","EVID-T43-DOCUMENT-GROUPING"],"consumer":{"required":true,"description":"目录与事实详情采用本人确认的就诊关系","check_id":"CHECK-T43"}}
+    ,{"id":"V44","commitment_id":"FR-16","scenario":"GRAC-04：真实重复照片、引用、独立采样和更正关系确认及解除","expected_result":"同次采样不增加次数，独立检查保留，关系解除使依赖失效，跨患儿不披露文件存在","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T44","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"连续资料集合和时间轴使用准确采样关系","check_id":"CHECK-T44"}}
+    ,{"id":"V45","commitment_id":"FR-17","scenario":"GRAC-05：从长期档案按医院、就诊、时间和确认文本查找原件","expected_result":"匹配片段与原件一致，分页无重复遗漏，更正和撤权后不返回无效结果","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T45","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"家庭实际打开指定来源文书和页面","check_id":"CHECK-T45"}}
+    ,{"id":"V46","commitment_id":"FR-18","scenario":"GRAC-06：两次真实提交与明确基准生成新增内容并回查来源","expected_result":"新增和变化逐条有依据，重复不构成病情变化，无基准或失效内容明确限制","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T46","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"家庭摘要显示正确版本并可以返回原件","check_id":"CHECK-T46"}}
+    ,{"id":"V47","commitment_id":"FR-19","scenario":"GRAC-07：高频与稀疏真实采样查看、排序和形成评估集合","expected_result":"实际时间及间隔正确，未知和过期保留原因，不以上传时间替代或输出无依据安全结论","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T47","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"评估集合实际采用获准窗口内的独立采样","check_id":"CHECK-T47"}}
+    ,{"id":"V48","commitment_id":"FR-20","scenario":"GRAC-08：实际资料清单分用途统计、划分患儿并冻结版本","expected_result":"文件、页面、文书、患儿、事件及观察范围可重算，未知标签和用途不符限制使用","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T48","kind":"INTEGRATION"},{"id":"CHECK-T48-SOURCE-INVENTORY","kind":"INTEGRATION"},{"id":"CHECK-T48-SOURCE-PROOF","kind":"INTEGRATION"},{"id":"CHECK-T48-DATASET-API","kind":"INTEGRATION"},{"id":"CHECK-T48-SHARED","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T48-SOURCE-INVENTORY","EVID-T48-SOURCE-PROOF","EVID-T48-DATASET-API","EVID-T48-SHARED"],"consumer":{"required":true,"description":"受控评价入口读取正确冻结清单、独立答案和患儿划分","check_id":"CHECK-T48"}}
+    ,{"id":"V49","commitment_id":"FR-10","scenario":"AC-04/05/10：真实字段完成专业核对后按批准版本计算分类及MS","expected_result":"逐项贡献与独立答案一致，缺资格不得计算采用，更正或撤销使旧结果失效","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T49","kind":"INTEGRATION"},{"id":"EVAL-T49","kind":"EVAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"受控评估和获准下游读取准确合格输入及结果","check_id":"CHECK-T49"}}
+    ,{"id":"V50","commitment_id":"FR-06","scenario":"AC-DYN-01—05：真实连续事实运行四种组合、重复、乱序、恢复及历史回放","expected_result":"输入、周期及事件可追溯；较早或失效任务不覆盖当前结果；replay不使用未来资料且无家庭副作用","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T50","kind":"INTEGRATION"},{"id":"EVAL-T50","kind":"EVAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"当前评估被获准家庭投影及事件服务准确采用","check_id":"CHECK-T50"}}
+    ,{"id":"V51","commitment_id":"FR-12","scenario":"AC-12：内容保存、批准、验证、启用及停用后检查全部家庭出口","expected_result":"准确批准版本生效，缺条件拒绝启用，停用限制首页、历史、摘要和通知的当前采用","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T51","kind":"INTEGRATION"},{"id":"CHECK-T51-RELEASE-READ","kind":"INTEGRATION"},{"id":"CHECK-T51-CONTACT-LIFECYCLE","kind":"INTEGRATION"},{"id":"CHECK-T51-CONTROLLED-RECOVERY","kind":"INTEGRATION"},{"id":"CHECK-T51-CONFIG-LIFECYCLE","kind":"INTEGRATION"},{"id":"CHECK-T51-CONFIG-CONSUMPTION","kind":"INTEGRATION"},{"id":"CHECK-T51-ARCHIVE-QUOTA","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T51-RELEASE-READ","EVID-T51-CONTACT-LIFECYCLE","EVID-T51-CONTROLLED-RECOVERY","EVID-T51-CONFIG-LIFECYCLE","EVID-T51-CONFIG-CONSUMPTION","EVID-T51-ARCHIVE-QUOTA"],"consumer":{"required":true,"description":"首页、详情、摘要和通知消费同一当前有效发布版本","check_id":"CHECK-T51"}}
+    ,{"id":"V52","commitment_id":"FR-07","scenario":"AC-NOTIFY-01/02：获准账号通过真实渠道接收并打开通知，未知结果查询和撤权","expected_result":"受理、送达、阅读各有证据，重复不增通知，过期许可与撤权禁止新发送和越权读取","outcome_type":"EXTERNAL","capability":"REAL","required_checks":[{"id":"CHECK-T52","kind":"INTEGRATION"},{"id":"EXT-T52","kind":"EXTERNAL"},{"id":"CHECK-T52-NOTIFICATION-BOUNDARY","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T52-NOTIFICATION-BOUNDARY"],"consumer":{"required":true,"description":"获准接收人实际收到并打开当前有效详情","check_id":"EXT-T52"}}
+    ,{"id":"V53","commitment_id":"FR-22","scenario":"GRAC-10：本人设置、到期、暂停、延后、关闭、完成及撤权","expected_result":"只产生本人资料提醒且无重复；停止条件后不开始新发送；不改变任何临床状态","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T53","kind":"INTEGRATION"},{"id":"EXT-T53","kind":"EXTERNAL"},{"id":"CHECK-T53-REMINDER-READ","kind":"INTEGRATION"},{"id":"CHECK-T53-REMINDER-WRITE","kind":"INTEGRATION"},{"id":"CHECK-T53-REMINDER-SCHEDULE","kind":"UNIT"},{"id":"CHECK-T53-REMINDER-TARGETS","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T53-REMINDER-READ","EVID-T53-REMINDER-WRITE","EVID-T53-REMINDER-SCHEDULE","EVID-T53-REMINDER-TARGETS"],"consumer":{"required":true,"description":"本人实际收到提醒并打开有权访问的目标任务","check_id":"EXT-T53"}}
+    ,{"id":"V54","commitment_id":"UI","scenario":"39页归属与UI2公共界面接入后实际操作既有家庭流程","expected_result":"导航、原图、语音、草稿、历史及摘要持续可用，状态来自真实服务；窄屏和文字放大可操作","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T54","kind":"INTEGRATION"},{"id":"STATIC-T54","kind":"STATIC"},{"id":"STATIC-T54-PARTIAL","kind":"STATIC"},{"id":"CHECK-T54-DOM","kind":"INTEGRATION"},{"id":"CHECK-T54-REMINDERS-DOM","kind":"INTEGRATION"},{"id":"CHECK-T54-REMINDER-TIME","kind":"STATIC"},{"id":"CHECK-T54-RECORD-SEARCH","kind":"INTEGRATION"},{"id":"CHECK-T54-FAMILY-READ","kind":"INTEGRATION"},{"id":"CHECK-T54-APPLICATION-PERSISTENCE","kind":"INTEGRATION"},{"id":"CHECK-T54-SUMMARY-READ","kind":"INTEGRATION"},{"id":"CHECK-T54-ORIGINAL-SOURCE","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":["EVID-T54-STATIC-PARTIAL","EVID-T54-DOM","EVID-T54-REMINDERS-DOM","EVID-T54-REMINDER-TIME","EVID-T54-RECORD-SEARCH","EVID-T54-FAMILY-READ","EVID-T54-APPLICATION-PERSISTENCE","EVID-T54-SUMMARY-READ","EVID-T54-ORIGINAL-SOURCE"],"consumer":{"required":true,"description":"家庭及获准支持人员实际使用对应页面并重新读取结果","check_id":"CHECK-T54"}}
+    ,{"id":"V55","commitment_id":"FR-02","scenario":"AC-AI-01：真实报告与授权录音调用实际模型，核对候选、本人采用和保存","expected_result":"逐字段正确错误及未覆盖可追溯，耗时成本真实；独立原文答案与运行版本明确","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T55","kind":"INTEGRATION"},{"id":"EXT-T55","kind":"EXTERNAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"保存后的字段和来源被时间轴及后续资料服务准确读取","check_id":"CHECK-T55"}}
+    ,{"id":"V56","commitment_id":"FR-09","scenario":"从真实家庭与受控入口逐项执行原始AC及全部GRAC并检查权限","expected_result":"全部适用业务回读与后续使用一致，合法及拒绝路径分别有证据，原始未完成验收保留","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T56","kind":"INTEGRATION"},{"id":"SEC-T56","kind":"SECURITY"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"全部业务消费方在更正、撤权和停用后采用当前合法版本","check_id":"CHECK-T56"}}
+    ,{"id":"V57","commitment_id":"PERFORMANCE","scenario":"固定真实工作量测量容量、费用、实际中断和隔离恢复","expected_result":"P95/P99、失败率、预算、RTO/RPO按确认目标达标；恢复后引用完整且无无效发送","outcome_type":"QUALITY","capability":"REAL","required_checks":[{"id":"CHECK-T57","kind":"INTEGRATION"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"恢复后的真实服务读取一致资料并按有效权限继续任务","check_id":"CHECK-T57"}}
+    ,{"id":"V58","commitment_id":"H5","scenario":"AC-H5-01—06和AC-UX-01在实际手机、微信及获准家庭任务中执行","expected_result":"输入、返回、后台、权限、语音及摘要可用；完成耗时、协助和误解来自真实观察","outcome_type":"EXTERNAL","capability":"REAL","required_checks":[{"id":"CHECK-T58","kind":"INTEGRATION"},{"id":"EXT-T58","kind":"EXTERNAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"真实家庭完成后续查找、联系入口及就医摘要任务","check_id":"EXT-T58"}}
+    ,{"id":"V59","commitment_id":"CLINICAL-EVAL","scenario":"AC-EVAL-01及EVAL-01—05：固定版本按患儿划分并使用独立答案评价","expected_result":"静态动态对照、分母、时点、提示负担及未覆盖完整，无未来信息和验证资料参与调参","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T59","kind":"INTEGRATION"},{"id":"EVAL-T59","kind":"EVAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"受控报告逐条回查实际输入、独立答案与结果；家庭理解关联T58证据","check_id":"CHECK-T59"}}
+    ,{"id":"V60","commitment_id":"COMPETITION","scenario":"AC-COMP-01：按官方要求核对获准演示、提交材料与指定环境","expected_result":"所有要求和价值陈述有来源，真实流程及运行交接完整，未验收能力准确标记","outcome_type":"EXTERNAL","capability":"REAL","required_checks":[{"id":"CHECK-T60","kind":"INTEGRATION"},{"id":"EXT-T60","kind":"EXTERNAL"}],"status":"NOT_RUN","evidence_ids":[],"consumer":{"required":true,"description":"指定演示与交付环境使用固定制品、正确权限和获准资料","check_id":"EXT-T60"}}
+  ],
+  "tasks": [
+    {
+      "id": "T01",
+      "acceptance_ids": [
+        "V01"
+      ],
+      "depends_on": [],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/",
+        "deploy/",
+        ".gitignore",
+        "planning/environment.json",
+        "docs/development/T01.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T02",
+      "acceptance_ids": [
+        "V02"
+      ],
+      "depends_on": [
+        "T01"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/",
+        "tests/database/",
+        "docs/development/T02.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T03",
+      "acceptance_ids": [
+        "V03"
+      ],
+      "depends_on": [
+        "T02"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/authorization/",
+        "backend/identity/",
+        "backend/audit/",
+        "backend/family_content/",
+        "backend/tests/",
+        "docs/development/T03.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T04",
+      "acceptance_ids": [
+        "V04"
+      ],
+      "depends_on": [
+        "T03"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/configurations/",
+        "backend/sources/",
+        "backend/dictionaries/",
+        "backend/support/",
+        "backend/tests/",
+        "docs/development/T04.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T05",
+      "acceptance_ids": [
+        "V05"
+      ],
+      "depends_on": [
+        "T03"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/requests/",
+        "backend/tests/",
+        "docs/development/T05.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T06",
+      "acceptance_ids": [
+        "V06"
+      ],
+      "depends_on": [
+        "T04",
+        "T05"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/tasks/",
+        "backend/tests/",
+        "deploy/",
+        "docs/development/T06.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T07",
+      "acceptance_ids": [
+        "V07"
+      ],
+      "depends_on": [
+        "T01"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "guardian-h5/src/components/",
+        "guardian-h5/src/styles/",
+        "guardian-h5/src/app/Layout.tsx",
+        "guardian-h5/public/",
+        "guardian-h5/tests/",
+        "docs/development/T07.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T08",
+      "acceptance_ids": [
+        "V08"
+      ],
+      "depends_on": [
+        "T03",
+        "T05",
+        "T07"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "guardian-h5/src/api/",
+        "guardian-h5/src/state/",
+        "guardian-h5/src/app/",
+        "guardian-h5/src/main.tsx",
+        "guardian-h5/src/components/",
+        "guardian-h5/package.json",
+        "guardian-h5/package-lock.json",
+        "guardian-h5/tests/",
+        "docs/development/T08.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T09",
+      "acceptance_ids": [
+        "V09"
+      ],
+      "depends_on": [
+        "T04",
+        "T08"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/identity/",
+        "backend/relations/",
+        "backend/support/",
+        "backend/tests/",
+        "guardian-h5/src/features/account/",
+        "guardian-h5/src/features/association/",
+        "guardian-h5/tests/",
+        "docs/development/T09.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T10",
+      "acceptance_ids": [
+        "V10"
+      ],
+      "depends_on": [
+        "T04",
+        "T05",
+        "T08"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/records/",
+        "backend/medical_time/",
+        "backend/tests/",
+        "guardian-h5/src/features/registration/ObservationsPage.tsx",
+        "guardian-h5/src/features/records/RecordDetailPage.tsx",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T10.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T11",
+      "acceptance_ids": [
+        "V11"
+      ],
+      "depends_on": [
+        "T10"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/drafts/",
+        "backend/tests/",
+        "guardian-h5/src/state/",
+        "guardian-h5/src/features/",
+        "guardian-h5/tests/",
+        "docs/development/T11.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T12",
+      "acceptance_ids": [
+        "V12"
+      ],
+      "depends_on": [
+        "T06",
+        "T08"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/files/",
+        "backend/tests/",
+        "guardian-h5/src/components/",
+        "guardian-h5/src/features/registration/",
+        "guardian-h5/tests/",
+        "docs/development/T12.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T13",
+      "acceptance_ids": [
+        "V13"
+      ],
+      "depends_on": [
+        "T10",
+        "T12"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/recognition/",
+        "backend/records/",
+        "backend/tests/",
+        "guardian-h5/src/features/registration/ReportsPage.tsx",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T13.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T14",
+      "acceptance_ids": [
+        "V14"
+      ],
+      "depends_on": [
+        "T13"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/records/",
+        "backend/tests/",
+        "guardian-h5/src/features/registration/TherapiesPage.tsx",
+        "guardian-h5/tests/",
+        "docs/development/T14.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T15",
+      "acceptance_ids": [
+        "V15"
+      ],
+      "depends_on": [
+        "T10"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "guardian-h5/src/features/registration/ObservationsPage.tsx",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T15.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T16",
+      "acceptance_ids": [
+        "V16"
+      ],
+      "depends_on": [
+        "T10",
+        "T12"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/records/",
+        "backend/family_content/",
+        "backend/tests/",
+        "guardian-h5/src/features/records/",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T16.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T17",
+      "acceptance_ids": [
+        "V17"
+      ],
+      "depends_on": [
+        "T10",
+        "T12"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/verification/",
+        "backend/records/",
+        "backend/support/",
+        "backend/tests/",
+        "docs/development/T17.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T18",
+      "acceptance_ids": [
+        "V18"
+      ],
+      "depends_on": [
+        "T06",
+        "T17"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/assessment/",
+        "backend/support/",
+        "backend/tests/",
+        "tests/clinical/",
+        "docs/development/T18.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T19",
+      "acceptance_ids": [
+        "V19"
+      ],
+      "depends_on": [
+        "T06",
+        "T17"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/assessment/",
+        "backend/support/",
+        "backend/tests/",
+        "tests/clinical/",
+        "docs/development/T19.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T20",
+      "acceptance_ids": [
+        "V20"
+      ],
+      "depends_on": [
+        "T06",
+        "T17"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/alerting/",
+        "backend/support/",
+        "backend/tests/",
+        "tests/clinical/",
+        "docs/development/T20.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T21",
+      "acceptance_ids": [
+        "V21"
+      ],
+      "depends_on": [
+        "T06"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/family_content/",
+        "backend/configurations/",
+        "backend/contacts/",
+        "backend/support/",
+        "backend/tests/",
+        "docs/development/T21.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T22",
+      "acceptance_ids": [
+        "V22"
+      ],
+      "depends_on": [
+        "T16",
+        "T20",
+        "T21"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/family_content/",
+        "backend/alerting/",
+        "backend/tests/",
+        "guardian-h5/src/features/home/",
+        "guardian-h5/src/features/alerts/",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T22.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T23",
+      "acceptance_ids": [
+        "V23"
+      ],
+      "depends_on": [
+        "T22"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/notifications/",
+        "backend/tests/",
+        "deploy/",
+        "docs/development/T23.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T24",
+      "acceptance_ids": [
+        "V24"
+      ],
+      "depends_on": [
+        "T11",
+        "T17",
+        "T20",
+        "T21"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/records/",
+        "backend/verification/",
+        "backend/dependencies/",
+        "backend/tests/",
+        "guardian-h5/src/features/records/",
+        "guardian-h5/tests/",
+        "docs/development/T24.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T25",
+      "acceptance_ids": [
+        "V25"
+      ],
+      "depends_on": [
+        "T16",
+        "T21"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/summaries/",
+        "backend/tests/",
+        "guardian-h5/src/features/summaries/",
+        "guardian-h5/src/components/",
+        "guardian-h5/tests/",
+        "docs/development/T25.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T26",
+      "acceptance_ids": [
+        "V26"
+      ],
+      "depends_on": [
+        "T12",
+        "T24"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/retention/",
+        "backend/support/",
+        "backend/tests/",
+        "guardian-h5/src/features/account/AccountPage.tsx",
+        "guardian-h5/tests/",
+        "docs/development/T26.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T27",
+      "acceptance_ids": [
+        "V27"
+      ],
+      "depends_on": [
+        "T06",
+        "T12"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/case_details/",
+        "backend/tests/",
+        "tests/integration/",
+        "docs/development/T27.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T28",
+      "acceptance_ids": [
+        "V28"
+      ],
+      "depends_on": [
+        "T06",
+        "T12"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "deploy/",
+        "backend/observability/",
+        "backend/tests/",
+        "tests/operations/",
+        "docs/development/T28.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T29",
+      "acceptance_ids": [
+        "V29"
+      ],
+      "depends_on": [
+        "T09",
+        "T14",
+        "T18",
+        "T19",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T27",
+        "T28"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "backend/tests/",
+        "guardian-h5/tests/",
+        "tests/integration/",
+        "docs/development/T29.md",
+        "docs/testing/",
+        "backend/verification/",
+        "guardian-h5/scripts/acceptance-design.mjs",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": [
+        "真实服务、D02账号、获准资料及对应配置（D01—D09）"
+      ]
+    },
+    {
+      "id": "T30",
+      "acceptance_ids": [
+        "V30"
+      ],
+      "depends_on": [
+        "T15",
+        "T29"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "guardian-h5/tests/",
+        "tests/devices/",
+        "docs/development/T30.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T31",
+      "acceptance_ids": [
+        "V31"
+      ],
+      "depends_on": [
+        "T29"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "tests/performance/",
+        "deploy/",
+        "docs/development/T31.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T32",
+      "acceptance_ids": [
+        "V32"
+      ],
+      "depends_on": [
+        "T29"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "tests/clinical/",
+        "docs/development/T32.md",
+        "docs/development/index.md",
+        "docs/knowledge/"
+      ],
+      "blockers": []
+    },
+    {
+      "id": "T33",
+      "acceptance_ids": [
+        "V33"
+      ],
+      "depends_on": [
+        "T30",
+        "T31",
+        "T32"
+      ],
+      "state": "IMPLEMENTED",
+      "allowed_paths": [
+        "deploy/",
+        "docs/development/T33.md",
+        "docs/development/index.md",
+        "docs/knowledge/",
+        "planning/"
+      ],
+      "blockers": []
+    }
+    ,{"id":"T34","acceptance_ids":["V34"],"depends_on":[],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台HLD.md","planning/","implementation-tasks.md","2.0迭代计划.md","docs/development/T34.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T35","acceptance_ids":["V35"],"depends_on":["T34"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台数据LLD.md","data-design/","docs/development/T35.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T36","acceptance_ids":["V36"],"depends_on":["T35"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台后端LLD.md","backend-design/","docs/development/T36.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T37","acceptance_ids":["V37"],"depends_on":["T36"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台预警编排LLD.md","alert-design/","docs/development/T37.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T38","acceptance_ids":["V38"],"depends_on":["T36","T37"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台前端LLD.md","sJIA合并MAS预警平台页面流程.md","frontend-design/","docs/development/T38.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T39","acceptance_ids":["V39"],"depends_on":["T35","T36"],"state":"IMPLEMENTED","allowed_paths":["backend/","data-design/","deploy/Dockerfile","docs/development/T39.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T40","acceptance_ids":["V40"],"depends_on":["T39","T36","T38"],"state":"IMPLEMENTED","allowed_paths":["backend/files/","backend/archives/migrations/0003_review_unknown.py","backend/identity/support_session.py","backend/retention/","backend/authorization/","backend/api/","backend/support/","backend/tests/","backend/tasks/","backend/config/","backend/.env.example","backend/configurations/","backend/requests/","backend/recognition/","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_batches.py","backend/requirements.txt","backend/requirements.lock","backend-design/v2-protocol.schema.json","backend-design/v2-api-catalog.csv","backend-design/api-catalog.csv","backend-design/archive-search.schema.json","backend-design/v2-service-behavior.md","backend-design/check_v2.py","frontend-design/v2-types.ts","frontend-design/archive-search-types.ts","frontend-design/api-bindings.csv","frontend-design/v2-routes.csv","guardian-h5/src/","guardian-h5/scripts/","guardian-h5/package.json","guardian-h5/package-lock.json","docs/development/T36.md","docs/development/T38.md","docs/development/T40.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T41","acceptance_ids":["V41"],"depends_on":["T39","T37","T40","T38"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend/recognition/","backend/records/","backend/files/","backend/requests/archive_facts.py","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_batches.py","backend/api/","backend/tests/","backend-design/v2-protocol.schema.json","backend-design/v2-api-catalog.csv","backend-design/v2-field-map.csv","backend-design/v2-service-behavior.md","alert-design/v2-recognition.schema.json","data-design/dataset.schema.json","data-design/v2-data-specification.md","frontend-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T10.md","docs/development/T14.md","docs/development/T24.md","docs/development/T36.md","docs/development/T38.md","docs/development/T41.md","docs/development/T54.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T42","acceptance_ids":["V42"],"depends_on":["T41","T36"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend-design/","frontend-design/","data-design/","backend/files/","backend/tasks/","backend/recognition/","backend/requests/","backend/api/","backend/tests/","backend/configurations/schemas.py","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_batches.py","backend/core/management/commands/run_simulation_archive_pages.py","guardian-h5/src/","guardian-h5/scripts/","docs/development/T42.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T43","acceptance_ids":["V43"],"depends_on":["T41","T38"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend/case_details/","backend/recognition/","backend/records/","backend/dependencies/","backend/requests/archive_documents.py","backend/authorization/policy.py","backend-design/v2-protocol.schema.json","backend-design/v2-api-catalog.csv","frontend-design/v2-types.ts","frontend-design/api-bindings.csv","backend/api/","backend/tests/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T43.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T44","acceptance_ids":["V44"],"depends_on":["T43"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend/records/","backend/recognition/","backend/dependencies/","backend/assessment/","backend/alerting/","backend/verification/service.py","backend/requests/","backend/api/","backend/tests/","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_relations.py","backend-design/","frontend-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T44.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T45","acceptance_ids":["V45"],"depends_on":["T42","T43","T44"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend/records/","backend/case_details/","backend/files/","backend/api/","backend/tests/","backend/core/fields.py","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_archive_search.py","backend-design/","frontend-design/","data-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T45.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T46","acceptance_ids":["V46"],"depends_on":["T45","T44"],"state":"IMPLEMENTED","allowed_paths":["backend/archives/","backend/summaries/","backend/dependencies/","backend/records/","backend/requests/","backend/api/","backend/tests/","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_delta.py","backend-design/","frontend-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T46.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T47","acceptance_ids":["V47"],"depends_on":["T41","T44"],"state":"IMPLEMENTED","allowed_paths":["backend/records/","backend/archives/","backend/requests/","backend/assessment/","backend/alerting/","backend/summaries/delta.py","backend/configurations/schemas.py","backend/configurations/service.py","backend/requirements.txt","backend/core/management/commands/","backend/api/","backend/tests/","backend-design/","frontend-design/","data-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T47.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T48","acceptance_ids":["V48"],"depends_on":["T39","T40"],"state":"IMPLEMENTED","allowed_paths":["data-design/","backend-design/","frontend-design/","backend/case_details/","backend/support/","backend/api/","backend/tests/","backend/requests/evaluation_datasets.py","backend/requests/evaluation_runs.py","backend/files/purpose.py","backend/files/purpose_schemas.py","backend/configurations/evidence.py","backend/configurations/qualification.py","backend/tasks/","backend/archives/migrations/0005_workflow_evaluation.py","guardian-h5/src/","guardian-h5/scripts/","tests/clinical/","docs/development/T48.md","docs/development/T48-shared-integration.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T49","acceptance_ids":["V49"],"depends_on":["T41","T43","T37"],"state":"IMPLEMENTED","allowed_paths":["backend/verification/","backend/assessment/","backend/tasks/","backend/dependencies/","backend/requests/assessments.py","backend/requests/verifications.py","backend/api/","backend/tests/","backend/configurations/schemas.py","backend/configurations/service.py","backend-design/","alert-design/","frontend-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T49.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T50","acceptance_ids":["V50"],"depends_on":["T44","T47","T49","T37"],"state":"IMPLEMENTED","allowed_paths":["backend/alerting/","backend/assessment/","backend/tasks/","backend/dependencies/","backend/api/","backend/tests/","backend/requests/dynamic.py","backend/configurations/schemas.py","backend/configurations/service.py","backend/configurations/lifecycle.py","backend/config/settings/base.py","backend/verification/workflow.py","backend/files/purpose_dependencies.py","backend/archives/inputs.py","backend-design/","alert-design/","frontend-design/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T50.md","docs/development/T49.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T51","acceptance_ids":["V51"],"depends_on":["T36","T37","T38"],"state":"IMPLEMENTED","allowed_paths":["backend/family_content/","backend/configurations/","backend/contacts/","backend/summaries/","backend/api/","backend/requests/","backend/tests/","backend-design/protocol.schema.json","backend-design/publication.schema.json","backend-design/api-catalog.csv","frontend-design/types.ts","frontend-design/api-bindings.csv","guardian-h5/src/","guardian-h5/scripts/","docs/development/T51.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T52","acceptance_ids":["V52"],"depends_on":["T50","T51"],"state":"IMPLEMENTED","allowed_paths":["backend/notifications/","backend/tasks/","backend/api/","backend/requests/","backend/tests/","backend/authorization/actions.py","backend/configurations/schemas.py","backend/configurations/service.py","backend-design/notification.schema.json","backend-design/api-catalog.csv","frontend-design/api-bindings.csv","deploy/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T23.md","docs/development/T51.md","docs/development/T52.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T53","acceptance_ids":["V53"],"depends_on":["T42","T52"],"state":"IMPLEMENTED","allowed_paths":["backend/notifications/","backend/tasks/","backend/drafts/","backend/archives/","backend/requests/","backend/api/","backend/tests/","backend/configurations/","backend/assessment/qualified_facts.py","backend/config/settings/","backend/core/management/commands/seed_simulation.py","data-design/","backend-design/","frontend-design/","deploy/","guardian-h5/src/","guardian-h5/scripts/","docs/development/T53.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T54","acceptance_ids":["V54"],"depends_on":["T38"],"state":"IMPLEMENTED","allowed_paths":["guardian-h5/src/","guardian-h5/scripts/","guardian-h5/package.json","guardian-h5/package-lock.json","guardian-h5/tsconfig.json","frontend-design/","backend-design/protocol.schema.json","backend/recognition/","backend/relations/","backend/requests/models.py","backend/requests/service.py","backend/requests/migrations/0004_recovery_payload.py","backend/summaries/","backend/records/queries.py","backend/records/service.py","backend/records/correction.py","backend/records/search_input.py","backend/records/search.schema.json","backend/files/originals.py","backend/files/original-read.schema.json","backend/api/views_originals.py","backend/tests/verify_original_source_runtime.py","backend/requirements.txt","backend/requirements.lock.txt","backend/api/views_family.py","backend/api/views_family2.py","backend/api/views_support.py","backend/api/urls.py","backend/api/base.py","backend/api/family_home.py","backend/api/family-read.schema.json","backend/family_content/alert_detail.py","backend/alerting/home.py","backend/tests/verify_record_search_runtime.py","backend/tests/verify_family_read_runtime.py","backend/tests/verify_application_persistence.py","backend/tests/verify_summary_runtime.py","backend/tests/read_saved_month_input.py","backend/tests/read_saved_report_input.py","docs/development/T09.md","docs/development/T13.md","docs/development/T14.md","docs/development/T16.md","docs/development/T22.md","docs/development/T24.md","docs/development/T25.md","docs/development/T54.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T55","acceptance_ids":["V55"],"depends_on":["T41","T42","T43","T40"],"state":"IMPLEMENTED","allowed_paths":["backend/tests/","guardian-h5/scripts/","tests/integration/","docs/testing/","docs/development/T55.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T56","acceptance_ids":["V56"],"depends_on":["T39","T40","T41","T42","T43","T44","T45","T46","T47","T48","T49","T50","T51","T52","T53","T54","T55"],"state":"IMPLEMENTED","allowed_paths":["backend/tests/","guardian-h5/scripts/","tests/integration/","docs/testing/","docs/development/T56.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T57","acceptance_ids":["V57"],"depends_on":["T42","T45","T50","T52","T53"],"state":"IMPLEMENTED","allowed_paths":["tests/performance/","tests/operations/","deploy/","backend/observability/","docs/testing/","docs/development/T57.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T58","acceptance_ids":["V58"],"depends_on":["T54","T56"],"state":"IMPLEMENTED","allowed_paths":["tests/devices/","guardian-h5/scripts/","docs/testing/","docs/development/T58.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T59","acceptance_ids":["V59"],"depends_on":["T48","T49","T50","T55"],"state":"IMPLEMENTED","allowed_paths":["tests/clinical/","data-design/","docs/testing/","docs/development/T59.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T60","acceptance_ids":["V60"],"depends_on":["T56","T57","T58","T59"],"state":"IMPLEMENTED","allowed_paths":["参赛材料/","deploy/","docs/testing/","docs/knowledge/","planning/","docs/development/T60.md","docs/development/index.md"],"blockers":["官方赛事规则全文、提交表与截止时间","展示授权与允许披露范围","指定正式目标环境与批准交接"]}
+  ],
+  "evidence": [
+    {
+      "id": "EVID-T48-SOURCE-INVENTORY", "check_id": "CHECK-T48-SOURCE-INVENTORY", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T48-SOURCE-INVENTORY-20261008T062556Z-25184/receipt.json",
+      "receipt_sha256": "b326c68c560f71c13dd678868f89a106f6e83674400e2ddc34920e3653eb26d5"
+    },
+    {
+      "id": "EVID-T48-SOURCE-PROOF", "check_id": "CHECK-T48-SOURCE-PROOF", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T48-SOURCE-PROOF-20261008T062600Z-25207/receipt.json",
+      "receipt_sha256": "5acb0a4f76f8fae7f9b3fca1dcd2d54aca911da4f3b5039c396276f0a7b9a41d"
+    },
+    {
+      "id": "EVID-T48-DATASET-API", "check_id": "CHECK-T48-DATASET-API", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T48-DATASET-API-20261008T062253Z-24680/receipt.json",
+      "receipt_sha256": "2dae30ad9d276a7d08db44a7b77e1e5bccb5c2c0267b891ea2560199f10834fa"
+    },
+    {
+      "id": "EVID-T48-SHARED", "check_id": "CHECK-T48-SHARED", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T48-SHARED-20261008T062925Z-26115/receipt.json",
+      "receipt_sha256": "ee27cb8c752d9a21d8781074f50c4358a4f4bda4fc7558147817a8d7b35a0b8b"
+    },
+    {
+      "id": "EVID-T51-ARCHIVE-QUOTA", "check_id": "CHECK-T51-ARCHIVE-QUOTA", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-ARCHIVE-QUOTA-20261008T062754Z-25685/receipt.json",
+      "receipt_sha256": "f664fc0514516fa157839490ce7499cd286f3a214ee98cd833175e32b6cff08a"
+    },
+    {
+      "id": "EVID-T42-BATCH-READ", "check_id": "CHECK-T42-BATCH-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T42-BATCH-READ-20261008T062754Z-25688/receipt.json",
+      "receipt_sha256": "60505909cff8d43cea366e9913103bd5a1b5f4a17d35e69e4ffe151ad57cd357"
+    },
+    {
+      "id": "EVID-T42-BATCH-WRITE", "check_id": "CHECK-T42-BATCH-WRITE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T42-BATCH-WRITE-20261008T062754Z-25681/receipt.json",
+      "receipt_sha256": "d1e9473771e382f0c90c0222959b2b643d0ebc2bd1022916c57ceaa03059d6ed"
+    },
+    {
+      "id": "EVID-T42-PAGE-ORDER", "check_id": "CHECK-T42-PAGE-ORDER", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T42-PAGE-ORDER-20261008T062755Z-25693/receipt.json",
+      "receipt_sha256": "53c33dc7654198edd5b8b71f3b9b02488df8daf8b7751fd46cb2f38e109c043f"
+    },
+    {
+      "id": "EVID-T41-LINKS", "check_id": "CHECK-T41-LINKS", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T41-LINKS/receipt.json",
+      "receipt_sha256": "71a877100e03e8d68d635f8e805c3584a7623d5109fadd2f7a35ef769529652c"
+    },
+    {
+      "id": "EVID-T41-READ", "check_id": "CHECK-T41-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T41-READ/receipt.json",
+      "receipt_sha256": "31a31fdba09928ba086f93d2ee66171a90fcc40bee59fd77a8593d8241335bb4"
+    },
+    {
+      "id": "EVID-T43-DOCUMENT-READ", "check_id": "CHECK-T43-DOCUMENT-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T43-DOCUMENT-READ-20261008T033255Z-92500/receipt.json",
+      "receipt_sha256": "af691f4e8d750f102e7c6c97b1848cd470bdcb4379b457fdaf646e40c60fcdae"
+    },
+    {
+      "id": "EVID-T43-DOCUMENT-GROUPING", "check_id": "CHECK-T43-DOCUMENT-GROUPING", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T43-DOCUMENT-GROUPING-20261008T033254Z-92493/receipt.json",
+      "receipt_sha256": "c81861200091b538189ebddecc817efc895c988275a7ff2fba18c5bef109bd45"
+    },
+    {
+      "id": "EVID-T51-RELEASE-READ", "check_id": "CHECK-T51-RELEASE-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-RELEASE-READ-20261008T033249Z-92454/receipt.json",
+      "receipt_sha256": "68ccd80bccb56dbe6d0809af7ca2c4aa5cd609792edbd67743676d85734c9d2f"
+    },
+    {
+      "id": "EVID-T51-CONTACT-LIFECYCLE", "check_id": "CHECK-T51-CONTACT-LIFECYCLE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-CONTACT-LIFECYCLE-20261008T033429Z-93003/receipt.json",
+      "receipt_sha256": "4cba95854ef64f23a6546e782d0c0181a4970655ab039400a82cfe3dc722e0af"
+    },
+    {
+      "id": "EVID-T51-CONTROLLED-RECOVERY", "check_id": "CHECK-T51-CONTROLLED-RECOVERY", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-CONTROLLED-RECOVERY-20261008T033300Z-92519/receipt.json",
+      "receipt_sha256": "dc1d6315223580f18d5f46be2feb81a398ef5b88ab86b9934faa159ede4d8487"
+    },
+    {
+      "id": "EVID-T51-CONFIG-LIFECYCLE", "check_id": "CHECK-T51-CONFIG-LIFECYCLE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-CONFIG-LIFECYCLE-20261008T033250Z-92460/receipt.json",
+      "receipt_sha256": "ea11b9f8ae27c09b8b7b7131333e0f5e80b7fe1d23f32c7cd9f441e9573b89ee"
+    },
+    {
+      "id": "EVID-T51-CONFIG-CONSUMPTION", "check_id": "CHECK-T51-CONFIG-CONSUMPTION", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T51-CONFIG-CONSUMPTION-20261008T033249Z-92453/receipt.json",
+      "receipt_sha256": "35eea61a2ab6575342e6c3eda17a3dfe44fa1a91f8211d0c3d0de281a573e1c9"
+    },
+    {
+      "id": "EVID-T52-NOTIFICATION-BOUNDARY", "check_id": "CHECK-T52-NOTIFICATION-BOUNDARY", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T52-NOTIFICATION-BOUNDARY-20261008T042641Z-2700/receipt.json",
+      "receipt_sha256": "5a8fdb9fdd200cb559e9f17634bd6cff30dc66f7bf1a92396d713b0349cecfb3"
+    },
+    {
+      "id": "EVID-T53-REMINDER-READ", "check_id": "CHECK-T53-REMINDER-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T53-REMINDER-READ-20261008T042641Z-2697/receipt.json",
+      "receipt_sha256": "4f7515ca0bba940a215e1a52ac2f7f78210eaf18797fe4459f84c10a23171219"
+    },
+    {
+      "id": "EVID-T53-REMINDER-WRITE", "check_id": "CHECK-T53-REMINDER-WRITE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T53-REMINDER-WRITE-20261008T042641Z-2703/receipt.json",
+      "receipt_sha256": "89d263c0646ad5c68e4261958eee6725cee71777183b41f438ff3baabc225bb1"
+    },
+    {
+      "id": "EVID-T53-REMINDER-SCHEDULE", "check_id": "CHECK-T53-REMINDER-SCHEDULE", "kind": "UNIT",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T53-REMINDER-SCHEDULE-20261008T040727Z-99666/receipt.json",
+      "receipt_sha256": "2302fa8d41aefda4ffb82aa6d4094c3f4006cd046a0e498484e5d22d31bf55a5"
+    },
+    {
+      "id": "EVID-T53-REMINDER-TARGETS", "check_id": "CHECK-T53-REMINDER-TARGETS", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T53-REMINDER-TARGETS-20261008T042627Z-2662/receipt.json",
+      "receipt_sha256": "8ed9b4c6de366c08ec8ebdf1003c7a679763758cc9d3f722ec8517e78fab6070"
+    },
+    {
+      "id": "EVID-T25-SCOPE", "check_id": "CHECK-T25-SCOPE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T25-SCOPE/receipt.json",
+      "receipt_sha256": "ec702be3d42bf2803f1d492331ed7faac29c07281921555a3e47eecfbfaf8dd2"
+    },
+    {
+      "id": "EVID-T54-SUMMARY-READ", "check_id": "CHECK-T54-SUMMARY-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-SUMMARY-READ-20261008T033253Z-92477/receipt.json",
+      "receipt_sha256": "6a75673258e4994899347f5fa8e9dca5645de5649c7efab1cae9d16bda507d47"
+    },
+    {
+      "id": "EVID-T54-ORIGINAL-SOURCE", "check_id": "CHECK-T54-ORIGINAL-SOURCE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-ORIGINAL-SOURCE-20261008T033253Z-92487/receipt.json",
+      "receipt_sha256": "8a9e26665ad148abcaaaf7bfa0a9af72d72bb4b3a8ebbea6001dc44c3c1cc004"
+    },
+    {
+      "id": "EVID-T54-APPLICATION-PERSISTENCE", "check_id": "CHECK-T54-APPLICATION-PERSISTENCE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-APPLICATION-PERSISTENCE/receipt.json",
+      "receipt_sha256": "a4a4a8ab838fc961707f917f580ed1f22769e15783d61ba3c9d3d19ac76dab6a"
+    },
+    {
+      "id": "EVID-T54-FAMILY-READ", "check_id": "CHECK-T54-FAMILY-READ", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-FAMILY-READ-20261008T033253Z-92478/receipt.json",
+      "receipt_sha256": "61c29da47af6bb176d612d3637ee5bbf70ee8e62d97970bff9c7bff00425e0ff"
+    },
+    {
+      "id": "EVID-T54-RECORD-SEARCH", "check_id": "CHECK-T54-RECORD-SEARCH", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-RECORD-SEARCH/receipt.json",
+      "receipt_sha256": "aca4ea8abada274592a13bfcc808c6e564c02e516dc733ed415ea55e0bb0efdc"
+    },
+    {
+      "id": "EVID-T54-STATIC-PARTIAL", "check_id": "STATIC-T54-PARTIAL", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/STATIC-T54-PARTIAL-20261008T062926Z-26120/receipt.json",
+      "receipt_sha256": "79daee2af1d6e258f5a8119de83793ed958171774bcff241c507d839794a0f89"
+    },
+    {
+      "id": "EVID-T54-REMINDER-TIME", "check_id": "CHECK-T54-REMINDER-TIME", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-REMINDER-TIME-20261008T044111Z-5992/receipt.json",
+      "receipt_sha256": "83e65d7e79a73a7720b001edf32e76139b4aff53ea7e77a32b0b7657dc2ef06e"
+    },
+    {
+      "id": "EVID-T54-REMINDERS-DOM", "check_id": "CHECK-T54-REMINDERS-DOM", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-REMINDERS-DOM-20261008T044114Z-6023/receipt.json",
+      "receipt_sha256": "1cd65d2791ab25e4191ecedd00e69fa8dfbe97d9970d9ffc818012d93d873023"
+    },
+    {
+      "id": "EVID-T54-DOM", "check_id": "CHECK-T54-DOM", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T54-DOM-20261008T062532Z-25051/receipt.json",
+      "receipt_sha256": "362ef8f57f759c5a41153ce283d8b5f4c913e569d83cfa953f7b81ef082a41c8"
+    },
+    {
+      "id": "EVID-T40-LOCAL-DISPOSITION", "check_id": "CHECK-T40-LOCAL-DISPOSITION", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T40-LOCAL-DISPOSITION/receipt.json",
+      "receipt_sha256": "75967aa45b956ebd352e98b95b9b608cbcab06aec0f5481dcfbcce184e70ac0d"
+    },
+    {
+      "id": "EVID-T40-STRUCTURE", "check_id": "CHECK-T40-STRUCTURE", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T40-STRUCTURE/receipt.json",
+      "receipt_sha256": "67534a7252b93f49c89efc7f9ec5b120909c3959d9096073ea8b1957400b0f3d"
+    },
+    {
+      "id": "EVID-T40-FRONTEND", "check_id": "CHECK-T40-FRONTEND", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T40-FRONTEND/receipt.json",
+      "receipt_sha256": "bf5d838456e44040fd1fd836372e741c654b1c676e2d47f20b30bf45a1c655f5"
+    },
+    {
+      "id": "EVID-T40-BROWSER", "check_id": "CHECK-T40-BROWSER", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T40-BROWSER/receipt.json",
+      "receipt_sha256": "32bf4f009e5b02da6d31c4967221f70c33f1190e213391d2bad32829ca6deddc"
+    },
+    {
+      "id": "EVID-T38", "check_id": "CHECK-T38", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-20261008T062531Z-25037/receipt.json",
+      "receipt_sha256": "baef7aa395338f9d2c33a4cb586f4f0019cec4bfc4c7408fc1d03fcbbcea7445"
+    },
+    {
+      "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37/receipt.json",
+      "receipt_sha256": "51cffb7fc272073de562653c11d550041acfa686e68ba6ceecfaf2ee7502ba3b"
+    },
+    {
+      "id": "EVID-T34", "check_id": "CHECK-T34", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34-20261008T062701Z-25426/receipt.json",
+      "receipt_sha256": "09ed8f9f84d76601edf4a94f6ee6a992a9b806cf177e6dcc97a77ef9b4125046"
+    },
+    {
+      "id": "EVID-T35", "check_id": "CHECK-T35", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T35-CURRENT-20261008T062655Z-25405/receipt.json",
+      "receipt_sha256": "f50f32ca5ccabdadfc5079cd758279de2d01c5997239a751b324dbdefff983be"
+    },
+    {
+      "id": "EVID-T36", "check_id": "CHECK-T36", "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-20261008T062531Z-25034/receipt.json",
+      "receipt_sha256": "5041c53c8c693ce55330466c8877938c585d7acd8e73a1c1825552d5649d59aa"
+    },
+    {
+      "id": "EVID-T39", "check_id": "CHECK-T39", "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T39-CURRENT-20261008T062531Z-25045/receipt.json",
+      "receipt_sha256": "a9ccdcbb4ea0c622a118ae4bda4a2942571d64ac26b018c5e719b1a7561bd612"
+    },
+    {
+      "id": "EVID-T01",
+      "check_id": "CHECK-T01",
+      "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01",
+      "receipt_path": "../docs/evidence/CHECK-T01/receipt.json",
+      "receipt_sha256": "974bc935ceb8897c36dc10d4628a4efde0c0bfb42854641582e6b7aecb13f236"
+    },
+    {
+      "id": "EVID-T02",
+      "check_id": "CHECK-T02",
+      "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01",
+      "receipt_path": "../docs/evidence/CHECK-T02/receipt.json",
+      "receipt_sha256": "89e46c0c44f78cbc4a7359675591d8cab33e214b101749ffe045d25bfbf7e404"
+    },
+    {
+      "id": "EVID-T07",
+      "check_id": "CHECK-T07",
+      "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01",
+      "receipt_path": "../docs/evidence/CHECK-T07/receipt.json",
+      "receipt_sha256": "1305d3905b4a3faec81264b265e7c4bd5068c58d52a8cfed3de7aefbfb15c5b4"
+    },
+    {
+      "id": "EVID-T08",
+      "check_id": "CHECK-T08",
+      "kind": "STATIC",
+      "baseline_id": "PLAN-20261001-01",
+      "receipt_path": "../docs/evidence/CHECK-T08/receipt.json",
+      "receipt_sha256": "2f1f2ba095096c123fdbbc70783d6276427742ca50e9f56fda81b92d35c7069a"
+    },
+    {
+      "id": "EVID-T27",
+      "check_id": "CHECK-T27",
+      "kind": "INTEGRATION",
+      "baseline_id": "PLAN-20261001-01",
+      "receipt_path": "../docs/evidence/CHECK-T27/receipt.json",
+      "receipt_sha256": "c5a4b1b464c166eef9a9861ae41417499d0265766e75188109f453a79910e82f"
+    }
+  ],
+  "continuation": {
+    "mode": "AUTHORIZED_BACKLOG",
+    "remaining_task_ids": [
+      "T01", "T02", "T07",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T08",
+      "T09",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "T16",
+      "T17",
+      "T18",
+      "T19",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24",
+      "T25",
+      "T26",
+      "T27",
+      "T28",
+      "T29",
+      "T30",
+      "T31",
+      "T32",
+      "T33", "T34", "T35", "T36", "T37", "T38", "T39", "T40", "T41", "T42", "T43", "T44", "T45", "T46", "T47", "T48", "T49", "T50", "T51", "T52", "T53", "T54", "T55", "T56", "T57", "T58", "T59", "T60"
+    ],
+    "next_task_id": "T34",
+    "constraints": [
+      "全部60项模拟开发已经完成，开发剩余0项；T60最终37项源码与36项输入证据清单、当前页面数据库证明、当前构建交付和86项来源证据索引实际核验通过并保存重读。索引作为交付输出独立保存，全部输入文件的字节与摘要保持一致。T56当前通知与摘要页面四项、PostgreSQL逐项保存重读及正式前端修复已接收。开发完成与业务验收独立登记，验收剩余57项。next_task_id只表示所有前置任务完整验收后可直接验收的任务，T34验收资料待复验不影响已完成开发。",
+      "2026-10-09用户更新：全部开发与联调使用模拟数据，截止北京时间2026-10-10 09:00；模拟资料、角色、批准和业务结果仅保存在sjia_simulation及独立文件、消息环境。模拟验收与真实验收分别记录，视觉限制继续有效。完成一项完整任务后报告开发与验收剩余数量，继续下一项。",
+      "2026-10-08用户调整执行顺序：优先完成全部可开发功能，外部资料、授权及业务验收条件单独登记，继续实施其他任务；功能及必要运行检查完成登记IMPLEMENTED，业务验收通过登记ACCEPTED。每完成一项任务报告编号、完成内容和剩余未完成数量；已有有效证据无需重复捕获，视觉比对继续NOT_RUN。",
+      "2026-10-07用户授权完成PRD 2.0全部功能、参赛优化、UI 2.0一比一还原和完整业务验收，连续实施全部已授权任务。工单为implementation-tasks.md，状态以本文件维护；原始未完成验收完整保留。指定外部发送和正式部署仍需准确目标与依据。",
+      "真实验收使用获准真实资料、真实账号和真实服务；模拟开发依据2026-10-09最新用户授权执行，既有QA证据保持原有适用范围。",
+      "V01、V02、V07、V08的收据输入文件已变化，保持STALE并由原任务复验；T01、T02、T07保留IMPLEMENTED，原始收据继续引用。V27当前收据文件校验一致，仅支持原有检查范围。",
+      "既有自建身份、Ark、站内消息和本地语音方向继续有效；D01—D10准确临床、用途、设备、运行及发送条件按当前PRD核查，不能把既有技术选择当作临床或生产批准。",
+      "2026-10-05 QA04本地反馈修复：MediaRecorder采集与本地faster-whisper转写、Ark候选核对、语音表单排版、首页人物比例、报告与治疗缩略图、逐页识别状态和重试、治疗图片原文提取。唯一验收证据为docs/testing/QA04-report.md及docs/testing/evidence/QA04；主记录docs/development/QA04-input-feedback.md。实际设备与生产验收继续按T30—T33执行。",
+      "保留全部原始功能及未完成验收，不能以临床输入未知缩减范围",
+      "QA02—QA04已有证据按其原始数据性质引用，不登记为本期真实临床验收；本期输入与验证约束以当前用户要求及PRD 2.0为准",
+      "D01—D09 已由用户给出指示：D01 虚拟容量/RTO/RPO/设备/负责人；D02 自建用户体系；D03 OCR 密钥放 backend/.env；D04 按最新指南且预警而非诊断；D05 站内消息统计；D06 家庭可见文案由平台定义；D07 来源/单位/方法映射由平台定义；D08 比赛版本后续按医生反馈调整；D09 保留处置政策由平台定义；D10 用户指定火山方舟 Ark 作为语音结构化与照片识别大模型，密钥放 backend/.env",
+      "禁止主动视觉操作，视觉验收单独保留NOT_RUN",
+      "用户AGENTS.md规则持续有效，文件编辑使用编辑工具，中间结果位于项目已忽略目录",
+      "任务状态以本文件为唯一来源；开发记录与索引不维护另一套状态",
+      "2026-10-04本地模拟范围验收通过：健康档案四类资料、结构化症状、多照片整理、治疗来源与照片、四类草稿及离页保护、医学时间签名分页、完整更正历史、提示正文来源联系和治疗范围摘要均已实现。244项后端测试、16项浏览器模拟业务及照片检查、190项匿名页面检查、106项接口安全检查通过；模拟图片真实Ark识别及逐项目原图来源保存通过。证据位于docs/testing/evidence/QA02，当前记录为docs/development/QA02-local-completion.md。自建账号、站内消息、语音结构化和报告识别保持接入真实本地服务；T30—T33的实际设备、独立临床Gold、专业核对、容量与生产交付继续按真实条件验收。"
+    ],
+    "authorization_refs": [
+      "2026-10-09用户：全部先用模拟数据，明天上午9点前完成全部开发任务；按当前北京时间日期登记2026-10-10 09:00",
+      "2026-10-08用户：优先全部开发完成，避免等待循环，每完成一项告知剩余未完成任务数量",
+      "2026-10-07用户：完成PRD 2.0全部功能及参赛优化要求，交付能够运行、持续保存资料、追溯结果并通过完整业务验收的产品；UI 2.0全部39页面及适用状态一比一还原；视觉操作限制继续有效，未执行视觉比对保留待验收",
+      "2026-10-05用户：修复语音失败和排版、首页人物比例、报告缩略图与识别、治疗资料及测试发现的问题；独立本地合成账号、病例、无患者信息图片和实际Ark调用已获授权",
+      "2026-10-01用户：使用haonan-s008-coder根据项目文件完成项目实施",
+      "2026-10-01用户：使用haonan-s007-planner制定实施计划",
+      "2026-10-02用户：D01—D09 给出指示，自建用户体系、站内消息、内容定义先本地完成",
+      "2026-10-02用户：火山方舟 Ark 作为语音结构化与 OCR 大模型，语音结构化快速记录为核心竞争点",
+      "2026-10-04用户：继续完成未开发功能并提供本地验收地址；主办方未提供输入时使用模拟数据"
+    ]
+  }
+}

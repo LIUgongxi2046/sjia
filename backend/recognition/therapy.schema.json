@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "therapy-recognition.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidates"],
+  "properties": {
+    "candidates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "source_text"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "pattern": "\\S" },
+              "source_text": { "type": "string", "minLength": 1, "pattern": "\\S" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

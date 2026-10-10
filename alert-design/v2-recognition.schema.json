@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "archive-fact-extraction-2；模型只产生候选",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "document_type", "organization", "documented_time_text", "page_text", "items", "unreadable_regions"],
+  "properties": {
+    "schema_version": {"const": "archive-fact-extraction-2"},
+    "document_type": {"enum": ["laboratory", "inpatient", "discharge", "outpatient", "therapy", "imaging_report", "imaging_asset", "unknown"]},
+    "organization": {"$ref": "#/$defs/NullableText"},
+    "documented_time_text": {"$ref": "#/$defs/NullableText"},
+    "page_text": {"type": "string"},
+    "items": {"type": "array", "items": {"$ref": "#/$defs/Fact"}},
+    "unreadable_regions": {"type": "array", "items": {"$ref": "#/$defs/Unreadable"}}
+  },
+  "$defs": {
+    "Text": {"type": "string", "minLength": 1},
+    "NullableText": {"type": ["string", "null"]},
+    "NullableDecimal": {"oneOf": [{"type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"}, {"type": "null"}]},
+    "Locator": {
+      "type": "object", "additionalProperties": false, "required": ["anchor_kind", "bbox", "table_row", "table_column"],
+      "properties": {"anchor_kind": {"enum": ["page", "bbox", "table_cell"]}, "bbox": {"oneOf": [{"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0}}, {"type": "null"}]}, "table_row": {"type": ["integer", "null"], "minimum": 0}, "table_column": {"type": ["integer", "null"], "minimum": 0}},
+      "allOf": [{"if": {"properties": {"anchor_kind": {"const": "page"}}}, "then": {"properties": {"bbox": {"type": "null"}, "table_row": {"type": "null"}, "table_column": {"type": "null"}}}}, {"if": {"properties": {"anchor_kind": {"const": "bbox"}}}, "then": {"properties": {"bbox": {"type": "array"}}}}, {"if": {"properties": {"anchor_kind": {"const": "table_cell"}}}, "then": {"properties": {"table_row": {"type": "integer"}, "table_column": {"type": "integer"}}}}]
+    },
+    "Fact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["original_name", "value_type", "value_state", "raw_text", "raw_numeric", "qualifier", "raw_unit", "method", "reference_interval", "context_type", "assertion_state", "raw_time_text", "time_origin", "episode_text", "source_quote", "locator", "recognition_status"],
+      "properties": {
+        "original_name": {"$ref": "#/$defs/Text"}, "value_type": {"enum": ["decimal", "categorical", "text", "time"]}, "value_state": {"enum": ["known", "unknown", "invalid"]}, "raw_text": {"$ref": "#/$defs/NullableText"}, "raw_numeric": {"$ref": "#/$defs/NullableDecimal"}, "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]}, "raw_unit": {"$ref": "#/$defs/NullableText"}, "method": {"$ref": "#/$defs/NullableText"}, "reference_interval": {"$ref": "#/$defs/NullableText"},
+        "context_type": {"enum": ["history", "current", "discharge", "planned", "actual", "unknown"]}, "assertion_state": {"enum": ["present", "absent", "unknown"]}, "raw_time_text": {"$ref": "#/$defs/NullableText"}, "time_origin": {"enum": ["item", "explicit_common", "observation", "therapy", "unknown"]}, "episode_text": {"$ref": "#/$defs/NullableText"}, "source_quote": {"$ref": "#/$defs/Text"}, "locator": {"$ref": "#/$defs/Locator"}, "recognition_status": {"enum": ["recognized", "partial", "unknown", "unreadable"]}
+      },
+      "allOf": [{"if": {"properties": {"value_type": {"const": "decimal"}, "value_state": {"const": "known"}}}, "then": {"properties": {"raw_numeric": {"type": "string"}}}}, {"if": {"properties": {"value_state": {"enum": ["unknown", "invalid"]}}}, "then": {"properties": {"raw_numeric": {"type": "null"}}}}, {"if": {"properties": {"value_type": {"enum": ["categorical", "text", "time"]}}}, "then": {"properties": {"raw_numeric": {"type": "null"}}}}, {"if": {"properties": {"time_origin": {"const": "explicit_common"}}}, "then": {"properties": {"raw_time_text": {"$ref": "#/$defs/Text"}}}}]
+    },
+    "Unreadable": {"type": "object", "additionalProperties": false, "required": ["locator", "reason"], "properties": {"locator": {"$ref": "#/$defs/Locator"}, "reason": {"$ref": "#/$defs/Text"}}}
+  },
+  "description": "原件、页、请求、事实与候选identifier由服务端分配；可得时间由平台取得事实登记；字典代码、医学时间解析与本人采用分别校验；模型无权限或专业证明输出。"
+}

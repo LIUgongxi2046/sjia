@@ -1,0 +1,774 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_ONLY_ARCHIVE_HTTP_CONCURRENT_SMALL_LOAD",
+  "measured_at": "2026-10-09T06:27:54.632074+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "target": {
+    "api_base_url": "http://127.0.0.1:8001",
+    "api_process_reference": "main-window session 11496",
+    "database": "sjia_simulation",
+    "database_port": "5433",
+    "schema": "sjia",
+    "account": "simulation-family",
+    "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+    "classification": "SIMULATION_ONLY",
+    "external_requests": 0
+  },
+  "authentication": {
+    "login_count_outside_samples": 1,
+    "login_status": 200,
+    "relation_read_count_outside_samples": 1,
+    "logout_status": 200,
+    "same_authenticated_session_used_by_all_requests": true
+  },
+  "load": {
+    "total_requests": 20,
+    "configured_concurrency": 4,
+    "observed_maximum_in_flight": 4,
+    "concurrency_waves": 5,
+    "automatic_retries": 0,
+    "api_interception": false,
+    "fixed_query_body": {
+      "limit": 20
+    },
+    "expected_documents_per_response": 10,
+    "query_sha256": "2cec5b818872d7affe28eb362698af71cf554d1037d22fae6f1b6c0331f31c4d"
+  },
+  "connection_budget": {
+    "before": {
+      "database": "sjia_simulation",
+      "schema": "sjia",
+      "search_path": "sjia,public",
+      "postgresql": "18.4 (Homebrew)",
+      "database_user": "sjia",
+      "max_connections": 100,
+      "superuser_reserved_connections": 3,
+      "reserved_connections": 0,
+      "usable_non_reserved_connections": 97,
+      "database_sessions": 10,
+      "database_active_sessions": 1,
+      "database_idle_sessions": 8,
+      "server_sessions": 21,
+      "snapshot_remaining_non_reserved_slots": 76
+    },
+    "after": {
+      "database": "sjia_simulation",
+      "schema": "sjia",
+      "search_path": "sjia,public",
+      "postgresql": "18.4 (Homebrew)",
+      "database_user": "sjia",
+      "max_connections": 100,
+      "superuser_reserved_connections": 3,
+      "reserved_connections": 0,
+      "usable_non_reserved_connections": 97,
+      "database_sessions": 14,
+      "database_active_sessions": 1,
+      "database_idle_sessions": 12,
+      "server_sessions": 25,
+      "snapshot_remaining_non_reserved_slots": 72
+    },
+    "connection_snapshot_is_not_capacity_acceptance": true
+  },
+  "response": {
+    "successes": 20,
+    "failures": 0,
+    "failure_rate": 0.0,
+    "http_statuses": [
+      200
+    ],
+    "schema_valid_count": 20,
+    "patient_identity_valid_count": 20,
+    "document_count_values": [
+      10
+    ],
+    "matched_count_values": [
+      10
+    ],
+    "all_successful_items_match_baseline": true,
+    "all_successful_snapshots_match_baseline": true,
+    "mean_response_bytes": 26576.95
+  },
+  "source_verification": {
+    "verified_against_simulation_database": true,
+    "verified_document_count": 10,
+    "verified_page_reference_count": 11,
+    "original_file_count": 8,
+    "original_file_bytes_read": 143388,
+    "original_checksum_matches": 11,
+    "reference_digest_sha256": "937c528ffcec6a4be0ab20b321bb75b93b6614041b54df20abea3c67469f6e06",
+    "verified_references": [
+      {
+        "document_id": "5969a2b7-0b5e-44c9-8b72-299467a2681b",
+        "document_version_id": "a5201ef0-aeaf-46f7-bf89-23c765130a84",
+        "document_version": 2,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "22d08ed2-7d31-4fd6-9ce0-ae6167c1f7db",
+            "file_id": "3d18cc57-e6c5-44af-bdc0-f91e850de430",
+            "file_object_version": "bc21612fc1cce829d59e06b0e18159d46ebdb79000817262150ef77d9b484861",
+            "checksum": "bc21612fc1cce829d59e06b0e18159d46ebdb79000817262150ef77d9b484861",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 14206
+          },
+          {
+            "page_id": "736eb14b-7128-4dcb-8b0e-078d9b1976e4",
+            "file_id": "0438e330-3567-4ee5-a08f-29e456c7e586",
+            "file_object_version": "c35d746c91ed39eccff3cac80c86729a00d33dbfdb136a5ba2905168c15bce8a",
+            "checksum": "c35d746c91ed39eccff3cac80c86729a00d33dbfdb136a5ba2905168c15bce8a",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 14784
+          }
+        ],
+        "episodes": [],
+        "original_result_sha256": "3ce25284edea552afb8dac8bd9c150cbbbd2389b63acaef8a73d8f458fd3d1ea"
+      },
+      {
+        "document_id": "80c17648-f54e-436b-8ddc-51992d237577",
+        "document_version_id": "b3b86a98-e3d0-41a9-a9db-67577d7f4f84",
+        "document_version": 3,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "78cb52bc-d398-44cb-98b5-46222a77df19",
+            "file_id": "208b8419-7cd2-4c64-a4c3-9a612d8622c4",
+            "file_object_version": "1fd56958936cc4d69e5ceadddf7fd8b64e259dd20beb033a8a03754bea91a836",
+            "checksum": "1fd56958936cc4d69e5ceadddf7fd8b64e259dd20beb033a8a03754bea91a836",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 52060
+          }
+        ],
+        "episodes": [
+          {
+            "episode_id": "de3a5ec1-c778-40ab-a18d-ef7a1ab08f1b",
+            "record_version_id": "4ab83e3a-002d-475b-adb3-d86c22444b2a",
+            "response_matches_database": true
+          }
+        ],
+        "original_result_sha256": "d4b9db1fe436349298e8dad23a9ac277425c107686dd3fff1adcc38dd9aabe8a"
+      },
+      {
+        "document_id": "adc66c2c-1c7c-42b6-8ff2-dc57c817f60c",
+        "document_version_id": "2f77f0a3-a61f-4d32-b7d1-ceded7500ac5",
+        "document_version": 3,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "2273f053-d2b4-44a7-a751-04fa33a1111f",
+            "file_id": "9b482b69-0404-46b8-a1f3-7c410c53885d",
+            "file_object_version": "41a55e132966c74cf38777fd3e863ba1ca240f0dedcfd7744fae382d9f989172",
+            "checksum": "41a55e132966c74cf38777fd3e863ba1ca240f0dedcfd7744fae382d9f989172",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 38901
+          }
+        ],
+        "episodes": [
+          {
+            "episode_id": "849ef4a4-18c8-4ca5-aeda-636e46146b48",
+            "record_version_id": "24367eb5-59dc-4a5c-8e72-bbc340d29271",
+            "response_matches_database": true
+          },
+          {
+            "episode_id": "b3117413-cad2-472c-8dbc-23848d91cd90",
+            "record_version_id": "24367eb5-59dc-4a5c-8e72-bbc340d29271",
+            "response_matches_database": true
+          }
+        ],
+        "original_result_sha256": "7a95c6931f5d9f59033085a1c6bdf72f32a34077c079058315dd0990c6cf9871"
+      },
+      {
+        "document_id": "285fa035-ad86-408b-8e5b-da0f55d9ccf6",
+        "document_version_id": "c54b4083-a53b-44f5-b2d7-95814aa61176",
+        "document_version": 2,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "8f3b21c2-81ef-4d99-b7a6-e8e87e186c47",
+            "file_id": "d87782de-42cf-4c47-824f-2dae03af8833",
+            "file_object_version": "f3ad090db2760799b2b4bec5aa3c61c21302ec9fa04a162307f3f95adcba6dff",
+            "checksum": "f3ad090db2760799b2b4bec5aa3c61c21302ec9fa04a162307f3f95adcba6dff",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3354
+          }
+        ],
+        "episodes": [],
+        "original_result_sha256": "642e340dc3b69414687d3f6ce9f19132dff091d613a9f1e84b8b8a0c8a0caa5c"
+      },
+      {
+        "document_id": "7e979dca-e0b3-4115-8ecf-e2ccc7d80c1c",
+        "document_version_id": "9364cfa4-ca57-44a4-905a-40c9b3f8d9c6",
+        "document_version": 1,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "14c925d2-29ca-4546-90fd-ff76be33d7d7",
+            "file_id": "70277416-1d89-468c-826b-67f5092090b5",
+            "file_object_version": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "checksum": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3373
+          }
+        ],
+        "episodes": [],
+        "original_result_sha256": "0b1c85bafcbb955be0b803e4f4ad32651ed06ac2bcb78875ea5c44fcdae1839d"
+      },
+      {
+        "document_id": "e46b2451-8028-488b-b01c-6e8894bb8fc1",
+        "document_version_id": "38279f24-ee66-4919-aac2-9b2c68f55ea9",
+        "document_version": 1,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "a5929d5a-1406-4c8b-9044-3b71532d004c",
+            "file_id": "4dbfb228-53d3-49b9-b47a-b6eecde2a8f4",
+            "file_object_version": "00db9ce7c2f2bbb5bfe5d57f2a9976c08d6ad5bc602974829a0eb47fd808dab5",
+            "checksum": "00db9ce7c2f2bbb5bfe5d57f2a9976c08d6ad5bc602974829a0eb47fd808dab5",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3305
+          }
+        ],
+        "episodes": [],
+        "original_result_sha256": "bbc39a834b44784960825aba74b267b76fbd646aa239793c787d59c86e2c6028"
+      },
+      {
+        "document_id": "a82a3fcf-1757-4044-b35d-b890b57d5c3e",
+        "document_version_id": "55a3a53c-2fcc-42f2-a05f-2bdfcff77b98",
+        "document_version": 5,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "ddd79af6-e3f9-45b9-b945-1965a246fb4f",
+            "file_id": "70277416-1d89-468c-826b-67f5092090b5",
+            "file_object_version": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "checksum": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3373
+          }
+        ],
+        "episodes": [
+          {
+            "episode_id": "904f849f-c8d6-4eae-9646-0131ab86e10c",
+            "record_version_id": "fb93e95e-3d09-4603-ac86-25e4bea4e64d",
+            "response_matches_database": true
+          }
+        ],
+        "original_result_sha256": "0b1c85bafcbb955be0b803e4f4ad32651ed06ac2bcb78875ea5c44fcdae1839d"
+      },
+      {
+        "document_id": "e507575b-b6d3-4b84-9fe7-69e239bf908d",
+        "document_version_id": "88c024b6-b13f-4721-99bd-837ddb0e3cf2",
+        "document_version": 1,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "c4fe158c-65ae-4592-9a1a-fa415c79b68f",
+            "file_id": "4dbfb228-53d3-49b9-b47a-b6eecde2a8f4",
+            "file_object_version": "00db9ce7c2f2bbb5bfe5d57f2a9976c08d6ad5bc602974829a0eb47fd808dab5",
+            "checksum": "00db9ce7c2f2bbb5bfe5d57f2a9976c08d6ad5bc602974829a0eb47fd808dab5",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3305
+          }
+        ],
+        "episodes": [
+          {
+            "episode_id": "0be92082-4547-444c-8c78-a510fd633a38",
+            "record_version_id": "44d964c3-ad72-45fd-8775-294d97cd0cc9",
+            "response_matches_database": true
+          }
+        ],
+        "original_result_sha256": "bbc39a834b44784960825aba74b267b76fbd646aa239793c787d59c86e2c6028"
+      },
+      {
+        "document_id": "c01fc273-fe87-4d64-9181-4cf77308b696",
+        "document_version_id": "a89a997e-44f0-4981-a25f-f0e39b03c736",
+        "document_version": 1,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "870ec2f3-3615-426d-8155-7d431d42bb1e",
+            "file_id": "d87782de-42cf-4c47-824f-2dae03af8833",
+            "file_object_version": "f3ad090db2760799b2b4bec5aa3c61c21302ec9fa04a162307f3f95adcba6dff",
+            "checksum": "f3ad090db2760799b2b4bec5aa3c61c21302ec9fa04a162307f3f95adcba6dff",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3354
+          }
+        ],
+        "episodes": [],
+        "original_result_sha256": "642e340dc3b69414687d3f6ce9f19132dff091d613a9f1e84b8b8a0c8a0caa5c"
+      },
+      {
+        "document_id": "70a61ca9-eb2c-4add-b5f5-2b3ba03e79a9",
+        "document_version_id": "67fdae0b-5ec0-4fb5-98bf-bb7aaf9f940d",
+        "document_version": 1,
+        "record_version_and_page_refs_valid": true,
+        "pages": [
+          {
+            "page_id": "b9441700-4497-4fd3-adba-2f155db25982",
+            "file_id": "c31d6db8-01a6-422a-bf09-5521582eccf9",
+            "file_object_version": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "checksum": "f6383a3034bf95068eb100b59685f9e811d08ddf9439d59307ba1efecf3399ef",
+            "page_response_matches_database": true,
+            "stored_bytes_sha256_matches_database": true,
+            "size_bytes": 3373
+          }
+        ],
+        "episodes": [
+          {
+            "episode_id": "d5b58eb8-3107-4f3c-b468-ff5781257a06",
+            "record_version_id": "ead5f508-b154-445a-b82a-922868e56e5f",
+            "response_matches_database": true
+          }
+        ],
+        "original_result_sha256": "156e3b15b2a26a766aea661143be59a7fffffaad13ed1a73420c7906156a94ea"
+      }
+    ]
+  },
+  "latency_ms": {
+    "p50": 2947.3802970023826,
+    "p95": 3410.414730984485,
+    "p99": 3517.6269199873786,
+    "minimum": 2244.792643992696,
+    "maximum": 3517.6269199873786,
+    "samples": [
+      2278.9778400037903,
+      2508.9281469990965,
+      2244.792643992696,
+      2356.10390099464,
+      2461.81368798716,
+      2321.3300300121773,
+      2278.959944989765,
+      2417.0043249905575,
+      3135.725327010732,
+      2989.8195270216092,
+      2947.3802970023826,
+      3071.272658999078,
+      3218.4156390139833,
+      3517.6269199873786,
+      3410.414730984485,
+      3113.1549540150445,
+      3047.0148860185873,
+      3236.7209469957743,
+      2915.3560039994773,
+      3007.6041109859943
+    ],
+    "measurement_scope": "HTTP request round trip only; JSON parsing, Schema, and source checks excluded"
+  },
+  "samples": [
+    {
+      "sample": 1,
+      "http_status": 200,
+      "elapsed_ms": 2278.9778400037903,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 2,
+      "http_status": 200,
+      "elapsed_ms": 2508.9281469990965,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 3,
+      "http_status": 200,
+      "elapsed_ms": 2244.792643992696,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 4,
+      "http_status": 200,
+      "elapsed_ms": 2356.10390099464,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 5,
+      "http_status": 200,
+      "elapsed_ms": 2461.81368798716,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 6,
+      "http_status": 200,
+      "elapsed_ms": 2321.3300300121773,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 7,
+      "http_status": 200,
+      "elapsed_ms": 2278.959944989765,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 8,
+      "http_status": 200,
+      "elapsed_ms": 2417.0043249905575,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 9,
+      "http_status": 200,
+      "elapsed_ms": 3135.725327010732,
+      "response_bytes": 26576,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 10,
+      "http_status": 200,
+      "elapsed_ms": 2989.8195270216092,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 11,
+      "http_status": 200,
+      "elapsed_ms": 2947.3802970023826,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 12,
+      "http_status": 200,
+      "elapsed_ms": 3071.272658999078,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 13,
+      "http_status": 200,
+      "elapsed_ms": 3218.4156390139833,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 14,
+      "http_status": 200,
+      "elapsed_ms": 3517.6269199873786,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 15,
+      "http_status": 200,
+      "elapsed_ms": 3410.414730984485,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 16,
+      "http_status": 200,
+      "elapsed_ms": 3113.1549540150445,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 17,
+      "http_status": 200,
+      "elapsed_ms": 3047.0148860185873,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 18,
+      "http_status": 200,
+      "elapsed_ms": 3236.7209469957743,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 19,
+      "http_status": 200,
+      "elapsed_ms": 2915.3560039994773,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    },
+    {
+      "sample": 20,
+      "http_status": 200,
+      "elapsed_ms": 3007.6041109859943,
+      "response_bytes": 26577,
+      "error_code": null,
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "patient_identity_valid": true,
+      "schema_valid": true,
+      "schema_error": null,
+      "matched_count": 10,
+      "item_count": 10,
+      "snapshot_version": "0546cf73178248f9c1ad1e4a270e0f27869f804e6aa7ac40269df2b2d925703f",
+      "successful": true,
+      "matches_first_successful_items": true,
+      "matches_first_successful_snapshot": true,
+      "source_references_match_database_verified_baseline": true,
+      "response_items_sha256": "41fc02f1fee3b8ea3ff0764d987712595340a171f6cd5fcaf5d60b18dc6d7b50"
+    }
+  ],
+  "source_sha256": {
+    "backend/archives/search.py": "7c95493e79d4c66fe4345903b9e03466f8b165224c1c5afcd11a10bfc7806147",
+    "backend/archives/search_context.py": "e79b28b03dfc2fcd56fe069b217147c8c16ca5c3bbe363f1352498e0b1eda2ca",
+    "backend/configurations/qualification.py": "d8984c71f98dddc4434cc399f089cb4aca8880c63eb0eb0be8009ce2a9e7ba41",
+    "backend/configurations/evidence.py": "4ebb9e58cc553683ca6c741075bb9e75f1cfe8ad47e00878a21f1bb8a03bb737",
+    "backend-design/archive-search.schema.json": "0598b5d681ec39856ab5c6b768ab8785312ed54f00f8a8d59d76af0bf1506994"
+  },
+  "side_effects": {
+    "records_written": 0,
+    "worker_or_beat_started": false,
+    "queue_consumption": 0,
+    "provider_calls": 0,
+    "notifications_sent": 0
+  },
+  "scope": {
+    "development_target": "SIMULATION_ONLY",
+    "formal_capacity_slo": "NOT_RUN",
+    "real_capacity": "NOT_RUN",
+    "clinical_scale": "NOT_RUN",
+    "approved_capacity_target": "NOT_PROVIDED"
+  },
+  "saved_and_reread": true
+}

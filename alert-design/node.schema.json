@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:alert-node:1",
+  "title": "预警内部节点格式",
+  "description": "S005-1 持久结构与 S005-2 任务协议接收的内部格式；HTTP 使用独立获准投影。",
+  "oneOf": [{"$ref": "#/$defs/EvaluationContext"}, {"$ref": "#/$defs/SignalResult"}, {"$ref": "#/$defs/TriggerEvent"}],
+  "$defs": {
+    "Uuid": {"type": "string", "format": "uuid"},
+    "Text": {"type": "string", "minLength": 1},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "Epoch": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"},
+    "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "Decimal": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"},
+    "Digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "InputReference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["signal_id", "position", "variable_code", "role", "record_version_id", "field_id", "verification_id", "normalization_id", "medical_time_id", "source_revision_id"],
+      "properties": {
+        "signal_id": {"$ref": "#/$defs/Text"},
+        "position": {"type": "integer", "minimum": 0},
+        "variable_code": {"$ref": "#/$defs/Text"},
+        "role": {"enum": ["baseline", "current", "series", "context"]},
+        "record_version_id": {"$ref": "#/$defs/Uuid"},
+        "field_id": {"$ref": "#/$defs/Uuid"},
+        "verification_id": {"$ref": "#/$defs/Uuid"},
+        "normalization_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]},
+        "medical_time_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]},
+        "source_revision_id": {"$ref": "#/$defs/Uuid"}
+      }
+    },
+    "MissingItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["variable_code", "reason_code", "field_id"],
+      "properties": {
+        "variable_code": {"$ref": "#/$defs/Text"},
+        "reason_code": {"enum": ["missing", "unverified", "verification_revoked", "source_unavailable", "unit_unmapped", "method_incomparable", "time_unknown", "time_outside_window", "time_conflict", "qualified_value", "baseline_missing", "invalid_denominator", "therapy_unknown", "policy_unavailable"]},
+        "field_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]}
+      }
+    },
+    "EvaluationContext": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "patient_id", "environment", "task_id", "mode", "assessment_at", "known_at", "context_sequence", "policy_id", "window_policy_id", "data_epoch", "verification_epoch", "publication_epoch", "authorization_version", "lease_generation", "use_authorization_id", "inputs", "missing_items", "assessment_ids", "input_digest"],
+      "properties": {
+        "schema_version": {"const": "alert-context-1"},
+        "patient_id": {"$ref": "#/$defs/Uuid"},
+        "environment": {"$ref": "#/$defs/Text"},
+        "task_id": {"$ref": "#/$defs/Uuid"},
+        "mode": {"enum": ["current", "replay"]},
+        "assessment_at": {"$ref": "#/$defs/Timestamp"},
+        "known_at": {"$ref": "#/$defs/Timestamp"},
+        "context_sequence": {"$ref": "#/$defs/Version"},
+        "policy_id": {"$ref": "#/$defs/Uuid"},
+        "window_policy_id": {"$ref": "#/$defs/Uuid"},
+        "data_epoch": {"$ref": "#/$defs/Epoch"},
+        "verification_epoch": {"$ref": "#/$defs/Epoch"},
+        "publication_epoch": {"$ref": "#/$defs/Epoch"},
+        "authorization_version": {"$ref": "#/$defs/Version"},
+        "lease_generation": {"$ref": "#/$defs/Version"},
+        "use_authorization_id": {"$ref": "#/$defs/Uuid"},
+        "inputs": {"type": "array", "items": {"$ref": "#/$defs/InputReference"}},
+        "missing_items": {"type": "array", "items": {"$ref": "#/$defs/MissingItem"}},
+        "assessment_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Uuid"}},
+        "input_digest": {"$ref": "#/$defs/Digest"}
+      }
+    },
+    "TimeBounds": {
+      "type": "object", "additionalProperties": false,
+      "required": ["precision", "earliest", "latest_exclusive", "instant"],
+      "properties": {
+        "precision": {"enum": ["date", "minute", "second", "unknown"]},
+        "earliest": {"oneOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]},
+        "latest_exclusive": {"oneOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]},
+        "instant": {"oneOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]}
+      }
+    },
+    "PairResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["position", "baseline_field_id", "current_field_id", "baseline_time", "current_time", "state", "reason_codes", "absolute_delta", "relative_delta", "elapsed_seconds", "elapsed_min_seconds", "elapsed_max_seconds"],
+      "properties": {
+        "position": {"type": "integer", "minimum": 0},
+        "baseline_field_id": {"$ref": "#/$defs/Uuid"},
+        "current_field_id": {"$ref": "#/$defs/Uuid"},
+        "baseline_time": {"$ref": "#/$defs/TimeBounds"},
+        "current_time": {"$ref": "#/$defs/TimeBounds"},
+        "state": {"enum": ["met", "not_met", "unknown"]},
+        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
+        "absolute_delta": {"oneOf": [{"$ref": "#/$defs/Decimal"}, {"type": "null"}]},
+        "relative_delta": {"oneOf": [{"$ref": "#/$defs/Decimal"}, {"type": "null"}]},
+        "elapsed_seconds": {"type": ["integer", "null"], "minimum": 1},
+        "elapsed_min_seconds": {"type": ["integer", "null"], "minimum": 0},
+        "elapsed_max_seconds": {"type": ["integer", "null"], "minimum": 1},
+        "relative_reason": {"type": ["string", "null"]},
+        "relative_exact": {"oneOf": [{"type": "null"}, {"type": "object", "additionalProperties": false,
+          "required": ["numerator", "denominator"], "properties": {
+            "numerator": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)$"},
+            "denominator": {"type": "string", "pattern": "^[1-9][0-9]*$"}}}]}
+      },
+      "allOf": [{"if": {"properties": {"state": {"const": "unknown"}}}, "then": {"properties": {"reason_codes": {"minItems": 1}}}}]
+    },
+    "SignalResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "signal_id", "state", "algorithm_version", "input_field_ids", "reason_codes", "pair_results"],
+      "properties": {
+        "schema_version": {"const": "alert-signal-1"},
+        "signal_id": {"$ref": "#/$defs/Text"},
+        "state": {"enum": ["met", "not_met", "unknown"]},
+        "algorithm_version": {"$ref": "#/$defs/Text"},
+        "input_field_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Uuid"}},
+        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
+        "pair_results": {"type": "array", "items": {"$ref": "#/$defs/PairResult"}}
+      },
+      "allOf": [{"if": {"properties": {"state": {"const": "unknown"}}}, "then": {"properties": {"reason_codes": {"minItems": 1}}}}]
+    },
+    "TriggerEvent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "event_id", "event_type", "aggregate_id", "aggregate_version", "patient_id", "occurred_at", "causation_id", "correlation_id", "task_id"],
+      "properties": {
+        "schema_version": {"const": "alert-event-1"},
+        "event_id": {"$ref": "#/$defs/Uuid"},
+        "event_type": {"enum": ["clinical_input.verified", "clinical_input.corrected", "clinical_verification.revoked", "clinical_policy.enabled", "clinical_policy.disabled", "clinical_evaluation.due", "alert_evaluation.completed", "alert_event.created", "alert_dependency.invalidated"]},
+        "aggregate_id": {"$ref": "#/$defs/Uuid"},
+        "aggregate_version": {"$ref": "#/$defs/Version"},
+        "patient_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]},
+        "occurred_at": {"$ref": "#/$defs/Timestamp"},
+        "causation_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]},
+        "correlation_id": {"$ref": "#/$defs/Uuid"},
+        "task_id": {"oneOf": [{"$ref": "#/$defs/Uuid"}, {"type": "null"}]}
+      },
+      "allOf": [{"if": {"properties": {"event_type": {"enum": ["clinical_policy.enabled", "clinical_policy.disabled"]}}}, "then": {"properties": {"patient_id": {"type": "null"}}}, "else": {"properties": {"patient_id": {"$ref": "#/$defs/Uuid"}}}}]
+    }
+  }
+}

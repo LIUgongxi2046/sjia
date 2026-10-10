@@ -1,0 +1,494 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_SINGLE_REQUEST_CPROFILE",
+  "measured_at": "2026-10-09T05:29:01.829531+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "database_port": "5433",
+    "runtime": "simulation",
+    "simulation_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.simulation-work",
+    "account": "simulation-family",
+    "model_requests": 0,
+    "worker_or_beat_started": false,
+    "queue_consumption": 0,
+    "notifications_sent": 0
+  },
+  "request": {
+    "method": "POST",
+    "path": "/api/v2/patients/e88faef5-8bf6-4256-b5a5-865c699103d6/archives/search",
+    "http_status": 200,
+    "response_schema": "ArchiveSearchView",
+    "response_schema_valid": true,
+    "matched_count": 10,
+    "response_bytes": 26577,
+    "request_count": 1,
+    "session_login_outside_profile": true,
+    "profiled_request_elapsed_ms": 1448.9657359954435,
+    "profile_instrumentation": "cProfile and CaptureQueriesContext"
+  },
+  "database": {
+    "max_connections": 100,
+    "reserved_connections": 3,
+    "sessions_before_request": 8,
+    "captured_queries": 55,
+    "select_queries": 52,
+    "sum_query_elapsed_ms": 148.0,
+    "max_query_elapsed_ms": 15.0,
+    "query_elapsed_p95_ms": 11.0,
+    "top_query_elapsed_ms": [
+      15.0,
+      13.0,
+      11.0,
+      9.0,
+      8.0,
+      8.0,
+      8.0,
+      4.0,
+      3.0,
+      3.0
+    ]
+  },
+  "profile": {
+    "total_calls": 667414,
+    "primitive_calls": 645336,
+    "top_functions_by_cumulative_time": [
+      {
+        "function": "post",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 1141,
+        "calls": 1,
+        "self_time_ms": 0.007555,
+        "cumulative_time_ms": 1448.4496840000002
+      },
+      {
+        "function": "post",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 484,
+        "calls": 1,
+        "self_time_ms": 0.009481000000000002,
+        "cumulative_time_ms": 1448.442129
+      },
+      {
+        "function": "generic",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 633,
+        "calls": 1,
+        "self_time_ms": 0.026836000000000002,
+        "cumulative_time_ms": 1448.394098
+      },
+      {
+        "function": "request",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 1066,
+        "calls": 1,
+        "self_time_ms": 0.036016,
+        "cumulative_time_ms": 1448.3016180000002
+      },
+      {
+        "function": "__call__",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 169,
+        "calls": 1,
+        "self_time_ms": 0.030250000000000003,
+        "cumulative_time_ms": 1447.864178
+      },
+      {
+        "function": "get_response",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/core/handlers/base.py",
+        "line": 136,
+        "calls": 1,
+        "self_time_ms": 0.006579,
+        "cumulative_time_ms": 1447.496055
+      },
+      {
+        "function": "inner",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py",
+        "line": 52,
+        "calls": 8,
+        "self_time_ms": 0.019002,
+        "cumulative_time_ms": 1447.445991
+      },
+      {
+        "function": "__call__",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/utils/deprecation.py",
+        "line": 113,
+        "calls": 7,
+        "self_time_ms": 0.046463000000000004,
+        "cumulative_time_ms": 1447.4432450000002
+      },
+      {
+        "function": "_get_response",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/core/handlers/base.py",
+        "line": 174,
+        "calls": 1,
+        "self_time_ms": 0.028845000000000003,
+        "cumulative_time_ms": 1444.805922
+      },
+      {
+        "function": "_view_wrapper",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/views/decorators/csrf.py",
+        "line": 64,
+        "calls": 1,
+        "self_time_ms": 0.0037940000000000005,
+        "cumulative_time_ms": 1435.106886
+      },
+      {
+        "function": "view",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/views/generic/base.py",
+        "line": 97,
+        "calls": 1,
+        "self_time_ms": 0.011339000000000002,
+        "cumulative_time_ms": 1435.103092
+      },
+      {
+        "function": "dispatch",
+        "file": "backend/.venv/lib/python3.12/site-packages/rest_framework/views.py",
+        "line": 491,
+        "calls": 1,
+        "self_time_ms": 0.025187,
+        "cumulative_time_ms": 1435.0875090000002
+      },
+      {
+        "function": "handler",
+        "file": "backend/.venv/lib/python3.12/site-packages/rest_framework/decorators.py",
+        "line": 49,
+        "calls": 1,
+        "self_time_ms": 0.01787,
+        "cumulative_time_ms": 1434.792598
+      },
+      {
+        "function": "wrapper",
+        "file": "backend/api/base.py",
+        "line": 75,
+        "calls": 1,
+        "self_time_ms": 0.017694,
+        "cumulative_time_ms": 1434.774728
+      },
+      {
+        "function": "inner",
+        "file": "contextlib.py",
+        "line": 78,
+        "calls": 1,
+        "self_time_ms": 0.028222,
+        "cumulative_time_ms": 1434.725115
+      },
+      {
+        "function": "archive_directory_search",
+        "file": "backend/api/views_archive_search.py",
+        "line": 12,
+        "calls": 1,
+        "self_time_ms": 0.7557780000000001,
+        "cumulative_time_ms": 1433.807918
+      },
+      {
+        "function": "archive_search",
+        "file": "backend/archives/search.py",
+        "line": 253,
+        "calls": 1,
+        "self_time_ms": 1.849587,
+        "cumulative_time_ms": 1390.458844
+      },
+      {
+        "function": "batch_runtime",
+        "file": "backend/archives/batches.py",
+        "line": 25,
+        "calls": 1,
+        "self_time_ms": 0.098856,
+        "cumulative_time_ms": 940.811897
+      },
+      {
+        "function": "configuration_qualification_reason",
+        "file": "backend/configurations/qualification.py",
+        "line": 12,
+        "calls": 1,
+        "self_time_ms": 0.779307,
+        "cumulative_time_ms": 931.847441
+      },
+      {
+        "function": "deployed_artifact_checksum",
+        "file": "backend/configurations/evidence.py",
+        "line": 43,
+        "calls": 1,
+        "self_time_ms": 11.571098000000001,
+        "cumulative_time_ms": 843.422724
+      },
+      {
+        "function": "read_bytes",
+        "file": "pathlib.py",
+        "line": 1015,
+        "calls": 584,
+        "self_time_ms": 3.0025990000000005,
+        "cumulative_time_ms": 335.179745
+      },
+      {
+        "function": "_fetch_all",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/models/query.py",
+        "line": 1952,
+        "calls": 77,
+        "self_time_ms": 1.3692510000000002,
+        "cumulative_time_ms": 315.912819
+      },
+      {
+        "function": "__iter__",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/models/query.py",
+        "line": 87,
+        "calls": 597,
+        "self_time_ms": 3.4543440000000003,
+        "cumulative_time_ms": 311.776345
+      },
+      {
+        "function": "__iter__",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/models/query.py",
+        "line": 371,
+        "calls": 44,
+        "self_time_ms": 0.21777700000000003,
+        "cumulative_time_ms": 302.14712800000007
+      },
+      {
+        "function": "<method 'read' of '_io.BufferedReader' objects>",
+        "file": "~",
+        "line": 0,
+        "calls": 586,
+        "self_time_ms": 288.73431700000003,
+        "cumulative_time_ms": 288.73431700000003
+      },
+      {
+        "function": "execute_sql",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py",
+        "line": 1593,
+        "calls": 52,
+        "self_time_ms": 0.771609,
+        "cumulative_time_ms": 276.03492100000005
+      },
+      {
+        "function": "relative_to",
+        "file": "pathlib.py",
+        "line": 663,
+        "calls": 584,
+        "self_time_ms": 11.950597,
+        "cumulative_time_ms": 226.06233
+      },
+      {
+        "function": "__init__",
+        "file": "backend/archives/search_context.py",
+        "line": 19,
+        "calls": 1,
+        "self_time_ms": 0.9583720000000001,
+        "cumulative_time_ms": 221.60004600000002
+      },
+      {
+        "function": "<built-in method builtins.next>",
+        "file": "~",
+        "line": 0,
+        "calls": 8143,
+        "self_time_ms": 34.79277,
+        "cumulative_time_ms": 190.785539
+      },
+      {
+        "function": "load",
+        "file": "backend/archives/search_context.py",
+        "line": 87,
+        "calls": 21,
+        "self_time_ms": 0.11383700000000001,
+        "cumulative_time_ms": 162.88107100000002
+      },
+      {
+        "function": "iter_errors",
+        "file": "backend/.venv/lib/python3.12/site-packages/jsonschema/validators.py",
+        "line": 349,
+        "calls": 249,
+        "self_time_ms": 0.5821,
+        "cumulative_time_ms": 154.69477
+      },
+      {
+        "function": "descend",
+        "file": "backend/.venv/lib/python3.12/site-packages/jsonschema/validators.py",
+        "line": 396,
+        "calls": 2273,
+        "self_time_ms": 14.852668000000001,
+        "cumulative_time_ms": 154.11461100000002
+      },
+      {
+        "function": "properties",
+        "file": "backend/.venv/lib/python3.12/site-packages/jsonschema/_keywords.py",
+        "line": 290,
+        "calls": 422,
+        "self_time_ms": 3.1546,
+        "cumulative_time_ms": 153.987064
+      },
+      {
+        "function": "execute",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/backends/utils.py",
+        "line": 120,
+        "calls": 53,
+        "self_time_ms": 0.41872600000000004,
+        "cumulative_time_ms": 150.98498300000003
+      },
+      {
+        "function": "execute",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/backends/utils.py",
+        "line": 78,
+        "calls": 53,
+        "self_time_ms": 0.15811200000000003,
+        "cumulative_time_ms": 148.565579
+      },
+      {
+        "function": "_execute_with_wrappers",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/backends/utils.py",
+        "line": 88,
+        "calls": 53,
+        "self_time_ms": 0.21414800000000003,
+        "cumulative_time_ms": 148.40746700000003
+      },
+      {
+        "function": "_execute",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/db/backends/utils.py",
+        "line": 94,
+        "calls": 53,
+        "self_time_ms": 0.34420300000000004,
+        "cumulative_time_ms": 148.19331900000003
+      },
+      {
+        "function": "wait",
+        "file": "backend/.venv/lib/python3.12/site-packages/psycopg/connection.py",
+        "line": 445,
+        "calls": 56,
+        "self_time_ms": 122.28369100000002,
+        "cumulative_time_ms": 147.94236100000003
+      },
+      {
+        "function": "execute",
+        "file": "backend/.venv/lib/python3.12/site-packages/psycopg/cursor.py",
+        "line": 80,
+        "calls": 53,
+        "self_time_ms": 0.253092,
+        "cumulative_time_ms": 147.80121200000002
+      },
+      {
+        "function": "items",
+        "file": "backend/.venv/lib/python3.12/site-packages/jsonschema/_keywords.py",
+        "line": 59,
+        "calls": 115,
+        "self_time_ms": 0.630966,
+        "cumulative_time_ms": 145.798471
+      }
+    ],
+    "qualification_and_file_io_functions": [
+      {
+        "function": "archive_search",
+        "file": "backend/archives/search.py",
+        "line": 253,
+        "calls": 1,
+        "self_time_ms": 1.849587,
+        "cumulative_time_ms": 1390.458844
+      },
+      {
+        "function": "configuration_qualification_reason",
+        "file": "backend/configurations/qualification.py",
+        "line": 12,
+        "calls": 1,
+        "self_time_ms": 0.779307,
+        "cumulative_time_ms": 931.847441
+      },
+      {
+        "function": "deployed_artifact_checksum",
+        "file": "backend/configurations/evidence.py",
+        "line": 43,
+        "calls": 1,
+        "self_time_ms": 11.571098000000001,
+        "cumulative_time_ms": 843.422724
+      },
+      {
+        "function": "read_bytes",
+        "file": "pathlib.py",
+        "line": 1015,
+        "calls": 584,
+        "self_time_ms": 3.0025990000000005,
+        "cumulative_time_ms": 335.179745
+      },
+      {
+        "function": "__init__",
+        "file": "backend/archives/search_context.py",
+        "line": 19,
+        "calls": 1,
+        "self_time_ms": 0.9583720000000001,
+        "cumulative_time_ms": 221.60004600000002
+      },
+      {
+        "function": "open",
+        "file": "pathlib.py",
+        "line": 1005,
+        "calls": 586,
+        "self_time_ms": 0.729151,
+        "cumulative_time_ms": 38.741029000000005
+      },
+      {
+        "function": "inspect_validation_report",
+        "file": "backend/configurations/evidence.py",
+        "line": 144,
+        "calls": 1,
+        "self_time_ms": 0.11356000000000001,
+        "cumulative_time_ms": 22.220654000000003
+      },
+      {
+        "function": "inspect_approved_evidence",
+        "file": "backend/configurations/evidence.py",
+        "line": 88,
+        "calls": 2,
+        "self_time_ms": 0.20553000000000002,
+        "cumulative_time_ms": 14.073788
+      },
+      {
+        "function": "read",
+        "file": "<frozen codecs>",
+        "line": 454,
+        "calls": 1,
+        "self_time_ms": 0.0071200000000000005,
+        "cumulative_time_ms": 0.028116000000000002
+      },
+      {
+        "function": "read",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/http/request.py",
+        "line": 488,
+        "calls": 2,
+        "self_time_ms": 0.004540000000000001,
+        "cumulative_time_ms": 0.019717000000000002
+      },
+      {
+        "function": "read",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/core/handlers/wsgi.py",
+        "line": 29,
+        "calls": 2,
+        "self_time_ms": 0.005849,
+        "cumulative_time_ms": 0.015177000000000001
+      },
+      {
+        "function": "read",
+        "file": "backend/.venv/lib/python3.12/site-packages/django/test/client.py",
+        "line": 86,
+        "calls": 1,
+        "self_time_ms": 0.007782000000000001,
+        "cumulative_time_ms": 0.009154
+      }
+    ]
+  },
+  "source_sha256": {
+    "backend/archives/search.py": "7c95493e79d4c66fe4345903b9e03466f8b165224c1c5afcd11a10bfc7806147",
+    "backend/archives/search_context.py": "e79b28b03dfc2fcd56fe069b217147c8c16ca5c3bbe363f1352498e0b1eda2ca",
+    "backend/configurations/qualification.py": "d8984c71f98dddc4434cc399f089cb4aca8880c63eb0eb0be8009ce2a9e7ba41",
+    "backend/configurations/evidence.py": "01a7bad3757d5ea18936cc7dfb3578063b3ff80949c90704240354eadaa03c84"
+  },
+  "saved_and_reread": true,
+  "scope": {
+    "simulated_data_only": true,
+    "real_capacity": "NOT_RUN",
+    "clinical_scale": "NOT_RUN"
+  }
+}

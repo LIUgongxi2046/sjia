@@ -1,0 +1,40 @@
+{
+  "name": "sjia-guardian-h5",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "check:browser": "node scripts/check-browser.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "0.5.1",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "antd-mobile": "5.43.0",
+    "chart.js": "4.5.1",
+    "decimal.js": "10.6.0",
+    "fast-deep-equal": "3.1.3",
+    "lucide-react": "1.48.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router": "7.18.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "26.6.3",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "playwright": "1.63.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.1"
+  }
+}

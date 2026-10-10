@@ -1,0 +1,36 @@
+.phone[data-page="home"] .app-masthead{padding:12px 20px 14px}
+.phone[data-page="home"] .masthead-top{margin-bottom:9px}
+.phone[data-page="home"] .masthead-title h1{font-size:23px}
+.phone[data-page="home"] .masthead-title p{display:none}
+.phone[data-page="home"] .page-body{gap:10px;padding-top:10px;padding-bottom:14px}
+.notice-card.home-notice{padding:12px 14px 8px;border-radius:18px;border-left-width:4px}
+.home-notice .notice-kicker{font-size:10px}
+.home-notice h2{font-size:18px;margin-top:8px;line-height:1.45}
+.home-notice .notice-care{padding:0;background:transparent;margin-top:5px}
+.home-notice .notice-care strong{font-size:13px;font-weight:500;line-height:1.6}
+.home-notice .notice-footer{margin-top:7px;padding-top:3px;align-items:center}
+.home-notice .notice-footer>small{padding-top:0;font-size:10px}
+.home-notice .notice-actions>button{border:0;padding:0;min-height:36px;font-size:11px}
+.home-twin{padding:12px 12px 12px;background:var(--card);border-radius:24px}
+.home-twin>.section-label{margin:0;gap:8px;min-height:44px}
+.home-twin .section-label>button{font-size:11px;min-height:44px}
+.home-twin .home-patient{display:flex;align-items:center;gap:5px;color:var(--ink);background:transparent}
+.home-patient strong{font-size:16px}
+.home-patient>span{color:var(--muted);font-size:10px}
+.home-child-stage{height:164px;display:flex;justify-content:center;background:radial-gradient(ellipse at 50% 75%,var(--tint),transparent 68%);margin-top:3px}
+.home-child-stage .child-view{width:135px;height:164px}
+.home-child-stage .child-view>img{display:block;width:100%;height:100%;object-fit:contain}
+.home-twin .symptom-compact{padding-top:8px;border:0;margin-top:0}
+.phone .home-twin .symptom-compact>img{width:calc(100% - 16px);height:96px;object-fit:cover;margin-inline:auto;border-radius:14px}
+.home-twin .symptom-columns{gap:6px;margin-top:8px}
+.home-twin .symptom-columns>button{min-height:58px;padding:8px 3px;gap:5px;border:0;background:var(--page)}
+.home-twin .symptom-columns strong{font-size:12px}
+.home-twin .symptom-columns small{font-size:10px;font-weight:500}
+.home-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.home-entry-grid>button{display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid var(--line);border-radius:17px;background:var(--card);color:var(--ink);padding:10px 4px;min-height:74px}
+.home-entry-grid>button>span{color:var(--link);height:24px}
+.home-entry-grid strong{font-size:12px;font-weight:500}
+.home-entry-grid>button:first-child{background:var(--blue);border-color:var(--blue);color:#fff}
+.home-entry-grid>button:first-child>span{color:#fff}
+.home-patient:focus-visible,.home-entry-grid>button:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+@media(max-width:370px){.phone[data-page="home"] .masthead-title h1{font-size:21px}.home-patient strong{font-size:14px}.home-twin .symptom-columns small{font-size:9px}.home-notice h2{font-size:17px}}

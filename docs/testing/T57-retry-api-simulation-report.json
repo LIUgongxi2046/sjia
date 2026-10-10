@@ -1,0 +1,41 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_RETRY_CHECK",
+  "measured_at": "2026-10-09T04:42:17.221235+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-model-20261009-run5",
+    "external_model_requests_during_check": 0,
+    "worker_or_beat_started": false,
+    "shared_queue_consumption": 0,
+    "notifications_sent": 0
+  },
+  "check": {
+    "method": "POST",
+    "path": "/api/tasks/05ff8eb2-e682-4790-81a7-7f147a7e7b4f/retry",
+    "first_http_status": 200,
+    "duplicate_http_status": 200,
+    "source_task_id": "05ff8eb2-e682-4790-81a7-7f147a7e7b4f",
+    "source_task_status": "failed",
+    "source_attempt_id": "45ca89ed-f90b-4451-81d2-5ca5a2e7b701",
+    "source_attempt_status": "failed",
+    "source_failure_created_by_task_service": true,
+    "new_task_id": "03aff855-73ed-4817-88ea-460f7c8ae970",
+    "new_task_status": "accepted",
+    "retry_of": "05ff8eb2-e682-4790-81a7-7f147a7e7b4f",
+    "repeated_request_same_task": true,
+    "outbox_events": 1,
+    "consumer_receipts": 0,
+    "worker_attempts": 0,
+    "finding": "PASS"
+  },
+  "saved_and_reread": true
+}

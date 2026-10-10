@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "sJIA 数据交换格式 DATA V1.2",
+  "oneOf": [
+    {"$ref": "#/$defs/projectDataset"},
+    {"$ref": "#/$defs/clinicalDataset"}
+  ],
+  "$defs": {
+    "uuid": {"type": "string", "format": "uuid"},
+    "text": {"type": "string", "minLength": 1},
+    "decimal": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"},
+    "nullableText": {"type": ["string", "null"]},
+    "nullableUuid": {"oneOf": [{"$ref": "#/$defs/uuid"}, {"type": "null"}]},
+    "nullableDecimal": {"oneOf": [{"$ref": "#/$defs/decimal"}, {"type": "null"}]},
+    "projectDataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "dataset_kind", "dataset_version", "allowed_use", "records"],
+      "properties": {
+        "schema_version": {"const": "1.0.0"},
+        "dataset_kind": {"const": "project_documentation"},
+        "dataset_version": {"$ref": "#/$defs/text"},
+        "allowed_use": {"const": ["project_design_validation"]},
+        "records": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/projectRecord"}}
+      }
+    },
+    "projectRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doc_id", "source", "source_ref", "license", "version", "chunk_id", "section_title", "markdown_text", "sensitivity", "validation_status"],
+      "properties": {
+        "doc_id": {"$ref": "#/$defs/text"},
+        "source": {"$ref": "#/$defs/text"},
+        "source_ref": {"$ref": "#/$defs/text"},
+        "license": {"$ref": "#/$defs/text"},
+        "version": {"$ref": "#/$defs/text"},
+        "chunk_id": {"$ref": "#/$defs/text"},
+        "section_title": {"$ref": "#/$defs/text"},
+        "markdown_text": {"$ref": "#/$defs/text"},
+        "sensitivity": {"const": "project_internal"},
+        "validation_status": {"const": "source_check_required"}
+      }
+    },
+    "sourceRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source_id", "owner", "location", "purpose", "license", "allowed_use", "sensitivity", "update_frequency", "version", "checksum", "retention_policy_id", "rights_evidence_ref", "status"],
+      "properties": {
+        "id": {"$ref": "#/$defs/uuid"},
+        "source_id": {"$ref": "#/$defs/uuid"},
+        "owner": {"$ref": "#/$defs/text"},
+        "location": {"$ref": "#/$defs/text"},
+        "purpose": {"$ref": "#/$defs/text"},
+        "license": {"$ref": "#/$defs/text"},
+        "allowed_use": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+        "sensitivity": {"const": "clinical_restricted"},
+        "update_frequency": {"$ref": "#/$defs/text"},
+        "version": {"$ref": "#/$defs/text"},
+        "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "retention_policy_id": {"$ref": "#/$defs/uuid"},
+        "rights_evidence_ref": {"$ref": "#/$defs/text"},
+        "status": {"enum": ["pending", "approved", "revoked"]}
+      }
+    },
+    "medicalTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_text", "precision", "local_date", "local_datetime", "timezone_name", "utc_offset_minutes", "instant", "resolution_status"],
+      "properties": {
+        "raw_text": {"$ref": "#/$defs/nullableText"},
+        "id": {"$ref": "#/$defs/uuid"},
+        "precision": {"enum": ["unknown", "year", "month", "month_range", "relative", "date", "minute", "second"]},
+        "patient_id": {"$ref": "#/$defs/uuid"},
+        "local_year": {"type": ["integer", "null"], "minimum": 1, "maximum": 9999},
+        "local_month": {"type": ["integer", "null"], "minimum": 1, "maximum": 12},
+        "end_year": {"type": ["integer", "null"], "minimum": 1, "maximum": 9999},
+        "end_month": {"type": ["integer", "null"], "minimum": 1, "maximum": 12},
+        "relative_text": {"$ref": "#/$defs/nullableText"},
+        "local_date": {"type": ["string", "null"], "format": "date"},
+        "local_datetime": {"type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2})?$"},
+        "timezone_name": {"$ref": "#/$defs/nullableText"},
+        "utc_offset_minutes": {"type": ["integer", "null"], "minimum": -840, "maximum": 840},
+        "instant": {"type": ["string", "null"], "format": "date-time"},
+        "resolution_status": {"enum": ["unknown", "local_only", "resolved", "ambiguous", "invalid"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"precision": {"enum": ["year", "month", "month_range", "relative"]}}}, "then": {"required": ["local_year", "local_month", "end_year", "end_month", "relative_text"], "properties": {"local_date": {"type": "null"}, "local_datetime": {"type": "null"}, "instant": {"type": "null"}, "timezone_name": {"type": "null"}, "utc_offset_minutes": {"type": "null"}}}},
+        {"if": {"properties": {"precision": {"const": "year"}}}, "then": {"properties": {"local_year": {"type": "integer"}, "local_month": {"type": "null"}, "end_year": {"type": "null"}, "end_month": {"type": "null"}, "relative_text": {"type": "null"}, "resolution_status": {"const": "local_only"}}}},
+        {"if": {"properties": {"precision": {"const": "month"}}}, "then": {"properties": {"local_year": {"type": "integer"}, "local_month": {"type": "integer"}, "end_year": {"type": "null"}, "end_month": {"type": "null"}, "relative_text": {"type": "null"}, "resolution_status": {"const": "local_only"}}}},
+        {"if": {"properties": {"precision": {"const": "month_range"}}}, "then": {"properties": {"local_year": {"type": "integer"}, "local_month": {"type": "integer"}, "end_year": {"type": "integer"}, "end_month": {"type": "integer"}, "relative_text": {"type": "null"}, "resolution_status": {"const": "local_only"}}}},
+        {"if": {"properties": {"precision": {"const": "relative"}}}, "then": {"properties": {"local_year": {"type": "null"}, "local_month": {"type": "null"}, "end_year": {"type": "null"}, "end_month": {"type": "null"}, "relative_text": {"$ref": "#/$defs/text"}, "resolution_status": {"const": "unknown"}}}},
+        {"if": {"properties": {"precision": {"enum": ["unknown", "date", "minute", "second"]}}}, "then": {"properties": {"local_year": {"type": "null"}, "local_month": {"type": "null"}, "end_year": {"type": "null"}, "end_month": {"type": "null"}, "relative_text": {"type": "null"}}}},
+        {"if": {"properties": {"precision": {"const": "unknown"}}}, "then": {"properties": {"local_date": {"type": "null"}, "local_datetime": {"type": "null"}, "instant": {"type": "null"}, "resolution_status": {"const": "unknown"}}}},
+        {"if": {"properties": {"precision": {"const": "date"}}}, "then": {"properties": {"local_date": {"type": "string"}, "local_datetime": {"type": "null"}, "instant": {"type": "null"}, "resolution_status": {"const": "local_only"}}}},
+        {"if": {"properties": {"precision": {"enum": ["minute", "second"]}}}, "then": {"properties": {"local_datetime": {"type": "string"}}}},
+        {"if": {"properties": {"resolution_status": {"const": "resolved"}}}, "then": {"properties": {"precision": {"enum": ["minute", "second"]}, "instant": {"type": "string"}, "timezone_name": {"type": ["string", "null"], "minLength": 1}, "utc_offset_minutes": {"type": "integer"}}}, "else": {"properties": {"instant": {"type": "null"}}}}
+      ]
+    },
+    "sourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_revision_id", "record_version_id", "field_id", "file_id", "page_id", "anchor_id", "verification_ids", "mapping_id"],
+      "properties": {
+        "source_revision_id": {"$ref": "#/$defs/nullableUuid"},
+        "record_version_id": {"$ref": "#/$defs/uuid"},
+        "field_id": {"$ref": "#/$defs/uuid"},
+        "file_id": {"$ref": "#/$defs/nullableUuid"},
+        "page_id": {"$ref": "#/$defs/nullableUuid"},
+        "anchor_id": {"$ref": "#/$defs/nullableUuid"},
+        "verification_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/uuid"}},
+        "mapping_id": {"$ref": "#/$defs/nullableUuid"}
+      }
+    },
+    "clinicalFieldBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_id", "ordinal", "field_code", "concept_code", "dictionary_entry_id", "original_name", "value_type", "value_state", "raw_text", "raw_numeric", "categorical_value", "qualifier", "raw_unit", "method", "reference_interval", "report_flag", "medical_time", "sample_time_origin", "quality_reasons", "source_reference"],
+      "properties": {
+        "field_id": {"$ref": "#/$defs/uuid"},
+        "ordinal": {"type": "integer", "minimum": 1},
+        "field_code": {"$ref": "#/$defs/text"},
+        "concept_code": {"$ref": "#/$defs/nullableText"},
+        "dictionary_entry_id": {"$ref": "#/$defs/nullableUuid"},
+        "original_name": {"$ref": "#/$defs/nullableText"},
+        "value_type": {"enum": ["decimal", "categorical", "text", "time"]},
+        "value_state": {"enum": ["known", "unknown", "invalid"]},
+        "raw_text": {"$ref": "#/$defs/nullableText"},
+        "raw_numeric": {"$ref": "#/$defs/nullableDecimal"},
+        "categorical_value": {"$ref": "#/$defs/nullableText"},
+        "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]},
+        "raw_unit": {"$ref": "#/$defs/nullableText"},
+        "method": {"$ref": "#/$defs/nullableText"},
+        "reference_interval": {"$ref": "#/$defs/nullableText"},
+        "report_flag": {"$ref": "#/$defs/nullableText"},
+        "medical_time": {"oneOf": [{"$ref": "#/$defs/medicalTime"}, {"type": "null"}]},
+        "sample_time_origin": {"enum": ["report", "item", "observation", "therapy", "unknown"]},
+        "quality_reasons": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+        "source_reference": {"$ref": "#/$defs/sourceReference"}
+      },
+      "allOf": [
+        {"if": {"properties": {"value_state": {"enum": ["unknown", "invalid"]}}}, "then": {"properties": {"raw_numeric": {"type": "null"}, "categorical_value": {"type": "null"}}}},
+        {"if": {"properties": {"value_type": {"const": "decimal"}, "value_state": {"const": "known"}}}, "then": {"properties": {"raw_numeric": {"$ref": "#/$defs/decimal"}}}},
+        {"if": {"properties": {"value_type": {"const": "categorical"}, "value_state": {"const": "known"}}}, "then": {"properties": {"categorical_value": {"$ref": "#/$defs/text"}}}},
+        {"if": {"properties": {"value_type": {"const": "text"}, "value_state": {"const": "known"}}}, "then": {"properties": {"raw_text": {"$ref": "#/$defs/text"}}}},
+        {"if": {"properties": {"value_type": {"const": "time"}, "value_state": {"const": "known"}}}, "then": {"properties": {"medical_time": {"$ref": "#/$defs/medicalTime"}}}},
+        {"if": {"properties": {"value_type": {"not": {"const": "decimal"}}}}, "then": {"properties": {"raw_numeric": {"type": "null"}}}},
+        {"if": {"properties": {"value_type": {"not": {"const": "categorical"}}}}, "then": {"properties": {"categorical_value": {"type": "null"}}}}
+      ]
+    },
+    "clinicalField": {
+      "allOf": [
+        {"$ref": "#/$defs/clinicalFieldBase"},
+        {"if": {"properties": {"value_state": {"enum": ["unknown", "invalid"]}}}, "then": {"properties": {"quality_reasons": {"minItems": 1}}}}
+      ]
+    },
+    "reportMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "external_ref", "source_organization", "report_status", "sample_time", "result_time", "file_group_id", "replaces_report_id"],
+      "properties": {
+        "report_id": {"$ref": "#/$defs/uuid"},
+        "external_ref": {"$ref": "#/$defs/nullableText"},
+        "source_organization": {"$ref": "#/$defs/nullableText"},
+        "report_status": {"enum": ["unknown", "preliminary", "final", "corrected"]},
+        "sample_time": {"oneOf": [{"$ref": "#/$defs/medicalTime"}, {"type": "null"}]},
+        "result_time": {"oneOf": [{"$ref": "#/$defs/medicalTime"}, {"type": "null"}]},
+        "file_group_id": {"$ref": "#/$defs/nullableUuid"},
+        "replaces_report_id": {"$ref": "#/$defs/nullableUuid"}
+      }
+    },
+    "clinicalRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_id", "record_version_id", "patient_id", "version", "kind", "author_id", "origin_type", "capture_method", "source_revision_id", "use_authorization_id", "retention_policy_id", "recorded_at", "quality_status", "quality_reasons", "supersedes_version", "correction_reason", "report", "fields"],
+      "properties": {
+        "record_id": {"$ref": "#/$defs/uuid"},
+        "record_version_id": {"$ref": "#/$defs/uuid"},
+        "patient_id": {"$ref": "#/$defs/uuid"},
+        "version": {"type": "integer", "minimum": 1},
+        "kind": {"enum": ["observation", "report", "therapy", "professional"]},
+        "author_id": {"$ref": "#/$defs/uuid"},
+        "origin_type": {"enum": ["self_report", "report_transcription", "authorized_clinical"]},
+        "capture_method": {"enum": ["manual", "ocr_confirmed", "voice_confirmed", "authorized_import"]},
+        "source_revision_id": {"$ref": "#/$defs/nullableUuid"},
+        "use_authorization_id": {"$ref": "#/$defs/uuid"},
+        "retention_policy_id": {"$ref": "#/$defs/uuid"},
+        "recorded_at": {"type": "string", "format": "date-time"},
+        "quality_status": {"enum": ["pending", "valid", "needs_correction"]},
+        "quality_reasons": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+        "supersedes_version": {"type": ["integer", "null"], "minimum": 1},
+        "correction_reason": {"$ref": "#/$defs/nullableText"},
+        "report": {"oneOf": [{"$ref": "#/$defs/reportMetadata"}, {"type": "null"}]},
+        "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/clinicalField"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"version": {"const": 1}}}, "then": {"properties": {"supersedes_version": {"type": "null"}, "correction_reason": {"type": "null"}}}, "else": {"properties": {"supersedes_version": {"type": "integer"}, "correction_reason": {"$ref": "#/$defs/text"}}}},
+        {"if": {"properties": {"kind": {"const": "report"}}}, "then": {"properties": {"report": {"$ref": "#/$defs/reportMetadata"}}}}
+      ]
+    },
+    "clinicalDataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "dataset_kind", "dataset_version", "environment", "allowed_use", "sources", "records"],
+      "properties": {
+        "schema_version": {"enum": ["1.0.0", "1.1.0"]},
+        "case_details": {"$ref": "case-extension.schema.json"},
+        "medical_times": {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/medicalTime"}], "required": ["id", "patient_id"]}},
+        "dataset_kind": {"const": "clinical"},
+        "dataset_version": {"$ref": "#/$defs/text"},
+        "environment": {"$ref": "#/$defs/text"},
+        "allowed_use": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/text"}},
+        "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sourceRevision"}},
+        "records": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/clinicalRecord"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"schema_version": {"const": "1.1.0"}}}, "then": {"required": ["case_details", "medical_times"]}, "else": {"not": {"anyOf": [{"required": ["case_details"]}, {"required": ["medical_times"]}]}}}
+      ]
+    }
+  }
+}

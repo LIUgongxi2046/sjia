@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Query": {"type": "object", "additionalProperties": false, "properties": {
+      "reminder_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "limit": {"type": "integer", "minimum": 1},
+      "cursor": {"type": "string", "minLength": 1, "maxLength": 65536}
+    }},
+    "Notice": {"type": "object", "additionalProperties": false, "required": ["notice_id", "patient_id", "reminder_id", "reminder_version", "target_type", "target_id", "target_state", "status", "channel", "scheduled_at", "created_at", "delivered_at", "read_at", "receipts", "current_setting", "snapshot_version"], "properties": {
+      "notice_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "reminder_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "reminder_version": {"$ref": "protocol.schema.json#/$defs/Version"},
+      "target_type": {"enum": ["draft", "batch", "record_task"]}, "target_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "target_state": {"enum": ["pending", "completed", "cancelled", "changed", "unavailable"]},
+      "status": {"enum": ["pending", "accepted", "delivered", "failed", "uncertain", "cancelled"]}, "channel": {"const": "in_app"},
+      "scheduled_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "created_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"},
+      "delivered_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "read_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"},
+      "receipts": {"type": "array", "items": {"$ref": "notification.schema.json#/$defs/Receipt"}},
+      "current_setting": {"type": "boolean"}, "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}
+    }},
+    "History": {"type": "object", "additionalProperties": false, "required": ["items", "next_cursor", "snapshot_version"], "properties": {
+      "items": {"type": "array", "items": {"$ref": "#/$defs/Notice"}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"},
+      "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}
+    }},
+    "Message": {"type": "object", "additionalProperties": false, "required": ["notice_id", "reminder_id", "patient_id", "approved_text", "deep_link", "content_id", "content_version", "delivery_ticket", "expires_at"], "properties": {
+      "notice_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "reminder_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "approved_text": {"$ref": "protocol.schema.json#/$defs/Text"},
+      "deep_link": {"type": "string", "pattern": "^/account/reminders\\?reminder=[0-9a-f-]{36}$"},
+      "content_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "content_version": {"$ref": "protocol.schema.json#/$defs/Version"},
+      "delivery_ticket": {"$ref": "protocol.schema.json#/$defs/Text"}, "expires_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}
+    }},
+    "Acknowledgement": {"type": "object", "additionalProperties": false, "required": ["delivery_ticket"], "properties": {
+      "delivery_ticket": {"type": "string", "minLength": 1, "maxLength": 65536}
+    }},
+    "EmptyInput": {"type": "object", "additionalProperties": false, "maxProperties": 0}
+  }
+}

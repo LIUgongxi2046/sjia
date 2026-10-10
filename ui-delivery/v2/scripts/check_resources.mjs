@@ -1,0 +1,12 @@
+import {mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {chromium} from '../../../guardian-h5/node_modules/playwright/index.mjs';
+const temporary=fileURLToPath(new URL('../../../.ui-work/ui2-browser/',import.meta.url));
+await mkdir(temporary,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true,env:{...process.env,TMPDIR:temporary}});
+const page=await browser.newPage();
+page.on('console',message=>{if(message.type()==='error')console.log(JSON.stringify({message:message.text(),location:message.location()}));});
+page.on('response',response=>{if(response.status()>=400)console.log(JSON.stringify({status:response.status(),url:response.url()}));});
+await page.goto('http://127.0.0.1:5188/?screen=home');
+await page.waitForLoadState('networkidle');
+await browser.close();

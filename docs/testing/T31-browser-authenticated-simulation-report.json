@@ -1,0 +1,166 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_AUTHENTICATED_H5_MEASUREMENT",
+  "measured_at": "2026-10-09T05:32:56.094Z",
+  "runtime": {
+    "node": "v24.13.0",
+    "playwright": "1.63.0",
+    "browser": "Google Chrome headless",
+    "browser_version": "155.0.8059.39",
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "device_scale_factor": 1
+    },
+    "screenshots": 0,
+    "visual_inspection": "NOT_RUN"
+  },
+  "target": {
+    "simulation_target": true,
+    "origin": "http://127.0.0.1:18418",
+    "api_target": "http://127.0.0.1:8001",
+    "database": "sjia_simulation",
+    "username": "simulation-family",
+    "iterations": 1,
+    "first_visit_contexts": 1,
+    "repeat_visits": 1,
+    "api_requests_are_live": true,
+    "external_requests": 0,
+    "browser_profile_temp_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/browser-runtime"
+  },
+  "browser_network": {
+    "off_origin_requests_blocked": 0,
+    "intercepted_api_requests": 0,
+    "mocked_responses": 0
+  },
+  "api": {
+    "response_count": 16,
+    "status_counts": {
+      "200": 15,
+      "401": 1
+    },
+    "login_request_count": 1,
+    "login_statuses": [
+      200
+    ],
+    "archive_search_requests": [
+      {
+        "method": "POST",
+        "path": "/api/v2/patients/e88faef5-8bf6-4256-b5a5-865c699103d6/archives/search",
+        "status": 200,
+        "content_length": 26577
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/patients/e88faef5-8bf6-4256-b5a5-865c699103d6/archives/search",
+        "status": 200,
+        "content_length": 26576
+      }
+    ],
+    "archive_search_count": 2,
+    "saved_record_readback": {
+      "first_visit_count": 10,
+      "repeat_visit_count": 10,
+      "saved_items_sha256_equal": true,
+      "first_visit_response_sha256": "6eb9d7ee24ba1f223bc2a40ea1119ab877bdc01c8a374f2afdcb473c4ebc7bbc",
+      "repeat_visit_response_sha256": "f7e1e197dc1adcad0a617a75087729d122e510babfe160a811ca6af6dd0e86db",
+      "saved_items_sha256": "fdd19fd9bca787648cf91b3970e6d56cf1ca494529dfaa340a5cf070f8d903d2",
+      "rendered_item_count_matches_api": true
+    }
+  },
+  "sample_policy": {
+    "p95_p99_reported_only_when_sample_count_at_least_20": true
+  },
+  "first_visit": {
+    "samples": 1,
+    "successes": 1,
+    "failures": 0,
+    "failure_rate": 0,
+    "navigation_elapsed_ms": [
+      3990.5855390000006
+    ],
+    "api_search_elapsed_ms": [
+      2535.7463560000006
+    ],
+    "login_flow_elapsed_ms": [
+      2663.834562
+    ],
+    "navigation_elapsed_p95_ms": null,
+    "navigation_elapsed_p99_ms": null,
+    "api_search_elapsed_p95_ms": null,
+    "api_search_elapsed_p99_ms": null,
+    "dom_content_loaded_ms": [
+      634.5
+    ],
+    "load_event_ms": [
+      636.2999999821186
+    ],
+    "dom_content_loaded_p95_ms": null,
+    "dom_content_loaded_p99_ms": null,
+    "load_event_p95_ms": null,
+    "load_event_p99_ms": null,
+    "resource_transfer_bytes": [
+      2646871
+    ],
+    "resource_transfer_bytes_p95": null,
+    "resource_transfer_bytes_p99": null,
+    "mean_resource_count": 23,
+    "mean_resource_transfer_bytes": 2646871,
+    "mean_resource_encoded_bytes": 2639971,
+    "long_task_count": 2,
+    "long_task_total_ms": 305,
+    "long_task_max_ms": 201,
+    "js_heap_used_bytes_mean": 19496629
+  },
+  "repeat_visit": {
+    "samples": 1,
+    "successes": 1,
+    "failures": 0,
+    "failure_rate": 0,
+    "navigation_elapsed_ms": [
+      1908.7904639999997
+    ],
+    "api_search_elapsed_ms": [
+      1163.975939
+    ],
+    "login_flow_elapsed_ms": [
+      null
+    ],
+    "navigation_elapsed_p95_ms": null,
+    "navigation_elapsed_p99_ms": null,
+    "api_search_elapsed_p95_ms": null,
+    "api_search_elapsed_p99_ms": null,
+    "dom_content_loaded_ms": [
+      238.19999998807907
+    ],
+    "load_event_ms": [
+      238.30000001192093
+    ],
+    "dom_content_loaded_p95_ms": null,
+    "dom_content_loaded_p99_ms": null,
+    "load_event_p95_ms": null,
+    "load_event_p99_ms": null,
+    "resource_transfer_bytes": [
+      2646870
+    ],
+    "resource_transfer_bytes_p95": null,
+    "resource_transfer_bytes_p99": null,
+    "mean_resource_count": 23,
+    "mean_resource_transfer_bytes": 2646870,
+    "mean_resource_encoded_bytes": 2639970,
+    "long_task_count": 2,
+    "long_task_total_ms": 343,
+    "long_task_max_ms": 282,
+    "js_heap_used_bytes_mean": 31459691
+  },
+  "javascript_page_errors": {
+    "count": 0,
+    "messages": []
+  },
+  "saved_and_reread": true,
+  "scope": {
+    "simulated_data_only": true,
+    "real_capacity": "NOT_RUN",
+    "clinical_scale": "NOT_RUN"
+  }
+}

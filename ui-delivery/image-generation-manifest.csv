@@ -1,0 +1,7 @@
+asset_id,generation_tool,prompt_summary,source_image_path,output_file_path
+child-front-master,image_gen__imagegen,通用幼儿全身正面；浅蓝上衣米白长裤；透明背景；中性表情；无文字无病情特征,assets/master/child-neutral-front.png,assets/master/child-neutral-front.png
+child-back-master,image_gen__imagegen,依据同一正面角色生成背面；保持比例服装光线与透明背景,assets/master/child-neutral-front.png,assets/master/child-neutral-back.png
+symptom-trio-master,image_gen__imagegen,发热头部与体温计；皮疹前臂斑点；关节炎膝部示意；三联3D插画；透明背景；无文字,assets/master/symptom-trio.png,assets/master/symptom-trio.png
+clinical-3d-icons,image_gen__imagegen,四乘四主导航与健康任务图标；三维黏土材质；透明背景,assets/master/clinical-3d-icons.png,assets/master/clinical-3d-icons.png
+utility-3d-icons,image_gen__imagegen,四乘四返回关闭缩放编辑图标；三维黏土材质；透明背景,assets/master/utility-3d-icons.png,assets/master/utility-3d-icons.png
+extended-3d-icons,image_gen__imagegen,四乘四资料状态和辅助操作图标；三维黏土材质；透明背景,assets/master/extended-3d-icons.png,assets/master/extended-3d-icons.png

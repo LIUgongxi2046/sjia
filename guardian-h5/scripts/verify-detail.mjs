@@ -1,0 +1,18 @@
+import { chromium } from 'playwright';
+const baseURL = 'http://127.0.0.1:5173';
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+const errors = [];
+page.on('pageerror', (e) => errors.push(e.message));
+await page.goto(`${baseURL}/login`);
+await page.fill('input[placeholder="账号"]', 'guardian-1');
+await page.fill('input[type="password"]', 'demo-pass-1');
+await page.getByRole('button', { name: '登录', exact: true }).click();
+await page.waitForURL(`${baseURL}/home`);
+await page.goto(`${baseURL}/records`);
+await page.waitForSelector('.record-list li a');
+await page.locator('.record-list li a').first().click();
+await page.waitForFunction(() => document.body.textContent.includes('体温'), null, { timeout: 10000 });
+const facts = await page.locator('.facts div').allTextContents();
+console.log(JSON.stringify({ facts: facts.slice(0, 4), pageErrors: errors }));
+await browser.close();

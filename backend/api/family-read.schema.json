@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "当前家庭首页、提示与草稿读取结构",
+  "$defs": {
+    "Uuid": {"type": "string", "format": "uuid"},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "NullableTimestamp": {"type": ["string", "null"], "format": "date-time"},
+    "DraftView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["draft_id", "form_type", "version", "saved_at", "status", "payload", "patient_id"],
+      "properties": {
+        "draft_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"},
+        "form_type": {"enum": ["observation", "report", "therapy", "correction"]},
+        "version": {"type": "string", "pattern": "^[1-9][0-9]*$"}, "saved_at": {"$ref": "#/$defs/Timestamp"},
+        "status": {"enum": ["editing", "submitted", "abandoned", "expired"]}, "payload": {"type": "object"}
+      },
+      "allOf": [{"if": {"properties": {"form_type": {"const": "correction"}}}, "then": {
+        "properties": {"payload": {"type": "object", "required": ["recordId", "version"], "properties": {
+          "recordId": {"$ref": "#/$defs/Uuid"}, "version": {"type": "integer", "minimum": 1}
+        }}}
+      }}]
+    },
+    "DraftList": {
+      "type": "object", "additionalProperties": false, "required": ["drafts"],
+      "properties": {"drafts": {"type": "array", "items": {"allOf": [
+        {"$ref": "#/$defs/DraftView"}, {"type": "object", "properties": {"status": {"const": "editing"}}}
+      ]}}}
+    },
+    "HomeView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["assessment_state", "assessed_at", "current_alert_id", "service_state", "data_state", "processing_state", "alert_state", "read_state"],
+      "properties": {
+        "assessment_state": {"enum": ["configuration_pending", "not_evaluated", "insufficient", "stale", "current"]},
+        "assessed_at": {"$ref": "#/$defs/NullableTimestamp"},
+        "current_alert_id": {"type": ["string", "null"], "format": "uuid"},
+        "service_state": {"enum": ["enabled", "disabled", "unavailable"]},
+        "data_state": {"enum": ["empty", "present", "incomplete"]},
+        "processing_state": {"enum": ["idle", "pending", "running", "failed"]},
+        "alert_state": {"enum": ["none", "current", "invalid"]},
+        "read_state": {"enum": ["unread", "read", "not_applicable"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"service_state": {"enum": ["disabled", "unavailable"]}}},
+         "then": {"properties": {"assessed_at": {"type": "null"}, "current_alert_id": {"type": "null"}, "read_state": {"const": "not_applicable"}}}},
+        {"if": {"properties": {"current_alert_id": {"type": "string"}}},
+         "then": {"properties": {"assessment_state": {"const": "current"}, "service_state": {"const": "enabled"}, "alert_state": {"const": "current"}, "assessed_at": {"type": "string"}}}}
+      ]
+    },
+    "AlertItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alert_id", "created_at", "validity", "channel", "read_at"],
+      "properties": {"alert_id": {"$ref": "#/$defs/Uuid"}, "created_at": {"$ref": "#/$defs/Timestamp"},
+        "validity": {"enum": ["valid", "invalid"]}, "channel": {"type": "string", "minLength": 1}, "read_at": {"$ref": "#/$defs/NullableTimestamp"}}
+    },
+    "AlertList": {
+      "type": "object", "additionalProperties": false, "required": ["alerts"],
+      "properties": {"alerts": {"type": "array", "items": {"$ref": "#/$defs/AlertItem"}}}
+    },
+    "SourceReference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["record_version_id", "field_id", "source_revision_id", "source_version"],
+      "properties": {"record_version_id": {"$ref": "#/$defs/Uuid"}, "field_id": {"$ref": "#/$defs/Uuid"},
+        "source_revision_id": {"$ref": "#/$defs/Uuid"}, "source_version": {"type": "string", "minLength": 1}}
+    },
+    "Contact": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["state"], "properties": {"state": {"const": "unavailable"}}},
+        {"type": "object", "additionalProperties": false,
+         "required": ["state", "contact_version_id", "contact_name", "purpose", "channel", "channel_value", "valid_until"],
+         "properties": {"state": {"const": "available"}, "contact_version_id": {"$ref": "#/$defs/Uuid"},
+           "contact_name": {"type": "string", "minLength": 1}, "purpose": {"type": "string", "minLength": 1},
+           "channel": {"enum": ["phone", "email", "in_app"]}, "channel_value": {"type": "string", "minLength": 1}, "valid_until": {"$ref": "#/$defs/Timestamp"}}}
+      ]
+    },
+    "AlertContent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["content_id", "content_version", "approved_text", "source_refs", "contact"],
+      "properties": {"content_id": {"$ref": "#/$defs/Uuid"}, "content_version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "approved_text": {"type": "string", "minLength": 1}, "source_refs": {"type": "array", "items": {"$ref": "#/$defs/SourceReference"}}, "contact": {"$ref": "#/$defs/Contact"}}
+    },
+    "AlertProjection": {
+      "type": "object", "additionalProperties": false, "required": ["validity", "content_state", "content", "assessed_at"],
+      "properties": {"assessed_at": {"$ref": "#/$defs/NullableTimestamp"}, "validity": {"enum": ["valid", "invalid"]}, "content_state": {"enum": ["available", "configuration_pending", "unavailable"]},
+        "content": {"oneOf": [{"$ref": "#/$defs/AlertContent"}, {"type": "null"}]}},
+      "allOf": [{"if": {"properties": {"content_state": {"const": "available"}}},
+        "then": {"properties": {"validity": {"const": "valid"}, "content": {"type": "object"}, "assessed_at": {"type": "string"}}},
+        "else": {"properties": {"content": {"type": "null"}, "assessed_at": {"type": "null"}}}}]
+    },
+    "AlertDetailView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alert_id", "created_at", "validity", "read_at", "content_state", "content", "assessed_at"],
+      "properties": {"assessed_at": {"$ref": "#/$defs/NullableTimestamp"}, "alert_id": {"$ref": "#/$defs/Uuid"}, "created_at": {"$ref": "#/$defs/Timestamp"},
+        "validity": {"enum": ["valid", "invalid"]}, "read_at": {"$ref": "#/$defs/NullableTimestamp"},
+        "content_state": {"enum": ["available", "configuration_pending", "unavailable"]},
+        "content": {"oneOf": [{"$ref": "#/$defs/AlertContent"}, {"type": "null"}]}},
+      "allOf": [{"if": {"properties": {"content_state": {"const": "available"}}},
+        "then": {"properties": {"validity": {"const": "valid"}, "content": {"type": "object"}, "assessed_at": {"type": "string"}}},
+        "else": {"properties": {"content": {"type": "null"}, "assessed_at": {"type": "null"}}}}]
+    },
+    "AlertReadReceipt": {
+      "type": "object", "additionalProperties": false, "required": ["alert_id", "read_at"],
+      "properties": {"alert_id": {"$ref": "#/$defs/Uuid"}, "read_at": {"$ref": "#/$defs/NullableTimestamp"}}
+    }
+  }
+}

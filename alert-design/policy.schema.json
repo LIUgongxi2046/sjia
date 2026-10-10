@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:alert-policy:1",
+  "title": "预警配置设计格式",
+  "description": "格式通过只证明结构完整；全部临床参数、引用和批准在服务端继续核验。没有默认临床参数。",
+  "oneOf": [
+    {"$ref": "#/$defs/WindowPolicy"},
+    {"$ref": "#/$defs/TriggerPolicy"}
+  ],
+  "$defs": {
+    "Text": {"type": "string", "minLength": 1},
+    "Uuid": {"type": "string", "format": "uuid"},
+    "Decimal": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"},
+    "Evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
+    "Scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["population_config_id", "therapy_policy_id", "evidence_refs"],
+      "properties": {
+        "population_config_id": {"$ref": "#/$defs/Uuid"},
+        "therapy_policy_id": {"$ref": "#/$defs/Uuid"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    },
+    "VariableWindow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["variable_code", "current_max_age_seconds", "baseline_max_age_seconds", "minimum_separation_seconds", "accepted_precision", "current_selection", "baseline_selection", "date_interval_policy", "lower_bound_inclusive", "upper_bound_inclusive", "conflict_policy", "comparison_policy_id"],
+      "properties": {
+        "variable_code": {"$ref": "#/$defs/Text"},
+        "current_max_age_seconds": {"type": "integer", "minimum": 1},
+        "baseline_max_age_seconds": {"type": "integer", "minimum": 1},
+        "minimum_separation_seconds": {"type": "integer", "minimum": 1},
+        "accepted_precision": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["date", "minute", "second"]}},
+        "current_selection": {"enum": ["latest_eligible_sample", "explicit_clinical_selection"]},
+        "baseline_selection": {"enum": ["previous_eligible_sample", "explicit_clinical_baseline"]},
+        "date_interval_policy": {"const": "require_full_containment_and_strict_order"},
+        "lower_bound_inclusive": {"type": "boolean"},
+        "upper_bound_inclusive": {"type": "boolean"},
+        "conflict_policy": {"const": "require_verification"},
+        "comparison_policy_id": {"$ref": "#/$defs/Uuid"}
+      }
+    },
+    "WindowPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "scope", "variables", "max_cross_analyte_gap_seconds", "clinical_finding_validity_policy_id", "late_result_policy_id", "known_at_policy", "evidence_refs"],
+      "properties": {
+        "schema_version": {"const": "alert-window-1"},
+        "scope": {"$ref": "#/$defs/Scope"},
+        "variables": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/VariableWindow"}},
+        "max_cross_analyte_gap_seconds": {"type": "integer", "minimum": 1},
+        "clinical_finding_validity_policy_id": {"$ref": "#/$defs/Uuid"},
+        "late_result_policy_id": {"$ref": "#/$defs/Uuid"},
+        "known_at_policy": {"const": "only_available_and_verified_by_cutoff"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    },
+    "AssessmentCondition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["signal_id", "kind", "assessment_rule_id", "evidence_refs"],
+      "properties": {
+        "signal_id": {"$ref": "#/$defs/Text"},
+        "kind": {"enum": ["classification_met", "ms_threshold_met"]},
+        "assessment_rule_id": {"$ref": "#/$defs/Uuid"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    },
+    "TrendCondition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["signal_id", "kind", "variable_code", "metric", "operator", "threshold", "unit", "series", "evidence_refs"],
+      "properties": {
+        "signal_id": {"$ref": "#/$defs/Text"},
+        "kind": {"const": "trend"},
+        "variable_code": {"enum": ["ferritin", "platelet_count", "ast", "fibrinogen", "triglycerides", "ldh"]},
+        "metric": {"enum": ["absolute_delta", "relative_delta"]},
+        "operator": {"enum": ["gt", "gte", "lt", "lte"]},
+        "threshold": {"$ref": "#/$defs/Decimal"},
+        "unit": {"$ref": "#/$defs/Text"},
+        "series": {"$ref": "#/$defs/Series"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    },
+    "Series": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sample_count", "max_gap_seconds", "comparison_scope", "equal_value_breaks_series", "direction"],
+      "properties": {
+        "sample_count": {"type": "integer", "minimum": 2},
+        "max_gap_seconds": {"type": "integer", "minimum": 1},
+        "comparison_scope": {"enum": ["each_adjacent_pair", "baseline_to_current"]},
+        "equal_value_breaks_series": {"type": "boolean"},
+        "direction": {"enum": ["increasing", "decreasing"]}
+      }
+    },
+    "FindingCondition": {
+      "type": "object", "additionalProperties": false,
+      "required": ["signal_id", "kind", "field_code", "required_state", "verification_policy_id", "evidence_refs"],
+      "properties": {
+        "signal_id": {"$ref": "#/$defs/Text"},
+        "kind": {"const": "professional_finding"},
+        "field_code": {"$ref": "#/$defs/Text"},
+        "required_state": {"enum": ["present", "absent"]},
+        "verification_policy_id": {"$ref": "#/$defs/Uuid"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    },
+    "Combination": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operator"],
+      "properties": {
+        "operator": {"enum": ["all", "any", "at_least"]},
+        "signal_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
+        "groups": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/Combination"}},
+        "minimum_met": {"type": "integer", "minimum": 1}
+      },
+      "anyOf": [{"required": ["signal_refs"]}, {"required": ["groups"]}],
+      "allOf": [{"if": {"properties": {"operator": {"const": "at_least"}}}, "then": {"required": ["minimum_met"]}, "else": {"not": {"required": ["minimum_met"]}}}]
+    },
+    "Publication": {
+      "type": "object", "additionalProperties": false,
+      "required": ["level", "priority", "content_config_id", "visibility_config_id", "contact_version_id", "notification_config_id", "valid_for_seconds"],
+      "properties": {
+        "level": {"enum": ["attention", "warning", "urgent"]},
+        "priority": {"type": "integer", "minimum": 1},
+        "content_config_id": {"$ref": "#/$defs/Uuid"},
+        "visibility_config_id": {"$ref": "#/$defs/Uuid"},
+        "contact_version_id": {"$ref": "#/$defs/Uuid"},
+        "notification_config_id": {"$ref": "#/$defs/Uuid"},
+        "valid_for_seconds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "EpisodePolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rule_family_key", "repeat_policy", "escalation_bypasses_cooldown", "reset_policy_id", "retrigger_policy_id"],
+      "properties": {
+        "rule_family_key": {"$ref": "#/$defs/Text"},
+        "repeat_policy": {"enum": ["once_until_reset", "approved_interval"]},
+        "repeat_interval_seconds": {"type": "integer", "minimum": 1},
+        "escalation_bypasses_cooldown": {"type": "boolean"},
+        "reset_policy_id": {"$ref": "#/$defs/Uuid"},
+        "retrigger_policy_id": {"$ref": "#/$defs/Uuid"}
+      },
+      "allOf": [{"if": {"properties": {"repeat_policy": {"const": "approved_interval"}}}, "then": {"required": ["repeat_interval_seconds"]}, "else": {"not": {"required": ["repeat_interval_seconds"]}}}]
+    },
+    "TriggerPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "rule_key", "scope", "window_policy_id", "conditions", "combination", "publication", "episode", "unknown_policy", "replay_policy", "evidence_refs"],
+      "properties": {
+        "schema_version": {"const": "alert-trigger-1"},
+        "rule_key": {"$ref": "#/$defs/Text"},
+        "scope": {"$ref": "#/$defs/Scope"},
+        "window_policy_id": {"$ref": "#/$defs/Uuid"},
+        "conditions": {"type": "array", "minItems": 1, "items": {"oneOf": [{"$ref": "#/$defs/AssessmentCondition"}, {"$ref": "#/$defs/TrendCondition"}, {"$ref": "#/$defs/FindingCondition"}]}},
+        "combination": {"$ref": "#/$defs/Combination"},
+        "publication": {"$ref": "#/$defs/Publication"},
+        "episode": {"$ref": "#/$defs/EpisodePolicy"},
+        "unknown_policy": {"const": "no_event_from_unknown"},
+        "replay_policy": {"const": "no_publication"},
+        "evidence_refs": {"$ref": "#/$defs/Evidence"}
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_kind": "project_documentation",
+  "dataset_version": "2026-09-30",
+  "allowed_use": ["project_design_validation"],
+  "records": [
+    {
+      "doc_id": "SRC-PRD",
+      "source": "项目提供的 PRD",
+      "source_ref": "sJIA合并MAS预警平台PRD.md",
+      "license": "用户授权本项目设计处理；公开再分发许可未知",
+      "version": "V1.5.0",
+      "chunk_id": "SRC-PRD-2.2-source-state",
+      "section_title": "2.2 术语与数据状态",
+      "markdown_text": "来源类型、格式质量和核对状态分别保存。报告转录可以处于待核对或已核对状态；获得核对后仍保留转录来源。普通保存、自动校验或监护人确认均不能将资料设为已核对。",
+      "sensitivity": "project_internal",
+      "validation_status": "source_check_required"
+    },
+    {
+      "doc_id": "SRC-PRD",
+      "source": "项目提供的 PRD",
+      "source_ref": "sJIA合并MAS预警平台PRD.md",
+      "license": "用户授权本项目设计处理；公开再分发许可未知",
+      "version": "V1.5.0",
+      "chunk_id": "SRC-PRD-8.11-summary-scope",
+      "section_title": "8.11 FR-11 就医沟通摘要与联系信息",
+      "markdown_text": "首期定义平台内生成与查看；文件导出、公开分享或自动发送需要明确的资料范围和项目决定。",
+      "sensitivity": "project_internal",
+      "validation_status": "source_check_required"
+    },
+    {
+      "doc_id": "SRC-HLD",
+      "source": "项目提供的 HLD",
+      "source_ref": "sJIA合并MAS预警平台HLD.md",
+      "license": "用户授权本项目设计处理；公开再分发许可未知",
+      "version": "HLD V1.0",
+      "chunk_id": "SRC-HLD-6.4-summary-provenance",
+      "section_title": "6.4 记忆、摘要与缓存清理",
+      "markdown_text": "平台没有 LLM 长期记忆。患儿事实保存在版本记录和来源文件；摘要不替代原始资料，每条摘要内容能够定位原记录与时间。",
+      "sensitivity": "project_internal",
+      "validation_status": "source_check_required"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "确认文字、语音候选、本人采用及保存读取",
+  "$defs": {
+    "Uuid": {"type": "string", "format": "uuid"},
+    "NullableUuid": {"type": ["string", "null"], "format": "uuid"},
+    "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "Digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "NullableTimestamp": {"type": ["string", "null"], "format": "date-time"},
+    "InputMode": {"enum": ["LOCAL_AUDIO_CONFIRMED_TEXT", "SIMULATION_TEXT_ONLY"]},
+    "Candidates": {
+      "type": "object", "additionalProperties": false,
+      "required": ["temperature", "temperature_unit", "symptoms", "observed_time", "note"],
+      "properties": {
+        "temperature": {"type": ["number", "null"]}, "temperature_unit": {"enum": ["C", "F", null]},
+        "symptoms": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "observed_time": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}
+      }
+    },
+    "Decision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field_path", "decision", "selected_value", "record_field_codes"],
+      "properties": {
+        "field_path": {"enum": ["temperature", "temperature_unit", "symptoms", "observed_time", "note"]},
+        "decision": {"enum": ["accepted", "modified", "unknown", "excluded"]},
+        "selected_value": {"type": ["string", "array", "object", "null"], "items": {"type": "string"}},
+        "record_field_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "CreateInput": {
+      "type": "object", "additionalProperties": false,
+      "required": ["original_file_id", "request_id", "authorization_id", "field_config_id", "confirmed_text", "transcript_confirmed", "input_mode"],
+      "properties": {
+        "original_file_id": {"$ref": "#/$defs/Uuid"}, "request_id": {"$ref": "#/$defs/Uuid"},
+        "authorization_id": {"$ref": "#/$defs/Uuid"}, "field_config_id": {"$ref": "#/$defs/Uuid"},
+        "confirmed_text": {"type": "string", "minLength": 1, "maxLength": 8000},
+        "transcript_confirmed": {"const": true}, "input_mode": {"$ref": "#/$defs/InputMode"},
+        "transcription_evidence_id": {"$ref": "#/$defs/NullableUuid"}
+      }
+    },
+    "ProcessInput": {"type": "object", "additionalProperties": false,
+      "required": ["expected_status_version", "purpose_copy_id", "provider_config_id"],
+      "properties": {"expected_status_version": {"$ref": "#/$defs/Version"},
+        "purpose_copy_id": {"$ref": "#/$defs/Uuid"}, "provider_config_id": {"$ref": "#/$defs/Uuid"}}},
+    "AdoptInput": {"type": "object", "additionalProperties": false,
+      "required": ["voice_input_id", "expected_status_version", "decisions"],
+      "properties": {"voice_input_id": {"$ref": "#/$defs/Uuid"},
+        "expected_status_version": {"$ref": "#/$defs/Version"},
+        "decisions": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/Decision"}}}},
+    "CancelInput": {"type": "object", "additionalProperties": false,
+      "required": ["expected_status_version"], "properties": {"expected_status_version": {"$ref": "#/$defs/Version"}}},
+    "VoiceInputView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "patient_id", "request_id", "input_mode", "status", "status_version", "transcript", "transcript_sha256", "original_file_id", "field_config_id", "task_id", "task_status", "task_status_version", "provider_config_id", "purpose_copy_id", "candidates", "decisions", "saved_record_version_id", "raw_response_file_id", "provider_evidence", "transcription_evidence", "confirmed_at", "created_at", "decided_at"],
+      "properties": {
+        "id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"},
+        "request_id": {"$ref": "#/$defs/Uuid"}, "input_mode": {"$ref": "#/$defs/InputMode"},
+        "status": {"enum": ["awaiting_review", "ready", "running", "awaiting_confirmation", "saved", "failed", "uncertain", "cancelled", "revoked"]},
+        "status_version": {"$ref": "#/$defs/Version"}, "transcript": {"type": "string", "minLength": 1},
+        "transcript_sha256": {"$ref": "#/$defs/Digest"}, "original_file_id": {"$ref": "#/$defs/Uuid"},
+        "field_config_id": {"$ref": "#/$defs/Uuid"}, "task_id": {"$ref": "#/$defs/NullableUuid"},
+        "task_status": {"type": ["string", "null"]},
+        "task_status_version": {"oneOf": [{"$ref": "#/$defs/Version"}, {"type": "null"}]},
+        "provider_config_id": {"$ref": "#/$defs/NullableUuid"}, "purpose_copy_id": {"$ref": "#/$defs/NullableUuid"},
+        "candidates": {"oneOf": [{"$ref": "#/$defs/Candidates"}, {"type": "null"}]},
+        "decisions": {"type": ["array", "null"], "items": {"$ref": "#/$defs/Decision"}},
+        "saved_record_version_id": {"$ref": "#/$defs/NullableUuid"}, "raw_response_file_id": {"$ref": "#/$defs/NullableUuid"},
+        "provider_evidence": {"type": "array", "items": {"type": "object"}},
+        "transcription_evidence": {"type": "object"},
+        "confirmed_at": {"$ref": "#/$defs/Timestamp"}, "created_at": {"$ref": "#/$defs/Timestamp"},
+        "decided_at": {"$ref": "#/$defs/NullableTimestamp"}
+      }
+    },
+    "SourceOption": {"type": "object", "additionalProperties": false,
+      "required": ["source_revision_id", "family_authorization_id", "external_authorization_id"],
+      "properties": {"source_revision_id": {"$ref": "#/$defs/Uuid"},
+        "family_authorization_id": {"$ref": "#/$defs/Uuid"}, "external_authorization_id": {"$ref": "#/$defs/Uuid"}}},
+    "AdoptionView": {"type": "object", "additionalProperties": false,
+      "required": ["voice_input", "record", "idempotent_replay"],
+      "properties": {"voice_input": {"$ref": "#/$defs/VoiceInputView"},
+        "record": {"$ref": "family-record.schema.json#/$defs/RecordView"}, "idempotent_replay": {"type": "boolean"}}},
+    "OriginalOption": {"type": "object", "additionalProperties": false,
+      "required": ["original_file_id", "checksum", "confirmed_text", "source_revision_id", "purpose_copy_id", "purpose_request_id", "purpose_task_id", "purpose_state", "purpose_reason_code", "state"],
+      "properties": {"original_file_id": {"$ref": "#/$defs/Uuid"}, "checksum": {"$ref": "#/$defs/Digest"},
+        "confirmed_text": {"type": "string", "minLength": 1, "maxLength": 8000},
+        "source_revision_id": {"$ref": "#/$defs/Uuid"}, "purpose_copy_id": {"$ref": "#/$defs/NullableUuid"},
+        "purpose_request_id": {"$ref": "#/$defs/NullableUuid"}, "purpose_task_id": {"$ref": "#/$defs/NullableUuid"},
+        "purpose_state": {"enum": ["not_requested", "processing", "pending_review", "approved", "rejected", "revoked", "disposed", "failed"]},
+        "purpose_reason_code": {"type": ["string", "null"]},
+        "state": {"enum": ["available", "awaiting_review"]}}},
+    "OptionsView": {"type": "object", "additionalProperties": false,
+      "required": ["patient_id", "state", "reason_code", "field_config_id", "provider_config_id", "source_options", "original_options", "input_modes"],
+      "properties": {"patient_id": {"$ref": "#/$defs/Uuid"}, "state": {"enum": ["available", "unavailable"]},
+        "reason_code": {"type": ["string", "null"]}, "field_config_id": {"$ref": "#/$defs/NullableUuid"},
+        "provider_config_id": {"$ref": "#/$defs/NullableUuid"},
+        "source_options": {"type": "array", "items": {"$ref": "#/$defs/SourceOption"}},
+        "original_options": {"type": "array", "items": {"$ref": "#/$defs/OriginalOption"}},
+        "input_modes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/InputMode"}}}}
+  }
+}

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { writeFile } from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { validateOriginalSource } from '../src/api/originalSourceSchema.ts';
+
+const execution = await promisify(execFile)('backend/.venv/bin/python', ['backend/tests/verify_original_source_runtime.py', '--frontend-json'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+const value = JSON.parse(execution.stdout);
+assert.equal(value.report.status, 'PASS');
+assert.equal(value.report.transaction_read_only, true);
+assert.ok(value.responses.length > 0);
+for (const response of value.responses) assert.equal(validateOriginalSource(response), response);
+const anonymous = await fetch(`http://127.0.0.1:8000/api/record-versions/${value.responses[0].record_version_id}/originals`);
+assert.equal(anonymous.status, 401);
+assert.equal((await anonymous.json()).code, 'AUTH_REQUIRED');
+assert.ok(anonymous.headers.get('cache-control').includes('private'));
+assert.ok(anonymous.headers.get('cache-control').includes('no-store'));
+const report = { ...value.report, frontend_ajv: 'PASS', frontend_original_identity_validation: 'PASS', anonymous_metadata_denial: 'PASS' };
+await writeFile('.planning-work/t54-original-source.json', JSON.stringify(report, null, 2) + '\n');
+process.stdout.write(JSON.stringify(report) + '\n');

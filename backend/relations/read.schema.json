@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "relation-read.schema.json",
+  "title": "本人关联及申请读取",
+  "$defs": {
+    "Id": {"type": "string", "format": "uuid"},
+    "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "NullableTimestamp": {"anyOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]},
+    "Action": {"enum": ["read_raw", "write_record", "correct_record", "read_history", "read_file", "view_request", "manage_draft", "receive_alert", "create_summary", "read_summary", "request_correction", "request_disposition", "read_case"]},
+    "RelationItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["relation_id", "patient_id", "display_id", "status", "version", "valid_from", "valid_until", "actions"],
+      "properties": {
+        "relation_id": {"$ref": "#/$defs/Id"}, "patient_id": {"$ref": "#/$defs/Id"},
+        "display_id": {"type": "string", "minLength": 1}, "status": {"enum": ["active", "revoked", "expired"]},
+        "version": {"$ref": "#/$defs/Version"}, "valid_from": {"$ref": "#/$defs/Timestamp"},
+        "valid_until": {"$ref": "#/$defs/NullableTimestamp"},
+        "actions": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Action"}},
+        "auth_epoch": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}
+      }
+    },
+    "RelationView": {"allOf": [{"$ref": "#/$defs/RelationItem"}, {"type": "object", "required": ["auth_epoch"], "properties": {"auth_epoch": {"type": "string"}}}]},
+    "RelationList": {"type": "object", "additionalProperties": false, "required": ["relations"], "properties": {"relations": {"type": "array", "items": {"$ref": "#/$defs/RelationItem"}}}},
+    "ApplicationItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["application_id", "version", "status", "patient_id", "reason", "note", "requested_access"],
+      "properties": {
+        "application_id": {"$ref": "#/$defs/Id"}, "version": {"$ref": "#/$defs/Version"},
+        "status": {"enum": ["pending", "approved", "rejected", "withdrawn"]},
+        "patient_id": {"anyOf": [{"$ref": "#/$defs/Id"}, {"type": "null"}]},
+        "reason": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]},
+        "requested_access": {"enum": ["read", "read_write", "review_decides", null]},
+        "evidence_ref": {"type": "string", "minLength": 1},
+        "created_at": {"$ref": "#/$defs/Timestamp"}
+      }
+    },
+    "ApplicationView": {"allOf": [{"$ref": "#/$defs/ApplicationItem"}, {"type": "object", "required": ["evidence_ref", "created_at"], "properties": {"evidence_ref": {"type": "string"}, "created_at": {"type": "string"}}}]},
+    "ApplicationList": {"type": "object", "additionalProperties": false, "required": ["applications"], "properties": {"applications": {"type": "array", "items": {"$ref": "#/$defs/ApplicationItem"}}}},
+    "ApplicationInput": {"type": "object", "additionalProperties": false, "required": ["evidence_ref", "note", "requested_access"], "properties": {
+      "evidence_ref": {"type": "string", "minLength": 1, "maxLength": 10000, "pattern": "\\S"},
+      "note": {"type": ["string", "null"], "maxLength": 10000}, "requested_access": {"enum": ["read", "read_write", "review_decides"]}}},
+    "ApplicationAction": {"type": "object", "additionalProperties": false, "required": ["expected_state", "expected_version", "reason"], "properties": {
+      "expected_state": {"const": "pending"}, "expected_version": {"$ref": "#/$defs/Version"}, "reason": {"type": "string", "minLength": 1, "maxLength": 10000, "pattern": "\\S"}}},
+    "WriteReceipt": {"type": "object", "additionalProperties": false, "required": ["resource_type", "resource_id", "version", "saved_at", "request_id"], "properties": {
+      "resource_type": {"const": "relation_application"}, "resource_id": {"$ref": "#/$defs/Id"}, "version": {"$ref": "#/$defs/Version"}, "saved_at": {"$ref": "#/$defs/Timestamp"}, "request_id": {"$ref": "#/$defs/Id"}}},
+    "IntentView": {"type": "object", "additionalProperties": false, "required": ["intent_id", "request_id", "generation", "status", "expires_at", "payload_sha256"], "properties": {
+      "intent_id": {"$ref": "#/$defs/Id"}, "request_id": {"$ref": "#/$defs/Id"}, "generation": {"$ref": "#/$defs/Version"},
+      "status": {"enum": ["prepared", "committed", "failed"]}, "expires_at": {"$ref": "#/$defs/Timestamp"}, "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "ApplicationRequestView": {"type": "object", "additionalProperties": false,
+      "required": ["intent_id", "request_id", "operation_id", "target_key", "prepared_at", "state", "may_retry", "receipt", "error_code", "generation", "expires_at", "payload_sha256", "application_input"],
+      "properties": {
+        "intent_id": {"$ref": "#/$defs/Id"}, "request_id": {"$ref": "#/$defs/Id"}, "operation_id": {"enum": ["application_create", "application_withdraw"]},
+        "target_key": {"type": "string", "minLength": 1}, "prepared_at": {"$ref": "#/$defs/Timestamp"}, "state": {"enum": ["pending", "committed", "failed"]},
+        "may_retry": {"type": "boolean"}, "receipt": {"anyOf": [{"$ref": "#/$defs/WriteReceipt"}, {"type": "null"}]}, "error_code": {"type": ["string", "null"]},
+        "generation": {"$ref": "#/$defs/Version"}, "expires_at": {"$ref": "#/$defs/Timestamp"}, "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "application_input": {"anyOf": [{"$ref": "#/$defs/ApplicationInput"}, {"$ref": "#/$defs/ApplicationAction"}, {"type": "null"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"state": {"const": "committed"}}}, "then": {"properties": {"receipt": {"$ref": "#/$defs/WriteReceipt"}}}, "else": {"properties": {"receipt": {"type": "null"}}}},
+        {"if": {"properties": {"operation_id": {"const": "application_create"}}},
+          "then": {"properties": {"application_input": {"anyOf": [{"$ref": "#/$defs/ApplicationInput"}, {"type": "null"}]}}},
+          "else": {"properties": {"application_input": {"anyOf": [{"$ref": "#/$defs/ApplicationAction"}, {"type": "null"}]}}}}
+      ]
+    },
+    "ApplicationRequestList": {"type": "object", "additionalProperties": false, "required": ["requests"], "properties": {"requests": {"type": "array", "items": {"$ref": "#/$defs/ApplicationRequestView"}}}}
+  }
+}

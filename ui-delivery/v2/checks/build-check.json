@@ -1,0 +1,9 @@
+{
+  "command": "node guardian-h5/node_modules/vite/bin/vite.js build --config ui-delivery/v2/vite.config.mjs",
+  "date": "2026-10-07",
+  "exitCode": 0,
+  "modules": 1889,
+  "outputDirectory": ".ui-work/v2-build",
+  "warnings": ["lucide-react 的 use client 指令在浏览器构建中未保留"],
+  "scope": "独立设计预览生产构建"
+}

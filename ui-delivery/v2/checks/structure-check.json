@@ -1,0 +1,10 @@
+{
+  "valid": true,
+  "evidence_kind": "STRUCTURE",
+  "mode": "design",
+  "screens": 39,
+  "assets": 9,
+  "generated_assets": 0,
+  "interaction_verified": false,
+  "visual_verified": false
+}

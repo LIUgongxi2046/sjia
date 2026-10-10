@@ -1,0 +1,72 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_SUMMARY_QUERY_MEASUREMENT",
+  "measured_at": "2026-10-09T04:53:17.894876+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-model-20261009-run5",
+    "shared_queue_consumption": 0,
+    "worker_or_beat_started": false,
+    "external_model_requests": 0,
+    "notifications_sent": 0
+  },
+  "load": {
+    "requests": 20,
+    "concurrency": 4,
+    "operations": 20,
+    "wall_ms": 14867.830171016976,
+    "failures": 0,
+    "failure_rate": 0,
+    "p95_ms": 51.103995996527374,
+    "p99_ms": 60.82721101120114,
+    "schema_valid_responses": 20,
+    "mean_response_bytes": 68,
+    "select_count_min": 8,
+    "select_count_max": 8
+  },
+  "data": {
+    "active_family_relation_count": 1,
+    "patient_id": "739018ff-e8c0-4d50-8f2a-b1df996173d5",
+    "saved_summary_count_before_and_after": 0,
+    "summary_count_per_response": [
+      0
+    ]
+  },
+  "generation_preflight": {
+    "qualified_summary_and_visibility_configs": [
+      {
+        "kind": "summary",
+        "enabled_count": 0,
+        "qualified": []
+      },
+      {
+        "kind": "visibility",
+        "enabled_count": 1,
+        "qualified": [
+          {
+            "config_id": "1932137c-7f2d-4e78-b912-c76efb2d5b0d",
+            "reason": "CONFIG_VALIDATION_UNAVAILABLE"
+          }
+        ]
+      }
+    ],
+    "active_release_ready": false,
+    "active_release_id": null,
+    "ready": false,
+    "generation": "NOT_RUN"
+  },
+  "saved_and_reread": true,
+  "scope": {
+    "simulated_data_only": true,
+    "clinical_acceptance": "NOT_RUN",
+    "real_capacity": "NOT_RUN"
+  }
+}

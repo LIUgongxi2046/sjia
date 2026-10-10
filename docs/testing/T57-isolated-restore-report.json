@@ -1,0 +1,70 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_ONLY_ISOLATED_POSTGRES_RESTORE",
+  "measured_at": "2026-10-09T03:42:20.268244+00:00",
+  "source": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "object_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.simulation-work/object-store"
+  },
+  "recovery": {
+    "database": "sjia_simulation",
+    "host": "127.0.0.1",
+    "port": 55475,
+    "postgres_version": "18.4 (Homebrew)",
+    "source_dump_bytes": 1206306,
+    "source_dump_sha256": "9880e335920e01334465077a93cd8bf021afdec2e5dc29fae9e5211b2f8c0f9c",
+    "run_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-20261009-qualified",
+    "object_copy": {
+      "source": {
+        "file_count": 55,
+        "total_bytes": 1805532,
+        "inventory_sha256": "f299027baccdcd1388e1d5b985126faa4d1a2505fbfe191a082c74cfd5b8a21d"
+      },
+      "restored": {
+        "file_count": 55,
+        "total_bytes": 1805532,
+        "inventory_sha256": "f299027baccdcd1388e1d5b985126faa4d1a2505fbfe191a082c74cfd5b8a21d"
+      },
+      "match": true
+    },
+    "configuration_evidence_copy": {
+      "source": {
+        "file_count": 551,
+        "total_bytes": 281631,
+        "inventory_sha256": "a75650d46a7dafc0bcc717ac6de1ef58d49f6d7d19caa59a95b9edb8c99fe80a"
+      },
+      "restored": {
+        "file_count": 551,
+        "total_bytes": 281631,
+        "inventory_sha256": "a75650d46a7dafc0bcc717ac6de1ef58d49f6d7d19caa59a95b9edb8c99fe80a"
+      },
+      "match": true,
+      "database_references": {
+        "sources_with_local_evidence": 533,
+        "revisions_checked": 533,
+        "missing_files": 0,
+        "checksum_mismatches": 0,
+        "integrity": "PASS"
+      }
+    },
+    "database_name_and_schema_rechecked": true,
+    "separate_object_directory": true,
+    "api_port": 18045,
+    "queue": "redis://127.0.0.1:16383/1",
+    "broker_started": false,
+    "shared_queue_consumption": 0,
+    "worker_started": false,
+    "beat_started": false,
+    "external_sends": 0
+  },
+  "reports": {
+    "task_recovery": "docs/testing/T57-isolated-simulation-report.json",
+    "active_purpose_copy": "docs/testing/T57-purpose-copy-simulation-report.json",
+    "performance": "docs/testing/T31-authorization-simulation-report.json",
+    "browser_performance": "docs/testing/T31-browser-simulation-report.json",
+    "file_manifest": "docs/testing/T57-isolated-file-manifest-report.json",
+    "source_dump_retained_under_ignored_directory": true,
+    "saved_and_reread": true
+  }
+}

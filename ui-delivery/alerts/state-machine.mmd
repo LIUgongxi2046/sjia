@@ -1,0 +1,35 @@
+stateDiagram-v2
+    direction LR
+    state "服务未启用" as disabled
+    state "等待评估" as pending
+    state "正在评估" as evaluating
+    state "需要补充资料" as incomplete
+    state "当前无有效预警" as clear
+    state "关注提示" as attention
+    state "重要预警" as warning
+    state "紧急预警" as urgent
+    state "已失效" as expired
+    state "读取失败" as failed
+    [*] --> pending
+    disabled --> pending: ENABLE
+    pending --> evaluating: START
+    evaluating --> incomplete: NEEDS_DATA
+    evaluating --> clear: PUBLISH_CLEAR
+    evaluating --> attention: PUBLISH_ATTENTION
+    evaluating --> warning: PUBLISH_WARNING
+    evaluating --> urgent: PUBLISH_URGENT
+    evaluating --> failed: FAIL
+    incomplete --> pending: SUBMIT
+    failed --> evaluating: RETRY
+    clear --> pending: SUBMIT
+    attention --> pending: SUBMIT
+    warning --> pending: SUBMIT
+    urgent --> pending: SUBMIT
+    clear --> expired: INVALIDATE
+    attention --> expired: INVALIDATE
+    warning --> expired: INVALIDATE
+    urgent --> expired: INVALIDATE
+    expired --> pending: SUBMIT
+    attention --> attention: READ / 已查看
+    warning --> warning: READ / 已查看
+    urgent --> urgent: READ / 已查看

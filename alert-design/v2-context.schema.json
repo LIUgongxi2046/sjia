@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ALERT V2.0 采用输入",
+  "$defs": {
+    "Uuid": {"$ref": "../backend-design/v2-protocol.schema.json#/$defs/Uuid"},
+    "NullableUuid": {"$ref": "../backend-design/v2-protocol.schema.json#/$defs/NullableUuid"},
+    "Version": {"$ref": "../backend-design/v2-protocol.schema.json#/$defs/Version"},
+    "Epoch": {"$ref": "../backend-design/protocol.schema.json#/$defs/Epoch"},
+    "Text": {"type": "string", "minLength": 1},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "InputRef": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fact_version_id", "field_id", "record_version_id", "patient_id", "role", "verification_id", "normalization_id", "medical_time_id", "source_revision_id", "source_anchor_id", "document_version_id", "available_at", "availability_status", "relation_version_ids"],
+      "properties": {"fact_version_id": {"$ref": "#/$defs/Uuid"}, "field_id": {"$ref": "#/$defs/Uuid"}, "record_version_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "role": {"enum": ["baseline", "current", "series", "context"]}, "verification_id": {"$ref": "#/$defs/NullableUuid"}, "normalization_id": {"$ref": "#/$defs/NullableUuid"}, "medical_time_id": {"$ref": "#/$defs/NullableUuid"}, "source_revision_id": {"$ref": "#/$defs/NullableUuid"}, "source_anchor_id": {"$ref": "#/$defs/NullableUuid"}, "document_version_id": {"$ref": "#/$defs/NullableUuid"}, "available_at": {"type": ["string", "null"], "format": "date-time"}, "availability_status": {"enum": ["known", "unknown"]}, "relation_version_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Uuid"}}}
+    },
+    "Exclusion": {"type": "object", "additionalProperties": false, "required": ["field_id", "fact_version_id", "reason_codes"], "properties": {"field_id": {"$ref": "#/$defs/Uuid"}, "fact_version_id": {"$ref": "#/$defs/NullableUuid"}, "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}}}},
+    "EvaluationContextV2": {
+      "type": "object", "unevaluatedProperties": false,
+      "allOf": [{"required": ["environment", "use_authorization_id", "mapping_policy_ids", "input_digest"]}],
+      "dependentSchemas": {"schema_version": {"properties": {"environment": {"$ref": "#/$defs/Text"}, "use_authorization_id": {"$ref": "#/$defs/Uuid"}, "mapping_policy_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Uuid"}}, "input_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}},
+      "required": ["schema_version", "task_id", "patient_id", "actor_id", "mode", "assessment_at", "known_at", "context_sequence", "rule_id", "window_policy_id", "verification_policy_id", "observation_period_id", "input_refs", "exclusions", "data_epoch", "verification_epoch", "publication_epoch", "auth_epoch", "lease_generation"],
+      "properties": {"schema_version": {"const": "alert-context-2"}, "task_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "actor_id": {"$ref": "#/$defs/Uuid"}, "mode": {"enum": ["current", "replay"]}, "assessment_at": {"$ref": "#/$defs/Timestamp"}, "known_at": {"$ref": "#/$defs/Timestamp"}, "context_sequence": {"$ref": "#/$defs/Version"}, "rule_id": {"$ref": "#/$defs/Uuid"}, "window_policy_id": {"$ref": "#/$defs/Uuid"}, "verification_policy_id": {"$ref": "#/$defs/Uuid"}, "observation_period_id": {"$ref": "#/$defs/NullableUuid"}, "input_refs": {"type": "array", "items": {"$ref": "#/$defs/InputRef"}}, "exclusions": {"type": "array", "items": {"$ref": "#/$defs/Exclusion"}}, "data_epoch": {"$ref": "#/$defs/Epoch"}, "verification_epoch": {"$ref": "#/$defs/Epoch"}, "publication_epoch": {"$ref": "#/$defs/Epoch"}, "auth_epoch": {"$ref": "#/$defs/Epoch"}, "lease_generation": {"$ref": "#/$defs/Version"}}
+    }
+  }
+}

@@ -1,0 +1,1 @@
+export const documentLabels: Record<string, string> = { inpatient: '住院资料', discharge: '出院资料', outpatient: '门诊资料', laboratory: '检验报告', therapy: '治疗资料', imaging_report: '影像报告', imaging_asset: '影像附图', unknown: '待分类资料' };

@@ -1,0 +1,44 @@
+{
+  "source": "ui-delivery/tokens.json",
+  "sourceVersion": "2.0",
+  "uiSpecificationVersion": "UI 3.0",
+  "status": "DESIGN",
+  "tokens": [
+    {"css": "--color-brand", "light": "color.light.brand.primary", "dark": "color.dark.brand.primary", "components": ["BrandLockup"]},
+    {"css": "--color-primary", "light": "color.light.action.primary", "dark": "color.dark.action.primary", "components": ["PrimaryButton", "FormActions"]},
+    {"css": "--color-link", "light": "color.light.action.text", "dark": "color.dark.action.text", "components": ["ContextLink", "TabBar"]},
+    {"css": "--color-page", "light": "color.light.surface.base", "dark": "color.dark.surface.base", "components": ["Layout"]},
+    {"css": "--color-surface", "light": "color.light.surface.raised", "dark": "color.dark.surface.raised", "components": ["RecordCard", "FieldGroup"]},
+    {"css": "--color-overlay", "light": "color.light.surface.overlay", "dark": "color.dark.surface.overlay", "components": ["BottomSheet", "OriginalViewer"]},
+    {"css": "--color-text", "light": "color.light.text.primary", "dark": "color.dark.text.primary", "components": ["Field", "RecordCard"]},
+    {"css": "--color-secondary", "light": "color.light.text.secondary", "dark": "color.dark.text.secondary", "components": ["SourceStatus", "TimeLabel"]},
+    {"css": "--color-control-border", "light": "color.light.border.control", "dark": "color.dark.border.control", "components": ["Field", "DictionaryField"]},
+    {"css": "--color-info-surface", "light": "color.light.action.muted", "dark": "color.dark.action.muted", "components": ["RecognitionNotice", "SourceReferenceView"]},
+    {"css": "--color-warning", "light": "color.light.feedback.warning", "dark": "color.dark.feedback.warning", "components": ["MissingFieldNotice"]},
+    {"css": "--color-warning-surface", "light": "color.light.feedback.warningSurface", "dark": "color.dark.feedback.warningSurface", "components": ["MissingFieldNotice"]},
+    {"css": "--color-error", "light": "color.light.feedback.error", "dark": "color.dark.feedback.error", "components": ["FieldError", "RequestError"]},
+    {"css": "--color-success", "light": "color.light.feedback.success", "dark": "color.dark.feedback.success", "components": ["SavedRecordNotice"]},
+    {"css": "--header-start", "light": "headerDesign.background", "dark": "headerDesign.background", "components": ["TaskHeader"]},
+    {"css": "--header-end", "light": "headerDesign.end", "dark": "headerDesign.end", "components": ["TaskHeader"]},
+    {"css": "--header-text", "light": "headerDesign.text", "dark": "headerDesign.text", "components": ["TaskHeader"]},
+    {"css": "--material-top", "light": "material3d.light.surfaceTop", "dark": "material3d.dark.surfaceTop", "components": ["RecordCard", "PrimaryButton"]},
+    {"css": "--material-bottom", "light": "material3d.light.surfaceBottom", "dark": "material3d.dark.surfaceBottom", "components": ["RecordCard", "PrimaryButton"]},
+    {"css": "--material-shadow", "light": "material3d.light.ambientShadow", "dark": "material3d.dark.ambientShadow", "components": ["RecordCard", "BottomSheet"]},
+    {"css": "--spacing-base", "light": "space.1", "dark": "space.1", "components": ["Layout", "FieldGroup"]},
+    {"css": "--radius-card", "light": "radius.lg", "dark": "radius.lg", "components": ["RecordCard"]},
+    {"css": "--radius-input", "light": "radius.md", "dark": "radius.md", "components": ["Field"]},
+    {"css": "--radius-sheet", "light": "radius.sheet", "dark": "radius.sheet", "components": ["BottomSheet"]},
+    {"css": "--touch-target", "light": "layout.touchTarget", "dark": "layout.touchTarget", "components": ["IconButton"]},
+    {"css": "--motion-normal", "light": "motion.normal", "dark": "motion.normal", "components": ["BottomSheet"]}
+  ],
+  "alerts": {
+    "pending": "slate", "evaluating": "blue", "incomplete": "amber", "clear": "teal",
+    "attention": "amber", "warning": "orange", "urgent": "red", "expired": "slate", "failed": "slate", "disabled": "slate"
+  },
+  "clinicalSeverityRequiresApproval": true,
+  "atlasPaths": [
+    "ui-delivery/assets/master/clinical-3d-icons.png",
+    "ui-delivery/assets/master/utility-3d-icons.png",
+    "ui-delivery/assets/master/extended-3d-icons.png"
+  ]
+}

@@ -1,0 +1,13 @@
+node_id,input_ref,guard,action,output_ref,failure,owner,implementation_task,requirement
+N00,Task与准确触发Outbox,当前患儿权限用途租约和执行期有效,获取单患儿任务上下文,ContextIdentity,blocked或failed,S005-3,T50,BR-D01
+N01,精确rule与window及verification映射,所需配置Schema与版本获准,固定规则和所有配套配置,ConfigRefs,configuration_pending,S005-3,T49,BR-D01
+N02,ArchiveFactVersion与RecordField和来源,全部出处时间专业证明方法及关系符合准入,固定baseline current series context及逐项排除原因,EligibleInputSet,insufficient或failed,S005-3,T49,BR-D03
+N03,已核对治疗与语境及医学时间,实际使用与批准适用条件可证明,记录治疗适用与未知限制,TherapyContext,unknown或failed,S005-3,T49,BR-D05
+N04,固定合格字段与classification或ms配置,各自前提变量和窗口完整,分别进行Decimal与三值处理,StaticResults,insufficient或failed,S005-3,T49,BR-D05
+N05,严格独立采样与批准信号,单位方法时间及次数成立,保存每对差值间隔和信号三值,SignalResults,unknown或failed,S005-3,T50,BR-D02
+N06,全部信号与嵌套groups,唯一引用层数数量和k合法,按全部直接子项计算all any at_least,TriggerResults,unknown或failed,S005-3,T50,BR-D06
+N07,输入配置epochs和task租约,当前全部资格及顺序有效,原子保存内部结果输入依赖与采用记录,EvaluationResult,superseded或failed,S005-3,T50,BR-D09
+N08,current结果与release内容联系,mode current且全部批准验证范围与时效有效,核验当前周期恢复再次提示与升级策略,PublicationDecision,blocked或suppressed,S005-3,T50,BR-D08
+N09,确定met且发布成立的采用记录,唯一规则族周期与新顺序通过,同事务保存事件接收及Outbox,PublishedEvent,failed,S005-3,T50,BR-D09
+N10,准确事件与当前本人关联,当前字段可见策略和发送许可有效,返回家庭投影或调用真实渠道,FamilyProjection与Receipt,unavailable或uncertain,S005-3,T52,BR-D08
+N11,更正撤销过期或停用Outbox,对象与依赖范围准确且操作获准,即时阻止当前采用并登记影响和新任务,InvalidationResult,failed,S005-3,T50,BR-D09

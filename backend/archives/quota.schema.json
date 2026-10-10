@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "archive-quota-1 批次处理配额",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "environment", "runtime_config_id", "provider_config_id", "model_version", "measurement_evidence_ref", "pricing_evidence_ref", "max_pages", "max_bytes", "max_inflight_pages", "per_page_reservation", "per_batch_budget", "daily_budget", "currency", "budget_timezone", "queue_wait_seconds", "execution_seconds", "lease_seconds", "heartbeat_seconds", "visibility_timeout_seconds", "max_attempts", "deadline_seconds", "acceptable_wait_seconds"],
+  "properties": {
+    "schema_version": {"const": "archive-quota-1"},
+    "environment": {"$ref": "#/$defs/text"},
+    "runtime_config_id": {"type": "string", "format": "uuid"},
+    "provider_config_id": {"type": "string", "format": "uuid"},
+    "model_version": {"$ref": "#/$defs/text"},
+    "measurement_evidence_ref": {"$ref": "#/$defs/text"},
+    "pricing_evidence_ref": {"$ref": "#/$defs/text"},
+    "max_pages": {"$ref": "#/$defs/positive"},
+    "max_bytes": {"$ref": "#/$defs/positive"},
+    "max_inflight_pages": {"$ref": "#/$defs/positive"},
+    "per_page_reservation": {"$ref": "#/$defs/amount"},
+    "per_batch_budget": {"$ref": "#/$defs/amount"},
+    "daily_budget": {"$ref": "#/$defs/amount"},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "budget_timezone": {"$ref": "#/$defs/text"},
+    "queue_wait_seconds": {"$ref": "#/$defs/positive"},
+    "execution_seconds": {"$ref": "#/$defs/positive"},
+    "lease_seconds": {"$ref": "#/$defs/positive"},
+    "heartbeat_seconds": {"$ref": "#/$defs/positive"},
+    "visibility_timeout_seconds": {"$ref": "#/$defs/positive"},
+    "max_attempts": {"$ref": "#/$defs/positive"},
+    "deadline_seconds": {"$ref": "#/$defs/positive"},
+    "acceptable_wait_seconds": {"$ref": "#/$defs/positive"}
+  },
+  "$defs": {
+    "positive": {"type": "integer", "minimum": 1},
+    "amount": {"type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$", "maxLength": 128},
+    "text": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "\\S"}
+  },
+  "description": "额度及期限来自实际测量和当前批准。领域校验检查非零预算、期限关系、IANA 时区；消费时还须复核准确 runtime、Provider、测量及计价证明。费用未知保持空值，禁止填写默认价格。"
+}

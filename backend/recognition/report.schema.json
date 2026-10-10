@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "report-recognition.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidates"],
+  "properties": {
+    "candidates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/$defs/reportItem" } }
+      }
+    }
+  },
+  "$defs": {
+    "decimal": { "type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "nullableText": { "anyOf": [{ "$ref": "#/$defs/text" }, { "type": "null" }] },
+    "reportItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value", "comparator", "unit", "reference", "method", "source_text"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "value": { "$ref": "#/$defs/nullableText" },
+        "comparator": { "enum": ["=", "<", "<=", "≤", ">", ">=", "≥", null] },
+        "unit": { "$ref": "#/$defs/nullableText" },
+        "reference": { "$ref": "#/$defs/nullableText" },
+        "method": { "$ref": "#/$defs/nullableText" },
+        "source_text": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}

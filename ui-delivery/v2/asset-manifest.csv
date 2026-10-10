@@ -1,0 +1,10 @@
+﻿asset_id,file_path,usage,width,height,format,transparency,source,license_or_restriction,sha256
+child-master,../assets/master/child-neutral-front.png,儿童形象 Master,1086,1448,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,3b860e5707321f38d3a62fe87f8b3518ce5ad0a303653ca87013e7ba5f2c415b
+child-1x,../assets/1x/child-neutral-front@1x.png,儿童形象 1x,240,320,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,f1d2b27d6d9fb411f3bead14ee6a53db53bf58587b13f053afdc458bbc75589d
+child-2x,../assets/2x/child-neutral-front@2x.png,首页儿童形象 2x,480,640,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,15e0afc6d49a4c3d40d067d0b1f29b302fa080ee1c7181eec44f907e9e90e5ac
+logo-master,../identity/master/logo-embrace.png,品牌图形 Master,1254,1254,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,d52bc0c3a23cb706ddc52581ebe712ce63fc7a06b3bf1d678321df2fe3d631c9
+logo-1x,../identity/1x/logo-embrace@1x.png,品牌图形 1x,128,128,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,07d8311eda33799117bb59ff34aada1a619c9d4395464d43f6962a49d0a88526
+logo-2x,../identity/2x/logo-embrace@2x.png,品牌图形 2x,256,256,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,302d778e4965417ea462a85057ec3da9bd0c201c7d74a24d620556e1131895b3
+clinical-icons,../assets/master/clinical-3d-icons.png,家庭任务三维图标,1254,1254,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,4c9bab871252389e7d69e1422fac18b0eb5ab1a965c4c8b9dfc426390a25b1f2
+utility-icons,../assets/master/utility-3d-icons.png,查看与历史三维图标,1254,1254,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,fbac0951eddf113f01d03f0c89d26947bbadefe70c8364f228ecaf3cce1d7168
+extended-icons,../assets/master/extended-3d-icons.png,辅助状态三维图标,1254,1254,PNG,true,既有 ui-delivery 品牌与三维资产；沿用原始生成记录,项目设计资产；通用形象不代表真实患儿；保持原比例,df435ede61f639b29b3055bd3e09d0ac6a4c3f6b59ae63117ed47dc50b1d7d2e

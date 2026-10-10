@@ -1,0 +1,84 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_ARCHIVE_PAGE_ONE_ACTUAL_MODEL_REQUEST",
+  "measured_at": "2026-10-09T04:23:26.816829+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-model-20261009-run5",
+    "database_port": 55483,
+    "broker": "not_started",
+    "global_worker_or_beat_started": false,
+    "queue_consumption": 0
+  },
+  "input": {
+    "source": "seeded_simulation_fixture",
+    "mode": "SIMULATION",
+    "file_group_id": "f463368a-f367-4512-9d5d-21107a13d671",
+    "file_id": "e94019eb-fe4e-49c0-b193-6897b840337f",
+    "media_type": "image/png",
+    "bytes": 38863,
+    "sha256": "ac65b226841fcaf9f0354a51d90437f7cb99495dd9a8e8b5d1e0dd75adfa4b77",
+    "archive_batch_id": "4ac9ee13-eded-4f70-be17-46576994db08",
+    "archive_page_id": "3be471aa-b3d5-4e9c-9146-f0e45ef7f2e2",
+    "pages": 1
+  },
+  "provider": {
+    "name": "ark",
+    "endpoint": "https://ark.cn-beijing.volces.com/api/v3",
+    "model": "doubao-seed-2-1-turbo-260628",
+    "config_id": "b60714a8-bb0f-4ae6-b048-3313cf03c5c3",
+    "configuration_environment": "simulation",
+    "actual_external_model_requests": 1,
+    "request_id": "0217915196527963749365b55318faa75db47eb4778acb3543c50",
+    "input_tokens": 2850,
+    "output_tokens": 1096,
+    "total_tokens": 3946,
+    "model_request_elapsed_ms": "NOT_CAPTURED_AFTER_PROCESS_EXIT",
+    "archive_page_attempt_duration_ms": 19109,
+    "configured_simulation_price": {
+      "input_per_million": "1",
+      "output_per_million": "2",
+      "currency": "CNY"
+    },
+    "simulation_cost_estimate": "0.005042",
+    "simulation_cost_status": "SIMULATION_PRICE_ESTIMATE",
+    "recorded_page_cost": "0.005042",
+    "currency": "CNY",
+    "quota_config_id": "6c8b048e-079b-4472-863d-3a298d8b0dbd",
+    "per_page_reservation": "1",
+    "actual_invoice_cost": "NOT_VERIFIED"
+  },
+  "task_result": {
+    "event_id": "adc8c392-9deb-4b67-a0cb-4a28576a9470",
+    "task_id": "f0f3bc1e-fe92-4160-a2e3-31a5651ffa62",
+    "task_status": "awaiting_confirmation",
+    "attempt_id": "324183a3-7d52-4e42-bde8-5eb3711dd668",
+    "attempt_status": "completed",
+    "archive_page_attempt_id": "47391c39-7f69-45c8-a3d9-4e148a018b05",
+    "archive_page_attempt_status": "completed",
+    "candidate_set_id": "4ca0da8c-c9ab-4e27-ad35-d9cc983d19cb",
+    "consumer_receipts": 1,
+    "response_file_id": "b72affd7-5b96-43fe-bb17-940893f857aa",
+    "response_bytes": 4036,
+    "response_sha256": "6269744275544510ceaa80048d99febb79ae68a821f722ef4a829570f276f962",
+    "response_checksum_matches": true,
+    "response_saved_and_reread": true
+  },
+  "scope": {
+    "model_requests": 1,
+    "files_processed": 1,
+    "notifications_sent": 0,
+    "real_clinical_data": false,
+    "real_capacity": "NOT_RUN",
+    "clinical_scale": "NOT_RUN",
+    "saved_and_reread": true
+  }
+}

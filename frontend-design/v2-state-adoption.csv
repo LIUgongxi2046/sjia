@@ -1,0 +1,14 @@
+state,authority,content_rule,recovery,owner,verification
+default,当前权限且完整响应,显示当前准确资源版本,按本人动作读取或提交,RouteContainer,T56
+loading,当前读取尚未完成,不显示之前受限资料,绑定当前context等待,ReadCoordinator,T56
+empty,当前读取成功且完整集合为空,显示空内容与当前可执行入口,查询或添加获准真实资料,RouteContainer,T56
+error,当前请求明确失败,显示安全错误与准确原因,按recovery重新读取或核对输入,ReadCoordinator,T56
+offline,浏览器网络或当前网络请求失败,输入保留当前隔离内存且显示尚未保存,恢复授权后查询原请求,SubmissionCoordinator,T58
+permission,当前身份关联或岗位范围无效,清除病例和全部临时原图内容,当前账号重新核验权限,AccessProvider,T56
+partial,实际内容有unknown或完整性不足,保留各项原值及准确缺少原因,逐项补充或专业核对,RouteContainer,T56
+stale,版本资格依赖或结果失效,旧版本只按当前授权明确显示历史,读取当前内容并按权限更正或生成,ReadCoordinator,T56
+pending,意图任务或外部受理尚未明确,不显示保存或送达成功,查询原intent_id或task_id,SubmissionCoordinator,T56
+success,提交事实且准确资源重新读取,显示saved_at和准确对象版本,查看当前资源与后续任务,SubmissionCoordinator,T56
+attention,当前有效且批准level为attention,批准文字准确版本并保留其他有效提示,查看准确alert_id与来源,AlertContainer,T50
+warning,当前有效且批准level为warning,批准文字准确版本并保留其他有效提示,查看准确alert_id与来源,AlertContainer,T50
+urgent,当前有效且批准level为urgent,批准文字准确版本并保留其他有效提示,查看准确alert_id与当前联系,AlertContainer,T50

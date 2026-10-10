@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "当前家庭记录查询、详情与历史响应",
+  "$defs": {
+    "Text": {"type": "string", "minLength": 1},
+    "NullableText": {"type": ["string", "null"]},
+    "Uuid": {"type": "string", "format": "uuid"},
+    "NullableUuid": {"type": ["string", "null"], "format": "uuid"},
+    "RecordFactReference": {
+      "type": "object", "additionalProperties": false, "required": ["field_id", "fact_id", "version_id", "version"],
+      "properties": {"field_id": {"$ref": "#/$defs/Uuid"}, "fact_id": {"$ref": "#/$defs/Uuid"},
+        "version_id": {"$ref": "#/$defs/Uuid"}, "version": {"type": "string", "pattern": "^[1-9][0-9]*$"}}
+    },
+    "Kind": {"enum": ["observation", "report", "therapy", "professional"]},
+    "Origin": {"enum": ["self_report", "report_transcription", "authorized_clinical"]},
+    "VerificationStatus": {"enum": ["unverified", "pending", "verified", "needs_correction", "revoked"]},
+    "RecordSearchInput": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["observation", "report", "therapy", "professional", null]},
+        "concept_code": {"type": ["string", "null"], "minLength": 1, "maxLength": 120},
+        "original_name": {"type": ["string", "null"], "minLength": 1, "maxLength": 120},
+        "source_organization": {"type": ["string", "null"], "minLength": 1, "maxLength": 120},
+        "origin_type": {"enum": ["self_report", "report_transcription", "authorized_clinical", null]},
+        "verification_status": {"enum": ["unverified", "pending", "verified", "needs_correction", "revoked", null]},
+        "confirmed_by_self": {"type": "boolean"},
+        "from_date": {"type": ["string", "null"], "format": "date"},
+        "to_date": {"type": ["string", "null"], "format": "date"},
+        "cursor": {"type": ["string", "null"], "minLength": 1, "maxLength": 8192},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+      }
+    },
+    "MedicalTimeView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["precision", "raw_text", "local_date", "local_datetime", "instant", "timezone_name", "resolution_status", "local_year", "local_month", "end_year", "end_month", "relative_text", "utc_offset_minutes"],
+      "properties": {
+        "precision": {"enum": ["unknown", "year", "month", "month_range", "relative", "date", "minute", "second"]},
+        "raw_text": {"$ref": "#/$defs/NullableText"},
+        "local_date": {"type": ["string", "null"], "format": "date"},
+        "local_datetime": {"type": ["string", "null"]},
+        "instant": {"type": ["string", "null"], "format": "date-time"},
+        "timezone_name": {"$ref": "#/$defs/NullableText"},
+        "resolution_status": {"enum": ["unknown", "local_only", "resolved", "ambiguous", "invalid"]},
+        "local_year": {"type": ["integer", "null"], "minimum": 1, "maximum": 9999},
+        "local_month": {"type": ["integer", "null"], "minimum": 1, "maximum": 12},
+        "end_year": {"type": ["integer", "null"], "minimum": 1, "maximum": 9999},
+        "end_month": {"type": ["integer", "null"], "minimum": 1, "maximum": 12},
+        "relative_text": {"$ref": "#/$defs/NullableText"},
+        "utc_offset_minutes": {"type": ["integer", "null"], "minimum": -840, "maximum": 840}
+      }
+    },
+    "VerificationState": {
+      "type": "object", "additionalProperties": false, "required": ["purpose", "status", "version"],
+      "properties": {"purpose": {"$ref": "#/$defs/Text"}, "status": {"$ref": "#/$defs/VerificationStatus"}, "version": {"type": "string", "pattern": "^[1-9][0-9]*$"}}
+    },
+    "SourceAnchor": {
+      "type": "object", "additionalProperties": false, "required": ["anchor_kind", "page_id", "page_ordinal", "file_id", "original_text"],
+      "properties": {"anchor_kind": {"enum": ["page", "bbox"]}, "page_id": {"$ref": "#/$defs/Uuid"}, "page_ordinal": {"type": "integer", "minimum": 1}, "file_id": {"$ref": "#/$defs/Uuid"}, "original_text": {"type": "string"}}
+    },
+    "RecordFieldView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field_code", "field_id", "concept_code", "original_name", "value_type", "value_state", "raw_text", "raw_numeric", "categorical_value", "qualifier", "raw_unit", "medical_time_id", "sample_time_origin", "method", "reference_interval", "report_flag", "verification_states", "confirmation_id", "source_anchor", "medical_time"],
+      "properties": {
+        "field_code": {"$ref": "#/$defs/Text"}, "field_id": {"$ref": "#/$defs/Uuid"},
+        "concept_code": {"$ref": "#/$defs/NullableText"}, "dictionary_entry_id": {"$ref": "#/$defs/NullableUuid"}, "original_name": {"$ref": "#/$defs/NullableText"},
+        "value_type": {"enum": ["decimal", "categorical", "text", "time"]}, "value_state": {"enum": ["known", "unknown", "invalid"]},
+        "raw_text": {"$ref": "#/$defs/NullableText"}, "raw_numeric": {"type": ["string", "null"], "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+        "categorical_value": {"$ref": "#/$defs/NullableText"}, "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]},
+        "raw_unit": {"$ref": "#/$defs/NullableText"}, "medical_time_id": {"$ref": "#/$defs/NullableUuid"},
+        "sample_time_origin": {"enum": ["report", "item", "observation", "therapy", "unknown"]},
+        "method": {"$ref": "#/$defs/NullableText"}, "reference_interval": {"$ref": "#/$defs/NullableText"}, "report_flag": {"$ref": "#/$defs/NullableText"},
+        "verification_states": {"type": "array", "items": {"$ref": "#/$defs/VerificationState"}}, "confirmation_id": {"$ref": "#/$defs/NullableUuid"},
+        "source_anchor": {"oneOf": [{"$ref": "#/$defs/SourceAnchor"}, {"type": "null"}]},
+        "medical_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]}
+      }
+    },
+    "Attachment": {
+      "type": "object", "additionalProperties": false, "required": ["file_id", "ordinal"],
+      "properties": {"file_id": {"$ref": "#/$defs/Uuid"}, "ordinal": {"type": "integer", "minimum": 1}}
+    },
+    "ReportView": {
+      "type": "object", "additionalProperties": false, "required": ["external_ref", "report_status", "sample_time", "result_time"],
+      "properties": {"external_ref": {"$ref": "#/$defs/NullableText"}, "report_status": {"enum": ["unknown", "preliminary", "final", "corrected"]},
+        "sample_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]}, "result_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]}}
+    },
+    "TherapyEventItem": {
+      "type": "object", "additionalProperties": false,
+      "required": ["medication_event_item_id", "source_field_id", "ordinal", "medication_name"],
+      "properties": {
+        "medication_event_item_id": {"$ref": "#/$defs/Uuid"}, "source_field_id": {"$ref": "#/$defs/Uuid"},
+        "ordinal": {"type": "integer", "minimum": 1}, "medication_name": {"$ref": "#/$defs/Text"},
+        "dose": {"type": ["string", "null"], "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+        "dose_unit": {"$ref": "#/$defs/NullableText"}, "concentration_text": {"$ref": "#/$defs/NullableText"},
+        "route_text": {"$ref": "#/$defs/NullableText"}, "frequency_text": {"$ref": "#/$defs/NullableText"},
+        "interval_value": {"type": ["string", "null"], "pattern": "^-?[0-9]+(\\.[0-9]+)?$"},
+        "interval_unit": {"enum": ["hour", "day", "week", "month", null]}
+      }
+    },
+    "TherapyEvent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["medication_event_id", "source_field_id", "previous_event_id", "status", "action", "medical_time", "items"],
+      "properties": {
+        "medication_event_id": {"$ref": "#/$defs/Uuid"}, "source_field_id": {"$ref": "#/$defs/Uuid"},
+        "previous_event_id": {"$ref": "#/$defs/NullableUuid"},
+        "action": {"enum": ["historical_treatment", "stopped_by_family", "restart", "stop", "start", "regimen_record", "taper", "dose_route_change", "interval_change", "ongoing", null]},
+        "status": {"oneOf": [{"type": "null"}, {"type": "object", "additionalProperties": false,
+          "required": ["value_state", "value"], "properties": {"value_state": {"enum": ["known", "unknown", "invalid"]},
+            "value": {"enum": ["ongoing", "ended", "not_started", null]}}}]},
+        "medical_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]},
+        "note": {"$ref": "#/$defs/NullableText"}, "items": {"type": "array", "items": {"$ref": "#/$defs/TherapyEventItem"}}
+      }
+    },
+    "FamilyTherapyConfirmation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["confirmed_by_self", "confirmed_at", "scope"],
+      "properties": {
+        "confirmed_by_self": {"type": "boolean"}, "confirmed_at": {"type": "string", "format": "date-time"},
+        "scope": {"type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"enum": ["source", "use_status", "start_time", "end_time"]}}
+      }
+    },
+    "RecordView": {
+      "type": "object", "additionalProperties": false,
+      "required": ["patient_id", "record_id", "kind", "record_version_id", "version", "origin_type", "capture_method", "quality_status", "source_organization", "correction_reason", "corrected_at", "recorded_at", "report", "fields", "attachments", "fact_refs"],
+      "properties": {
+        "patient_id": {"$ref": "#/$defs/Uuid"}, "record_id": {"$ref": "#/$defs/Uuid"}, "kind": {"$ref": "#/$defs/Kind"}, "record_version_id": {"$ref": "#/$defs/Uuid"}, "version": {"type": "integer", "minimum": 1},
+        "origin_type": {"$ref": "#/$defs/Origin"}, "capture_method": {"enum": ["manual", "ocr_confirmed", "voice_confirmed", "authorized_import"]},
+        "quality_status": {"enum": ["pending", "valid", "needs_correction"]}, "source_organization": {"$ref": "#/$defs/NullableText"},
+        "correction_reason": {"$ref": "#/$defs/NullableText"}, "corrected_at": {"type": ["string", "null"], "format": "date-time"}, "recorded_at": {"type": "string", "format": "date-time"},
+        "report": {"oneOf": [{"$ref": "#/$defs/ReportView"}, {"type": "null"}]}, "fields": {"type": "array", "items": {"$ref": "#/$defs/RecordFieldView"}},
+        "fact_refs": {"type": "array", "items": {"$ref": "#/$defs/RecordFactReference"}},
+        "therapy_events": {"type": "array", "items": {"$ref": "#/$defs/TherapyEvent"}},
+        "family_confirmation": {"oneOf": [{"$ref": "#/$defs/FamilyTherapyConfirmation"}, {"type": "null"}]},
+        "attachments": {"type": "array", "items": {"$ref": "#/$defs/Attachment"}}, "allowed_actions": {"type": "array", "items": {"$ref": "#/$defs/Text"}}
+      }
+    },
+    "RecordHistoryView": {
+      "type": "object", "additionalProperties": false, "required": ["patient_id", "record_id", "current_version", "versions"],
+      "properties": {"patient_id": {"$ref": "#/$defs/Uuid"}, "record_id": {"$ref": "#/$defs/Uuid"}, "current_version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "versions": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["record_version_id", "version", "origin_type", "recorded_at", "quality_status"],
+          "properties": {"record_version_id": {"$ref": "#/$defs/Uuid"}, "version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+            "origin_type": {"$ref": "#/$defs/Origin"}, "recorded_at": {"type": "string", "format": "date-time"},
+            "quality_status": {"enum": ["pending", "valid", "needs_correction"]}}
+        }}}
+    },
+    "AnalyteTrendView": {
+      "type": "object", "additionalProperties": false, "required": ["patient_id", "concept_code", "trend"],
+      "properties": {
+        "patient_id": {"$ref": "#/$defs/Uuid"}, "concept_code": {"$ref": "#/$defs/Text"},
+        "trend": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["field_id", "record_version_id", "original_name", "value_state", "raw_numeric", "raw_text", "qualifier", "raw_unit", "method", "medical_time", "medical_time_id", "direction", "not_comparable_reason", "comparison_reasons", "origin_type", "source_organization", "verification_states"],
+          "properties": {
+            "field_id": {"$ref": "#/$defs/Uuid"}, "record_version_id": {"$ref": "#/$defs/Uuid"},
+            "original_name": {"$ref": "#/$defs/NullableText"}, "value_state": {"enum": ["known", "unknown", "invalid"]},
+            "raw_numeric": {"type": ["string", "null"], "pattern": "^-?[0-9]+(\\.[0-9]+)?$"}, "raw_text": {"$ref": "#/$defs/NullableText"},
+            "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]}, "raw_unit": {"$ref": "#/$defs/NullableText"}, "method": {"$ref": "#/$defs/NullableText"},
+            "medical_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]}, "medical_time_id": {"$ref": "#/$defs/NullableUuid"},
+            "direction": {"enum": ["up", "down", "same", null]}, "not_comparable_reason": {"enum": ["unit_or_method_or_precision_mismatch", null]},
+            "comparison_reasons": {"type": "array", "uniqueItems": true, "items": {"enum": ["value_unknown", "unit_unknown", "unit_mismatch", "method_unknown", "method_mismatch", "qualified_value", "time_unknown", "precision_mismatch", "same_time", "timezone_unconfirmed"]}},
+            "origin_type": {"$ref": "#/$defs/Origin"}, "source_organization": {"$ref": "#/$defs/NullableText"}, "verification_states": {"type": "array", "items": {"$ref": "#/$defs/VerificationState"}}
+          }
+        }}
+      }
+    },
+    "RecordCorrectionField": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field_code", "concept_code", "original_name", "value_type", "value_state", "raw_text", "raw_numeric", "categorical_value", "qualifier", "raw_unit", "method", "reference_interval", "report_flag", "sample_time_origin", "medical_time"],
+      "properties": {
+        "field_code": {"$ref": "#/$defs/Text"}, "concept_code": {"$ref": "#/$defs/NullableText"}, "original_name": {"$ref": "#/$defs/NullableText"},
+        "value_type": {"$ref": "#/$defs/RecordFieldView/properties/value_type"}, "value_state": {"$ref": "#/$defs/RecordFieldView/properties/value_state"},
+        "raw_text": {"$ref": "#/$defs/NullableText"}, "raw_numeric": {"$ref": "#/$defs/RecordFieldView/properties/raw_numeric"}, "categorical_value": {"$ref": "#/$defs/NullableText"},
+        "qualifier": {"$ref": "#/$defs/RecordFieldView/properties/qualifier"}, "raw_unit": {"$ref": "#/$defs/NullableText"}, "method": {"$ref": "#/$defs/NullableText"},
+        "reference_interval": {"$ref": "#/$defs/NullableText"}, "report_flag": {"$ref": "#/$defs/NullableText"}, "sample_time_origin": {"$ref": "#/$defs/RecordFieldView/properties/sample_time_origin"},
+        "medical_time": {"$ref": "#/$defs/RecordFieldView/properties/medical_time"}
+      }
+    },
+    "RecordCorrectionInput": {
+      "type": "object", "additionalProperties": false, "required": ["reason", "fields", "expected_version"],
+      "properties": {"reason": {"type": "string", "minLength": 1, "pattern": "\\S"}, "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/RecordCorrectionField"}},
+        "family_confirmation": {"const": true},
+        "expected_version": {"type": "integer", "minimum": 1}, "draft_id": {"$ref": "#/$defs/Uuid"}, "draft_version": {"type": "string", "pattern": "^[1-9][0-9]*$"}},
+      "dependentRequired": {"draft_id": ["draft_version"], "draft_version": ["draft_id"]}
+    },
+    "RecordCorrectionReceipt": {
+      "type": "object", "additionalProperties": false, "required": ["patient_id", "record_id", "record_version_id", "version"],
+      "properties": {"patient_id": {"$ref": "#/$defs/Uuid"}, "record_id": {"$ref": "#/$defs/Uuid"}, "record_version_id": {"$ref": "#/$defs/Uuid"}, "version": {"type": "integer", "minimum": 2}}
+    },
+    "CorrectionDraftField": {
+      "type": "object", "additionalProperties": false,
+      "required": ["field_code", "field_id", "concept_code", "original_name", "value_type", "value_state", "raw_text", "raw_numeric", "categorical_value", "qualifier", "raw_unit", "medical_time_id", "sample_time_origin", "method", "reference_interval", "report_flag", "verification_states", "confirmation_id", "source_anchor", "medical_time"],
+      "properties": {
+        "field_code": {"$ref": "#/$defs/RecordFieldView/properties/field_code"}, "field_id": {"$ref": "#/$defs/RecordFieldView/properties/field_id"},
+        "concept_code": {"$ref": "#/$defs/RecordFieldView/properties/concept_code"}, "original_name": {"$ref": "#/$defs/RecordFieldView/properties/original_name"},
+        "value_type": {"$ref": "#/$defs/RecordFieldView/properties/value_type"}, "value_state": {"$ref": "#/$defs/RecordFieldView/properties/value_state"},
+        "raw_text": {"$ref": "#/$defs/RecordFieldView/properties/raw_text"}, "raw_numeric": {"type": ["string", "null"]},
+        "categorical_value": {"$ref": "#/$defs/RecordFieldView/properties/categorical_value"}, "qualifier": {"$ref": "#/$defs/RecordFieldView/properties/qualifier"},
+        "raw_unit": {"$ref": "#/$defs/RecordFieldView/properties/raw_unit"}, "medical_time_id": {"$ref": "#/$defs/RecordFieldView/properties/medical_time_id"},
+        "sample_time_origin": {"$ref": "#/$defs/RecordFieldView/properties/sample_time_origin"}, "method": {"$ref": "#/$defs/RecordFieldView/properties/method"},
+        "reference_interval": {"$ref": "#/$defs/RecordFieldView/properties/reference_interval"}, "report_flag": {"$ref": "#/$defs/RecordFieldView/properties/report_flag"},
+        "verification_states": {"$ref": "#/$defs/RecordFieldView/properties/verification_states"}, "confirmation_id": {"$ref": "#/$defs/RecordFieldView/properties/confirmation_id"},
+        "source_anchor": {"$ref": "#/$defs/RecordFieldView/properties/source_anchor"}, "medical_time": {"$ref": "#/$defs/RecordFieldView/properties/medical_time"}
+      }
+    },
+    "CorrectionDraft": {
+      "type": "object", "additionalProperties": false, "required": ["recordId", "fields", "kind", "reason", "version"],
+      "properties": {"recordId": {"$ref": "#/$defs/Uuid"}, "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/CorrectionDraftField"}},
+        "kind": {"$ref": "#/$defs/Kind"}, "reason": {"type": "string"}, "version": {"type": "integer", "minimum": 1},
+        "timeInputs": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": false, "required": ["precision", "value", "timezone"],
+          "properties": {"precision": {"enum": ["unknown", "month", "date", "minute"]}, "value": {"type": "string"}, "timezone": {"type": "string"},
+            "localYear": {"type": "integer", "minimum": 1, "maximum": 9999}, "localMonth": {"type": "integer", "minimum": 1, "maximum": 12}}}}
+      }
+    },
+    "RecordItem": {
+      "type": "object", "additionalProperties": false, "required": ["record_id", "kind", "status", "current_version", "created_at", "detail"],
+      "properties": {"record_id": {"$ref": "#/$defs/Uuid"}, "kind": {"$ref": "#/$defs/Kind"}, "status": {"enum": ["active", "withdrawn", "disposed"]},
+        "current_version": {"type": "integer", "minimum": 1}, "created_at": {"type": "string", "format": "date-time"}, "detail": {"$ref": "#/$defs/RecordView"}}
+    },
+    "RecordSearchPage": {
+      "type": "object", "additionalProperties": false, "required": ["records", "next_cursor"],
+      "properties": {"records": {"type": "array", "items": {"$ref": "#/$defs/RecordItem"}}, "next_cursor": {"$ref": "#/$defs/NullableText"}}
+    }
+  }
+}

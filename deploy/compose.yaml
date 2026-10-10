@@ -1,0 +1,95 @@
+# sJIA 合并 MAS 预警平台部署编排参考配置。
+# 目标组件版本依据 HLD 3.1：PostgreSQL 17、Redis、私有 S3 对象存储。
+# 本文件是 T01 建立的部署骨架；实际启动、镜像与秘密在 T28/T33 依据批准环境核验。
+# 本地开发当前使用工作区内的 PostgreSQL 实例与可用运行时，未以本文件替代真实部署验证。
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: sjia
+      POSTGRES_USER: sjia
+      POSTGRES_PASSWORD: ${SJIA_DB_PASSWORD:?数据库密码未配置}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sjia -d sjia"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  object-store:
+    # 私有 S3 API 兼容对象存储；供应商与地区依 D01/D09 决定，此处为本地开发参考。
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${SJIA_OBJECT_ACCESS_KEY:?对象存储用户未配置}
+      MINIO_ROOT_PASSWORD: ${SJIA_OBJECT_SECRET_KEY:?对象存储密钥未配置}
+    volumes:
+      - objectdata:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SJIA_SECRET_KEY: ${SJIA_SECRET_KEY:?密钥未配置}
+      SJIA_ALLOWED_HOSTS: ${SJIA_ALLOWED_HOSTS}
+      SJIA_DB_HOST: postgres
+      SJIA_DB_PORT: "5432"
+      SJIA_DB_NAME: sjia
+      SJIA_DB_USER: sjia
+      SJIA_DB_PASSWORD: ${SJIA_DB_PASSWORD}
+      SJIA_REDIS_URL: redis://redis:6379/0
+      SJIA_CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    command: ["celery", "-A", "config.celery", "worker", "--loglevel=info"]
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SJIA_SECRET_KEY: ${SJIA_SECRET_KEY}
+      SJIA_DB_HOST: postgres
+      SJIA_DB_PORT: "5432"
+      SJIA_DB_NAME: sjia
+      SJIA_DB_USER: sjia
+      SJIA_DB_PASSWORD: ${SJIA_DB_PASSWORD}
+      SJIA_REDIS_URL: redis://redis:6379/0
+      SJIA_CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "443:443"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:
+  objectdata:

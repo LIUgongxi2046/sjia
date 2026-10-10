@@ -1,0 +1,89 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_API_READS_DURING_ENVIRONMENT_GATE_READ_LOCK",
+  "measurement_time": "2026-10-09T15:01:10+08:00",
+  "capture_origin": "主窗口读取的本机 API 实际运行日志",
+  "target": {
+    "api": "http://127.0.0.1:8001",
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "environment": "simulation",
+    "account": "simulation-family",
+    "patient_group": "A",
+    "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+    "simulation_only": true
+  },
+  "concurrency": {
+    "gate_read_helper": "family_content.gate_locks.read_environment_gate_shared",
+    "gate_read_transaction_held_during_requests": true,
+    "gate_read_transaction_rolled_back": true,
+    "full_assessment_read_lock": {
+      "attempted": true,
+      "lock_hold_started": false,
+      "transaction_rolled_back": true,
+      "api_requests_during_assessment_read": false,
+      "concurrency_measurement": "NOT_COMPLETED"
+    },
+    "queue_consumption": 0,
+    "provider_calls": 0,
+    "external_requests": 0,
+    "messages_sent": 0
+  },
+  "api_requests": [
+    {
+      "endpoint": "/api/patients/e88faef5-8bf6-4256-b5a5-865c699103d6/home",
+      "http_status": 200,
+      "response_bytes": 208,
+      "schema": "HomeView",
+      "schema_valid": false,
+      "patient_identity_valid": false,
+      "response_sha256": null,
+      "elapsed_ms": null,
+      "response_body_saved": false,
+      "schema_failure": "HomeView response omitted required fields including patient_id, display_id, recent_records and capabilities."
+    },
+    {
+      "endpoint": "/api/patients/e88faef5-8bf6-4256-b5a5-865c699103d6/field-config?kind=report",
+      "http_status": 200,
+      "response_bytes": 554,
+      "schema": "FieldConfigView",
+      "schema_valid": false,
+      "patient_identity_valid": null,
+      "response_sha256": null,
+      "elapsed_ms": null,
+      "response_body_saved": false,
+      "schema_failure": "FieldConfigView schema validation failed; response body and validation details were not retained by the measurement run."
+    }
+  ],
+  "summary": {
+    "request_count": 2,
+    "http_successes": 2,
+    "http_failures": 0,
+    "http_failure_rate": 0,
+    "schema_failures": 2,
+    "schema_failure_rate": 1,
+    "p95_ms": null,
+    "p99_ms": null,
+    "latency_sample_count": 0,
+    "result": "HTTP_REACHED_SCHEMA_VALIDATION_FAILED"
+  },
+  "capture_limit": "API status and response byte counts are confirmed by the main-window runtime log. The original measurement did not retain response bytes, response hashes, per-endpoint schema diagnostics or elapsed times. Null values are unavailable measurements.",
+  "shared_change_request": {
+    "owner": "主窗口",
+    "files": [
+      "backend/api/views_family.py",
+      "backend/api/family_home.py",
+      "backend-design/protocol.schema.json",
+      "frontend-design/types.ts"
+    ],
+    "callers": [
+      "GET /api/patients/{patient_id}/home",
+      "HomeContainer"
+    ],
+    "request": "核对实际首页回应与 HomeView DTO。当前 home_read 直接返回 home_projection 的八项状态内容，而共享 HomeView 要求 patient_id、display_id、recent_records、capabilities 及其他字段。核对 FieldConfigView 的实际回应与共享 Schema，并保留 API 授权范围。"
+  },
+  "production_capacity": "NOT_RUN",
+  "clinical_data": "NOT_RUN",
+  "devices_wechat_visual": "NOT_RUN",
+  "report_saved_and_reread": true
+}

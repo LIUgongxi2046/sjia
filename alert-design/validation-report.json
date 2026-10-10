@@ -1,0 +1,212 @@
+{
+  "checked_at": "2026-10-01T19:20:03.777661+08:00",
+  "capability": "DESIGN",
+  "status": "PASS",
+  "check_id": "AQA01",
+  "command": "PYTHONPATH=.data-work/deps python3 alert-design/validate.py",
+  "python": "3.12.7 (v3.12.7:0b05ead877f, Sep 30 2024, 23:18:00) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "dependencies": {
+    "jsonschema": "4.26.0",
+    "referencing": "0.37.0",
+    "markdown-it-py": "4.2.0"
+  },
+  "documents": {
+    "status": "PASS",
+    "documents": {
+      "sJIA合并MAS预警平台预警编排LLD.md": {
+        "major_sections": 8,
+        "tables": 23,
+        "mermaid_blocks": 2
+      },
+      "alert-design/clinical-evidence.md": {
+        "major_sections": 0,
+        "tables": 1,
+        "mermaid_blocks": 0
+      }
+    },
+    "local_references": [
+      "alert-design/clinical-evidence.md",
+      "alert-design/design-manifest.json",
+      "alert-design/node.schema.json",
+      "alert-design/policy.schema.json",
+      "alert-design/validate.py",
+      "alert-design/validation-report.json",
+      "backend-design/api-catalog.csv",
+      "backend-design/handshake.md",
+      "backend-design/protocol.schema.json",
+      "data-design/clinical-dataset-status.json",
+      "data-design/schema.sql",
+      "demo-data/current-patient/case.json",
+      "sJIA合并MAS预警平台HLD.md",
+      "sJIA合并MAS预警平台PRD.md",
+      "sJIA合并MAS预警平台后端LLD.md",
+      "sJIA合并MAS预警平台数据LLD.md",
+      "sJIA合并MAS预警平台页面流程.md",
+      "ui-delivery/alerts/specifications.md"
+    ],
+    "mermaid_rendering": "NOT_RUN"
+  },
+  "schemas": {
+    "alert-design/policy.schema.json": {
+      "status": "PASS",
+      "definitions": 15,
+      "resolved_references": 44,
+      "strict_objects": 11
+    },
+    "alert-design/node.schema.json": {
+      "status": "PASS",
+      "definitions": 14,
+      "resolved_references": 55,
+      "strict_objects": 7
+    }
+  },
+  "interfaces": {
+    "status": "PASS",
+    "existing_operations": [
+      "assessment_create",
+      "assessment_read",
+      "alert_evaluation_create",
+      "alert_evaluation_read",
+      "home_read",
+      "alert_read",
+      "alert_mark_read",
+      "config_create",
+      "release_enable",
+      "task_cancel"
+    ],
+    "existing_assessment_kinds": [
+      "classification",
+      "ms"
+    ],
+    "registered_task_type": "alert_evaluation",
+    "task_runtime": "NOT_RUN",
+    "api_runtime": "NOT_RUN"
+  },
+  "real_case_readiness": {
+    "status": "PASS",
+    "scope": "现有病例结构和准入依据核查",
+    "dataset_version": "2026-09-30.2",
+    "source_count": 5,
+    "image_source_count": 4,
+    "measurement_panel_count": 8,
+    "measurement_count": 73,
+    "qualified_measurement_count": 4,
+    "unknown_numeric_measurement_count": 26,
+    "time_precision_counts": {
+      "month": 3,
+      "month_range": 2,
+      "relative": 4,
+      "unknown": 3
+    },
+    "clinical_rule_eligible": false,
+    "clinical_calculation": "NOT_RUN",
+    "source_files": [
+      {
+        "path": "demo-data/current-patient/sources/已粘贴的文本.txt",
+        "sha256": "b157fc1435e3dd4187d037179f43cc26960d078045b611e437eb861d37a8496e"
+      },
+      {
+        "path": "demo-data/current-patient/sources/codex-clipboard-6c0c1dd8-497a-4196-a072-941e98b327e5.png",
+        "sha256": "f0560539c11c56c1a1f388c277c47b64a1b275fda7412ac3e6209fe0094e24a4"
+      },
+      {
+        "path": "demo-data/current-patient/sources/codex-clipboard-e4b73cd9-c601-4611-a467-83cc2a254a1b.png",
+        "sha256": "84cbdcad2311acf2ad285dd90a73ab046230a11288bf9e8edb78f10221ac7237"
+      },
+      {
+        "path": "demo-data/current-patient/sources/codex-clipboard-aabdcd7a-ba0b-42c4-b843-16b34d915796.png",
+        "sha256": "beef2680e20841ba68ea94a6cf0a34314b017d42eeffc660737ae888879357db"
+      },
+      {
+        "path": "demo-data/current-patient/sources/codex-clipboard-1128dc18-ce43-4c72-9dcd-8d520083eab9.png",
+        "sha256": "ce9c865c3036a9d375fcdc06c1231ba3801913cabb766c0e1d7616115e629db0"
+      }
+    ]
+  },
+  "clinical_approval": "BLOCKED",
+  "clinical_performance": "NOT_RUN",
+  "business_integration": "NOT_RUN",
+  "visual_checks": "NOT_RUN",
+  "inputs": [
+    {
+      "path": "sJIA合并MAS预警平台预警编排LLD.md",
+      "sha256": "25901456d0eb374d8a1bfd326393146fb81a05c7c9852f0fb8b3e1aff7304036"
+    },
+    {
+      "path": "alert-design/clinical-evidence.md",
+      "sha256": "b04809cfdb7dcbe2bdbb21ec92f86850912b77d66789d94483b6f3cf5278f291"
+    },
+    {
+      "path": "alert-design/validate.py",
+      "sha256": "4a6e85af58dc1debb0c6c6813f176b6e523f7ff2382b6ab0dd1f02047da81b38"
+    },
+    {
+      "path": "alert-design/design-manifest.json",
+      "sha256": "69d34dad6bc9114871aada46da25cc710e3fbfc394283dda9a383f61bfe5e775"
+    },
+    {
+      "path": "alert-design/policy.schema.json",
+      "sha256": "cf1c5038541ef62868df6a24957a8a0802ccd3ea038e39a5fa4966d194a7ec2e"
+    },
+    {
+      "path": "alert-design/node.schema.json",
+      "sha256": "36020c71272be7ad534cf88fcaa0193664ea2d710be9b7b525d8a97ceec689f8"
+    },
+    {
+      "path": "backend-design/api-catalog.csv",
+      "sha256": "52230ab437c5b5cf85ff68573a79794bded3426c0414f04ef93885abbf5ebcbb"
+    },
+    {
+      "path": "backend-design/handshake.md",
+      "sha256": "85fd74ceadec8892b3316b1663b822ea2889a13e221510da29ac94c26dc94674"
+    },
+    {
+      "path": "backend-design/protocol.schema.json",
+      "sha256": "bc73ba00b7421b23345c44716dd2a73a6107205aaf83457c7100e60f30e3f835"
+    },
+    {
+      "path": "data-design/clinical-dataset-status.json",
+      "sha256": "51f9ee05722e960d09196720aadbb8f42993925a0c71ce698cb84d455368a7ed"
+    },
+    {
+      "path": "data-design/schema.sql",
+      "sha256": "6753d409c23bdde92fcf2a617f4445f2842bc27ccc76a08ed1ebd4cd989b4d93"
+    },
+    {
+      "path": "demo-data/current-patient/case.json",
+      "sha256": "6e9158e517e271cee27d88a8bdee029bf28874017ce7f4a053b97d303c587882"
+    },
+    {
+      "path": "sJIA合并MAS预警平台HLD.md",
+      "sha256": "ae5efee46643a5c15f2411623a145702d0eaaf26afb79d45e2525ed2b5deb67b"
+    },
+    {
+      "path": "sJIA合并MAS预警平台PRD.md",
+      "sha256": "bc7d95cba1e3c224de7bfdbf1ee0872181a0ed0b6f0dc0b749298df2dd4034a7"
+    },
+    {
+      "path": "sJIA合并MAS预警平台后端LLD.md",
+      "sha256": "89a06493132087103992366af9fff18380764c69096d414ce2ef8ee59d9d396b"
+    },
+    {
+      "path": "sJIA合并MAS预警平台数据LLD.md",
+      "sha256": "be83d82cca65202e2b16e57c4c09a82abef357e341f3c11b7d5fc87681c59c89"
+    },
+    {
+      "path": "sJIA合并MAS预警平台页面流程.md",
+      "sha256": "58607761b0fac0fbd7b0f394b4c155d712440ab6ab4cc2b8f0fda4633fa75377"
+    },
+    {
+      "path": "ui-delivery/alerts/specifications.md",
+      "sha256": "61c613f205dc76a31f6f304d7401645d18814d1a40030bc3250ee55b7f8c3784"
+    },
+    {
+      "path": "demo-data/case.schema.json",
+      "sha256": "f60c83507f9fc48715b463b27a3efbc0c7523d543467f321daa5e0c9b58b9e3a"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "064baf0167187feb6736746d4f7126664674273b9520c86306f5e38e2246cf31"
+    }
+  ]
+}

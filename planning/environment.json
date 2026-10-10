@@ -1,0 +1,32 @@
+{
+  "baseline_id": "PLAN-20261001-01",
+  "date": "2026-10-01",
+  "timezone": "Asia/Shanghai",
+  "workspace": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台",
+  "mode": "IMPLEMENTATION",
+  "git": "ABSENT",
+  "observed_python": "3.12.7",
+  "observed_node": "v24.13.0",
+  "target_python": "3.13",
+  "target_postgresql": "17",
+  "observed_postgresql": "18.4 (Homebrew)",
+  "postgresql_dev": {"host": "127.0.0.1", "port": "5433", "database": "sjia_dev", "user": "sjia", "datadir": ".backend-work/pgdata-dev", "log": ".backend-work/pgdata-dev.log"},
+  "redis_dev": {"status": "RUNNING", "host": "127.0.0.1", "port": "6379", "prefix": ".backend-work/redis", "version": "7.2.5", "pidfile": ".backend-work/redis-dev.pid"},
+  "backend_venv": "backend/.venv",
+  "backend_python_version_note": "Django 5.2.17 官方支持 Python 3.10—3.13；本地使用 3.12.7，目标 3.13 因 Homebrew 目录权限不可安装",
+  "backend_dependencies": "backend/requirements.lock.txt",
+  "temporary_directory": ".planning-work",
+  "business_tests": "NOT_RUN",
+  "visual_checks": "NOT_RUN",
+  "target_database_verification": "PARTIAL",
+  "source_versions": {"PRD": "1.5.0", "HLD": "1.0", "DATA": "1.3", "BACK": "1.1", "ALERT": "1.1", "FRONT": "1.1", "HANDSHAKE": "1.0"},
+  "authorization": "用户要求使用 haonan-s008-coder 根据项目文件完成项目实施",
+  "d01_virtual": {
+    "note": "D01 环境容量、RTO/RPO、设备清单与运行负责人暂用虚拟值，后续按真实部署替换",
+    "capacity": {"families": 100, "records_per_day": 500, "peak_rps": 10},
+    "rto": "24h",
+    "rpo": "1h",
+    "device_list": ["iOS Safari 17+", "Android Chrome 120+", "390x844 视口", "360x800 视口"],
+    "operator": "虚拟运行负责人（待指定真实负责人）"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "task_id": "FRONT-DESIGN-01",
+  "capability": "DESIGN",
+  "status": "PASS",
+  "checked_at": "2026-10-01T19:20:07.611699+08:00",
+  "command": "PYTHONPATH=.data-work/deps python3 frontend-design/validate.py",
+  "environment": {
+    "python": "3.12.7",
+    "node": "v24.13.0",
+    "jsonschema": "4.26.0",
+    "markdown-it-py": "4.2.0",
+    "temporary_directory": ".front-work"
+  },
+  "checks": {
+    "document": {
+      "status": "PASS",
+      "headings": [
+        "1. 架构上下文与上游资产映射",
+        "2. 前端边界与安全要求",
+        "3. 设计系统与 Token 资产",
+        "4. 全局数据字典与状态机",
+        "5. 路由、组件拓扑与 API 挂载",
+        "6. 异步交互引擎与 BFF 挂载",
+        "7. 工程与 QA 验收清单"
+      ],
+      "coverage": {
+        "FD-": 57,
+        "FR-": 12,
+        "AC-": 12,
+        "AC-H5-": 6,
+        "NFR-": 13,
+        "FRONT-Q": 20
+      },
+      "local_links": [
+        "backend-design/api-catalog.csv",
+        "backend-design/handshake.md",
+        "backend-design/protocol.schema.json",
+        "data-design/clinical-dataset-status.json",
+        "data-design/dataset.schema.json",
+        "demo-data/README.md",
+        "frontend-design/acceptance.csv",
+        "frontend-design/api-bindings.csv",
+        "frontend-design/check-types.mjs",
+        "frontend-design/routes.csv",
+        "frontend-design/token-map.json",
+        "frontend-design/types.ts",
+        "frontend-design/validate.py",
+        "frontend-design/validation-report.json",
+        "guardian-h5/package.json",
+        "guardian-h5/src/app/App.tsx",
+        "guardian-h5/原型交互说明.md",
+        "sJIA合并MAS预警平台HLD.md",
+        "sJIA合并MAS预警平台PRD.md",
+        "sJIA合并MAS预警平台后端LLD.md",
+        "sJIA合并MAS预警平台数据LLD.md",
+        "sJIA合并MAS预警平台页面流程.md",
+        "sJIA合并MAS预警平台预警编排LLD.md",
+        "ui-delivery/alerts/specifications.md",
+        "ui-delivery/design-system.md",
+        "ui-delivery/preview/three-d-icons.jsx",
+        "ui-delivery/screens/page-specifications.md",
+        "ui-delivery/states/state-specifications.md",
+        "ui-delivery/tokens.json"
+      ],
+      "tables": 20,
+      "mermaid_blocks": 3,
+      "mermaid_rendering": "NOT_RUN"
+    },
+    "bindings": {
+      "status": "PASS",
+      "bindings": 56,
+      "family_operations": 56
+    },
+    "routes": {
+      "status": "PASS",
+      "route_entries": 24,
+      "business_and_status": 23,
+      "primary_paths": [
+        "/account",
+        "/home",
+        "/records"
+      ],
+      "current_source_paths": [
+        "*",
+        "/",
+        "/access-denied",
+        "/account",
+        "/account/data-use",
+        "/alerts",
+        "/alerts/:alertId",
+        "/associations",
+        "/associations/:relationId",
+        "/associations/new",
+        "/drafts",
+        "/home",
+        "/login",
+        "/prototype",
+        "/records",
+        "/records/:recordId",
+        "/records/:recordId/correct",
+        "/records/:recordId/history",
+        "/records/analytes/:analyteId",
+        "/register/observations",
+        "/register/reports",
+        "/register/therapies",
+        "/service-unavailable",
+        "/summaries",
+        "/summaries/:summaryId"
+      ],
+      "root_redirect": "/home"
+    },
+    "tokens": {
+      "status": "PASS",
+      "mapped_tokens": 26,
+      "alert_states": 10,
+      "atlas_paths": [
+        "ui-delivery/assets/master/clinical-3d-icons.png",
+        "ui-delivery/assets/master/utility-3d-icons.png",
+        "ui-delivery/assets/master/extended-3d-icons.png"
+      ],
+      "visual": "NOT_RUN"
+    },
+    "acceptance": {
+      "status": "PASS",
+      "cases": 20,
+      "business_execution": "NOT_RUN",
+      "blocked": 16
+    },
+    "types": {
+      "status": "PASS",
+      "types": 59,
+      "properties": 398,
+      "typescript": "7.0.2",
+      "checks": [
+        "exact_properties",
+        "required_optional",
+        "top_level_types_nullability",
+        "direct_enums",
+        "TaskStatus",
+        "strict_compile"
+      ],
+      "runtime_validation": "NOT_RUN",
+      "current_source_routes": [
+        "*",
+        "/",
+        "/access-denied",
+        "/account",
+        "/account/data-use",
+        "/alerts",
+        "/alerts/:alertId",
+        "/associations",
+        "/associations/:relationId",
+        "/associations/new",
+        "/drafts",
+        "/home",
+        "/login",
+        "/prototype",
+        "/records",
+        "/records/:recordId",
+        "/records/:recordId/correct",
+        "/records/:recordId/history",
+        "/records/analytes/:analyteId",
+        "/register/observations",
+        "/register/reports",
+        "/register/therapies",
+        "/service-unavailable",
+        "/summaries",
+        "/summaries/:summaryId"
+      ],
+      "root_redirect": "/home",
+      "limits": [
+        "嵌套条件与跨字段语义仍由运行时 JSON Schema 和领域校验负责",
+        "ContactView 联合由 TypeScript 编译检查"
+      ]
+    }
+  },
+  "commands": [
+    {
+      "command": [
+        "node",
+        "guardian-h5/node_modules/typescript/bin/tsc",
+        "-p",
+        "frontend-design/tsconfig.json"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend-design/check-types.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"types\": 59,\n  \"properties\": 398,\n  \"typescript\": \"7.0.2\",\n  \"checks\": [\n    \"exact_properties\",\n    \"required_optional\",\n    \"top_level_types_nullability\",\n    \"direct_enums\",\n    \"TaskStatus\",\n    \"strict_compile\"\n  ],\n  \"runtime_validation\": \"NOT_RUN\",\n  \"current_source_routes\": [\n    \"*\",\n    \"/\",\n    \"/access-denied\",\n    \"/account\",\n    \"/account/data-use\",\n    \"/alerts\",\n    \"/alerts/:alertId\",\n    \"/associations\",\n    \"/associations/:relationId\",\n    \"/associations/new\",\n    \"/drafts\",\n    \"/home\",\n    \"/login\",\n    \"/prototype\",\n    \"/records\",\n    \"/records/:recordId\",\n    \"/records/:recordId/correct\",\n    \"/records/:recordId/history\",\n    \"/records/analytes/:analyteId\",\n    \"/register/observations\",\n    \"/register/reports\",\n    \"/register/therapies\",\n    \"/service-unavailable\",\n    \"/summaries\",\n    \"/summaries/:summaryId\"\n  ],\n  \"root_redirect\": \"/home\",\n  \"limits\": [\n    \"嵌套条件与跨字段语义仍由运行时 JSON Schema 和领域校验负责\",\n    \"ContactView 联合由 TypeScript 编译检查\"\n  ]\n}\n",
+      "stderr": ""
+    }
+  ],
+  "input_sha256": {
+    "sJIA合并MAS预警平台前端LLD.md": "bf4a5cd04962246c1da25c93f6e7be140edad94ee8520f365d8ecf5c2fde098f",
+    "frontend-design/acceptance.csv": "37e8b770107a8f59a0d802f459c7c7cc9fbd4509d78a0802ed17662ab6eb405f",
+    "frontend-design/api-bindings.csv": "cdb1c65767ed7a0cbd0368fde75bdac6442ea8e1694917aee7503dee56609d57",
+    "frontend-design/routes.csv": "bb7142bd08a76a27ea263fa0962b58e9f693ab0c9e53dd1bfad492a440faebe2",
+    "frontend-design/types.ts": "beff108345199cfcae605a9e6bf5be1cd8b0e7608594be10d238d6de90bc6798",
+    "frontend-design/tsconfig.json": "5e35c0b96408ac5187eedc1f048e62653c1ea957d76980d89b684b7088fe2211",
+    "frontend-design/token-map.json": "e8e9e29e50ee6ed300e200c862a4d596b2dadc76c664cca4fc7b58b06ac5de8b",
+    "frontend-design/check-types.mjs": "fbba71623d66fc9d8666add130ad2fa695067a0afc46838114a5e84f59daedbb",
+    "frontend-design/describe-schema.py": "f872d8d51ef333caaa241356efcb360590faa02cf81bc889327a3e456b708e89",
+    "frontend-design/validate.py": "7acc8833a039f57960975885cb7bdd3123b862eeeb8d0ad03a2c1746cb8dd006",
+    "backend-design/api-catalog.csv": "52230ab437c5b5cf85ff68573a79794bded3426c0414f04ef93885abbf5ebcbb",
+    "backend-design/protocol.schema.json": "bc73ba00b7421b23345c44716dd2a73a6107205aaf83457c7100e60f30e3f835",
+    "data-design/dataset.schema.json": "ff5d85954ef064fc425546288a7b7b7d6fab7c2957fd2f8b87070033512aa518",
+    "data-design/case-extension.schema.json": "66a3fadfd1e984307492aec008b9de389dea72b6230115e9796cca159d4d9781",
+    "ui-delivery/tokens.json": "b06059b49aba39d098c884aaa660a0ba1f6c26a9182d3e53f52ff13ec007cdf6",
+    "ui-delivery/route-design-map.csv": "feff26a139f41e26a57fb87177e3d033d3191c21944a0081d7d1af0cf7613fb7",
+    "guardian-h5/src/app/App.tsx": "bfb4c80b81a78cccb563657de2e7ca723219bcafb4e68a68ef0049238d472ff5",
+    "guardian-h5/package-lock.json": "fc48c529645c7b019359e7bc647d5c30f30239e3b393080aad84e1bb56662b67"
+  },
+  "business_acceptance": "NOT_RUN",
+  "visual_acceptance": "NOT_RUN",
+  "mobile_acceptance": "NOT_RUN",
+  "mermaid_rendering": "NOT_RUN",
+  "protocol_dependencies": [
+    "FRONT-D01",
+    "FRONT-D02",
+    "FRONT-D03",
+    "FRONT-D04",
+    "FRONT-D05",
+    "FRONT-D06",
+    "FRONT-D07",
+    "FRONT-D08",
+    "FRONT-D09",
+    "FRONT-D10",
+    "FRONT-D11",
+    "FRONT-D12",
+    "FRONT-D13"
+  ]
+}

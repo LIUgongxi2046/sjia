@@ -1,0 +1,19 @@
+# sJIA 合并 MAS 预警平台后端直接依赖
+# 准确锁定版本由 pip freeze 生成 requirements.lock.txt；本文件仅登记直接依赖及兼容范围。
+# 版本依据 HLD 3.1 与 Django 5.2 LTS 官方支持范围（Python 3.10—3.13）。
+Django>=5.2,<5.3
+djangorestframework>=3.16,<3.17
+psycopg[binary]>=3.2,<3.3
+celery>=5.6,<5.7
+redis>=6,<7
+boto3>=1.35,<2
+Pillow>=11,<12
+PyMuPDF>=1.26,<1.28
+gunicorn>=23,<24
+python-dotenv>=1.0,<2
+certifi>=2024.1
+pydantic>=2.12,<3
+python-dateutil>=2.9,<3
+jsonschema>=4.26,<5
+Werkzeug>=3.1.9,<4
+faster-whisper==1.2.1

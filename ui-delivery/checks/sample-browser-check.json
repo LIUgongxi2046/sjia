@@ -1,0 +1,31 @@
+{
+  "time": "2026-09-28T07:07:04.986Z",
+  "browser": "153.0.8010.53",
+  "capability": "DESIGN",
+  "content": "DESIGN_EXAMPLE",
+  "sample": true,
+  "captures": [
+    {
+      "id": "S03",
+      "name": "首页",
+      "file": "screens/png/S03.png"
+    },
+    {
+      "id": "S04",
+      "name": "体温与症状",
+      "file": "screens/png/S04.png"
+    },
+    {
+      "id": "S05",
+      "name": "拍照添加报告",
+      "file": "screens/png/S05.png"
+    }
+  ],
+  "errors": [],
+  "overflowChecks": 0,
+  "alertScreens": 0,
+  "careGuidanceChecks": 0,
+  "symptomChecks": 0,
+  "machineAssertions": 6,
+  "interactionChecks": 0
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "CreateInput": {"type": "object", "additionalProperties": false, "required": ["title", "description", "retention_policy_id"], "properties": {
+      "title": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "\\S"},
+      "description": {"anyOf": [{"type": "null"}, {"type": "string", "minLength": 1, "maxLength": 4000, "pattern": "\\S"}]},
+      "retention_policy_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}
+    }},
+    "ChangeInput": {"type": "object", "additionalProperties": false, "required": ["expected_version", "action"], "properties": {
+      "expected_version": {"$ref": "protocol.schema.json#/$defs/Version"}, "action": {"enum": ["complete", "cancel"]}
+    }},
+    "View": {"type": "object", "additionalProperties": false, "required": ["task_id", "patient_id", "version", "title", "description", "status", "retention_policy_id", "created_at", "updated_at", "finished_at", "allowed_actions"], "properties": {
+      "task_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "version": {"$ref": "protocol.schema.json#/$defs/Version"}, "title": {"type": "string", "minLength": 1, "maxLength": 200},
+      "description": {"type": ["string", "null"], "maxLength": 4000}, "status": {"enum": ["pending", "completed", "cancelled"]},
+      "retention_policy_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "created_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"},
+      "updated_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "finished_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"},
+      "allowed_actions": {"type": "array", "uniqueItems": true, "items": {"enum": ["complete", "cancel"]}}
+    }},
+    "List": {"type": "object", "additionalProperties": false, "required": ["items", "next_cursor", "directory_version"], "properties": {
+      "items": {"type": "array", "items": {"$ref": "#/$defs/View"}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"},
+      "directory_version": {"$ref": "protocol.schema.json#/$defs/Digest"}
+    }},
+    "RetentionOption": {"type": "object", "additionalProperties": false, "required": ["policy_id", "policy_key", "version"], "properties": {
+      "policy_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "policy_key": {"$ref": "protocol.schema.json#/$defs/Text"},
+      "version": {"$ref": "protocol.schema.json#/$defs/Version"}
+    }},
+    "RetentionOptions": {"type": "object", "additionalProperties": false, "required": ["items", "capability_state", "capability_reason"], "properties": {
+      "items": {"type": "array", "items": {"$ref": "#/$defs/RetentionOption"}}, "capability_state": {"enum": ["available", "unavailable"]},
+      "capability_reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}
+    }},
+    "IntentInput": {"type": "object", "additionalProperties": false, "required": ["operation_id", "target_key", "request_id", "schema_version", "payload"], "properties": {
+      "operation_id": {"enum": ["personal_record_task_create", "personal_record_task_change"]}, "target_key": {"type": "string", "minLength": 1, "maxLength": 256},
+      "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "schema_version": {"const": "2.0.0"}, "payload": {"type": "object"}
+    }, "allOf": [
+      {"if": {"properties": {"operation_id": {"const": "personal_record_task_create"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/CreateInput"}}}},
+      {"if": {"properties": {"operation_id": {"const": "personal_record_task_change"}}}, "then": {"properties": {"payload": {"$ref": "#/$defs/ChangeInput"}}}}
+    ]},
+    "Receipt": {"type": "object", "additionalProperties": false, "required": ["schema_version", "resource_type", "resource_id", "version", "saved_at", "request_id", "task_id"], "properties": {
+      "schema_version": {"const": "2.0.0"}, "resource_type": {"const": "personal_record_task"}, "resource_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "version": {"$ref": "protocol.schema.json#/$defs/Version"}, "saved_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"},
+      "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "task_id": {"type": "null"}
+    }},
+    "Request": {"type": "object", "additionalProperties": false, "required": ["intent_id", "request_id", "operation_id", "target_key", "prepared_at", "state", "may_retry", "receipt", "error_code", "generation", "expires_at", "payload_sha256", "record_task_input"], "properties": {
+      "intent_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"},
+      "operation_id": {"enum": ["personal_record_task_create", "personal_record_task_change"]}, "target_key": {"$ref": "protocol.schema.json#/$defs/Text"},
+      "prepared_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "state": {"enum": ["pending", "committed", "failed", "unknown"]},
+      "may_retry": {"type": "boolean"}, "receipt": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/Receipt"}]},
+      "error_code": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "generation": {"$ref": "protocol.schema.json#/$defs/Version"},
+      "expires_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "payload_sha256": {"$ref": "protocol.schema.json#/$defs/Digest"},
+      "record_task_input": {"anyOf": [{"$ref": "#/$defs/CreateInput"}, {"$ref": "#/$defs/ChangeInput"}]}
+    }}
+  }
+}

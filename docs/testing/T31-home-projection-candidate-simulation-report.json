@@ -1,0 +1,143 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_READ_ONLY_HOME_AND_FIELD_CONFIG_CANDIDATE",
+  "simulation_only": true,
+  "runtime": {
+    "postgresql": "18.4",
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "jsonschema": "4.26.0",
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "environment": "simulation",
+    "read_only_transaction": true,
+    "writes": 0,
+    "queue_consumption": 0,
+    "provider_calls": 0,
+    "external_sends": 0
+  },
+  "runs": {
+    "A": {
+      "started_at": "2026-10-09T07:31:25.976344+00:00",
+      "completed_at": "2026-10-09T07:31:30.853343+00:00",
+      "duration_ms": 4876.979,
+      "concurrency": 1,
+      "account": "simulation-family",
+      "patient_id": "e88faef5-8bf6-4256-b5a5-865c699103d6",
+      "active_relation_checked": true,
+      "home_schema_valid": true,
+      "home_schema_error_count": 0,
+      "home_compact_json_bytes": 18223,
+      "recent_current_authorized_records": 5,
+      "visible_field_count": 9,
+      "fact_read_source_reference_count": 9,
+      "read_file_authorized_original_metadata_count": 5,
+      "original_metadata_complete": true,
+      "content_path_checks_read_file_and_read_history": true,
+      "clinical_projection_present": false,
+      "field_config_candidates": {
+        "observation": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 203, "schema_valid": true, "schema_errors": 0},
+        "report": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 198, "schema_valid": true, "schema_errors": 0},
+        "therapy": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 199, "schema_valid": true, "schema_errors": 0}
+      },
+      "current_valid_alert_events": 0,
+      "saved_candidate_report_reread_and_compared": true
+    },
+    "B": {
+      "started_at": "2026-10-09T07:31:02.037399+00:00",
+      "completed_at": "2026-10-09T07:31:04.393175+00:00",
+      "duration_ms": 2355.756,
+      "concurrency": 1,
+      "account": "simulation-family-b",
+      "patient_id": "405514ce-9335-4705-a750-d811148bda4c",
+      "active_relation_checked": true,
+      "home_schema_valid": true,
+      "home_schema_error_count": 0,
+      "home_compact_json_bytes": 44543,
+      "recent_current_authorized_records": 4,
+      "visible_field_count": 30,
+      "fact_read_source_reference_count": 30,
+      "read_file_authorized_original_metadata_count": 4,
+      "original_metadata_complete": true,
+      "content_path_checks_read_file_and_read_history": true,
+      "home_service_state": "disabled",
+      "home_assessment_state": "configuration_pending",
+      "home_alert_state": "none",
+      "home_current_alert_id": null,
+      "field_config_candidates": {
+        "observation": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 203, "schema_valid": true, "schema_errors": 0},
+        "report": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 198, "schema_valid": true, "schema_errors": 0},
+        "therapy": {"state": "disabled", "reason_code": "CONFIG_NOT_AVAILABLE", "fields": 0, "compact_json_bytes": 199, "schema_valid": true, "schema_errors": 0}
+      },
+      "persisted_valid_alert_event": {
+        "alert_id": "db547811-b132-416d-87dd-ebed5879c7a5",
+        "event_validity": "valid",
+        "gate_enabled": true,
+        "active_release_matches": true,
+        "receive_alert_family_authorized": true,
+        "evaluation_validity": "valid",
+        "evaluation_status": "completed",
+        "evaluation_mode": "current",
+        "evaluation_environment": "simulation",
+        "data_epoch_current": true,
+        "verification_epoch_current": true,
+        "publication_epoch_current": true,
+        "release_available": false,
+        "release_unavailable_reason": "CONFIG_VALIDATION_UNAVAILABLE",
+        "published_content_state": "unavailable",
+        "home_current_alert_id": null,
+        "clinical_source_refs_schema_check": "NOT_RUN_NO_PUBLISHED_CONTENT"
+      },
+      "saved_candidate_report_reread_and_compared": true
+    }
+  },
+  "formal_schema": {
+    "path": "backend-design/protocol.schema.json",
+    "home_definition": "#/$defs/HomeView",
+    "field_config_definition": "#/$defs/FieldConfigView",
+    "source_reference_schema": "../data-design/dataset.schema.json#/$defs/sourceReference",
+    "source_reference_required_fields": ["source_revision_id", "record_version_id", "field_id", "file_id", "page_id", "anchor_id", "verification_ids", "mapping_id"],
+    "A_B_saved_candidates_rechecked_with_t31_measurement_validator": true,
+    "rechecked_home_errors": {"A": 0, "B": 0},
+    "rechecked_field_config_errors_by_kind": {
+      "A": {"observation": 0, "report": 0, "therapy": 0},
+      "B": {"observation": 0, "report": 0, "therapy": 0}
+    }
+  },
+  "field_config_permission_finding": {
+    "shared_view": "backend/api/views_family.py::field_config_read_view",
+    "shared_view_family_purpose_filter_at_candidate_run": false,
+    "required_family_purpose": "family_observation",
+    "candidate_filter_applied": true,
+    "observed_candidate_responses": "A and B observation/report/therapy FieldConfigView states were disabled with reason CONFIG_NOT_AVAILABLE and fields arrays of length zero.",
+    "authorized_field_count_conclusion": "NOT_DETERMINED_FROM_DISABLED_FIELD_CONFIG_RESPONSE",
+    "qualification_status_at_candidate_run": "NOT_REFRESHED",
+    "current_shared_implementation": {
+      "home_builder": "backend/api/family_home_details.py::build_home",
+      "home_read_calls_builder": true,
+      "field_config_view_filters_family_purpose_and_relation": true,
+      "records_access_family_callers_filter_family_purpose_and_relation": true,
+      "h5_home_uses_formal_home_view": true,
+      "owner": "main_window"
+    }
+  },
+  "prior_api_runtime_log": {
+    "home": {"http_status": 200, "response_bytes": 208, "schema_valid_reported": false, "raw_response_retained": false, "elapsed_ms": null},
+    "field_config_report": {"http_status": 200, "response_bytes": 554, "schema_valid_reported": false, "schema_diagnostics_retained": false, "raw_response_retained": false, "elapsed_ms": null},
+    "capture_source": "main-window runtime log",
+    "exact_api_field_config_schema_difference": "UNDETERMINED_RAW_RESPONSE_NOT_RETAINED"
+  },
+  "clinical_projection_finding": {
+    "current_family_content_alert_content_source_ref_fields": ["record_version_id", "field_id", "source_revision_id", "source_version"],
+    "formal_source_reference_requires": ["source_revision_id", "record_version_id", "field_id", "file_id", "page_id", "anchor_id", "verification_ids", "mapping_id"],
+    "candidate_projection_source": "archives.queries.fact_read field.source_reference",
+    "candidate_requires_current_family_observation_grant_and_current_record_fact": true,
+    "B_published_content_available_at_candidate_run": false,
+    "B_reason_at_candidate_run": "CONFIG_VALIDATION_UNAVAILABLE"
+  },
+  "capacity_claim": "SIMULATION_TOOL_RUN_ONLY; no real capacity or clinical scale claim",
+  "api_latency_percentiles": "NOT_MEASURED",
+  "production_capacity": "NOT_RUN",
+  "clinical_data": "NOT_RUN",
+  "devices_wechat_visual": "NOT_RUN"
+}

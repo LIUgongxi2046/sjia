@@ -1,0 +1,64 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_READ_ONLY_CONNECTION_BUDGET",
+  "measured_at": "2026-10-09T05:08:22.137569+00:00",
+  "runtime": {
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "database": {
+    "name": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "port": "5433",
+    "size_bytes": 26015423
+  },
+  "limits": {
+    "max_connections": 100,
+    "superuser_reserved_connections": 3,
+    "reserved_connections": 0,
+    "usable_non_reserved_connections": 97
+  },
+  "observed_sessions": {
+    "database_total": 7,
+    "database_active": 1,
+    "database_idle": 6,
+    "database_idle_in_transaction": 0,
+    "database_without_state": 0,
+    "server_total": 18,
+    "by_application_and_state": [
+      {
+        "application_name": "",
+        "state": "active",
+        "count": 1
+      },
+      {
+        "application_name": "",
+        "state": "idle",
+        "count": 6
+      }
+    ]
+  },
+  "application_budget": {
+    "django_conn_max_age_seconds": 60,
+    "persistent_connections_enabled": true,
+    "api_workers": "NOT_PROVIDED",
+    "worker_processes": "NOT_STARTED",
+    "beat_processes": "NOT_STARTED",
+    "pool_max_size": "NOT_CONFIGURED"
+  },
+  "capacity_assessment": {
+    "simulation_only": true,
+    "observed_sessions_are_snapshot": true,
+    "approved_process_counts": "NOT_PROVIDED",
+    "production_capacity": "NOT_RUN",
+    "capacity_pass": "NOT_DETERMINED"
+  },
+  "database_operations": {
+    "transactions_written": 0,
+    "services_started_or_stopped": 0,
+    "worker_or_beat_started": false,
+    "queue_consumption": 0
+  },
+  "saved_and_reread": true
+}

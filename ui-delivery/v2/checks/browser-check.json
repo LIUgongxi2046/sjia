@@ -1,0 +1,5252 @@
+{
+  "createdAt": "2026-10-07T05:59:42.921Z",
+  "screens": 39,
+  "stateChecks": 328,
+  "widthChecks": 195,
+  "textScaleChecks": 39,
+  "checks": [
+    {
+      "label": "home/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/attention",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/warning",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "home/urgent",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "observations/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "records/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "detail/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/attention",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/warning",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/urgent",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/attention",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/warning",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/urgent",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "account/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "data-use/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/pending",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/success",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/default",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/loading",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/empty",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/error",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/offline",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/permission",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/partial",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/stale",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/320",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/360",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/390",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/430",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/580",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "home/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "observations/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reports/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "therapies/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "records/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "detail/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "analyte/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "correction/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "history/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "version/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alerts/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "alert-detail/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summaries/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "summary-detail/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "account/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": [
+        "首页",
+        "记录",
+        "我的"
+      ]
+    },
+    {
+      "label": "data-use/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "login/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "associations/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-new/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "association-detail/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "drafts/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "access/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "service/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "missing/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "archive/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "batch/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "confirm/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "grouping/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "duplicates/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delta/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "period/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "reminders/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "original/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "verify/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "assessment/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "publication/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "dataset/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "privacy/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    },
+    {
+      "label": "delivery/文字200%",
+      "pageFits": true,
+      "contentFits": true,
+      "controlsFit": true,
+      "overflow": [],
+      "images": true,
+      "navigation": []
+    }
+  ],
+  "errors": [],
+  "businessRequests": 0,
+  "screenshots": 0,
+  "visualVerified": false,
+  "scope": "设计预览 DOM、边界、状态和交互"
+}

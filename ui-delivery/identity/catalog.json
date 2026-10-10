@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "brand": "sJIA 守护者联盟",
+  "logo": "logo-embrace",
+  "ages": [
+    {"id": "infant", "label": "6–12个月", "pose": "坐姿"},
+    {"id": "toddler", "label": "1–3岁", "pose": "站姿"}
+  ],
+  "genders": [
+    {"id": "boy", "label": "男童"},
+    {"id": "girl", "label": "女童"}
+  ],
+  "seasons": [
+    {"id": "spring", "label": "春季", "color": "#dcece4", "clothes": "青绿色针织与米白内搭"},
+    {"id": "summer", "label": "夏季", "color": "#dceaf8", "clothes": "浅蓝色棉质短袖"},
+    {"id": "autumn", "label": "秋季", "color": "#f2e4d5", "clothes": "燕麦色针织与焦糖外搭"},
+    {"id": "winter", "label": "冬季", "color": "#e4e7f3", "clothes": "灰蓝色保暖外套"}
+  ],
+  "view": "front",
+  "source": "image_gen__imagegen",
+  "selection": "由监护人选择或依据获准资料提出建议，允许手动更改。"
+}

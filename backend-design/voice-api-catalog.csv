@@ -1,0 +1,9 @@
+operation_id,caller,method,path,view,input_schema,output_schema,success,authorization,task_result,owner
+voice_input_options_read,family,GET,/api/v2/patients/{patient_id}/voice-input-options,voice_input_options,None,voice-input.OptionsView,200,current_relation_read_raw_family_observation,none,T55
+voice_input_create,family,POST,/api/v2/patients/{patient_id}/voice-inputs,voice_inputs,voice-input.CreateInput,voice-input.VoiceInputView,201,current_relation_write_record_family_observation,none,T55
+voice_input_lookup,family,GET,/api/v2/patients/{patient_id}/voice-inputs,voice_inputs,request_id,voice-input.VoiceInputView,200,current_relation_read_raw_family_observation,voice_input,T55
+voice_input_read,family,GET,/api/v2/patients/{patient_id}/voice-inputs/{voice_id},voice_input_read,None,voice-input.VoiceInputView,200,current_relation_read_raw_family_observation,voice_input,T55
+voice_input_process,family,POST,/api/v2/patients/{patient_id}/voice-inputs/{voice_id}/process,voice_input_process,voice-input.ProcessInput,voice-input.VoiceInputView,202,current_relation_write_record_family_observation,voice_input,T55
+voice_input_adopt,family,POST,/api/v2/patients/{patient_id}/voice-inputs/{voice_id}/adopt,voice_input_adopt,voice-input.AdoptInput,voice-input.AdoptionView,200,current_relation_write_record_family_observation,voice_input,T55
+voice_input_cancel,family,POST,/api/v2/patients/{patient_id}/voice-inputs/{voice_id}/cancel,voice_input_cancel,voice-input.CancelInput,voice-input.VoiceInputView,200,current_relation_write_record_family_observation,voice_input,T55
+patient_selection_save,family,POST,/api/patient-selection,patient_selection_write,protocol.PatientSelectionInput,protocol.PatientSelectionView,200,current_relation_read_raw_family_observation,none,T30

@@ -1,0 +1,80 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_BUDGET_SERVICE_BOUNDARY_CHECK",
+  "measured_at": "2026-10-09T04:38:22.025381+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-20261009-qualified",
+    "external_model_requests": 0,
+    "external_sends": 0,
+    "worker_or_beat_started": false,
+    "shared_queue_consumption": 0
+  },
+  "budget_service_source": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/coordination/root/archive_budget.py",
+  "known_cost_sum": {
+    "task_id": "3474b25c-7db4-476b-9285-f7af501acd91",
+    "attempt_count": 1,
+    "expected": "0.007594",
+    "actual": "0.007594",
+    "finding": "PASS"
+  },
+  "scenarios": {
+    "cancelled_before_provider": {
+      "task_id": "1920b55d-774a-4b8b-857b-ddf76edb26ab",
+      "task_attempt_id": "dcba922d-a83e-48f4-ab45-cfa8725b71ad",
+      "archive_page_attempt_id": "fcc1f958-1a60-429b-ac53-3e5ea054c50c",
+      "cost": "0",
+      "saved_and_reread": true,
+      "finding": "PASS"
+    },
+    "inflight_reservation": {
+      "task_id": "f47aa074-7f0d-474e-aa1b-5bb3a87a8a9a",
+      "task_attempt_id": "ba04f622-861b-4640-be8a-2f8aebb8856b",
+      "archive_page_attempt_id": "d15a692d-80be-4e1e-b17b-04778c881da6",
+      "reserved_cost": "1",
+      "saved_and_reread": true,
+      "finding": "PASS"
+    },
+    "completed_after_provider": {
+      "task_id": "254c7cc2-4072-431f-b1a1-e352e54d4ce8",
+      "task_attempt_id": "086df5a0-29ad-4a19-92fe-f4d7c2e7f6c3",
+      "archive_page_attempt_id": "f8910753-ef75-4bc9-9827-702a595d524d",
+      "error_code": "ARCHIVE_BUDGET_INDETERMINATE",
+      "http_status": 409,
+      "finding": "PASS",
+      "saved_and_reread": true
+    },
+    "cancelled_after_provider": {
+      "task_id": "d55c2e99-d621-4443-a786-db19b78c7c5c",
+      "task_attempt_id": "d7b68f8d-6cfc-4334-93e9-03a938b9ca0f",
+      "archive_page_attempt_id": "341df528-d6ab-4988-918e-1402a1553a8d",
+      "error_code": "ARCHIVE_BUDGET_INDETERMINATE",
+      "http_status": 409,
+      "finding": "PASS",
+      "saved_and_reread": true
+    },
+    "uncertain_after_provider": {
+      "task_id": "12879537-2822-44a3-b0df-e4b5c2f17363",
+      "task_attempt_id": "0142813b-277e-4801-88b1-8f73676cbf07",
+      "archive_page_attempt_id": "de9ae62b-2fc5-441c-a85c-efccdec12de0",
+      "error_code": "ARCHIVE_BUDGET_INDETERMINATE",
+      "http_status": 409,
+      "finding": "PASS",
+      "saved_and_reread": true
+    }
+  },
+  "batch_budget_status": {
+    "batch_id": "423e072e-0741-4374-bebc-fd89bfa46615",
+    "status": "unknown",
+    "finding": "PASS"
+  },
+  "saved_and_reread": true
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "IntentCancelInput": {"type": "object", "additionalProperties": false, "required": ["expected_generation", "reason"], "properties": {"expected_generation": {"$ref": "protocol.schema.json#/$defs/Version"}, "reason": {"type": "string", "minLength": 1, "maxLength": 4096, "pattern": "\\S"}}},
+    "Action": {"enum": ["manage_configs", "approve_config", "register_validation", "publish_config", "manage_contacts"]},
+    "Collection": {"enum": ["release", "config", "contact", "source"]},
+    "PublicationQuery": {"type": "object", "additionalProperties": false, "required": ["collection", "action"], "properties": {"collection": {"$ref": "#/$defs/Collection"}, "action": {"$ref": "#/$defs/Action"}, "cursor": {"type": "string", "minLength": 1, "maxLength": 65536}}},
+    "PublicationReadQuery": {"type": "object", "additionalProperties": false, "required": ["action"], "properties": {"action": {"$ref": "#/$defs/Action"}}},
+    "DirectoryItem": {"type": "object", "additionalProperties": false, "required": ["id", "title", "version", "status", "kind", "schema_version", "checksum"], "properties": {
+      "id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "title": {"$ref": "protocol.schema.json#/$defs/Text"}, "version": {"type": ["string", "null"]}, "status": {"type": "string"}, "kind": {"type": ["string", "null"]}, "schema_version": {"type": ["string", "null"]}, "checksum": {"type": ["string", "null"]}
+    }},
+    "Directory": {"type": "object", "additionalProperties": false, "required": ["environment", "gate_version", "publication_epoch", "active_release_id", "collection", "schemas", "items", "next_cursor", "snapshot_version", "capability_state", "capability_reason"], "properties": {
+      "environment": {"$ref": "protocol.schema.json#/$defs/Text"}, "gate_version": {"$ref": "protocol.schema.json#/$defs/Version"}, "publication_epoch": {"$ref": "protocol.schema.json#/$defs/Epoch"}, "active_release_id": {"$ref": "protocol.schema.json#/$defs/NullableUuid"}, "collection": {"$ref": "#/$defs/Collection"},
+      "schemas": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["kind", "schema_version"], "properties": {"kind": {"type": "string"}, "schema_version": {"type": "string"}}}},
+      "items": {"type": "array", "items": {"$ref": "#/$defs/DirectoryItem"}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}, "capability_state": {"enum": ["available", "unavailable"]}, "capability_reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}
+    }},
+    "ConfigDetail": {"type": "object", "additionalProperties": false, "required": ["resource", "artifact_sha256", "approvals"], "properties": {
+      "resource": {"$ref": "protocol.schema.json#/$defs/ConfigView"}, "artifact_sha256": {"$ref": "protocol.schema.json#/$defs/Digest"}, "approvals": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "approved_at", "revoked_at", "scope"], "properties": {"id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "approved_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "revoked_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "scope": {"type": "object"}}}}
+    }},
+    "ContactDetail": {"type": "object", "additionalProperties": false, "required": ["id", "version", "status", "owner_id", "verified_at", "updated_at", "contact"], "properties": {
+      "id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "version": {"$ref": "protocol.schema.json#/$defs/Version"}, "status": {"enum": ["draft", "approved", "active", "disabled"]}, "owner_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "verified_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "updated_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "contact": {"$ref": "protocol.schema.json#/$defs/ContactInput"}
+    }},
+    "Readiness": {"type": "object", "additionalProperties": false, "required": ["key", "state", "reason"], "properties": {"key": {"enum": ["verification", "rules", "validation", "content", "contact", "notification"]}, "state": {"enum": ["available", "blocked"]}, "reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}}},
+    "ReleaseDetail": {"type": "object", "additionalProperties": false, "required": ["resource", "gate_version", "publication_epoch", "active_release_id", "readiness", "qualification_reason", "may_enable", "approved_text", "recipient_permission_state"], "properties": {
+      "resource": {"$ref": "protocol.schema.json#/$defs/ReleaseView"}, "gate_version": {"$ref": "protocol.schema.json#/$defs/Version"}, "publication_epoch": {"$ref": "protocol.schema.json#/$defs/Epoch"}, "active_release_id": {"$ref": "protocol.schema.json#/$defs/NullableUuid"}, "readiness": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/Readiness"}}, "qualification_reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "may_enable": {"type": "boolean"}, "approved_text": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "recipient_permission_state": {"const": "individual_check_required"}
+    }},
+    "RequestList": {"type": "object", "additionalProperties": false, "required": ["items", "next_cursor", "snapshot_version"], "properties": {"items": {"type": "array", "items": {"$ref": "protocol.schema.json#/$defs/RequestView"}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}}}
+  }
+}

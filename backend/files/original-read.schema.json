@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "按准确记录版本读取原件与保存依据",
+  "type": "object", "additionalProperties": false,
+  "required": ["patient_id", "record_id", "record_version_id", "record_version", "source_organization", "originals"],
+  "properties": {
+    "patient_id": {"$ref": "#/$defs/Uuid"}, "record_id": {"$ref": "#/$defs/Uuid"},
+    "record_version_id": {"$ref": "#/$defs/Uuid"}, "record_version": {"type": "integer", "minimum": 1},
+    "source_organization": {"type": ["string", "null"]},
+    "originals": {"type": "array", "items": {"$ref": "#/$defs/Original"}}
+  },
+  "$defs": {
+    "Uuid": {"type": "string", "format": "uuid"},
+    "NullableUuid": {"type": ["string", "null"], "format": "uuid"},
+    "Timestamp": {"type": "string", "format": "date-time"},
+    "NullableTimestamp": {"type": ["string", "null"], "format": "date-time"},
+    "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+    "Document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["document_id", "document_version_id", "document_type", "source_organization", "documented_time"],
+      "properties": {
+        "document_id": {"$ref": "#/$defs/Uuid"},
+        "document_version_id": {"$ref": "#/$defs/Uuid"}, "document_type": {"enum": ["laboratory", "inpatient", "discharge", "outpatient", "therapy", "imaging_report", "imaging_asset", "unknown"]},
+        "source_organization": {"type": ["string", "null"]},
+        "documented_time": {"oneOf": [{"$ref": "record-search.schema.json#/$defs/MedicalTimeView"}, {"type": "null"}]}
+      }
+    },
+    "Authorization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authorization_id", "purpose", "environment", "evidence_ref", "valid_until"],
+      "properties": {
+        "authorization_id": {"$ref": "#/$defs/Uuid"}, "purpose": {"type": "string", "minLength": 1},
+        "environment": {"type": "string", "minLength": 1}, "evidence_ref": {"type": "string", "minLength": 1},
+        "valid_until": {"$ref": "#/$defs/NullableTimestamp"}
+      }
+    },
+    "Copy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["copy_id", "version", "purpose", "status", "review_id", "reviewed_at", "revoked_at", "identity_result", "clinical_result"],
+      "properties": {
+        "copy_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"},
+        "purpose": {"type": "string", "minLength": 1}, "status": {"enum": ["pending_review", "approved", "rejected", "revoked", "disposed"]},
+        "review_id": {"$ref": "#/$defs/NullableUuid"}, "reviewed_at": {"$ref": "#/$defs/NullableTimestamp"},
+        "revoked_at": {"$ref": "#/$defs/NullableTimestamp"},
+        "identity_result": {"type": ["string", "null"]}, "clinical_result": {"type": ["string", "null"]}
+      }
+    },
+    "Original": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file_id", "object_version", "checksum", "status", "media_type", "ordinal", "created_at", "pages", "documents", "use_authorizations", "purpose_copies"],
+      "properties": {
+        "file_id": {"$ref": "#/$defs/Uuid"}, "object_version": {"type": "string", "minLength": 1},
+        "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "status": {"enum": ["quarantined", "available", "failed", "disposed"]},
+        "media_type": {"type": "string", "minLength": 1}, "ordinal": {"type": "integer", "minimum": 1},
+        "created_at": {"$ref": "#/$defs/Timestamp"},
+        "pages": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["page_id", "ordinal"],
+          "properties": {"page_id": {"$ref": "#/$defs/Uuid"}, "ordinal": {"type": "integer", "minimum": 1}}}},
+        "documents": {"type": "array", "items": {"$ref": "#/$defs/Document"}},
+        "use_authorizations": {"type": "array", "items": {"$ref": "#/$defs/Authorization"}},
+        "purpose_copies": {"type": "array", "items": {"$ref": "#/$defs/Copy"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Receipt": {"type": "object", "additionalProperties": false, "required": ["receipt_id", "provider", "provider_event_id", "status", "occurred_at", "received_at", "evidence_sha256"], "properties": {
+      "receipt_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "provider": {"$ref": "protocol.schema.json#/$defs/Text"}, "provider_event_id": {"$ref": "protocol.schema.json#/$defs/Text"}, "status": {"enum": ["accepted", "delivered", "failed"]}, "occurred_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "received_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "evidence_sha256": {"$ref": "protocol.schema.json#/$defs/Digest"}
+    }},
+    "Attempt": {"type": "object", "additionalProperties": false, "required": ["attempt_id", "attempt_number", "permit_id", "authorized_at", "expires_at", "status", "provider_request_id", "started_at", "finished_at", "proof_state", "receipts"], "properties": {
+      "attempt_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "attempt_number": {"type": "integer", "minimum": 1}, "permit_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "authorized_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "expires_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "status": {"enum": ["authorized", "started", "accepted", "failed", "uncertain", "cancelled"]}, "provider_request_id": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "started_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "finished_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "proof_state": {"enum": ["available", "unavailable"]}, "receipts": {"type": "array", "items": {"$ref": "#/$defs/Receipt"}}
+    }},
+    "Record": {"type": "object", "additionalProperties": false, "required": ["recipient_id", "patient_id", "alert_id", "relation_id", "channel", "created_at", "delivery_status", "read_at", "content_state", "current_validity", "trace_state", "attempts", "snapshot_version"], "properties": {
+      "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"},
+      "recipient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "alert_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "relation_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "channel": {"$ref": "protocol.schema.json#/$defs/Text"}, "created_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "delivery_status": {"enum": ["not_sent", "pending", "accepted", "delivered", "failed", "uncertain", "cancelled", "unknown"]}, "read_at": {"$ref": "protocol.schema.json#/$defs/NullableTimestamp"}, "content_state": {"enum": ["available", "configuration_pending", "unavailable"]}, "current_validity": {"enum": ["valid", "invalid"]}, "trace_state": {"enum": ["available", "unavailable"]}, "attempts": {"type": "array", "items": {"$ref": "#/$defs/Attempt"}}
+    }},
+    "History": {"type": "object", "additionalProperties": false, "required": ["patient_id", "items", "next_cursor", "snapshot_version", "capability_state", "capability_reason"], "properties": {
+      "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "items": {"type": "array", "items": {"$ref": "#/$defs/Record"}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}, "capability_state": {"enum": ["available", "unavailable"]}, "capability_reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}
+    }},
+    "SendInput": {"type": "object", "additionalProperties": false, "required": ["expected_snapshot"], "properties": {"expected_snapshot": {"$ref": "protocol.schema.json#/$defs/Digest"}}},
+    "IntentInput": {"type": "object", "additionalProperties": false, "required": ["operation_id", "target_key", "request_id", "schema_version", "payload"], "properties": {
+      "operation_id": {"const": "notification_v2_send"}, "target_key": {"type": "string", "pattern": "^/support/notification-records/[0-9a-f-]{36}/send$"}, "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "schema_version": {"const": "2.0.0"}, "payload": {"$ref": "#/$defs/SendInput"}
+    }},
+    "RequestReceipt": {"type": "object", "additionalProperties": false, "required": ["resource_type", "resource_id", "version", "saved_at", "request_id", "recipient_id"], "properties": {
+      "resource_type": {"const": "notification_attempt"}, "resource_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "version": {"$ref": "protocol.schema.json#/$defs/Version"}, "saved_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "recipient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}
+    }},
+    "Request": {"type": "object", "additionalProperties": false, "required": ["intent_id", "request_id", "operation_id", "target_key", "state", "generation", "expires_at", "payload_sha256", "may_retry", "error_code", "notification_input", "receipt"], "properties": {
+      "intent_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "request_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "operation_id": {"const": "notification_v2_send"}, "target_key": {"type": "string", "pattern": "^/support/notification-records/[0-9a-f-]{36}/send$"}, "state": {"enum": ["pending", "committed", "failed", "unknown"]}, "generation": {"$ref": "protocol.schema.json#/$defs/Version"}, "expires_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "payload_sha256": {"$ref": "protocol.schema.json#/$defs/Digest"}, "may_retry": {"type": "boolean"}, "error_code": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "notification_input": {"$ref": "#/$defs/SendInput"}, "receipt": {"anyOf": [{"$ref": "#/$defs/RequestReceipt"}, {"type": "null"}]}
+    }},
+    "Message": {"type": "object", "additionalProperties": false, "required": ["recipient_id", "patient_id", "alert_id", "attempt_id", "body", "delivery_ticket", "expires_at"], "properties": {
+      "recipient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "alert_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "attempt_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "delivery_ticket": {"$ref": "protocol.schema.json#/$defs/Text"}, "expires_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "body": {"type": "object", "additionalProperties": false, "required": ["approved_text", "deep_link", "content_id", "content_version"], "properties": {
+        "approved_text": {"$ref": "protocol.schema.json#/$defs/Text"}, "deep_link": {"type": "string", "pattern": "^/alerts/[0-9a-f-]{36}$"}, "content_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "content_version": {"$ref": "protocol.schema.json#/$defs/Version"}
+      }}
+    }},
+    "Acknowledgement": {"type": "object", "additionalProperties": false, "required": ["delivery_ticket"], "properties": {"delivery_ticket": {"$ref": "protocol.schema.json#/$defs/Text"}}},
+    "AlertRecord": {"type": "object", "additionalProperties": false, "required": ["patient_id", "alert_id", "record"], "properties": {
+      "patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "alert_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "record": {"anyOf": [{"$ref": "#/$defs/Record"}, {"type": "null"}]}
+    }},
+    "CaseDirectory": {"type": "object", "additionalProperties": false, "required": ["items", "next_cursor", "snapshot_version", "capability_state", "capability_reason"], "properties": {
+      "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["patient_id", "display_id"], "properties": {"patient_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "display_id": {"$ref": "protocol.schema.json#/$defs/Text"}}}}, "next_cursor": {"$ref": "protocol.schema.json#/$defs/NullableText"}, "snapshot_version": {"$ref": "protocol.schema.json#/$defs/Digest"}, "capability_state": {"enum": ["available", "unavailable"]}, "capability_reason": {"$ref": "protocol.schema.json#/$defs/NullableText"}
+    }}
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_TASK_ATTEMPT_TERMINAL_CHECK",
+  "measured_at": "2026-10-09T04:14:17.033203+00:00",
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "postgresql": "18.4 (Homebrew)",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-model-20261009-run5",
+    "external_requests": 0,
+    "notifications_sent": 0,
+    "worker_or_beat_started": false,
+    "shared_queue_consumption": 0
+  },
+  "local_cancel": {
+    "task_id": "9788987b-fca2-4861-aecd-d3ff469bfe50",
+    "task_status": "cancelled",
+    "attempt_id": "efb7df99-0083-49f6-a8d5-de92de49df39",
+    "attempt_status": "cancelled",
+    "finding": "PASS"
+  },
+  "external_cancel_and_late_usage": {
+    "task_id": "a00f6ce8-94d9-4a2c-939c-2f9c0f947b69",
+    "task_status": "cancelled",
+    "attempt_id": "4b26de77-f644-4cc7-8d01-12a497f41f66",
+    "attempt_status": "uncertain",
+    "late_usage_saved": {
+      "usage": {
+        "prompt_tokens": 3,
+        "completion_tokens": 2
+      },
+      "simulated_late_result": true
+    },
+    "finding": "PASS"
+  },
+  "awaiting_confirmation_completion": {
+    "task_id": "2de71b05-24b0-415a-bb24-8eb500bfa8c6",
+    "task_status": "awaiting_confirmation",
+    "attempt_id": "45a15068-816a-47bd-93fb-56da7f367262",
+    "attempt_status": "completed",
+    "usage_saved": {
+      "usage": {
+        "prompt_tokens": 4,
+        "completion_tokens": 1
+      },
+      "simulated_confirmation_result": true
+    },
+    "finding": "PASS"
+  },
+  "saved_and_reread": true
+}

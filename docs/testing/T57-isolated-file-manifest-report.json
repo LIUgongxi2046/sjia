@@ -1,0 +1,39 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_ONLY_RESTORED_COPY_INTEGRITY",
+  "source_database": "sjia_simulation",
+  "isolated_database": "sjia_simulation",
+  "isolated_database_port": 55475,
+  "run_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-20261009-qualified",
+  "source_dump": {
+    "bytes": 1206306,
+    "sha256": "9880e335920e01334465077a93cd8bf021afdec2e5dc29fae9e5211b2f8c0f9c"
+  },
+  "object_copy": {
+    "source": {
+      "file_count": 55,
+      "total_bytes": 1805532,
+      "inventory_sha256": "f299027baccdcd1388e1d5b985126faa4d1a2505fbfe191a082c74cfd5b8a21d"
+    },
+    "restored": {
+      "file_count": 55,
+      "total_bytes": 1805532,
+      "inventory_sha256": "f299027baccdcd1388e1d5b985126faa4d1a2505fbfe191a082c74cfd5b8a21d"
+    },
+    "match": true
+  },
+  "configuration_evidence_copy": {
+    "source": {
+      "file_count": 551,
+      "total_bytes": 281631,
+      "inventory_sha256": "a75650d46a7dafc0bcc717ac6de1ef58d49f6d7d19caa59a95b9edb8c99fe80a"
+    },
+    "restored": {
+      "file_count": 551,
+      "total_bytes": 281631,
+      "inventory_sha256": "a75650d46a7dafc0bcc717ac6de1ef58d49f6d7d19caa59a95b9edb8c99fe80a"
+    },
+    "match": true
+  },
+  "saved_and_reread": true
+}

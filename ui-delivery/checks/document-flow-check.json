@@ -1,0 +1,13 @@
+{
+  "time": "2026-09-28T09:25:19.976Z",
+  "browser": "153.0.8010.53",
+  "source": "项目已有PNG文件，仅验证文件行为，不作为临床资料",
+  "fileByteIntegrity": true,
+  "refreshReadback": true,
+  "reportAndTherapySaved": true,
+  "nativeCaptureAttribute": true,
+  "phoneCameraHardware": "NOT_RUN",
+  "clinicalData": "未新增临床数值",
+  "widths": 20,
+  "errors": []
+}

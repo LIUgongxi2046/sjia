@@ -1,0 +1,31 @@
+:root { font-family: system-ui, -apple-system, "PingFang SC", sans-serif; color: #19344c; background: #f0f5f9; line-height: 1.65; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { background: #123b60; color: #fff; padding: 32px 0 24px; }
+.shell { max-width: 1120px; margin: auto; padding: 0 24px; }
+.eyebrow { color: #b9d7e9; letter-spacing: .08em; font-size: 13px; }
+h1 { margin: 12px 0; font-size: clamp(25px, 4vw, 36px); }
+h2 { font-size: 21px; margin: 0 0 18px; }
+h3 { font-size: 17px; margin: 0 0 8px; }
+p { margin: 8px 0; }
+.notice { color: #d4e3ee; font-size: 14px; }
+main { padding-bottom: 48px !important; }
+section { margin-top: 24px; background: #fff; border: 1px solid #dce5ed; border-radius: 16px; padding: 24px; }
+article { padding: 16px 0; border-top: 1px solid #e6edf3; }
+article:first-of-type { border-top: 0; }
+.muted { color: #5c7386; font-size: 14px; }
+a { color: #146596; text-underline-offset: 3px; }
+.table-scroll { overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
+th { background: #edf4f8; text-align: left; }
+td, th { padding: 12px; border-bottom: 1px solid #e0e9f0; vertical-align: top; }
+td:last-child { white-space: normal; min-width: 100px; }
+.assets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+figure { margin: 0; }
+figure img { width: 100%; height: 240px; object-fit: contain; background: #edf2f6; border-radius: 8px; }
+figcaption { font-size: 14px; margin-top: 8px; }
+details { padding: 14px 0; }
+summary { cursor: pointer; font-weight: 600; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.issue { border-left: 3px solid #d99a36; padding-left: 16px; }
+@media(max-width: 600px) { .shell { padding: 0 16px; } section { padding: 18px; } .assets { grid-template-columns: 1fr; } }

@@ -1,0 +1,62 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_POSTGRESQL_ENVIRONMENT_GATE_LOCK_COMPETITION",
+  "measured_at": "2026-10-09T06:55:44.769844+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "target": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "environment": "simulation",
+    "gate_id": "simulation",
+    "simulation_only": true
+  },
+  "test": {
+    "shared_reader_sessions": 2,
+    "shared_readers_acquired_concurrently": true,
+    "production_helper": "family_content.gate_locks.read_environment_gate_shared",
+    "writer_operation": "UPDATE environment_gate SET version = version RETURNING environment, version",
+    "writer_wait_event": [
+      "Lock",
+      "transactionid"
+    ],
+    "writer_blocked_while_shared_readers_held": true,
+    "writer_acquired_after_reader_transactions_ended": true,
+    "writer_lock_wait_ms": 4.401262005558237,
+    "all_transactions_rolled_back": true,
+    "gate_state_unchanged": true,
+    "gate_dml_executed_and_rolled_back": true,
+    "queue_consumption": 0,
+    "external_requests": 0
+  },
+  "gate_before": {
+    "environment": "simulation",
+    "enabled": "True",
+    "runtime_config_id": "cc3d59ca-096a-4376-8922-1444ed3b0077",
+    "active_release_id": "043f8a06-eb8e-4d32-908f-58d424b1ac48",
+    "publication_epoch": "20",
+    "version": "21",
+    "updated_at": "2026-10-09T06:53:59.369740+00:00"
+  },
+  "gate_after": {
+    "environment": "simulation",
+    "enabled": "True",
+    "runtime_config_id": "cc3d59ca-096a-4376-8922-1444ed3b0077",
+    "active_release_id": "043f8a06-eb8e-4d32-908f-58d424b1ac48",
+    "publication_epoch": "20",
+    "version": "21",
+    "updated_at": "2026-10-09T06:53:59.369740+00:00"
+  },
+  "scope": {
+    "shared_environment_gate": "READ_ONLY",
+    "production_capacity": "NOT_RUN"
+  },
+  "source_sha256": {
+    "t31_environment_gate_competition.py": "c7572cd59032dd038a4bac5a5db84d58abeaf26cb57bf715b3386b506ac52ed3",
+    "backend/family_content/gate_locks.py": "e04f868e3cc06a0361e195b4233962eec6414ac567690951eef2fa6d517415a1"
+  },
+  "saved_and_reread": true
+}

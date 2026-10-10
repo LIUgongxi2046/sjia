@@ -1,0 +1,29 @@
+{
+  "capability": "DESIGN_AND_AUDIT",
+  "dataset_kind": "user_provided_case_demo",
+  "status": "LOCAL_DEMO_AVAILABLE",
+  "available_records": 1,
+  "clinically_verified_records": 0,
+  "dataset_ref": "../demo-data/current-patient/case.json",
+  "validation_ref": "../demo-data/validation-report.json",
+  "local_usage_authority": "用户在当前对话授权项目开发、展示及数据库核查",
+  "golden_dataset_status": "BLOCKED",
+  "import_status": "NOT_RUN",
+  "business_integration": "NOT_RUN",
+  "blockers": [
+    {"decision": "D08", "required": "临床验收环境、脱敏检查、逐字段核对和独立参考答案；本地开发用途已由用户提供", "owner": "项目负责人及临床负责人"},
+    {"decision": "D03", "required": "获准原报告、项目清单、OCR Provider 与核对人员", "owner": "项目负责人及临床负责人"},
+    {"decision": "D04", "required": "时间窗口、重复选值及临床边界答案", "owner": "临床负责人"},
+    {"decision": "D07", "required": "来源字段、批准单位和方法映射", "owner": "数据提供方及技术负责人"},
+    {"decision": "D09", "required": "资料保存、删除及供应商副本处理依据", "owner": "项目负责人"}
+  ],
+  "coverage": {
+    "clinical_records": "USER_PROVIDED_DEMO_AVAILABLE",
+    "report_images": "FOUR_USER_ATTACHMENTS_AVAILABLE",
+    "actual_format_noise": "SOURCE_SCREENSHOTS_AVAILABLE_NOT_OCR_VALIDATED",
+    "clinical_boundary_cases": "BLOCKED",
+    "deidentification_validation": "BLOCKED",
+    "local_project_documentation": "AVAILABLE"
+  },
+  "sample_file_role": "sample_dataset.json 仅包含已有项目文档原文，不能用于临床或 OCR 验收"
+}

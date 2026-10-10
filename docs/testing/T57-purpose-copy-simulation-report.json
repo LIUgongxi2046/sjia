@@ -1,0 +1,56 @@
+{
+  "task": {
+    "task_id": "17f76b13-70b2-4fb1-9a78-77837c473fc2",
+    "task_type": "purpose_copy",
+    "final_status": "completed",
+    "attempt_id": "112f6880-6a21-4100-a3da-376af11b1bc9",
+    "attempt_status": "completed",
+    "attempt_count": 1,
+    "provider_request_id": null,
+    "provider_called": false
+  },
+  "classification": "SIMULATION_ACTIVE_PURPOSE_COPY_REPLAY",
+  "measured_at": "2026-10-09T03:48:50.586251+00:00",
+  "database": {
+    "name": "sjia_simulation",
+    "environment": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-20261009-qualified"
+  },
+  "runtime_qualification": "QUALIFIED",
+  "input": {
+    "purpose": "format_evaluation",
+    "configuration_id": "1cffdfff-abfd-4c22-886e-6c2521b39828",
+    "authorization_id": "02428dfe-ace8-4cb3-a989-6a688c0f9cc8",
+    "original_file_id": "208b8419-7cd2-4c64-a4c3-9a612d8622c4",
+    "original_checksum": "1fd56958936cc4d69e5ceadddf7fd8b64e259dd20beb033a8a03754bea91a836",
+    "original_bytes": 52060
+  },
+  "event": {
+    "event_id": "36351684-b5b2-467e-a6e3-0d4a9adb4e5c",
+    "event_type": "purpose_copy.requested",
+    "delivery_count": 2,
+    "worker_ids": [
+      "c65bc293-badb-4e70-95cd-32b26c6fce21",
+      "73d276d2-c884-4596-bc2a-4f065e5d6cb5"
+    ],
+    "worker_results": [
+      "36351684-b5b2-467e-a6e3-0d4a9adb4e5c",
+      "36351684-b5b2-467e-a6e3-0d4a9adb4e5c"
+    ]
+  },
+  "saved_copy": {
+    "copy_id": "ef2ee4d7-c1a4-40bf-a49b-13bf767f6e9b",
+    "copy_count_for_event": 1,
+    "total_copy_count_before": 4,
+    "total_copy_count_after": 5,
+    "derived_file_id": "0949b52f-9222-4aa9-b422-3dd4610e1c0c",
+    "derived_file_status": "available",
+    "derived_bytes": 52060,
+    "derived_sha256": "1fd56958936cc4d69e5ceadddf7fd8b64e259dd20beb033a8a03754bea91a836",
+    "readback_matches_saved_metadata": true
+  },
+  "consumer_receipts": 1,
+  "external_provider_calls": 0,
+  "external_sends": 0,
+  "saved_and_reread": true
+}

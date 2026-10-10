@@ -1,0 +1,24 @@
+{
+  "source": "ui-delivery/v2/tokens.json",
+  "sourceVersion": "UI2.0-PRD2.0",
+  "stylesheet": "ui-delivery/v2/src/styles.css",
+  "cssTokenSource": "ui-delivery/v2/src/tokens.css",
+  "mode": "DESIGN",
+  "appearance": "design_source",
+  "tokens": [
+    {"css": "--font", "source": "font.family", "unit": "literal"},
+    {"css": "--ink", "source": "color.text.primary", "unit": "literal"},
+    {"css": "--navy", "source": "color.brand.primary", "unit": "literal"},
+    {"css": "--blue", "source": "color.action.primary", "unit": "literal"},
+    {"css": "--link", "source": "color.action.text", "unit": "literal"},
+    {"css": "--canvas", "source": "color.surface.base", "unit": "literal"},
+    {"css": "--radius", "source": "radius.lg", "unit": "px"},
+    {"css": "--motion", "source": "motion.fast", "unit": "ms"}
+  ],
+  "shadow": {"css": "--shadow", "source": "shadow.sm", "additional": "inset 0 1px #fff", "authority": "ui-delivery/v2/src/tokens.css"},
+  "componentValues": "ui-delivery/v2/src/styles.css内的选择器及顺序为组件准确数值来源",
+  "assetManifest": "ui-delivery/v2/asset-manifest.csv",
+  "pageAssetMap": "ui-delivery/v2/page-asset-map.csv",
+  "clinicalSeverityRequiresApproval": true,
+  "visualValidation": "NOT_RUN"
+}

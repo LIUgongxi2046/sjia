@@ -1,0 +1,43 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_BUDGET_CHECK",
+  "measured_at": "2026-10-09T04:33:25.689642+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "environment": {
+    "database": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public",
+    "runtime": "simulation",
+    "isolated_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/isolated-20261009-qualified",
+    "external_model_requests": 0,
+    "worker_or_beat_started": false,
+    "shared_queue_consumption": 0,
+    "notifications_sent": 0
+  },
+  "check": {
+    "unknown_attempt_count": 2,
+    "affected_batch_count": 1,
+    "batches": [
+      {
+        "batch_id": "63a1ff96-5fa7-4cc2-8e5f-c6de31c1c9fe",
+        "quota_id": "dad5ede0-475d-4a26-a775-37e8a9ad0e27",
+        "attempt_count": 2,
+        "priced_attempts": 0,
+        "unpriced_attempts_with_usage": 2,
+        "known_cost": "0",
+        "unknown_cost_reservations": [
+          "1",
+          "1"
+        ],
+        "budget_status": "unknown",
+        "finding": "PASS"
+      }
+    ],
+    "finding": "PASS"
+  },
+  "saved_and_reread": true
+}

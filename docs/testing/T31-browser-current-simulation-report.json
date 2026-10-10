@@ -1,0 +1,75 @@
+{
+  "task": "T31",
+  "classification": "SIMULATION_BROWSER_MEASUREMENT_ONLY",
+  "measured_at": "2026-10-09T05:09:10.765Z",
+  "runtime": {
+    "node": "v24.13.0",
+    "playwright": "1.63.0",
+    "browser": "Google Chrome headless",
+    "browser_version": "155.0.8059.39",
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "device_scale_factor": 1
+    },
+    "screenshots": 0,
+    "visual_inspection": "NOT_RUN"
+  },
+  "target": {
+    "simulation_target": true,
+    "origin": "http://127.0.0.1:18418",
+    "iterations": 20,
+    "first_visit_contexts": 20,
+    "repeat_visits": 20,
+    "shared_api_requests": 0,
+    "external_requests": 0,
+    "browser_profile_temp_root": "/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台/.planning-work/parallel/window4/browser-runtime"
+  },
+  "blocked_requests": {
+    "api_requests": 40,
+    "off_origin_requests": 0
+  },
+  "first_visit": {
+    "samples": 20,
+    "successes": 20,
+    "failures": 0,
+    "failure_rate": 0,
+    "dom_content_loaded_p95_ms": 1025.4000000059605,
+    "dom_content_loaded_p99_ms": 1765.2000000178814,
+    "load_event_p95_ms": 1025.5999999940395,
+    "load_event_p99_ms": 1765.4000000059605,
+    "resource_transfer_bytes_p95": 2806452,
+    "resource_transfer_bytes_p99": 2806452,
+    "mean_resource_count": 18.35,
+    "mean_resource_transfer_bytes": 2462615.95,
+    "mean_resource_encoded_bytes": 2457395.95,
+    "long_task_count": 44,
+    "long_task_total_ms": 6609,
+    "long_task_max_ms": 330,
+    "js_heap_used_bytes_mean": 9302948.65
+  },
+  "repeat_visit": {
+    "samples": 20,
+    "successes": 20,
+    "failures": 0,
+    "failure_rate": 0,
+    "dom_content_loaded_p95_ms": 566.3000000119209,
+    "dom_content_loaded_p99_ms": 869.3000000119209,
+    "load_event_p95_ms": 566.5,
+    "load_event_p99_ms": 869.3000000119209,
+    "resource_transfer_bytes_p95": 2805706,
+    "resource_transfer_bytes_p99": 2806452,
+    "mean_resource_count": 18.05,
+    "mean_resource_transfer_bytes": 2805743.3,
+    "mean_resource_encoded_bytes": 2800628.3,
+    "long_task_count": 23,
+    "long_task_total_ms": 2668,
+    "long_task_max_ms": 230,
+    "js_heap_used_bytes_mean": 14938011.35
+  },
+  "javascript_page_errors": {
+    "count": 0,
+    "messages": []
+  },
+  "saved_and_reread": true
+}

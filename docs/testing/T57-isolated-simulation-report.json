@@ -1,0 +1,392 @@
+{
+  "task": "T57",
+  "classification": "SIMULATION_RECOVERY_CHECK_ONLY",
+  "measured_at": "2026-10-09T03:42:20.268244+00:00",
+  "runtime_versions": {
+    "python": "3.12.7",
+    "django": "5.2.17",
+    "postgresql": "18.4 (Homebrew)"
+  },
+  "database": {
+    "name": "sjia_simulation",
+    "schema": "sjia",
+    "search_path": "sjia,public"
+  },
+  "process_restart": {
+    "subprocess_restarted": true,
+    "event_id": "e043236a-5b0c-4d05-b0d0-00f611b53ff0",
+    "generation_before_restart": 1,
+    "generation_after_restart": 2,
+    "recovery_ms": 3330.2241140045226,
+    "stale_generation_publish_rejected": true,
+    "current_generation_publish_rows": 1,
+    "event_type_isolated": "window4-t57-967144e1-ef80-4baf-b382-9658756b8cb1.recovery_probe"
+  },
+  "task_lease": {
+    "first_acquire_rows": 1,
+    "expired_reacquire_rows": 1,
+    "expired_owner_heartbeat_rows": 0,
+    "expired_owner_completion_rows": 0,
+    "status_after_expiry": "running",
+    "expected_expired_reacquire": "one_new_generation",
+    "expected_expired_completion": 0,
+    "finding": "RECLAIMED",
+    "expired_heartbeat_finding": "REJECTED",
+    "stale_completion_finding": "REJECTED"
+  },
+  "cancellation": {
+    "task_id": "bcc0c44d-1eb5-404f-a031-45844fc257c9",
+    "task_type": "ocr",
+    "task_created_at": "2026-10-09T03:42:14.155845+00:00",
+    "attempt_id": "58f596f7-a221-422f-a2cf-d2a4f01af588",
+    "attempt_started_at": "2026-10-09T03:42:14.188653+00:00",
+    "provider_request_id_present": false,
+    "provider_request_id": null,
+    "lease_acquire_rows": 1,
+    "attempt_status_after_cancel": "running",
+    "first_cancel_rows": 1,
+    "duplicate_cancel_rows": 0,
+    "cancelled_owner_completion_rows": 0,
+    "final_status": "cancelled",
+    "duplicate_cancellation_noop": true,
+    "cancelled_owner_completion_rejected": true
+  },
+  "duplicate_consumption": {
+    "actual_worker_entry_called_twice": true,
+    "consumer_receipts": 1,
+    "task_terminal_status": "cancelled",
+    "terminal_task_skipped_business_effect": true,
+    "duplicate_receipt_suppressed": true,
+    "scope": "Terminal cancellation receipt deduplication and active simulated purpose-copy replay were both executed.",
+    "active_purpose_copy": {
+      "event_id": "36351684-b5b2-467e-a6e3-0d4a9adb4e5c",
+      "task_id": "17f76b13-70b2-4fb1-9a78-77837c473fc2",
+      "attempt_id": "112f6880-6a21-4100-a3da-376af11b1bc9",
+      "delivery_count": 2,
+      "consumer_receipts": 1,
+      "saved_copies_for_event": 1,
+      "task_status": "completed",
+      "attempt_status": "completed",
+      "provider_request_id": null,
+      "provider_called": false,
+      "derived_file_checksum_readback": true,
+      "external_provider_calls": 0,
+      "external_sends": 0
+    }
+  },
+  "retry": {
+    "first_acquire_rows": 1,
+    "failure_rows": 1,
+    "retry_acquire_rows": 0,
+    "final_status": "failed",
+    "attempt_rows": 1,
+    "attempt_status": "failed",
+    "finding": "FAILED_TASK_NOT_RETRYABLE_IN_PLACE"
+  },
+  "expired_attempt_recovery": {
+    "local": {
+      "first_acquire_rows": 1,
+      "reacquire_rows": 1,
+      "lease_generation": 2,
+      "previous_attempt_status": "superseded",
+      "status": "running"
+    },
+    "external_or_object": {
+      "first_acquire_rows": 1,
+      "reacquire_rows": 0,
+      "lease_generation": 1,
+      "previous_attempt_status": "uncertain",
+      "status": "awaiting_resolution"
+    }
+  },
+  "data_integrity": {
+    "documents": 10,
+    "versions": 20,
+    "available_originals": 23,
+    "original_bytes_verified": 23,
+    "original_integrity_errors": 0,
+    "original_file_shapes": {
+      "image/png:14784": 1,
+      "application/pdf:1491": 4,
+      "text/plain:82": 1,
+      "image/png:14499": 1,
+      "text/plain:65": 1,
+      "image/png:52060": 1,
+      "image/png:14420": 1,
+      "image/png:14832": 1,
+      "image/png:14206": 1,
+      "image/png:3305": 1,
+      "image/png:14677": 1,
+      "image/png:38863": 1,
+      "text/plain:8099": 1,
+      "image/png:52089": 1,
+      "image/png:3373": 2,
+      "image/png:38901": 1,
+      "image/png:14736": 1,
+      "image/png:3354": 1,
+      "image/png:14855": 1
+    },
+    "dangling_document_versions": 0
+  },
+  "permissions": {
+    "simulated_family_api_authorization": "MEASURED_IN_T31_REPORT",
+    "restored_permission_replay": {
+      "account_active": true,
+      "active_relation": true,
+      "directory_grants": 5,
+      "permission_replay": "ALLOW"
+    }
+  },
+  "configuration": {
+    "simulation_gate_enabled": true,
+    "enabled_configuration_count": 35,
+    "runtime_config_linked": true,
+    "runtime_config": {
+      "id": "34158814-be22-4774-9843-bd3ad3aae953",
+      "kind": "provider",
+      "schema_version": "backend-runtime-1",
+      "status": "enabled",
+      "checksum": "7074d0ccf67f7e7592f6580154dbb22c45cb2908ec389f9856a1fd12693c0b83"
+    },
+    "runtime_qualification": "QUALIFIED",
+    "restore_configuration_replay": "MEASURED",
+    "restored_evidence_integrity": {
+      "sources_with_local_evidence": 533,
+      "revisions_checked": 533,
+      "missing_files": 0,
+      "checksum_mismatches": 0,
+      "integrity": "PASS"
+    }
+  },
+  "result_and_reference_integrity": {
+    "documents": 10,
+    "document_versions": 20,
+    "document_pages": 22,
+    "archive_pages": 24,
+    "summaries": 0,
+    "summary_items": 0,
+    "missing_document_references": 0,
+    "missing_current_document_versions": 0,
+    "missing_document_batches": 0,
+    "missing_archive_page_batches": 0,
+    "missing_archive_page_files": 0,
+    "missing_document_page_references": 0,
+    "missing_summary_item_references": 0
+  },
+  "budget_and_cost": {
+    "recorded_page_attempts": 14,
+    "priced_attempts": 10,
+    "recorded_cost_total": "0.051742",
+    "currencies": [
+      "CNY"
+    ],
+    "configured_budget_checks": {
+      "batch_checks": [
+        {
+          "batch_id": "15352927-c292-4553-934d-34cba34c1ed8",
+          "attempts": 0,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "87461f37-ad84-409e-89b1-8745813c1a4e",
+          "attempts": 0,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "423e072e-0741-4374-bebc-fd89bfa46615",
+          "attempts": 0,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "cee01b16-3710-4a42-a0b7-db4144402e89",
+          "attempts": 0,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "90b40b9a-a4de-44a0-9f7f-95f09a6c9b29",
+          "attempts": 5,
+          "priced_attempts": 3,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.014952",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "58ac1c60-692c-4694-8b91-83c0f0737218",
+          "attempts": 0,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "0fd6e019-3bdb-4fc7-b0ff-cb7773e7067b",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.002482",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "8fe9453a-6711-4389-945f-4101ed80a58d",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.012438",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "fe6e7f02-95cd-432a-9215-2bf78e6c97f3",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.004704",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "f3bd8e9d-42e6-4542-99f3-27495d06cd56",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.003144",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "63a1ff96-5fa7-4cc2-8e5f-c6de31c1c9fe",
+          "attempts": 2,
+          "priced_attempts": 0,
+          "unpriced_started_attempts": 2,
+          "known_cost": "0",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "INDETERMINATE"
+        },
+        {
+          "batch_id": "7aec38e3-a679-44ad-8142-890754cad219",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.00504",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "3d45b5d8-703a-4903-baa3-e580bcb2f19a",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.005394",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "batch_id": "e54d361f-5912-4a3c-9aa2-21ae29a8783d",
+          "attempts": 1,
+          "priced_attempts": 1,
+          "unpriced_started_attempts": 0,
+          "known_cost": "0.003588",
+          "currency": "CNY",
+          "per_batch_budget": "100",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        }
+      ],
+      "daily_checks": [
+        {
+          "quota_id": "012a4234-48bc-4d72-a27c-137a45164ae0",
+          "local_date": "2026-10-09",
+          "known_cost": "0.005394",
+          "unpriced_started_attempts": 0,
+          "daily_budget": "1000",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "quota_id": "272e2965-0da3-4189-8e28-49055893d518",
+          "local_date": "2026-10-09",
+          "known_cost": "0.003588",
+          "unpriced_started_attempts": 0,
+          "daily_budget": "1000",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "quota_id": "37871945-f0c9-42bb-95b2-4e34b6aa8f82",
+          "local_date": "2026-10-09",
+          "known_cost": "0.037720",
+          "unpriced_started_attempts": 0,
+          "daily_budget": "1000",
+          "known_cost_within_budget": true,
+          "status": "WITHIN"
+        },
+        {
+          "quota_id": "dad5ede0-475d-4a26-a775-37e8a9ad0e27",
+          "local_date": "2026-10-09",
+          "known_cost": "0.00504",
+          "unpriced_started_attempts": 2,
+          "daily_budget": "1000",
+          "known_cost_within_budget": true,
+          "status": "INDETERMINATE"
+        }
+      ],
+      "known_over_budget_count": 0,
+      "indeterminate_count": 2
+    },
+    "external_calls_by_this_check": 0,
+    "provider_spend_by_this_check": "0",
+    "provider_spend_status": "SIMULATION_ONLY"
+  },
+  "external_send_count": 0,
+  "restored_environment_external_sends": 0,
+  "RTO_RPO_target": "NOT_PROVIDED",
+  "real_backup_restore": "NOT_RUN",
+  "real_capacity": "NOT_RUN",
+  "saved_and_reread": true,
+  "recovery_probe_records_removed_after_readback": true
+}

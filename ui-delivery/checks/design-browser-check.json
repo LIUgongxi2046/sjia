@@ -1,0 +1,292 @@
+{
+  "time": "2026-09-29T04:28:17.780Z",
+  "browser": "154.0.8037.58",
+  "capability": "DESIGN",
+  "content": "DESIGN_EXAMPLE",
+  "sample": false,
+  "captures": [
+    {
+      "id": "S03",
+      "name": "首页",
+      "file": "screens/png/S03.png"
+    },
+    {
+      "id": "S04",
+      "name": "体温与症状",
+      "file": "screens/png/S04.png"
+    },
+    {
+      "id": "S05",
+      "name": "拍照添加报告",
+      "file": "screens/png/S05.png"
+    },
+    {
+      "id": "S06",
+      "name": "治疗资料",
+      "file": "screens/png/S06.png"
+    },
+    {
+      "id": "S07",
+      "name": "记录",
+      "file": "screens/png/S07.png"
+    },
+    {
+      "id": "S08",
+      "name": "记录详情",
+      "file": "screens/png/S08.png"
+    },
+    {
+      "id": "S09",
+      "name": "历次检验",
+      "file": "screens/png/S09.png"
+    },
+    {
+      "id": "S10-A",
+      "name": "更正记录",
+      "file": "screens/png/S10-A.png"
+    },
+    {
+      "id": "S10-B",
+      "name": "更正历史",
+      "file": "screens/png/S10-B.png"
+    },
+    {
+      "id": "S11-A",
+      "name": "预警",
+      "file": "screens/png/S11-A.png"
+    },
+    {
+      "id": "S11-B",
+      "name": "预警详情",
+      "file": "screens/png/S11-B.png"
+    },
+    {
+      "id": "S12-A",
+      "name": "就医摘要",
+      "file": "screens/png/S12-A.png"
+    },
+    {
+      "id": "S12-B",
+      "name": "摘要详情",
+      "file": "screens/png/S12-B.png"
+    },
+    {
+      "id": "S13-A",
+      "name": "我的",
+      "file": "screens/png/S13-A.png"
+    },
+    {
+      "id": "S13-B",
+      "name": "资料使用说明",
+      "file": "screens/png/S13-B.png"
+    },
+    {
+      "id": "S01",
+      "name": "登录身份",
+      "file": "screens/png/S01.png"
+    },
+    {
+      "id": "S02-A",
+      "name": "患儿管理",
+      "file": "screens/png/S02-A.png"
+    },
+    {
+      "id": "S02-B",
+      "name": "申请关联",
+      "file": "screens/png/S02-B.png"
+    },
+    {
+      "id": "S02-C",
+      "name": "关联详情",
+      "file": "screens/png/S02-C.png"
+    },
+    {
+      "id": "S14",
+      "name": "我的草稿",
+      "file": "screens/png/S14.png"
+    },
+    {
+      "id": "S15-A",
+      "name": "访问受限",
+      "file": "screens/png/S15-A.png"
+    },
+    {
+      "id": "S15-B",
+      "name": "服务不可用",
+      "file": "screens/png/S15-B.png"
+    },
+    {
+      "id": "S15-C",
+      "name": "页面不存在",
+      "file": "screens/png/S15-C.png"
+    },
+    {
+      "id": "ST01",
+      "name": "正在读取",
+      "file": "states/png/ST01.png"
+    },
+    {
+      "id": "ST02",
+      "name": "暂无记录",
+      "file": "states/png/ST02.png"
+    },
+    {
+      "id": "ST03",
+      "name": "没有符合条件的记录",
+      "file": "states/png/ST03.png"
+    },
+    {
+      "id": "ST04",
+      "name": "资料需要补充",
+      "file": "states/png/ST04.png"
+    },
+    {
+      "id": "ST05",
+      "name": "暂时无法读取",
+      "file": "states/png/ST05.png"
+    },
+    {
+      "id": "ST06",
+      "name": "请检查输入内容",
+      "file": "states/png/ST06.png"
+    },
+    {
+      "id": "ST07",
+      "name": "尚未保存",
+      "file": "states/png/ST07.png"
+    },
+    {
+      "id": "ST08",
+      "name": "正在保存草稿",
+      "file": "states/png/ST08.png"
+    },
+    {
+      "id": "ST09",
+      "name": "继续编辑草稿",
+      "file": "states/png/ST09.png"
+    },
+    {
+      "id": "ST10",
+      "name": "确认本次记录",
+      "file": "states/png/ST10.png"
+    },
+    {
+      "id": "ST11",
+      "name": "正在处理",
+      "file": "states/png/ST11.png"
+    },
+    {
+      "id": "ST12",
+      "name": "保存结果待确认",
+      "file": "states/png/ST12.png"
+    },
+    {
+      "id": "ST13",
+      "name": "记录已保存",
+      "file": "states/png/ST13.png"
+    },
+    {
+      "id": "ST14",
+      "name": "记录已有更新",
+      "file": "states/png/ST14.png"
+    },
+    {
+      "id": "ST15",
+      "name": "资料已变化",
+      "file": "states/png/ST15.png"
+    },
+    {
+      "id": "ST16",
+      "name": "暂时无法访问",
+      "file": "states/png/ST16.png"
+    },
+    {
+      "id": "ST17",
+      "name": "临床提示尚未启用",
+      "file": "states/png/ST17.png"
+    },
+    {
+      "id": "ST18",
+      "name": "提示已失效",
+      "file": "states/png/ST18.png"
+    },
+    {
+      "id": "PH01",
+      "name": "已取消选择",
+      "file": "states/png/PH01.png"
+    },
+    {
+      "id": "PH02",
+      "name": "照片无法使用",
+      "file": "states/png/PH02.png"
+    },
+    {
+      "id": "PH03",
+      "name": "照片上传未完成",
+      "file": "states/png/PH03.png"
+    },
+    {
+      "id": "PH04",
+      "name": "部分内容需要确认",
+      "file": "states/png/PH04.png"
+    },
+    {
+      "id": "PH05",
+      "name": "移除这张照片？",
+      "file": "states/png/PH05.png"
+    },
+    {
+      "id": "PH06",
+      "name": "暂时无法打开相机",
+      "file": "states/png/PH06.png"
+    },
+    {
+      "id": "TW01",
+      "name": "尚未选择患儿",
+      "file": "states/png/TW01.png"
+    },
+    {
+      "id": "TW02",
+      "name": "查看孩子的记录",
+      "file": "states/png/TW02.png"
+    },
+    {
+      "id": "TW03",
+      "name": "体温记录",
+      "file": "states/png/TW03.png"
+    },
+    {
+      "id": "TW04",
+      "name": "查看当时记录",
+      "file": "states/png/TW04.png"
+    },
+    {
+      "id": "TW05",
+      "name": "时间待补充",
+      "file": "states/png/TW05.png"
+    },
+    {
+      "id": "TW06",
+      "name": "形象暂时无法显示",
+      "file": "states/png/TW06.png"
+    },
+    {
+      "id": "TW07",
+      "name": "正在切换患儿",
+      "file": "states/png/TW07.png"
+    },
+    {
+      "id": "TW08",
+      "name": "使用列表查看",
+      "file": "states/png/TW08.png"
+    }
+  ],
+  "errors": [],
+  "overflowChecks": 115,
+  "homeFirstScreenChecks": 5,
+  "alertScreens": 10,
+  "careGuidanceChecks": 10,
+  "symptomChecks": 3,
+  "machineAssertions": 6,
+  "interactionChecks": 13
+}

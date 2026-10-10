@@ -1,0 +1,14 @@
+asset_id,file_path,usage,width,height,format,transparency,source,license_or_restriction
+child-front-master,assets/master/child-neutral-front.png,首页与儿童展开面板正面角色,1086,1448,PNG,true,image_gen 内置工具生成,通用设计角色；不表示真实患儿
+child-back-master,assets/master/child-neutral-back.png,儿童角色背面视角,1086,1448,PNG,true,image_gen 基于正面角色生成,同一角色参考；不表示真实患儿
+child-front-1x,assets/1x/child-neutral-front@1x.png,正面角色 1x,240,320,PNG,true,child-front-master 同源尺寸导出,保持比例与透明通道
+child-front-2x,assets/2x/child-neutral-front@2x.png,正面角色 2x,480,640,PNG,true,child-front-master 同源尺寸导出,保持比例与透明通道
+child-back-1x,assets/1x/child-neutral-back@1x.png,背面角色 1x,240,320,PNG,true,child-back-master 同源尺寸导出,保持比例与透明通道
+child-back-2x,assets/2x/child-neutral-back@2x.png,背面角色 2x,480,640,PNG,true,child-back-master 同源尺寸导出,保持比例与透明通道
+brand-favicon,assets/favicon.svg,设计预览页图标,32,32,SVG,true,guardian-h5/public/favicon.svg,许可见 assets/lucide-heart.LICENSE
+child-autumn-master,identity/master/toddler-boy-autumn.png,登录后首页与患儿面板角色,1086,1448,PNG,true,image_gen 基于春季同一角色生成,通用设计角色；来源见 identity/generation-records.json
+brand-logo-2x,identity/2x/logo-embrace@2x.png,登录身份与我的页面产品品牌组合,256,256,PNG,true,既有品牌 Master 同源导出；来源见 identity/generation-records.json,透明品牌图形；与完整产品名称共同展示
+symptom-trio-master,assets/master/symptom-trio.png,发热皮疹关节炎三联示意图,1536,1024,PNG,true,image_gen 内置工具生成,科普示意；不表示患儿实际外观或受累部位
+clinical-3d-icons,assets/master/clinical-3d-icons.png,主导航与健康任务三维图标,1254,1254,PNG,true,image_gen 内置工具生成,设计图标；使用时保持原始色彩
+utility-3d-icons,assets/master/utility-3d-icons.png,返回关闭编辑及查看操作三维图标,1254,1254,PNG,true,image_gen 内置工具生成,设计图标；使用时保持原始色彩
+extended-3d-icons,assets/master/extended-3d-icons.png,资料状态与辅助操作三维图标,1254,1254,PNG,true,image_gen 内置工具生成,设计图标；使用时保持原始色彩

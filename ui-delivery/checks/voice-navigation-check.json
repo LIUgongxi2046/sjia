@@ -1,0 +1,20 @@
+{
+  "time": "2026-09-28T09:31:18.193Z",
+  "browser": "153.0.8010.53",
+  "primaryPages": 3,
+  "secondaryPages": 20,
+  "parentRoutesChecked": 20,
+  "sourceReturnPaths": 2,
+  "voiceCapability": {
+    "available": true,
+    "secure": true
+  },
+  "microphoneDenial": "麦克风权限未开启，请在浏览器设置中允许使用后重试。",
+  "manualReviewApplied": true,
+  "existingNotePreserved": true,
+  "clinicalFieldsUnchanged": true,
+  "voiceWidths": 5,
+  "liveSpeechRecognition": "NOT_RUN",
+  "syntheticSpeechResults": false,
+  "errors": []
+}

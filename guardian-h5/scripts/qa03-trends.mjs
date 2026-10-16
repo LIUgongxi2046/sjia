@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
@@ -10,8 +11,8 @@ const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 await page.goto(`${baseURL}/login`);
-await page.getByPlaceholder('账号', { exact: true }).fill('acceptance-family');
-await page.locator('input[type=password]').fill('Local-accept-2026');
+await page.getByPlaceholder('账号', { exact: true }).fill(acceptanceUsername);
+await page.locator('input[type=password]').fill(acceptancePassword);
 await page.getByRole('button', { name: '登录', exact: true }).click();
 await page.waitForURL(`${baseURL}/home`);
 const csrf = (await (await context.request.get(`${baseURL}/api/auth/bootstrap`)).json()).csrf_token;

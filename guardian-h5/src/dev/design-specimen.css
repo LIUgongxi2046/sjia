@@ -1,0 +1,10 @@
+/* The specimen's warning data is DEV-only. These visual tokens do not enable clinical content. */
+.visual-warning-specimen{background:linear-gradient(155deg,#fff6ef,#fff0e5);color:#973f0d;border-color:#d87435}
+.visual-warning-specimen .eyebrow{display:flex;align-items:center;min-height:22px}.specimen-read-badge{line-height:15px;margin-left:auto;padding:3px 6px;border:1px solid #d87435;border-radius:6px;font-size:10px}
+.visual-warning-specimen p{font-weight:500}
+.specimen-alert-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #d8743566;margin-top:7px;padding-top:3px}
+.specimen-alert-footer small{font-size:10px}.specimen-alert-footer button{display:flex;align-items:center;gap:3px;min-height:36px;font-size:11px;font-weight:600;color:inherit}
+.device[data-page=DEV-S03-SPECIMEN] .page-end{display:none}
+.specimen-disclaimer{color:var(--muted);font-size:11px;line-height:1.5;padding:8px 10px;border:1px dashed var(--line);border-radius:10px;background:var(--card)}
+/* Original dimmed notice surface in the synthetic dark example only. */
+.device[data-theme=dark] .visual-warning-specimen{background:linear-gradient(155deg,color-mix(in srgb,#fff0e5 85%,#20344b),#fff0e5)}

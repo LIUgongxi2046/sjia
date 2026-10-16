@@ -25,6 +25,7 @@ from sources.models import DataUseAuthorization
 from tasks.models import Task
 
 from .voice_input_schemas import VoiceInputAdoption, VoiceInputCreate, VoiceInputProcess
+from .invocation import contract_snapshot
 
 
 class VoiceInputRejected(Exception):
@@ -202,7 +203,7 @@ def prepare_voice_processing(*, voice_input_id, actor, auth_epoch, request):
             'purpose_copy': purpose_ref, 'provider_config_id': str(provider.id),
             'provider_checksum': provider.checksum, 'runtime_config_id': str(runtime.id),
             'runtime_checksum': runtime.checksum, 'provider_entry': provider_entry,
-            'task_config': task_config,
+            'task_config': task_config, 'invocation_contract': contract_snapshot('voice'),
             'budget_evidence': budget_evidence,
             'field_config_id': str(voice_input.field_config_id), 'reserved_cost': provider_entry['reserved_cost'],
             'environment': settings.SJIA_ENVIRONMENT, 'input_mode': voice_input.input_mode,
@@ -242,7 +243,7 @@ def _voice_runtime(provider):
     if (not isinstance(entry.get('billing_scope_key'), str) or not entry['billing_scope_key'].strip()
             or entry['endpoint'].rstrip('/') != provider.payload['endpoint'].rstrip('/')
             or entry['currency'] != provider.payload['currency'] or entry['daily_budget'] is None
-            or Decimal(entry['daily_budget']) <= 0 or Decimal(entry['reserved_cost']) < 0):
+            or Decimal(entry['daily_budget']) <= 0 or Decimal(entry['reserved_cost']) <= 0):
         raise VoiceInputRejected('VOICE_PROVIDER_BUDGET_INVALID')
     task_entries = [item for item in runtime.payload['tasks'] if item['task_type'] == 'ocr']
     if len(task_entries) != 1:

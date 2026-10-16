@@ -1,11 +1,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import Sha256HexField
 
 
-class NotificationAttempt(models.Model):
+class NotificationAttempt(ErasureModel, models.Model):
     class Status(models.TextChoices):
         AUTHORIZED = "authorized", "authorized"
         STARTED = "started", "started"
@@ -37,7 +38,7 @@ class NotificationAttempt(models.Model):
         ]
 
 
-class NotificationReceipt(models.Model):
+class NotificationReceipt(ErasureModel, models.Model):
     class Status(models.TextChoices):
         ACCEPTED = "accepted", "accepted"
         DELIVERED = "delivered", "delivered"

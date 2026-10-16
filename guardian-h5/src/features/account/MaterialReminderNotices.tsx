@@ -55,8 +55,8 @@ export function MaterialReminderNotices({ patientId, reminderId, enabled }: { pa
     {data && (data.items.length ? data.items.map(row => <div className="status-panel" key={row.notice_id}>
       <h3>{statuses[row.status]}</h3><p>计划时间：{row.scheduled_at}；提醒版本：{row.reminder_version}</p>
       <p>送达时间：{row.delivered_at ?? '尚未送达'}；阅读时间：{row.read_at ?? '尚未阅读'}</p>
-      <details><summary>查看保存的通知回执</summary>{row.receipts.length ? row.receipts.map(receipt => <p key={receipt.receipt_id}>
-        {receipt.status} · {receipt.occurred_at} · {receipt.provider_event_id} · 证明 {receipt.evidence_sha256}</p>) : <p>当前没有保存的受理或送达回执。</p>}</details>
+      <details><summary>查看送达记录</summary>{row.receipts.length ? row.receipts.map(receipt => <p key={receipt.receipt_id}>
+        {receipt.status} · {receipt.occurred_at} · {receipt.provider_event_id} · 证明 {receipt.evidence_sha256}</p>) : <p>暂无受理或送达记录。</p>}</details>
       <button type="button" className="text-action" disabled={busy || !row.current_setting || !['accepted', 'delivered'].includes(row.status)} onClick={() => choose(row.notice_id)}>查看提醒内容</button>
       {['pending', 'failed'].includes(row.status) && <button type="button" className="text-action" disabled={!enabled || busy || !row.current_setting} onClick={() => retry(row)}>再次核验原提醒通知</button>}
     </div>) : <p>当前没有保存的资料提醒通知。</p>)}

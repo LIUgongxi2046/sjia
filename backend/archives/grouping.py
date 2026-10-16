@@ -5,7 +5,8 @@ from django.db.models import F, Q
 from django.utils import timezone
 
 from archives.inputs import document_input
-from archives.models import Archive, ArchiveBatch, ArchiveDocument, ArchiveDocumentVersion, ArchiveDocumentPage, ArchiveDocumentEpisode, ArchivePage, ArchiveFactVersion, ArchiveFact
+from archives.batches import page_task
+from archives.models import Archive, ArchiveBatch, ArchiveDocument, ArchiveDocumentVersion, ArchiveDocumentPage, ArchiveDocumentEpisode, ArchivePage, ArchivePageAttempt, ArchiveFactVersion, ArchiveFact
 from archives.queries import fact_source
 from case_details.models import ClinicalEpisode
 from files.models import FileGroup, FilePage
@@ -19,6 +20,56 @@ from records.models import Record
 from records.correction import correct_record
 from records.queries import QueryRejected
 from records.service import _create_medical_time, medical_time_view
+from tasks.models import Task, TaskAttempt
+
+
+def terminal_failed_page(page, patient):
+    """Admit human document correction, never reinterpret a failed OCR result.
+
+    The caller holds batch then page locks, shared with retry and page workers.
+    Inspect all linked executions so a stale failed page cannot hide in-flight
+    work or an unresolved provider outcome. Original/grant checks remain in the
+    normal document path after this status-only admission check.
+    """
+    if page.current_task_id is None:
+        raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
+    attempts = ArchivePageAttempt.objects.filter(page_id=page.id, patient_id=patient.id)
+    tasks = list(Task.objects.select_for_update().filter(patient_id=patient.id).filter(
+        Q(id=page.current_task_id) | Q(input_refs__archive_page_id=str(page.id))
+        | Q(id__in=attempts.values('task_id'))).order_by('id'))
+    current = next((task for task in tasks if task.id == page.current_task_id), None)
+    terminal = ('completed', 'failed', 'cancelled', 'superseded')
+    if (current is None or current.status != 'failed'
+            or any(task.status not in terminal for task in tasks)
+            or current.lease_until is not None and current.lease_until > timezone.now()):
+        raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
+    # Reuse the native immutable task/page/source/hash provenance check.
+    page_task(page, patient, current.id)
+    page_attempts = list(attempts.select_for_update().order_by('id'))
+    task_attempts = list(TaskAttempt.objects.select_for_update().filter(
+        task_id__in=[task.id for task in tasks]).order_by('id'))
+    if any(attempt.status not in terminal or attempt.finished_at is None
+            for attempt in page_attempts + task_attempts):
+        raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
+
+
+def document_write_admission(patient, batch, pages):
+    """Shared state guard for every locked page, including unassigned pages."""
+    if batch.status == 'cancelled' or batch.status == 'receiving' and batch.intake_mode != 'manual':
+        raise QueryRejected('DOCUMENT_BATCH_UNAVAILABLE')
+    if batch.intake_mode == 'manual':
+        if batch.quota_policy_id is not None or batch.status != 'receiving':
+            raise QueryRejected('DOCUMENT_BATCH_UNAVAILABLE')
+        for page in pages:
+            if (page.status != 'uploaded' or page.current_task_id is not None
+                    or ArchivePageAttempt.objects.filter(page_id=page.id).exists()
+                    or Task.objects.filter(input_refs__archive_page_id=str(page.id)).exists()):
+                raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
+    for page in pages:
+        if page.status == 'failed':
+            terminal_failed_page(page, patient)
+        elif page.status not in ('uploaded', 'awaiting_confirmation', 'confirmed', 'archived'):
+            raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
 
 
 def document_time(patient, payload, previous):
@@ -34,14 +85,16 @@ def document_time(patient, payload, previous):
     return _create_medical_time(patient, payload)
 
 
-def document_materials(patient, payload, document=None, *, check_version=True, ignore_document_id=None, check_facts=True):
+def document_materials(patient, payload, document=None, *, check_version=True, ignore_document_id=None, check_facts=True,
+        ignore_document_ids=()):
     document_input('GroupingInput' if document is not None else 'DocumentInput', payload)
     batch = ArchiveBatch.objects.select_for_update().get(id=payload['batch_id'], patient_id=patient.id)
     Archive.objects.get(id=batch.archive_id, patient_id=patient.id)
-    if batch.status in ('receiving', 'cancelled', 'failed'):
-        raise QueryRejected('DOCUMENT_BATCH_UNAVAILABLE')
+    document_write_admission(patient, batch, ())
     previous = None
     if document is not None:
+        if document.retired_at is not None:
+            raise QueryRejected('DOCUMENT_RETIRED')
         if document.patient_id != patient.id:
             raise QueryRejected('DOCUMENT_PATIENT_INVALID')
         if check_version and document.current_version != int(payload['expected_version']):
@@ -56,10 +109,9 @@ def document_materials(patient, payload, document=None, *, check_version=True, i
     if len(pages_by_id) != len(selected_ids):
         raise QueryRejected('DOCUMENT_PAGE_INVALID')
     pages = [pages_by_id[page_id] for page_id in selected_ids]
+    document_write_admission(patient, batch, pages)
     files, groups = {}, {}
     for page in pages:
-        if page.status not in ('uploaded', 'awaiting_confirmation', 'confirmed', 'archived'):
-            raise QueryRejected('DOCUMENT_PAGE_UNAVAILABLE')
         source = files.get(page.file_id)
         if source is None:
             source = lock_original(page.file_id)
@@ -72,11 +124,13 @@ def document_materials(patient, payload, document=None, *, check_version=True, i
                 or page.file_object_version != source.object_version or page.checksum != source.checksum):
             raise QueryRejected('DOCUMENT_SOURCE_INVALID')
         groups[group.id] = group
-    current_documents = ArchiveDocument.objects.filter(patient_id=patient.id)
+    current_documents = ArchiveDocument.objects.filter(patient_id=patient.id, retired_at__isnull=True)
     if document is not None:
         current_documents = current_documents.exclude(id=document.id)
     if ignore_document_id is not None:
         current_documents = current_documents.exclude(id=ignore_document_id)
+    if ignore_document_ids:
+        current_documents = current_documents.exclude(id__in=ignore_document_ids)
     # 当前文书引用逐项核验，不把重复页面自动认定为复印关系。
     for other in current_documents.order_by('id'):
         other_version = ArchiveDocumentVersion.objects.get(document_id=other.id, patient_id=patient.id,

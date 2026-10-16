@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -18,8 +19,8 @@ page.on('request', request => {
 });
 page.on('dialog', dialog => { errors.push(`出现非预期确认：${dialog.message()}`); void dialog.dismiss(); });
 await page.goto('http://127.0.0.1:5173/login');
-await page.getByPlaceholder('账号', { exact: true }).fill('acceptance-family');
-await page.getByPlaceholder('密码（至少 8 位）').fill('Local-accept-2026');
+await page.getByPlaceholder('账号', { exact: true }).fill(acceptanceUsername);
+await page.getByPlaceholder('密码（至少 8 位）').fill(acceptancePassword);
 await page.getByRole('button', { name: '登录', exact: true }).click();
 await page.waitForURL('**/home');
 await page.getByRole('button', { name: '健康档案', exact: true }).waitFor();

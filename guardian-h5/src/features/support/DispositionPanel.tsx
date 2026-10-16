@@ -6,6 +6,8 @@ import type { PurposeRequestIdentity } from '../../api/purpose';
 import { validateApiValue } from '../../api/schema';
 import type { DispositionItemView, DispositionView } from '../../../../frontend-design/v2-types';
 import { PurposeTaskProgress } from './PurposeTaskProgress';
+import { ContentDispositionPanel } from './ContentDispositionPanel';
+import { DispositionCoveragePanel } from './DispositionCoveragePanel';
 
 export function DispositionPanel({ active, onPermission }: { active: boolean; onPermission: () => void }) {
   const [params, setParams] = useSearchParams(), id = params.get('disposition_id'), requestId = params.get('disposition_request');
@@ -75,8 +77,9 @@ export function DispositionPanel({ active, onPermission }: { active: boolean; on
     await submit({ requestId: crypto.randomUUID(), operation: 'disposition_retry', target: `/support/disposition-tasks/${taskId}/retry`,
       payload: { expected_status_version: task.status_version } }, 'DispositionRetryInput');
   }
-  if (!active || !id) return null;
-  return <section className="card form-card" style={{ overflowWrap: 'anywhere' }}><h2>资料处置申请</h2>
+  if (!active) return null;
+  if (!id) return <><ContentDispositionPanel active={active} onPermission={onPermission} /><DispositionCoveragePanel active={active} onPermission={onPermission} /></>;
+  return <><ContentDispositionPanel active={active} onPermission={onPermission} /><DispositionCoveragePanel key={id} active={active} onPermission={onPermission} /><section className="card form-card" style={{ overflowWrap: 'anywhere' }}><h2>资料处置申请</h2><p role="note">本申请只处理下列逐项列明的文件或用途副本。文件删除回执不表示数据库记录、模型候选、审计历史或备份已删除；这些类别须另行核对获准保留规则与处置协议。</p>
     {error && <p role="alert">{error.message}</p>}
     {unconfirmed && <><p role="status">处置保存结果待确认。</p><button className="text-action" disabled={busy} onClick={() => void query()}>查询原处置请求</button></>}
     {!value && !error && <p role="status">正在读取当前申请</p>}
@@ -94,5 +97,5 @@ export function DispositionPanel({ active, onPermission }: { active: boolean; on
     {taskId && <PurposeTaskProgress taskId={taskId} taskType="disposition" active={active} onCompleted={reloadResult} onPermission={onPermission} />}
     {taskId && <button className="text-action" disabled={busy || unconfirmed} onClick={() => void retryTask().then(undefined, failure => { if (!(failure instanceof Error)) throw failure; setError(failure); })}>查询处置任务状态</button>}
     <button className="text-action" disabled={busy} onClick={() => setReload(current => current + 1)}>重新读取处置证明</button>
-  </section>;
+  </section></>;
 }

@@ -37,36 +37,63 @@ export class ApiError extends Error {
   }
 }
 
-export interface RequestOptions {
+export interface RequestGuard {
+  signal?: AbortSignal;
+  /** Optional live authorization fence for clinical async continuations. */
+  isCurrent?: () => boolean;
+}
+
+export function checkRequestGuard(guard: RequestGuard = {}) {
+  guard.signal?.throwIfAborted();
+  if (guard.isCurrent && !guard.isCurrent()) throw new DOMException('当前访问核验已暂停或范围已改变。', 'AbortError');
+}
+
+export interface RequestOptions extends RequestGuard {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
-  signal?: AbortSignal;
   csrfToken?: string;
   idempotencyKey?: string;
   writeIntent?: string;
   intentGeneration?: string;
 }
 
-async function parseError(response: Response): Promise<ApiError> {
-  let body: Partial<ApiErrorBody> | null = null;
-  try {
-    body = (await response.json()) as Partial<ApiErrorBody>;
-  } catch {
-    body = null;
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Validate the deployed legacy error envelope before adopting retry actions. */
+export async function parseError(response: Response): Promise<ApiError> {
+  let value: unknown;
+  try { value = await response.json(); } catch { value = null; }
+  const actions: RecoveryAction[] = ['none', 'reauthenticate', 'reload', 'query_request', 'query_task', 'retry_after', 'review_input'];
+  const string = (item: unknown): item is string => typeof item === 'string' && item.length > 0;
+  const valid = isObject(value) && string(value.code) && string(value.message)
+    && (value.retryable === undefined || typeof value.retryable === 'boolean')
+    && (value.recovery === undefined || actions.includes(value.recovery as RecoveryAction))
+    && (value.field_errors === undefined || Array.isArray(value.field_errors) && value.field_errors.every(field =>
+      isObject(field) && typeof field.path === 'string' && string(field.code) && (field.message === undefined || string(field.message))));
+  if (!valid) return new ApiError(response.status, `HTTP_${response.status}`, `请求失败（${response.status}），错误响应格式无效。`, false, 'none');
+  const body = value as { code: string; message: string; retryable?: boolean; recovery?: RecoveryAction; field_errors?: Array<{ path: string; code: string; message?: string }> };
+  return new ApiError(response.status, body.code, body.message, body.retryable ?? false, body.recovery ?? 'none',
+    (body.field_errors ?? []).map(field => ({ path: field.path, code: field.code, message: field.message ?? field.code })));
+}
+
+/** Transport envelope only. Domain callers still validate their exact schema. */
+export async function readJsonObject(response: Response, signal?: AbortSignal): Promise<Record<string, unknown>> {
+  signal?.throwIfAborted();
+  let value: unknown;
+  try { value = await response.json(); } catch {
+    signal?.throwIfAborted();
+    throw new Error('接口响应不是有效 JSON，本次内容未被采用。');
   }
-  return new ApiError(
-    response.status,
-    body?.code ?? `HTTP_${response.status}`,
-    body?.message ?? `请求失败（${response.status}）`,
-    body?.retryable ?? false,
-    body?.recovery ?? 'none',
-    body?.field_errors ?? [],
-  );
+  signal?.throwIfAborted();
+  if (!isObject(value)) throw new Error('接口响应必须是 JSON 对象，本次内容未被采用。');
+  return value;
 }
 
 export async function fetchJson<T>(path: string, options: RequestOptions = {}): Promise<T> {
   await Promise.resolve();
-  options.signal?.throwIfAborted();
+  checkRequestGuard(options);
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   const csrfToken = options.csrfToken ?? sessionCsrfToken;
@@ -83,9 +110,16 @@ export async function fetchJson<T>(path: string, options: RequestOptions = {}): 
     credentials: 'same-origin',
   });
 
-  if (!response.ok) throw await parseError(response);
+  checkRequestGuard(options);
+  if (!response.ok) {
+    const failure = await parseError(response);
+    checkRequestGuard(options);
+    throw failure;
+  }
   if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  const value = await readJsonObject(response, options.signal) as T;
+  checkRequestGuard(options);
+  return value;
 }
 
 export async function fetchPrivateImage(path: string, signal: AbortSignal): Promise<Blob> {

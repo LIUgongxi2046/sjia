@@ -5,6 +5,7 @@ from alerting.home import determine_assessment_state
 from alerting.models import AlertEvaluation, AlertEvent, AlertRecipient
 from family_content.models import EnvironmentGate
 from family_content.service import release_available
+from family_content.alert_detail import current_event_context, select_current_event
 from records.models import Record, RecordField, RecordVersion
 from relations.models import Relation
 from tasks.models import Task
@@ -20,7 +21,12 @@ def home_projection(*, patient, principal, field_codes, environment):
             or evaluation.verification_epoch != patient.verification_epoch
             or evaluation.publication_epoch != gate.publication_epoch):
         state = 'stale'
-    task = Task.objects.filter(patient=patient, task_type='alert_evaluation').order_by('-created_at', '-id').first()
+    if evaluation and state == 'current':
+        from alerting.presets import publication_binding_reason
+        if publication_binding_reason(evaluation) is not None:
+            state = 'stale'
+    task = Task.objects.filter(patient=patient, task_type='alert_evaluation',
+        input_refs__payload__mode='current', input_refs__authorization_context__environment=environment).order_by('-created_at', '-id').first()
     processing = 'idle'
     if task:
         if task.status in ['accepted', 'blocked', 'queued', 'awaiting_confirmation', 'awaiting_resolution', 'uncertain', 'cancel_requested']:
@@ -31,8 +37,15 @@ def home_projection(*, patient, principal, field_codes, environment):
             processing = 'failed'
         if available and task.status == 'failed' and (evaluation is None or task.created_at >= evaluation.assessment_at):
             state = 'stale' if evaluation else 'not_evaluated'
-    event = AlertEvent.objects.filter(patient=patient, validity='valid', evaluation_id=evaluation.id,
-        release_id=gate.active_release_id).order_by('-created_at', 'id').first() if state == 'current' else None
+    eligible = []
+    if available:
+        candidates = AlertEvent.objects.filter(patient=patient, validity='valid',
+            release_id=gate.active_release_id).select_related('patient', 'release', 'trigger_policy')
+        for candidate in candidates:
+            _, reason = current_event_context(candidate, gate, now)
+            if reason is None:
+                eligible.append(candidate)
+    event, selection_reason = select_current_event(eligible)
     current_records = Record.objects.filter(patient=patient, status='active', id=OuterRef('record_id'), current_version=OuterRef('version'))
     versions = RecordVersion.objects.filter(patient=patient).filter(Exists(current_records))
     fields = RecordField.objects.filter(patient=patient, record_version_id__in=versions.values('id'), field_code__in=field_codes)
@@ -46,4 +59,4 @@ def home_projection(*, patient, principal, field_codes, environment):
             read_state = 'read' if recipients.filter(read_at__isnull=False).exists() else 'unread'
     return {'assessment_state': state, 'assessed_at': evaluation.assessment_at.isoformat() if available and evaluation else None,
             'current_alert_id': str(event.id) if event else None, 'service_state': 'enabled' if available else 'disabled',
-            'data_state': data_state, 'processing_state': processing, 'alert_state': 'current' if event else 'none', 'read_state': read_state}
+            'data_state': data_state, 'processing_state': processing, 'alert_state': 'current' if event else 'invalid' if selection_reason else 'none', 'read_state': read_state}

@@ -1,7 +1,10 @@
-from decimal import Decimal, Inexact, Rounded, localcontext
+from decimal import Decimal, DecimalException, Inexact, Rounded, localcontext
 from fractions import Fraction
 from operator import ge, gt, le, lt
 
+from pydantic import ValidationError
+
+from alerting.policies import WeightedCombination
 from assessment.qualified_facts import QualificationRejected
 from assessment.selection import strictly_before
 
@@ -10,7 +13,10 @@ STATES = {'met', 'not_met', 'unknown'}
 OPERATORS = {'gt': gt, 'gte': ge, 'lt': lt, 'lte': le}
 
 
-def combination_result(group, signals, *, maximum_depth, maximum_operands):
+def combination_result(group, signals, *, maximum_depth, maximum_operands, maximum_digits=None):
+    if group.get('operator') == 'weighted':
+        return weighted_combination_result(group, signals, maximum_depth=maximum_depth,
+            maximum_operands=maximum_operands, maximum_digits=maximum_digits)
     pending = [(group, (), 1, False)]
     results, used, consumed = {}, set(), 0
     while pending:
@@ -45,6 +51,90 @@ def combination_result(group, signals, *, maximum_depth, maximum_operands):
         results[path] = {'path': list(path), 'operator': operator, 'state': state, 'operands': values,
             'signal_refs': item.get('signal_refs', []), 'minimum_met': item.get('minimum_met')}
     return {'state': results[()]['state'], 'groups': [results[key] for key in sorted(results)]}
+
+
+def weighted_combination_result(group, signals, *, maximum_depth, maximum_operands, maximum_digits):
+    """Aggregate explicit weights without dropping or imputing unknown facts.
+
+    The lower bound includes only met weights; the upper bound also includes
+    unknown weights. These are arithmetic bounds, not replacement fact values.
+    Coverage, score bounds and the explicit core gate are combined using the same
+    three-valued all semantics as legacy combinations. No rounding is used.
+    """
+    try:
+        policy = WeightedCombination.model_validate(group)
+    except ValidationError as exc:
+        raise QualificationRejected('DYNAMIC_WEIGHTED_POLICY_INVALID') from exc
+    if maximum_depth < 1 or len(policy.members) > maximum_operands:
+        raise QualificationRejected('DYNAMIC_COMBINATION_INVALID')
+    if type(maximum_digits) is not int or maximum_digits < 1:
+        raise QualificationRejected('DYNAMIC_WEIGHTED_PRECISION_REQUIRED')
+    references = [item.signal_ref for item in policy.members]
+    if set(references) != set(signals):
+        raise QualificationRejected('DYNAMIC_WEIGHTED_SIGNAL_SCOPE_INVALID')
+    states = [signals[reference]['state'] for reference in references]
+    if not set(states) <= STATES:
+        raise QualificationRejected('DYNAMIC_SIGNAL_STATE_INVALID')
+
+    def bounded(value):
+        if max(len(str(abs(value.numerator))), len(str(value.denominator))) > maximum_digits:
+            raise QualificationRejected('DYNAMIC_DECIMAL_LIMIT_EXCEEDED')
+        return value
+
+    def fraction(value):
+        # Check string size before constructing arbitrarily large integers.
+        if len(value.replace('.', '')) > maximum_digits:
+            raise QualificationRejected('DYNAMIC_DECIMAL_LIMIT_EXCEEDED')
+        return bounded(Fraction(value))
+
+    def exact(value):
+        value = bounded(value)
+        return {'numerator': str(value.numerator), 'denominator': str(value.denominator)}
+
+    def decimal(value):
+        try:
+            with localcontext() as context:
+                context.prec = maximum_digits
+                context.traps[Inexact], context.traps[Rounded] = True, True
+                return format(Decimal(value.numerator) / Decimal(value.denominator), 'f')
+        except DecimalException as exc:
+            raise QualificationRejected('DYNAMIC_DECIMAL_LIMIT_EXCEEDED') from exc
+
+    weights = [fraction(item.weight) for item in policy.members]
+    threshold = fraction(policy.threshold_fraction)
+    minimum_known = fraction(policy.minimum_known_fraction)
+    total = bounded(sum(weights, Fraction(0)))
+    met = bounded(sum((weight for weight, state in zip(weights, states) if state == 'met'), Fraction(0)))
+    unknown = bounded(sum((weight for weight, state in zip(weights, states) if state == 'unknown'), Fraction(0)))
+    known = bounded(total - unknown)
+    lower, upper, coverage = bounded(met / total), bounded((met + unknown) / total), bounded(known / total)
+    threshold_state = 'met' if lower >= threshold else 'not_met' if upper < threshold else 'unknown'
+    coverage_state = 'met' if coverage >= minimum_known else 'unknown'
+    core_states = [state for member, state in zip(policy.members, states) if member.classification == 'core']
+    required_core = len(core_states) if policy.core_gate.operator == 'all' else policy.core_gate.minimum_met
+    core_met, core_unknown = core_states.count('met'), core_states.count('unknown')
+    core_state = 'met' if core_met >= required_core else 'not_met' if core_met + core_unknown < required_core else 'unknown'
+    gates = [core_state, coverage_state, threshold_state]
+    state = 'not_met' if 'not_met' in gates else 'unknown' if 'unknown' in gates else 'met'
+    reasons = []
+    if core_state != 'met':
+        reasons.append('DYNAMIC_WEIGHTED_CORE_' + core_state.upper())
+    if coverage_state != 'met':
+        reasons.append('DYNAMIC_WEIGHTED_KNOWN_WEIGHT_INSUFFICIENT')
+    if threshold_state != 'met':
+        reasons.append('DYNAMIC_WEIGHTED_THRESHOLD_' + threshold_state.upper())
+    detail = {'schema_version': 'weighted-combination-result-1', 'denominator': policy.denominator,
+        'denominator_weight': decimal(total), 'met_weight': decimal(met), 'known_weight': decimal(known),
+        'unknown_weight': decimal(unknown), 'threshold_fraction': policy.threshold_fraction,
+        'minimum_known_fraction': policy.minimum_known_fraction, 'lower_fraction': exact(lower),
+        'upper_fraction': exact(upper), 'known_fraction': exact(coverage),
+        'core_gate': policy.core_gate.model_dump(mode='json'), 'core_state': core_state,
+        'coverage_state': coverage_state, 'threshold_state': threshold_state,
+        'unknown_policy': policy.unknown_policy, 'reason_codes': reasons,
+        'members': [{**member.model_dump(mode='json'), 'state': value}
+            for member, value in zip(policy.members, states)]}
+    return {'state': state, 'groups': [{'path': [], 'operator': 'weighted', 'state': state,
+        'operands': states, 'signal_refs': references, 'minimum_met': None, 'weighted': detail}]}
 
 
 def time_bounds(value):

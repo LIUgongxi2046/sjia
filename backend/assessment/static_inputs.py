@@ -1,10 +1,11 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from django.db import transaction
 from django.utils import timezone
 
 from archives.models import ArchiveFactVersion
+from assessment.hlh_contracts import HLHInputPolicy, HLHRulePolicy, validate_hlh_policy_pair
 from assessment.policies import QualificationPolicy, StaticContextPolicy, StaticRulePolicy, static_variable
 from assessment.qualified_facts import QualificationRejected, QualifiedFact, lock_case_permissions, qualified_configuration, qualify_fact
 from assessment.selection import cross_analyte_reason, qualified_relations, select_current
@@ -33,11 +34,13 @@ class StaticInputs:
     applicability: str
     sha256: str
     clinical_selections: tuple[dict, ...]
+    input_rule: object | None = None
+    hlh_inputs: object | None = None
 
 
 @transaction.atomic
 def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_id, verification_policy_id,
-        environment, known_at, assessment_at, mode, maximum_bytes, observation_scope=None, selection_payload=None):
+        environment, known_at, assessment_at, mode, maximum_bytes, observation_scope=None, selection_payload=None, input_rule_id=None):
     if (mode not in ('current', 'replay') or known_at.utcoffset() is None or assessment_at.utcoffset() is None
             or assessment_at > known_at or known_at > timezone.now()):
         raise QualificationRejected('ASSESSMENT_CONTEXT_INVALID')
@@ -48,17 +51,30 @@ def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_
         raise QualificationRejected('ASSESSMENT_ENVIRONMENT_UNAVAILABLE')
     check_principal_session(actor, auth_epoch)
     check_service_grant(actor, 'execute_assessment', environment, timezone.now())
-    rule_config = qualified_configuration(rule_id, kind='rule', schema_version='assessment-rule-2',
+    rule_config = qualified_configuration(rule_id, kind='rule',
+        schema_version='hlh-2004-rule-1' if input_rule_id is not None else 'assessment-rule-2',
         environment=environment, known_at=known_at, mode=mode)
-    rule = StaticRulePolicy.model_validate_json(json.dumps(rule_config.payload))
+    hlh = input_rule_id is not None
+    rule = (HLHRulePolicy if hlh else StaticRulePolicy).model_validate_json(json.dumps(rule_config.payload))
+    input_rule_config = None
+    bindings = None
+    if hlh:
+        input_rule_config = qualified_configuration(input_rule_id, kind='rule', schema_version='hlh-input-policy-1',
+            environment=environment, known_at=known_at, mode=mode)
+        bindings = HLHInputPolicy.model_validate_json(json.dumps(input_rule_config.payload))
+        validate_hlh_policy_pair(rule, bindings)
     window_config = qualified_configuration(window_policy_id, kind='window', schema_version='alert-window-1',
         environment=environment, known_at=known_at, mode=mode)
     verification_config = qualified_configuration(verification_policy_id, kind='verification', schema_version='qualification-policy-2',
         environment=environment, known_at=known_at, mode=mode)
     verification_policy = QualificationPolicy.model_validate_json(json.dumps(verification_config.payload))
     lock_case_permissions(actor, patient, 'execute_assessment', verification_policy.purpose, timezone.now(), whole_resource=True)
-    codes = [item.variable_code for item in rule.variables] + ['sjia', 'fever']
-    variables = {code: static_variable(rule, code) for code in codes}
+    if hlh and bindings.purpose != verification_policy.purpose:
+        raise QualificationRejected('ASSESSMENT_RULE_PURPOSE_MISMATCH')
+    codes = ([item.variable_code for item in bindings.variables] if hlh else
+        [item.variable_code for item in rule.variables] + ['sjia', 'fever'])
+    variables = ({item.variable_code: item for item in bindings.variables} if hlh else
+        {code: static_variable(rule, code) for code in codes})
     context_ids = {'population': window_config.payload['scope']['population_config_id'],
         'therapy': window_config.payload['scope']['therapy_policy_id'],
         'clinical_finding': window_config.payload['clinical_finding_validity_policy_id'],
@@ -82,6 +98,9 @@ def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_
     windows = {item['variable_code']: item for item in window_config.payload['variables']}
     if not variables.keys() <= windows.keys():
         raise QualificationRejected('ASSESSMENT_VARIABLE_WINDOW_REQUIRED')
+    if hlh:
+        from assessment.hlh_inputs import validate_hlh_windows
+        validate_hlh_windows(rule, window_config.payload)
     fields = RecordField.objects.filter(patient_id=patient.id,
         concept_code__in=[item.concept_code for item in variables.values()])
     facts = ArchiveFactVersion.objects.select_for_update().filter(patient_id=patient.id,
@@ -93,10 +112,10 @@ def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_
     for fact in facts.iterator():
         field = RecordField.objects.select_for_update().get(id=fact.field_id, patient_id=patient.id)
         code = variable_by_concept[field.concept_code]
-        value = qualify_fact(fact_id=fact.id, patient=patient, actor=actor, auth_epoch=auth_epoch, rule_id=rule_id,
+        value = qualify_fact(fact_id=fact.id, patient=patient, actor=actor, auth_epoch=auth_epoch, rule_id=input_rule_id if hlh else rule_id,
             window_policy_id=window_policy_id, verification_policy_id=verification_policy_id, variable_code=code,
             environment=environment, known_at=known_at, assessment_at=assessment_at, mode=mode,
-            context_policy_id=variable_contexts[code])
+            context_policy_id=variable_contexts[code], rule_schema='hlh-input-policy-1' if hlh else 'assessment-rule-2')
         if value.eligible and observation_scope is not None:
             interval = value.interval
             if (interval.lower < observation_scope['lower'] or interval.upper > observation_scope['upper']
@@ -125,7 +144,7 @@ def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_
         exclusions.extend(selected.exclusions)
         for reference in selected.relations:
             relation_refs[reference['id']] = reference
-    reason = cross_analyte_reason({code: value for code, value in selections.items()
+    reason = None if hlh else cross_analyte_reason({code: value for code, value in selections.items()
         if variables[code].value_type == 'decimal'}, window_config.payload['max_cross_analyte_gap_seconds'])
     context_reasons = [] if reason is None else [{'variable_code': 'context', 'reason_codes': [reason]}]
     context_states = {}
@@ -156,9 +175,20 @@ def collect_static_inputs(*, patient, actor, auth_epoch, rule_id, window_policy_
             for code, value in selections.items()}, 'context_reasons': context_reasons,
         'context_states': context_states, 'limitations': limitations, 'applicability': applicability,
         'clinical_selections': selection_proofs}
+    if hlh:
+        content['input_rule_id'] = str(input_rule_config.id)
+        content['input_rule_checksum'] = input_rule_config.checksum
     if len(json.dumps(content, separators=(',', ':')).encode('utf-8')) > maximum_bytes:
         raise QualificationRejected('ASSESSMENT_CONTEXT_LIMIT_EXCEEDED')
-    return StaticInputs(rule_config, window_config, verification_config, {code: selections[code] for code in codes}, tuple(candidate_refs),
+    result = StaticInputs(rule_config, window_config, verification_config, {code: selections[code] for code in codes}, tuple(candidate_refs),
         tuple(exclusions), tuple(relation_refs.values()), tuple(context_reasons),
         {code: value for code, value in selections.items() if code not in codes}, tuple(context_configs),
-        context_states, tuple(limitations), applicability, compute_checksum(content), tuple(selection_proofs))
+        context_states, tuple(limitations), applicability, compute_checksum(content), tuple(selection_proofs), input_rule_config)
+    if hlh:
+        from assessment.hlh_inputs import materialize_hlh_inputs
+        typed = materialize_hlh_inputs(result, assessment_at=assessment_at, known_at=known_at)
+        content['hlh_inputs'] = typed.model_dump(mode='json')
+        if len(json.dumps(content, separators=(',', ':')).encode('utf-8')) > maximum_bytes:
+            raise QualificationRejected('ASSESSMENT_CONTEXT_LIMIT_EXCEEDED')
+        result = replace(result, hlh_inputs=typed, sha256=compute_checksum(content))
+    return result

@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import importlib.util
 import json
 import os
 import subprocess
@@ -8,9 +9,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 from zoneinfo import ZoneInfo
 
-from jsonschema import Draft202012Validator
 from markdown_it import MarkdownIt
-from referencing import Registry, Resource
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,53 +20,66 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def validate_task_references(value, task_ids):
+    """Validate every semicolon-separated owner, never treat a list as one ID."""
+    require(isinstance(value, str), '页面任务引用必须是字符串')
+    identifiers = [item.strip() for item in value.split(';')]
+    require(all(item and item in task_ids for item in identifiers), '页面任务不存在')
+    require(len(identifiers) == len(set(identifiers)), '页面任务引用重复')
+    return identifiers
+
+
+def local_schema_registry(paths, *, root=None):
+    """Reuse the strict finite local resolver; external or missing refs fail."""
+    path = ROOT / 'backend-design/check_v2.py'
+    spec = importlib.util.spec_from_file_location('frontend_local_schema_registry', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.local_schema_registry(paths, root=ROOT if root is None else root)
+
+
 def rows(path):
     with path.open(encoding='utf-8-sig', newline='') as stream:
         return list(csv.DictReader(stream))
 
 
+def schema_description_module():
+    path = ROOT / 'frontend-design/describe-schema.py'
+    spec = importlib.util.spec_from_file_location('frontend_schema_description', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_SCHEMA_DESCRIPTION = schema_description_module()
+describe = _SCHEMA_DESCRIPTION.describe
+
+
 def object_fields(schema, resolver):
-    if '$ref' in schema:
-        resolved = resolver.lookup(schema['$ref'])
-        return object_fields(resolved.contents, resolved.resolver)
-    properties = {}
-    required = set()
-    for parent in schema.get('allOf', []):
-        if '$ref' in parent or 'properties' in parent:
-            inherited, keys = object_fields(parent, resolver)
-            properties.update(inherited)
-            required.update(keys)
-    properties.update({name: describe(value, resolver) for name, value in schema.get('properties', {}).items()})
-    required.update(schema.get('required', []))
-    return properties, required
+    result = _SCHEMA_DESCRIPTION.object_definition(schema, resolver,
+        allow_empty=True)
+    return result['properties'], set(result['required'])
 
 
-def describe(schema, resolver):
-    if '$ref' in schema:
-        resolved = resolver.lookup(schema['$ref'])
-        return describe(resolved.contents, resolved.resolver)
-    if 'enum' in schema:
-        return {'kind': 'enum', 'values': schema['enum']}
-    if 'const' in schema:
-        return {'kind': 'enum', 'values': [schema['const']]}
-    if 'type' in schema:
-        return {'kind': 'types', 'values': schema['type'] if isinstance(schema['type'], list) else [schema['type']]}
-    if 'oneOf' in schema:
-        shapes = [describe(child, resolver) for child in schema['oneOf']]
-        require(all(shape['kind'] == 'types' for shape in shapes), '联合字段类别不明确')
-        return {'kind': 'types', 'values': sorted({item for shape in shapes for item in shape['values']})}
-    if 'allOf' in schema:
-        shapes = [describe(child, resolver) for child in schema['allOf'] if '$ref' in child or 'type' in child]
-        if shapes:
-            require(all(shape['kind'] == 'types' for shape in shapes), '交集类别不明确')
-            return {'kind': 'types', 'values': sorted({item for shape in shapes for item in shape['values']})}
-    if 'properties' in schema:
-        return {'kind': 'types', 'values': ['object']}
-    raise ValueError('Schema 字段缺少类型')
+def object_union_description(schema, resolver, name):
+    require(not ('oneOf' in schema and 'anyOf' in schema),
+        f'同级对象联合组合需要显式交集绑定：{name}')
+    result = None
+    for keyword in ('oneOf', 'anyOf'):
+        if keyword not in schema:
+            continue
+        shapes = [describe(branch, resolver) for branch in schema[keyword]]
+        if all(shape == {'kind': 'types', 'values': ['object']} for shape in shapes):
+            require(result is None, f'同级对象联合组合需要显式交集绑定：{name}')
+            require(all(set(branch) == {'$ref'} and branch['$ref'].startswith('#/$defs/')
+                for branch in schema[keyword]), f'对象联合需要显式本地分支绑定：{name}')
+            result = {'union_refs': [branch['$ref'].removeprefix('#/$defs/')
+                for branch in schema[keyword]], 'keyword': keyword}
+    return result
 
 
 def main():
-    names = ['frontend-design/check_v2.py', 'frontend-design/check-v2-types.mjs', 'frontend-design/v2-routes.csv',
+    names = ['frontend-design/check_v2.py', 'frontend-design/describe-schema.py', 'frontend-design/check-v2-types.mjs', 'frontend-design/v2-routes.csv',
              'frontend-design/v2-state-adoption.csv', 'frontend-design/v2-token-map.json', 'frontend-design/v2-types.ts',
              'frontend-design/tsconfig.json', 'frontend-design/v2-interaction.md', 'docs/development/T38.md',
              'sJIA合并MAS预警平台前端LLD.md', 'sJIA合并MAS预警平台页面流程.md',
@@ -93,7 +105,8 @@ def main():
         require(all(row.values()), '路由责任缺少')
         design = designs[row['screen_id']]
         require(row['path'] == design['source_id'], '路由与原稿不一致')
-        require(row['parent_id'] in routes and row['implementation_task'] in task_ids, '页面父级或任务不存在')
+        require(row['parent_id'] in routes, '页面父级不存在')
+        validate_task_references(row['implementation_task'], task_ids)
         expected_audience = 'support' if row['screen_id'] >= 'UI2-34' else 'family'
         require(row['audience'] == expected_audience, '支持角色与家庭角色混用')
         require((row['layout'] == 'primary') == (row['screen_id'] in {'UI2-01', 'UI2-05', 'UI2-15'}), '主导航范围不正确')
@@ -125,22 +138,27 @@ def main():
     require({row['screen_id'] for row in asset_map} == designs.keys(), '页面资产映射不完整')
     require({row['asset_id'] for row in asset_map} <= asset_ids, '页面资产不存在')
 
-    registry = Registry()
-    schemas = {}
-    for name in ['backend-design/v2-protocol.schema.json', 'backend-design/protocol.schema.json', 'data-design/dataset.schema.json', 'data-design/case-extension.schema.json']:
-        path = ROOT / name
-        sources.add(path)
-        schema = json.loads(path.read_text())
-        Draft202012Validator.check_schema(schema)
-        schemas[name] = schema
-        registry = registry.with_resource(path.as_uri(), Resource.from_contents(schema))
+    schema_names = ['backend-design/v2-protocol.schema.json', 'backend-design/protocol.schema.json',
+        'data-design/dataset.schema.json', 'data-design/case-extension.schema.json']
+    registry, local_schemas, _ = local_schema_registry([ROOT / name for name in schema_names])
+    sources.update(local_schemas)
+    schemas = {name: local_schemas[ROOT / name] for name in schema_names}
     protocol = schemas['backend-design/v2-protocol.schema.json']
     resolver = registry.resolver((ROOT / 'backend-design/v2-protocol.schema.json').as_uri())
     object_descriptions = {}
     for name, schema in protocol['$defs'].items():
-        properties, required = object_fields(schema, resolver)
-        if properties and name not in {'FactContextFields', 'TaskView', 'FieldInput', 'FamilyField', 'Error', 'MedicalTime', 'MedicalTimeInput', 'SourceReference'}:
+        if name in {'FactContextFields', 'TaskView', 'FieldInput', 'FamilyField', 'Error', 'MedicalTime', 'MedicalTimeInput', 'SourceReference'}:
+            continue
+        try:
+            properties, required = object_fields(schema, resolver)
+        except ValueError as error:
+            raise ValueError(f'Schema 定义无法检查：{name}：{error}') from error
+        if properties:
             object_descriptions[name] = {'properties': properties, 'required': sorted(required)}
+        elif 'oneOf' in schema or 'anyOf' in schema:
+            union = object_union_description(schema, resolver, name)
+            if union is not None:
+                object_descriptions[name] = union
     description_path = ROOT / '.planning-work/t38-types-description.json'
     description_path.write_text(json.dumps(object_descriptions, ensure_ascii=False, indent=2) + '\n')
     parser = MarkdownIt('commonmark').enable('table')
@@ -153,8 +171,10 @@ def main():
                     target = urlsplit(child.attrGet('href'))
                     if not target.scheme:
                         link = (path.parent / unquote(target.path)).resolve()
-                        require(link.is_file() or link in pending, f'本地引用不存在：{link.name}')
-    process = subprocess.run(['node', str(ROOT / 'frontend-design/check-v2-types.mjs')], cwd=ROOT, env=os.environ.copy(), text=True, capture_output=True, check=True)
+                        require(link.is_file() or link in pending, f'本地引用不存在：{path.relative_to(ROOT)} -> {link.relative_to(ROOT) if link.is_relative_to(ROOT) else link}')
+    process = subprocess.run(['node', str(ROOT / 'frontend-design/check-v2-types.mjs')], cwd=ROOT, env=os.environ.copy(), text=True, capture_output=True, check=False)
+    if process.returncode:
+        raise ValueError('TypeScript 契约检查未通过：\n' + process.stdout + process.stderr)
     types_report = json.loads(process.stdout)
     report = {
         'checked_at': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(), 'status': 'PASS', 'capability': 'DESIGN',

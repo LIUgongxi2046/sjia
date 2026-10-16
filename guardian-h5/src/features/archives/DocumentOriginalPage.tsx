@@ -1,5 +1,6 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useNavigate } from 'react-router';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowDown as ChevronDown, ChevronRight } from '../../components/ThreeDIcon';
 import { FileText, Image, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
@@ -23,11 +24,11 @@ export function DocumentOriginalPage({ documentId, versionId }: { documentId: st
   const value = item?.document;
   const values = item && value ? [documentLabels[value.document_type], value.organization ?? '来源医院未知',
     item.pages.map(page => `文书页序 ${page.page_order}：${page.object_version}`).join('；'), documentTimeLabel(value.documented_time),
-    item.pages.map(page => `文书页序 ${page.page_order}保存于 ${new Date(page.created_at).toLocaleString('zh-CN')}`).join('；'),
+    item.pages.map(page => `文书页序 ${page.page_order}保存于 ${eventTimeLabel(page.created_at)}`).join('；'),
     [...new Set(item.pages.flatMap(page => page.use_authorizations.map(authorization => `${purposes[authorization.purpose] ?? authorization.purpose}（${authorization.environment}）`)))].join('；') || '尚未取得有效用途授权',
     [...new Set(item.pages.flatMap(page => page.purpose_copies.map(copy => `${purposes[copy.purpose] ?? copy.purpose}：${copyStates[copy.status]}${copy.review_id ? copy.revoked_at ? '；复核已撤销' : '；已保存复核记录' : '；尚无复核记录'}`)))].join('；') || '尚无用途副本复核记录'] : labels.map(() => '待读取');
   return <UI2FamilyFrame title="原始资料" screenId="UI2-33" note="显示来源版本、用途与文书页面。" backTo="/archives">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
     <UI2ReadState loading={access.loading || resource.loading} error={resource.error} onRetry={() => { void access.refresh(); resource.reload(); }} />
     {resource.data && !item && <section className="status-panel error" role="alert"><h2>当前文书尚不能读取</h2><p>需要有效患儿关系及完整来源读取权限。</p></section>}
     <section className="card source-view"><Image size={58} /><h2>{item ? '已保存原始文书' : '尚未选择原始文书'}</h2><p>完整原件与提取内容共同保留，支持按页面查看。</p>{item ? <ArchiveOriginals key={value!.version_id} pages={item.pages} /> : <button className="button secondary" disabled>选择照片</button>}</section>

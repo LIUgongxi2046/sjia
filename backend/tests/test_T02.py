@@ -6,6 +6,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from django.apps import apps
 from django.db import IntegrityError, connection
 from django.test import TestCase
 
@@ -13,10 +14,20 @@ from identity.models import Patient, Principal
 
 
 class TableStructureTest(TestCase):
-    def test_89_business_tables_in_sjia_schema(self):
+    def test_current_business_table_manifest_in_sjia_schema(self):
+        # The declared ORM manifest evolves with version-controlled migrations;
+        # framework tables are not business tables and may live in public or sjia.
+        expected = {model._meta.db_table.split('"."', 1)[1].strip('"')
+            for model in apps.get_models() if model._meta.db_table.startswith('sjia"."')}
+        self.assertTrue(expected)
+        self.assertTrue({'record', 'record_field', 'archive_page', 'environment_gate'} <= expected)
         with connection.cursor() as cursor:
-            cursor.execute("SELECT count(*) FROM pg_tables WHERE schemaname = 'sjia'")
-            self.assertEqual(cursor.fetchone()[0], 89)
+            cursor.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'sjia'")
+            actual = {row[0] for row in cursor.fetchall()}
+        framework = {'django_migrations', 'django_content_type', 'django_session',
+            'auth_permission', 'auth_group', 'auth_group_permissions', 'auth_user',
+            'auth_user_groups', 'auth_user_user_permissions', 'django_admin_log'}
+        self.assertEqual(actual - framework, expected)
 
     def test_domains_exist(self):
         with connection.cursor() as cursor:

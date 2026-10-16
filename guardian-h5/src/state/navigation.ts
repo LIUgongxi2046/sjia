@@ -23,11 +23,12 @@ export function defaultRecordFilters(): RecordFilters {
 
 export interface ArchiveFilters extends Omit<RecordFilters, 'category'> {
   category: 'all' | 'inpatient' | 'outpatient' | 'pending';
+  timeBasis: 'document' | 'episode';
   query: string; documentType: string; episode: string; unknownTime: boolean; unknownOrganization: boolean; unknownEpisode: boolean;
 }
 
 export function defaultArchiveFilters(): ArchiveFilters {
-  return { ...defaultRecordFilters(), category: 'all', query: '', documentType: '', episode: '', unknownTime: false, unknownOrganization: false, unknownEpisode: false };
+  return { ...defaultRecordFilters(), category: 'all', timeBasis: 'document', query: '', documentType: '', episode: '', unknownTime: false, unknownOrganization: false, unknownEpisode: false };
 }
 
 class NavigationMemory {

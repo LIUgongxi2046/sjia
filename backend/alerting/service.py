@@ -48,13 +48,22 @@ def prepare_dynamic_scope(*, patient_id, actor, auth_epoch, environment, payload
     dynamic_payload(payload)
     inputs = collect_dynamic_inputs(patient_id=patient_id, actor=actor, auth_epoch=auth_epoch,
         environment=environment, payload=payload)
+    from alerting.presets import evaluation_binding
+    preset = evaluation_binding(inputs, payload)
+    if preset is not None:
+        inputs.snapshot['preset_selection'] = preset
+        inputs.snapshot['configurations'].extend([preset['assignment'], preset['schedule']])
+        inputs.context['snapshot_sha256'] = compute_checksum(inputs.snapshot)
     if automatic_trigger is not None:
         from alerting.triggers import trigger_scope
 
         proof = trigger_scope(automatic_trigger, patient=inputs.patient, actor=inputs.actor, payload=payload,
             environment=environment, purpose=inputs.context['purpose'])
-        inputs.snapshot['configurations'].append(proof)
+        if not any(item['config']['id'] == proof['config']['id'] for item in inputs.snapshot['configurations']):
+            inputs.snapshot['configurations'].append(proof)
         inputs.snapshot['automatic_trigger'] = automatic_trigger
+        if automatic_trigger.get('preset_selection') != preset:
+            raise QualificationRejected('PRESET_SELECTION_CHANGED')
         inputs.context['snapshot_sha256'] = compute_checksum(inputs.snapshot)
     policies = [item for item in inputs.runtime.payload['tasks'] if item['task_type'] == 'alert_evaluation']
     if len(policies) != 1:
@@ -118,6 +127,21 @@ def dependency_reference(node, reference, patient_id, edge_type):
 
 def save_dependencies(evaluation, inputs):
     node = resource_node('alert_evaluation', evaluation.id, '1', evaluation.patient_id)
+    selection = inputs.snapshot.get('preset_selection')
+    if selection is not None:
+        connect(node, resource_node('alert_preset_scope', UUID(selection['scope_id']),
+            selection['selection_version'], evaluation.patient_id), 'policy')
+        if selection['choice'] is not None:
+            from alerting.models import AlertPresetChoice
+            choice = AlertPresetChoice.objects.select_for_update().get(id=selection['choice']['id'])
+            if entity_reference(choice) != selection['choice']:
+                raise QualificationRejected('PRESET_SELECTION_CHANGED')
+            context = choice.authorization_context
+            for reference in (context['grant'],):
+                dependency_reference(node, reference, evaluation.patient_id, 'policy')
+            connect(node, resource_node('relation', UUID(context['relation']['id']),
+                context['relation']['sha256'], evaluation.patient_id), 'policy')
+            connect(node, resource_node('principal', choice.selected_by_id, context['auth_epoch'], None), 'policy')
     trigger = inputs.snapshot.get('automatic_trigger')
     if trigger is not None:
         connect(node, resource_node('outbox_event', UUID(trigger['source']['id']), trigger['source']['sha256'], evaluation.patient_id), 'input')
@@ -372,7 +396,11 @@ def read_dynamic_evaluation(*, evaluation_id, actor, auth_epoch, environment):
         'relation_refs': snapshot['relation_refs'] if valid else [], 'relation_proofs': snapshot['relation_proofs'] if valid else [],
         'clinical_selections': [{**item, 'saved_at': task.request_row.completed_at.isoformat() if item['saved_at'] is None else item['saved_at']}
             for item in snapshot['clinical_selections']] if valid else [], 'lifecycle': evidence['lifecycle'] if valid else None,
-        'automatic_trigger': snapshot.get('automatic_trigger') if valid else None,
+        # Preset authorization proofs stay in the immutable internal snapshot;
+        # the existing public trigger DTO contains only these three identities.
+        'automatic_trigger': {key: snapshot['automatic_trigger'][key] for key in ('schedule', 'source', 'trigger_task_id')}
+            if valid and snapshot.get('automatic_trigger') is not None else None,
+        'sensitivity_preset': snapshot.get('sensitivity_preset') if valid else None,
         'reason_code': None if valid else 'DYNAMIC_CONTEXT_INVALIDATED'}
     if not OUTPUT.is_valid(value):
         raise QualificationRejected('DYNAMIC_RESULT_FORMAT_INVALID')

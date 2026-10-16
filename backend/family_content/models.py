@@ -64,3 +64,19 @@ class ReleaseComponent(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["release_id", "component_kind", "config_id"], name="release_component_pk_uniq"),
         ]
+
+
+class ReleasePublicationGroup(models.Model):
+    """Exact per-rule publication binding; shared components remain on the release."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    release = models.ForeignKey(ReleaseBundle, on_delete=models.RESTRICT, related_name='+')
+    rule = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    window = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    verification = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    mapping = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    content = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    validation = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+
+    class Meta:
+        db_table = 'sjia"."release_publication_group'
+        constraints = [models.UniqueConstraint(fields=['release', 'rule'], name='release_publication_rule_unique')]

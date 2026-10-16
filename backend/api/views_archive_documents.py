@@ -28,7 +28,7 @@ def authorize_document(request, principal, patient, document, version, action):
             author_id=group.owner_id, require_relation=True, whole_resource=True))
     for fact in facts:
         field, record_version = fact_source(fact, patient)
-        original = RecordVersion.objects.get(record_id=record_version.record_id, patient=patient, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient=patient, version=1)
         proofs.append(authorize_case(request, principal, patient, action, field_codes=[field.field_code],
             record_id=record_version.record_id, author_id=original.author_id, require_relation=True))
     for relation in episodes:
@@ -36,7 +36,7 @@ def authorize_document(request, principal, patient, document, version, action):
         field = RecordField.objects.get(id=episode.source_field_id, record_version_id=episode.record_version_id,
             patient_id=patient.id)
         record_version = RecordVersion.objects.get(id=episode.record_version_id, patient_id=patient.id)
-        original = RecordVersion.objects.get(record_id=record_version.record_id, patient_id=patient.id, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient_id=patient.id, version=1)
         proofs.append(authorize_case(request, principal, patient, action, field_codes=[field.field_code],
             record_id=record_version.record_id, author_id=original.author_id, require_relation=True))
     scopes = [{'grant_id': str(proof.grant.id), 'field_codes': sorted(proof.grant.field_codes)} for proof in proofs]
@@ -59,6 +59,8 @@ def document_access(request, document_id, action):
     version = ArchiveDocumentVersion.objects.get(document_id=document.id, patient_id=patient.id,
         version=document.current_version)
     decision, scopes = authorize_document(request, principal, patient, document, version, action)
+    if action != 'read_history' and document.retired_at is not None:
+        raise ApiError('DOCUMENT_RETIRED', 409)
     return principal, epoch, patient, document, decision, scopes
 
 

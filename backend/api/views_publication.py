@@ -197,10 +197,16 @@ def publication_contact_read(request, contact_id):
 def publication_release_view(release, gate):
     now = timezone.now()
     components = list(ReleaseComponent.objects.filter(release=release).select_related('config'))
-    reasons = {item.component_kind: config_qualification_reason(item.config, gate.environment, now) for item in components}
+    from family_content.publication_groups import publication_groups, grouped_component_reason
+    groups = publication_groups(release)
+    reasons = {}
+    for item in components:
+        reason = config_qualification_reason(item.config, gate.environment, now)
+        reasons[item.component_kind] = reasons.get(item.component_kind) or reason
     policies = {item.component_kind: item.config for item in components}
-    complete = component_qualification_reason(components)
-    validation_reason = config_qualification_reason(release.validation_config, gate.environment, now)
+    complete = grouped_component_reason(release, components, groups) if groups else component_qualification_reason(components)
+    validations = [group.validation for group in groups] if groups else [release.validation_config]
+    validation_reason = next((reason for config in validations if (reason := config_qualification_reason(config, gate.environment, now))), None)
     contact_reason = contact_qualification_reason(release.contact_version, gate.environment, now)
     qualification = release_qualification_reason(release, now, require_active=release.status == 'enabled')
     binding_reason = (publication_policy_reason(release, components, gate, now)
@@ -213,12 +219,14 @@ def publication_release_view(release, gate):
         condition('content', ['content'], binding_reason), condition('contact', [], contact_reason),
         condition('notification', ['notification'])]
     # 受控发布不授予任何家庭接收关系，逐人许可仍由发送入口核验。
-    content = policies.get('content')
+    content = policies.get('content') if not groups else None
     return {'resource': release_view(release), 'gate_version': str(gate.version), 'publication_epoch': str(gate.publication_epoch),
         'active_release_id': str(gate.active_release_id) if gate.active_release_id else None,
         'readiness': readiness, 'qualification_reason': qualification,
         'may_enable': release.status == 'approved' and qualification is None and gate.active_release_id is None,
         'approved_text': content.payload.get('approved_text') if content and content.schema_version == 'content-1' else None,
+        'approved_contents': [{'rule_id': str(group.rule_id), 'content_id': str(group.content_id),
+            'approved_text': group.content.payload.get('approved_text')} for group in groups],
         'recipient_permission_state': 'individual_check_required'}
 
 

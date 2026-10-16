@@ -1,0 +1,124 @@
+[
+  {
+    "key": "child_a/report-draft",
+    "patient_key": "child_a",
+    "form_type": "report",
+    "payload": {
+      "candidates": [
+        {
+          "name": "血红蛋白",
+          "value": null,
+          "unit": "g/L",
+          "comparator": "=",
+          "reference": "110–150（示例范围）",
+          "sampleTime": {
+            "precision": "unknown",
+            "value": "",
+            "timezone": ""
+          }
+        }
+      ],
+      "photos": [],
+      "organization": "",
+      "reportRef": "示例待补充报告",
+      "sampleTime": {
+        "precision": "date",
+        "value": "2026-10-11",
+        "timezone": ""
+      },
+      "resultTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "reportStatus": "unknown"
+    }
+  },
+  {
+    "key": "child_a/therapy-draft",
+    "patient_key": "child_a",
+    "form_type": "therapy",
+    "payload": {
+      "medication": "示例药物（待补充）",
+      "status": "无法确定",
+      "note": "待核对家庭备忘中的药物名称、使用状态和起止日期。",
+      "itemDetails": {},
+      "startTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "endTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "photos": [],
+      "source": "self_report",
+      "sourceReference": "",
+      "candidates": [],
+      "selectedSource": null
+    }
+  },
+  {
+    "key": "child_b/report-draft",
+    "patient_key": "child_b",
+    "form_type": "report",
+    "payload": {
+      "candidates": [
+        {
+          "name": "血红蛋白",
+          "value": null,
+          "unit": "g/L",
+          "comparator": "=",
+          "reference": "110–150（示例范围）",
+          "sampleTime": {
+            "precision": "unknown",
+            "value": "",
+            "timezone": ""
+          }
+        }
+      ],
+      "photos": [],
+      "organization": "",
+      "reportRef": "示例待补充报告",
+      "sampleTime": {
+        "precision": "date",
+        "value": "2026-10-11",
+        "timezone": ""
+      },
+      "resultTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "reportStatus": "unknown"
+    }
+  },
+  {
+    "key": "child_b/therapy-draft",
+    "patient_key": "child_b",
+    "form_type": "therapy",
+    "payload": {
+      "medication": "示例药物（待补充）",
+      "status": "无法确定",
+      "note": "待核对家庭备忘中的药物名称、使用状态和起止日期。",
+      "itemDetails": {},
+      "startTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "endTime": {
+        "precision": "unknown",
+        "value": "",
+        "timezone": ""
+      },
+      "photos": [],
+      "source": "self_report",
+      "sourceReference": "",
+      "candidates": [],
+      "selectedSource": null
+    }
+  }
+]

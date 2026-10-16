@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "ContentPatientChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "patient_id": {
+          "format": "uuid",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "display_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Display Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "patient_id",
+        "display_id"
+      ],
+      "title": "ContentPatientChoice",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-patients-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "patients": {
+      "items": {
+        "$ref": "#/$defs/ContentPatientChoice"
+      },
+      "title": "Patients",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patients"
+  ],
+  "title": "ContentPatientsView",
+  "type": "object"
+}

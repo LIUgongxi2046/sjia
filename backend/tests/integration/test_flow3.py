@@ -23,6 +23,8 @@ class FamilyFlow3IntegrationTest(TestCase):
         call_command("seed_demo", verbosity=0)
         self.principal = Principal.objects.filter(account_status="active").first()
         self.patient = Patient.objects.filter(display_id="demo-child").first()
+        from tests.synthetic_fixtures import qualify_demo
+        qualify_demo(self, self.principal, self.patient)
         session = self.client.session
         session["_sjia_principal_id"] = str(self.principal.id)
         session["_sjia_auth_epoch"] = self.principal.auth_epoch
@@ -39,8 +41,9 @@ class FamilyFlow3IntegrationTest(TestCase):
         upload_response = self.client.put(f"/api/uploads/{group_id}/files/{upload_id}?checksum={checksum}&size={len(data)}&media_type=image/png", data, content_type="application/octet-stream")
         self.assertEqual(upload_response.status_code, 201)
         file_id = upload_response.json()["file_id"]
-        complete_response = self.client.post(f"/api/uploads/{group_id}/complete", {}, content_type="application/json")
-        self.assertEqual(complete_response.status_code, 200)
+        from tests.integration.helpers import complete_synthetic_upload
+        complete_response = complete_synthetic_upload(self, group_id)
+        self.assertEqual(complete_response.json()['status'], 'available')
         content_response = self.client.get(f"/api/files/{file_id}/content")
         self.assertEqual(content_response.status_code, 200)
         self.assertEqual(content_response.content, data)
@@ -48,28 +51,50 @@ class FamilyFlow3IntegrationTest(TestCase):
         self.assertEqual(range_response.status_code, 206)
         self.assertEqual(len(range_response.content), 5)
 
-    def test_assessment_classification(self):
-        response = self.client.post(f"/api/support/patients/{self.patient.id}/assessments", {"kind": "classification", "premise_met": True, "ferritin": "700", "platelet": "100", "ast": "50", "triglycerides": "200", "fibrinogen": "300"}, content_type="application/json")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["result"]["classification_result"], "meets")
+    def test_legacy_assessment_requires_v2(self):
+        from tests.integration.helpers import support_session
+        support_session(self.client)
+        response = self.client.post(f'/api/support/patients/{self.patient.id}/assessments',
+            {'kind': 'classification'}, content_type='application/json')
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()['code'], 'ASSESSMENT_API_VERSION_REQUIRED')
+
 
     def test_dictionary_search(self):
-        response = self.client.post("/api/dictionaries/search", {"query": "体温"}, content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["matches"]), 1)
-        self.assertEqual(response.json()["matches"][0]["concept_code"], "temp")
+        from uuid import uuid4
+        self.synthetic.configuration('dictionary', {'schema_version': 'dictionary-1',
+            'entries': [{'id': str(uuid4()), 'concept_code': 'temp', 'category': 'vital', 'label': '体温',
+                'definition_ref': self.synthetic.reference, 'aliases': []}],
+            'evidence_refs': [self.synthetic.reference]})
+        response = self.client.post('/api/dictionaries/search', {'category': 'vital', 'query': '体温'}, content_type='application/json')
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['match_state'], 'unique')
+        self.assertEqual(len(response.json()['options']), 1)
+        self.assertEqual(response.json()['options'][0]['concept_code'], 'temp')
 
-    def test_correction_request_and_disposition(self):
+
+    def test_version_bound_correction_request(self):
         record_response = post_record(self.client, self.patient, {"kind": "observation", "capture_method": "manual", "fields": [{"field_code": "temp", "value_type": "decimal", "value_state": "known", "raw_numeric": "38.0", "raw_unit": "C", "sample_time_origin": "observation"}]})
-        self.assertEqual(record_response.status_code, 201)
-        record_id = record_response.json()["record_id"]
-        correction_response = self.client.post(f"/api/records/{record_id}/correction-requests", {"field_ids": [], "reason": "更正"}, content_type="application/json")
-        self.assertEqual(correction_response.status_code, 201)
-        disposition_response = self.client.post(f"/api/patients/{self.patient.id}/dispositions", {"scope": {"targets": []}}, content_type="application/json")
-        self.assertEqual(disposition_response.status_code, 201)
+        self.assertEqual(record_response.status_code, 201, record_response.content)
+        from records.models import RecordField
+        record_id = record_response.json()['record_id']
+        version_id = record_response.json()['record_version_id']
+        field = RecordField.objects.get(record_version_id=version_id)
+        from tests.integration.helpers import post_intended
+        response = post_intended(self.client, f'/api/records/{record_id}/correction-requests', 'correction_request_create',
+            {'record_version_id': version_id, 'field_ids': [str(field.id)], 'reason': 'synthetic correction request',
+                'proposed_text': None})
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(response.json()['resource_type'], 'correction_request')
+        self.assertEqual(response.json()['version'], '1')
+        read = self.client.get(f"/api/correction-requests/{response.json()['resource_id']}")
+        self.assertEqual(read.status_code, 200, read.content)
+        self.assertEqual(read.json()['status'], 'pending')
+        self.assertEqual(read.json()['request']['field_ids'], [str(field.id)])
+        self.assertEqual(read.json()['request']['record_version_id'], version_id)
 
-    def test_case_import(self):
-        response = self.client.post(f"/api/support/patients/{self.patient.id}/case/import", {}, content_type="application/json")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["status"], "IMPORTED")
-        self.assertFalse(response.json()["clinical_rule_eligible"])
+
+    def test_family_cannot_import_external_case(self):
+        response = self.client.post(f'/api/support/patients/{self.patient.id}/case/import', {}, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['code'], 'SUPPORT_AUDIENCE_REQUIRED')

@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-policy-approval-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "policy_id": {
+      "format": "uuid",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "policy_version": {
+      "minimum": 1,
+      "title": "Policy Version",
+      "type": "integer"
+    },
+    "environment": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Environment",
+      "type": "string"
+    },
+    "rules_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Rules Sha256",
+      "type": "string"
+    },
+    "approved_by": {
+      "format": "uuid",
+      "title": "Approved By",
+      "type": "string"
+    },
+    "approved_at": {
+      "format": "date-time",
+      "title": "Approved At",
+      "type": "string"
+    },
+    "execution_enabled": {
+      "title": "Execution Enabled",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "environment",
+    "rules_sha256",
+    "approved_by",
+    "approved_at",
+    "execution_enabled"
+  ],
+  "title": "ContentPolicyAttestation",
+  "type": "object"
+}

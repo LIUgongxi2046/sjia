@@ -102,7 +102,7 @@ def summary_record_fields(record, *, from_date, to_date, zone, include_unknown_t
 
 
 @transaction.atomic
-def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezone, include_unknown_time, field_codes, environment, record_kinds=None, include_source_status=None):
+def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezone, include_unknown_time, field_codes, environment, record_kinds=None, include_source_status=None, execution_task=None):
     if to_date < from_date:
         raise SummaryRejected('DATE_RANGE_INVALID')
     zone = ZoneInfo(scope_timezone)
@@ -127,7 +127,8 @@ def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezon
             continue
         for field in summary_record_fields(record, from_date=from_date, to_date=to_date, zone=zone,
             include_unknown_time=include_unknown_time, permitted=permitted):
-            snapshots.append({**field, 'record_id': record['record_id'], 'record_version_id': record['record_version_id'], 'kind': record['kind'], 'origin_type': record['origin_type'], 'source_organization': record['source_organization'], 'quality_status': record['quality_status']})
+            snapshots.append({**field, 'record_id': record['record_id'], 'record_version_id': record['record_version_id'], 'kind': record['kind'], 'origin_type': record['origin_type'], 'source_organization': record['source_organization'], 'quality_status': record['quality_status'],
+                'source_definition_revision_id': str(version.source_revision_id) if version.source_revision_id else None})
     if not snapshots:
         raise SummaryRejected('SUMMARY_SCOPE_EMPTY')
     now = datetime.now(timezone.utc)
@@ -135,10 +136,20 @@ def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezon
     inputs.update({'record_kinds': record_kinds, 'include_source_status': include_source_status,
         'environment': environment, 'template_checksum': template.checksum, 'visibility_checksum': visibility.checksum,
         'release_id': str(gate.active_release_id), 'publication_epoch': str(gate.publication_epoch)})
-    task = Task.objects.create(actor=requested_by, patient=patient, task_type='summary', schema_version='task-1', input_refs=inputs, input_sha256=compute_checksum(inputs), status='running', status_version=1, created_at=now, deadline_at=now + timedelta(seconds=30))
+    task = execution_task or Task.objects.create(actor=requested_by, patient=patient, task_type='summary', schema_version='task-1', input_refs=inputs, input_sha256=compute_checksum(inputs), status='running', status_version=1, created_at=now, deadline_at=now + timedelta(seconds=30))
+    if (task.patient_id != patient.id or task.actor_id != requested_by.id or task.task_type != 'summary'
+            or task.status != 'running' or task.deadline_at <= now):
+        raise SummaryRejected('SUMMARY_TASK_INVALID')
     summary = create_summary(patient=patient, requested_by=requested_by, from_date=from_date, to_date=to_date, scope_timezone=scope_timezone, include_unknown_time=include_unknown_time, template=template, visibility_policy=visibility, task_id=task.id)
+    if execution_task is not None:
+        summary.execution_snapshot, summary.execution_sha256 = inputs, compute_checksum(inputs)
+        summary.save(update_fields=['execution_snapshot', 'execution_sha256'])
     for ordinal, snapshot in enumerate(snapshots, start=1):
         add_summary_item(summary=summary, record_version_id=snapshot['record_version_id'], field_id=snapshot['field_id'], ordinal=ordinal, snapshot=snapshot)
+    finished_at = datetime.now(timezone.utc)
+    if task.deadline_at <= finished_at or (execution_task is not None and
+            (task.lease_until is None or task.lease_until <= finished_at)):
+        raise SummaryRejected('SUMMARY_DEADLINE_EXCEEDED')
     task.status = 'completed'
     task.status_version += 1
     task.save(update_fields=['status', 'status_version'])
@@ -186,7 +197,8 @@ def add_summary_item(*, summary, record_version_id, field_id, ordinal, snapshot)
 
 def needs_regeneration(summary: Summary, patient) -> bool:
     return (
-        summary.validity == Summary.Validity.INVALID
+        patient.status != 'active'
+        or summary.validity == Summary.Validity.INVALID
         or patient.data_epoch > summary.data_epoch
         or patient.verification_epoch > summary.verification_epoch
         or summary.template.status != 'enabled'
@@ -220,19 +232,34 @@ def read_summary(summary_id, patient) -> dict:
     task = Task.objects.get(id=summary.task_id, patient=patient, actor=summary.requested_by, task_type='summary')
     if compute_checksum(task.input_refs) != task.input_sha256:
         raise SummaryRejected('SUMMARY_TASK_INPUT_INVALID')
+    inputs = task.input_refs
+    if task.schema_version == 'summary-task-2':
+        inputs = summary.execution_snapshot
+        if (task.status != 'completed' or not isinstance(inputs, dict)
+                or compute_checksum(inputs) != summary.execution_sha256):
+            raise SummaryRejected('SUMMARY_EXECUTION_SNAPSHOT_INVALID')
+        from summaries.inputs import SummaryInput
+        scope_input = SummaryInput.model_validate(task.input_refs['scope']).model_dump()
+        if any(inputs.get(key) != value for key, value in scope_input.items()):
+            raise SummaryRejected('SUMMARY_TASK_SNAPSHOT_MISMATCH')
+        admission = task.input_refs['context']
+        if any(inputs.get(key) != admission.get(key) for key in ('environment', 'template_id',
+                'visibility_policy_id', 'template_checksum', 'visibility_checksum', 'release_id', 'publication_epoch')):
+            raise SummaryRejected('SUMMARY_TASK_SNAPSHOT_MISMATCH')
     scope = {'patient_id': str(patient.id), 'from_date': summary.from_date.isoformat(), 'to_date': summary.to_date.isoformat(),
         'scope_timezone': summary.scope_timezone, 'include_unknown_time': summary.include_unknown_time,
         'template_id': str(summary.template_id), 'visibility_policy_id': str(summary.visibility_policy_id)}
-    if any(task.input_refs.get(key) != value for key, value in scope.items()) or task.input_refs.get('fields') != [item.snapshot for item in items]:
+    if any(inputs.get(key) != value for key, value in scope.items()) or inputs.get('fields') != [item.snapshot for item in items]:
         raise SummaryRejected('SUMMARY_TASK_SNAPSHOT_MISMATCH')
     for item in items:
         if item.snapshot['record_version_id'] != str(item.record_version_id) or item.snapshot['field_id'] != str(item.field_id):
             raise SummaryRejected('SUMMARY_SOURCE_INVALID')
-    inputs = task.input_refs
     stale = needs_regeneration(summary, patient) or not summary_publication_current(summary, inputs) or not approved_snapshot_config(summary.template,
         inputs.get('template_checksum'), inputs.get('environment')) or not approved_snapshot_config(summary.visibility_policy,
         inputs.get('visibility_checksum'), inputs.get('environment'))
+    from summaries.trends import build_summary_trends
     return {
+        "trend_projection": None if stale else build_summary_trends([item.snapshot for item in items], compute_checksum(inputs)),
         "patient_id": str(patient.id), "display_id": patient.display_id, "task_id": str(task.id),
         "summary_id": str(summary.id),
         "from_date": summary.from_date.isoformat(),
@@ -242,12 +269,12 @@ def read_summary(summary_id, patient) -> dict:
         "validity": summary.validity,
         "generated_at": summary.generated_at.isoformat(),
         "needs_regeneration": stale,
-        "record_kinds": task.input_refs.get('record_kinds'),
-        "include_source_status": task.input_refs.get('include_source_status'),
-        "environment": task.input_refs.get('environment'),
+        "record_kinds": inputs.get('record_kinds'),
+        "include_source_status": inputs.get('include_source_status'),
+        "environment": inputs.get('environment'),
         "template_id": str(summary.template_id), "visibility_policy_id": str(summary.visibility_policy_id),
-        "template_checksum": task.input_refs.get('template_checksum'),
-        "visibility_checksum": task.input_refs.get('visibility_checksum'),
+        "template_checksum": inputs.get('template_checksum'),
+        "visibility_checksum": inputs.get('visibility_checksum'),
         "items": [
             {
                 "record_version_id": str(item.record_version_id),
@@ -262,10 +289,11 @@ def read_summary(summary_id, patient) -> dict:
 
 def snapshot_view(snapshot):
     metadata = ('record_id', 'record_version_id', 'kind', 'origin_type', 'source_organization', 'quality_status')
-    field = {key: value for key, value in snapshot.items() if key not in metadata}
+    field = {key: value for key, value in snapshot.items() if key not in metadata and key != 'source_definition_revision_id'}
     field['confirmation_id'] = snapshot.get('confirmation_id')
     field['source_anchor'] = snapshot.get('source_anchor')
     return {**{key: snapshot[key] for key in metadata}, 'field': field,
+        'source_definition_revision_id': snapshot.get('source_definition_revision_id'),
         'confirmation_snapshot_state': 'recorded' if 'confirmation_id' in snapshot else 'not_recorded',
         'source_anchor_snapshot_state': 'recorded' if 'source_anchor' in snapshot else 'not_recorded'}
 
@@ -276,8 +304,11 @@ def list_summaries(patient, field_codes=None):
     rows = []
     for summary in Summary.objects.select_related('template', 'visibility_policy').filter(patient=patient).order_by('-generated_at', '-id'):
         task = Task.objects.get(id=summary.task_id, actor_id=summary.requested_by_id, patient=patient, task_type='summary')
-        inputs = task.input_refs
-        stale = (needs_regeneration(summary, patient) or not summary_publication_current(summary, inputs) or compute_checksum(inputs) != task.input_sha256
+        inputs = summary.execution_snapshot if task.schema_version == 'summary-task-2' else task.input_refs
+        snapshot_invalid = task.schema_version == 'summary-task-2' and (not isinstance(inputs, dict)
+            or compute_checksum(inputs) != summary.execution_sha256 or task.status != 'completed')
+        inputs = inputs if isinstance(inputs, dict) else {}
+        stale = (snapshot_invalid or needs_regeneration(summary, patient) or not summary_publication_current(summary, inputs) or compute_checksum(task.input_refs) != task.input_sha256
             or not approved_snapshot_config(summary.template, inputs.get('template_checksum'), inputs.get('environment'))
             or not approved_snapshot_config(summary.visibility_policy, inputs.get('visibility_checksum'), inputs.get('environment')))
         if field_codes is not None and any(item.snapshot['field_code'] not in field_codes

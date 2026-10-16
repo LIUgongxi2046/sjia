@@ -11,7 +11,19 @@ from retention.disposition import DispositionRejected, approve_disposition_reque
 from retention.jobs import retry_local_disposition, submit_local_disposition, submit_simulated_provider_disposition, validate_refs
 from retention.models import DispositionItem, DispositionRequest
 from tasks.models import Task
-from api.base import handle
+from api.base import ApiError, handle
+
+
+@api_view(['GET'])
+@handle
+def support_disposition_coverage(request, patient_id):
+    from retention.coverage import disposition_coverage
+
+    if set(request.query_params) != {'purpose'} or len(request.query_params.getlist('purpose')) != 1:
+        raise ApiError('COVERAGE_QUERY_INVALID', 422)
+    principal, epoch = support_principal(request)
+    return Response(disposition_coverage(actor=principal, auth_epoch=epoch, audience='support',
+        patient_id=patient_id, purpose=request.query_params['purpose'], environment=runtime_environment()))
 
 
 def authorize_disposition_target(principal, epoch, operation_id, route):

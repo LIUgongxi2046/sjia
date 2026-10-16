@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -5,7 +6,7 @@ import { request } from 'playwright';
 
 const client = await request.newContext({ baseURL: 'http://127.0.0.1:8001' });
 let csrf = (await (await client.get('/api/auth/bootstrap')).json()).csrf_token;
-const login = await client.post('/api/auth/login', { data: { username: 'acceptance-family', password: 'Local-accept-2026' }, headers: { 'X-CSRFToken': csrf } });
+const login = await client.post('/api/auth/login', { data: { username: acceptanceUsername, password: acceptancePassword }, headers: { 'X-CSRFToken': csrf } });
 assert.equal(login.status(), 200);
 csrf = (await (await client.get('/api/auth/bootstrap')).json()).csrf_token;
 async function api(path, data, expected = 200) {

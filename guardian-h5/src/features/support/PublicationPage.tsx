@@ -221,7 +221,9 @@ export function PublicationPage({ session, accessState, accessError, onRefresh }
   const close = useCallback(() => setSheet(null), []);
   const blockedWrite = phase === 'unknown' || phase === 'pending' || request !== null && ['pending', 'processing', 'unknown'].includes(request.state)
     || (parameters.has('intent_id') || parameters.has('request_id')) && request === null && !absent;
-  const canEnable = available && may('publish_config') && release?.may_enable && text === release.approved_text && !blockedWrite;
+  const groupedRelease = !!release?.resource.release.publication_groups?.length;
+  const releaseTextUnchanged = groupedRelease || text === release?.approved_text;
+  const canEnable = available && may('publish_config') && release?.may_enable && releaseTextUnchanged && !blockedWrite;
   const operations = (Object.keys(publicationOperations) as PublicationOperation[]).filter(op => may(publicationOperations[op][0])
     && publicationOperations[op][0] !== 'manage_config'
     && (op.endsWith('_create') || op.startsWith('config_') && config || op.startsWith('contact_') && contact || op.startsWith('release_') && release));
@@ -231,7 +233,7 @@ export function PublicationPage({ session, accessState, accessError, onRefresh }
     if (op.startsWith('config_')) return ({ config_submit: ['draft'], config_approve: ['pending'], config_validate: ['approved', 'enabled'],
       config_enable: ['approved'], config_disable: ['enabled'] } as Partial<Record<PublicationOperation, string[]>>)[op]?.includes(config!.resource.status) === true;
     if (op === 'release_approve') return release!.resource.status === 'draft';
-    if (op === 'release_enable') return release!.may_enable && text === release!.approved_text;
+    if (op === 'release_enable') return release!.may_enable && releaseTextUnchanged;
     if (op === 'release_disable') return release!.resource.status === 'enabled' && release!.active_release_id === release!.resource.release_id;
     if (op === 'contact_activate') return ['draft', 'approved'].includes(contact!.status) && Date.parse(contact!.contact.valid_until) > Date.now();
     return op === 'contact_disable' && contact!.status !== 'disabled';
@@ -260,11 +262,13 @@ export function PublicationPage({ session, accessState, accessError, onRefresh }
         ? key === 'notification' ? '策略有效，接收许可需逐人核验' : key === 'verification' ? '配置有效，资料需逐项核验' : '当前版本有效' : item.reason; })() : '待确认'}
     </strong></div>)}</section>
     <section className="card form-card"><label className="field"><span>家庭展示文字</span><textarea placeholder="准确批准文字，绑定内容版本" value={available ? text : ''}
-      disabled={!available || !may('manage_configs') || phase === 'pending' || phase === 'unknown'} onChange={event => setText(event.target.value)} /></label>
+      disabled={groupedRelease || !available || !may('manage_configs') || phase === 'pending' || phase === 'unknown'} onChange={event => setText(event.target.value)} /></label>
       <label className="field"><span>启用环境</span><select disabled value={available && release ? release.resource.release.environment : 'demo'}>
         <option value="demo">演示</option><option value="controlled_pilot">受控试点</option><option value="approved_family">获准家庭使用</option>
         {available && release && !['demo', 'controlled_pilot', 'approved_family'].includes(release.resource.release.environment) && <option value={release.resource.release.environment}>{release.resource.release.environment}</option>}
       </select></label></section>
+    {available && groupedRelease && <section className="card form-card"><h3>各规则批准文字</h3>{release?.approved_contents?.map(item => <div key={item.rule_id}>
+      <p>规则 {item.rule_id} · 内容版本 {item.content_id}</p><p>{item.approved_text ?? '尚无可用文字'}</p></div>)}<p>各组文字需分别保存为新内容配置，由新发布版本准确引用。</p></section>}
     <button className="button" disabled={!canEnable} onClick={() => edit('release_enable')}>条件齐备后启用</button>
     {available && <section className="card form-card"><h3>维护与版本记录</h3>
       {may('publish_config') && <button className="text-action" disabled={busy.current} onClick={() => list('release', 'publish_config')}>选择发布版本</button>}
@@ -272,7 +276,7 @@ export function PublicationPage({ session, accessState, accessError, onRefresh }
       {may('manage_contacts') && <button className="text-action" disabled={busy.current} onClick={() => list('contact', 'manage_contacts')}>选择联系版本</button>}
       {config && <p className="muted">{config.resource.config.config_key} · 版本 {config.resource.version} · {config.resource.status}</p>}
       {contact && <p className="muted">{contact.contact.contact_name} · 版本 {contact.version} · {contact.status} · {contact.contact.valid_until}</p>}
-      {may('manage_configs') && release && text !== release.approved_text && <><p className="muted">家庭文字需要保存为新配置版本，并由新发布版本准确引用。</p>
+      {may('manage_configs') && release && !groupedRelease && text !== release.approved_text && <><p className="muted">家庭文字需要保存为新配置版本，并由新发布版本准确引用。</p>
         <button className="text-action" disabled={busy.current || blockedWrite || !text.trim()} onClick={saveTextVersion}>保存家庭文字版本</button></>}
       {operations.map(op => <button className="text-action" key={op} disabled={busy.current || blockedWrite || !eligible(op)} onClick={() => edit(op)}>{publicationOperations[op][3]}</button>)}
       <button className="text-action" disabled={busy.current} onClick={() => history()}>查看本人提交记录</button>

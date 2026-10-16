@@ -1,0 +1,134 @@
+{
+  "$defs": {
+    "PresetOptionView": {
+      "additionalProperties": false,
+      "properties": {
+        "schedule_config_id": {
+          "format": "uuid",
+          "title": "Schedule Config Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Label",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Description",
+          "type": "string"
+        },
+        "preset_key": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Preset Key",
+          "type": "string"
+        },
+        "config_version": {
+          "pattern": "^[1-9][0-9]*$",
+          "title": "Config Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_config_id",
+        "label",
+        "description",
+        "preset_key",
+        "config_version"
+      ],
+      "title": "PresetOptionView",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "patient-alert-presets-view-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "assignment_id": {
+      "format": "uuid",
+      "title": "Assignment Id",
+      "type": "string"
+    },
+    "assignment_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Assignment Checksum",
+      "type": "string"
+    },
+    "assignment_version": {
+      "pattern": "^[1-9][0-9]*$",
+      "title": "Assignment Version",
+      "type": "string"
+    },
+    "display_name": {
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Display Name",
+      "type": "string"
+    },
+    "purpose": {
+      "const": "family_observation",
+      "title": "Purpose",
+      "type": "string"
+    },
+    "selection_version": {
+      "pattern": "^(0|[1-9][0-9]*)$",
+      "title": "Selection Version",
+      "type": "string"
+    },
+    "selected_schedule_config_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Selected Schedule Config Id"
+    },
+    "selection_state": {
+      "enum": [
+        "selected",
+        "professional_default",
+        "requires_reselection"
+      ],
+      "title": "Selection State",
+      "type": "string"
+    },
+    "options": {
+      "items": {
+        "$ref": "#/$defs/PresetOptionView"
+      },
+      "minItems": 1,
+      "title": "Options",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patient_id",
+    "assignment_id",
+    "assignment_checksum",
+    "assignment_version",
+    "display_name",
+    "purpose",
+    "selection_version",
+    "selected_schedule_config_id",
+    "selection_state",
+    "options"
+  ],
+  "title": "PresetDirectoryView",
+  "type": "object"
+}

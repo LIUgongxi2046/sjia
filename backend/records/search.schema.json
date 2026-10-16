@@ -157,8 +157,9 @@
             "raw_numeric": {"type": ["string", "null"], "pattern": "^-?[0-9]+(\\.[0-9]+)?$"}, "raw_text": {"$ref": "#/$defs/NullableText"},
             "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]}, "raw_unit": {"$ref": "#/$defs/NullableText"}, "method": {"$ref": "#/$defs/NullableText"},
             "medical_time": {"oneOf": [{"$ref": "#/$defs/MedicalTimeView"}, {"type": "null"}]}, "medical_time_id": {"$ref": "#/$defs/NullableUuid"},
+            "comparison": {"oneOf": [{"type": "null"},{"type": "object","additionalProperties": false,"required": ["kind","previous_field_id","previous_value","current_value","unit","method","config_id","config_checksum","previous_mapping_id","current_mapping_id","previous_source_revision_id","current_source_revision_id"],"properties": {"kind": {"enum": ["raw","approved_mapping"]},"previous_field_id": {"$ref": "#/$defs/Uuid"},"previous_value": {"type": "string","pattern": "^-?[0-9]+(\\.[0-9]+)?$"},"current_value": {"type": "string","pattern": "^-?[0-9]+(\\.[0-9]+)?$"},"unit": {"$ref": "#/$defs/Text"},"method": {"$ref": "#/$defs/Text"},"config_id": {"$ref": "#/$defs/NullableUuid"},"config_checksum": {"type": ["string","null"],"pattern": "^[a-f0-9]{64}$"},"previous_mapping_id": {"$ref": "#/$defs/NullableUuid"},"current_mapping_id": {"$ref": "#/$defs/NullableUuid"},"previous_source_revision_id": {"$ref": "#/$defs/NullableUuid"},"current_source_revision_id": {"$ref": "#/$defs/NullableUuid"}}}]},
             "direction": {"enum": ["up", "down", "same", null]}, "not_comparable_reason": {"enum": ["unit_or_method_or_precision_mismatch", null]},
-            "comparison_reasons": {"type": "array", "uniqueItems": true, "items": {"enum": ["value_unknown", "unit_unknown", "unit_mismatch", "method_unknown", "method_mismatch", "qualified_value", "time_unknown", "precision_mismatch", "same_time", "timezone_unconfirmed"]}},
+            "comparison_reasons": {"type": "array", "uniqueItems": true, "items": {"enum": ["value_unknown", "unit_unknown", "unit_mismatch", "method_unknown", "method_mismatch", "qualified_value", "time_unknown", "time_ambiguous", "time_invalid", "time_unresolved", "precision_mismatch", "same_time", "timezone_unconfirmed"]}},
             "origin_type": {"$ref": "#/$defs/Origin"}, "source_organization": {"$ref": "#/$defs/NullableText"}, "verification_states": {"type": "array", "items": {"$ref": "#/$defs/VerificationState"}}
           }
         }}
@@ -208,7 +209,7 @@
       "properties": {"recordId": {"$ref": "#/$defs/Uuid"}, "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/CorrectionDraftField"}},
         "kind": {"$ref": "#/$defs/Kind"}, "reason": {"type": "string"}, "version": {"type": "integer", "minimum": 1},
         "timeInputs": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": false, "required": ["precision", "value", "timezone"],
-          "properties": {"precision": {"enum": ["unknown", "month", "date", "minute"]}, "value": {"type": "string"}, "timezone": {"type": "string"},
+          "properties": {"precision": {"enum": ["unknown", "year", "month", "month_range", "relative", "date", "minute", "second"]}, "value": {"type": "string"}, "timezone": {"type": "string"}, "utcOffsetMinutes": {"type": ["integer", "null"], "minimum": -840, "maximum": 840},
             "localYear": {"type": "integer", "minimum": 1, "maximum": 9999}, "localMonth": {"type": "integer", "minimum": 1, "maximum": 12}}}}
       }
     },

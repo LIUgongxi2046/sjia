@@ -88,6 +88,13 @@ export async function readEvaluationResults(run: EvaluationRunView, signal?: Abo
       || new Set(result.results.map(item => item.dataset_version_id)).size !== 1
       || new Set(result.results.map(item => item.dataset_checksum)).size !== 1)
     throw new Error('评价结果统计单位、准确版本或输入摘要不一致。');
+  const clinical = result.clinical_report;
+  if (clinical && (clinical.binding.implementation_sha256 !== result.implementation_sha256
+      || clinical.binding.dataset_version_id !== result.results[0].dataset_version_id
+      || clinical.binding.dataset_checksum !== result.results[0].dataset_checksum
+      || Object.keys(clinical.binding.configuration_checksums).length !== result.rules.length
+      || result.rules.some(rule => clinical.binding.configuration_checksums[rule.id] !== rule.sha256)))
+    throw new Error('临床指标与固定资料、规则或程序版本不一致。');
   return result;
 }
 

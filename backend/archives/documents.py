@@ -19,7 +19,7 @@ def document_record_scope(document, patient, version):
     episode_ids = ArchiveDocumentEpisode.objects.filter(document_version_id=version.id,
         patient_id=patient.id).values('episode_id')
     version_ids = set(fact_versions.values_list('record_version_id', flat=True))
-    if version.version == document.current_version:
+    if version.version == document.current_version and document.retired_at is None:
         document_version_ids = set(ArchiveDocumentVersion.objects.filter(document_id=document.id,
             patient_id=patient.id).values_list('id', flat=True))
         fact_ids = ArchiveFactVersion.objects.filter(document_version_id__in=document_version_ids,
@@ -77,6 +77,8 @@ def document_sources(*, document, patient, version):
 
 def document_read(*, document, patient, version=None):
     if version is None:
+        if document.retired_at is not None:
+            raise QueryRejected('DOCUMENT_RETIRED')
         version = ArchiveDocumentVersion.objects.get(document_id=document.id, patient_id=patient.id,
             version=document.current_version)
     batch, pages, _, _, episodes, _ = document_sources(document=document, patient=patient, version=version)
@@ -96,7 +98,7 @@ def document_versions(*, document, patient, scope, limit, expires_at, cursor=Non
     if expires_at <= now:
         raise QueryRejected('CURSOR_STALE')
     bound = {**scope, 'document_id': str(document.id), 'patient_id': str(patient.id),
-        'current_version': str(document.current_version), 'data_epoch': str(patient.data_epoch),
+        'current_version': str(document.current_version), 'retired_at': document.retired_at.isoformat() if document.retired_at else None, 'data_epoch': str(patient.data_epoch),
         'verification_epoch': str(patient.verification_epoch), 'limit': limit}
     offset, expiry = 0, expires_at.timestamp()
     if cursor is not None:

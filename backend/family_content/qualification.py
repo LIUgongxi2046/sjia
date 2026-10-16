@@ -6,15 +6,16 @@ from configurations.qualification import configuration_qualification_reason
 from contacts.models import ContactVersion
 from contacts.approval import contact_content_reason
 from family_content.models import EnvironmentGate, ReleaseBundle, ReleaseComponent
+from family_content.publication_groups import publication_groups, grouped_component_reason, group_components, group_priority_reason
 
 
 REQUIRED_COMPONENTS = frozenset({'rule', 'window', 'verification', 'mapping', 'visibility', 'content', 'notification'})
 
 
-def publication_policy_reason(release, components, gate, now):
+def single_publication_policy_reason(release, components, gate, now, validation=None):
     policies = {item.component_kind: item.config for item in components}
     content, visibility, notification = (policies[kind] for kind in ('content', 'visibility', 'notification'))
-    validation = release.validation_config
+    validation = validation or release.validation_config
     if (content.schema_version != 'content-1' or visibility.schema_version != 'visibility-1'
             or notification.schema_version != 'notification-1' or validation.schema_version != 'validation-1'):
         return 'RELEASE_POLICY_SCHEMA_MISMATCH'
@@ -31,10 +32,15 @@ def publication_policy_reason(release, components, gate, now):
                 or config.payload['window_policy_id'] != str(policies['window'].id)):
             return 'RELEASE_POLICY_BINDING_MISMATCH'
     rule = policies['rule']
-    if (rule.schema_version != 'alert-trigger-1'
+    if (rule.schema_version not in ('alert-trigger-1', 'alert-trigger-2')
             or policies['verification'].payload.get('purpose') != purpose
             or rule.payload['publication']['level'] != content.payload['level']):
         return 'RELEASE_POLICY_SCOPE_MISMATCH'
+    publication = rule.payload['publication']
+    if (rule.payload['window_policy_id'] != str(policies['window'].id)
+            or any(publication[kind + '_config_id'] != str(policies[kind].id) for kind in ('content', 'visibility', 'notification'))
+            or publication['contact_version_id'] != str(release.contact_version_id)):
+        return 'RELEASE_POLICY_BINDING_MISMATCH'
     artifact = deployed_artifact_checksum(rule)
     report, _, reason = inspect_validation_report(rule, gate, {'config_checksum': rule.checksum,
         'environment': gate.environment, 'artifact_sha256': artifact,
@@ -45,6 +51,20 @@ def publication_policy_reason(release, components, gate, now):
         return reason
     if report.outcome != 'pass':
         return 'RELEASE_INDEPENDENT_VALIDATION_FAILED'
+    return None
+
+
+def publication_policy_reason(release, components, gate, now):
+    groups = publication_groups(release)
+    if not groups:
+        return single_publication_policy_reason(release, components, gate, now)
+    reason = grouped_component_reason(release, components, groups) or group_priority_reason(groups)
+    if reason:
+        return reason
+    for group in groups:
+        reason = single_publication_policy_reason(release, group_components(components, group), gate, now, group.validation)
+        if reason:
+            return reason
     return None
 
 
@@ -90,12 +110,14 @@ def release_qualification_reason(release, now=None, *, require_active=True):
     if require_active and (gate.active_release_id != current.id or gate.publication_epoch != current.publication_epoch):
         return 'RELEASE_PUBLICATION_CHANGED'
     components = list(ReleaseComponent.objects.filter(release=current).select_related('config'))
-    reason = component_qualification_reason(components)
+    groups = publication_groups(current)
+    reason = grouped_component_reason(current, components, groups) if groups else component_qualification_reason(components)
     if reason:
         return reason
     if current.validation_config.kind != ConfigVersion.Kind.VALIDATION:
         return 'RELEASE_VALIDATION_KIND_MISMATCH'
-    for config in [item.config for item in components] + [current.validation_config]:
+    validations = [group.validation for group in groups] if groups else [current.validation_config]
+    for config in [item.config for item in components] + validations:
         reason = config_qualification_reason(config, current.environment, now)
         if reason:
             return reason

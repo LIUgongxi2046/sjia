@@ -9,13 +9,26 @@ export interface SummaryListItem {
   summary_id: string; patient_id: string; task_id: string; from_date: string; to_date: string;
   validity: 'valid' | 'invalid'; generated_at: string; needs_regeneration: boolean;
 }
+export interface SummaryTrendPoint {
+  field_id: string; record_version_id: string; source_definition_revision_id: string | null;
+  plot_at: string | null; raw_value: string | null; raw_unit: string | null; plottable: boolean; reason_codes: string[];
+}
+export interface SummaryTrendSeries {
+  concept_code: string | null; field_code: string; points: SummaryTrendPoint[];
+  segments: Array<{ from_field_id: string; to_field_id: string; connect: boolean; reason_codes: string[] }>;
+}
+export interface SummaryTrendProjection {
+  schema_version: 'summary-raw-trend-1'; snapshot_sha256: string; clinical_interpretation: false; series: SummaryTrendSeries[];
+}
 export interface SummarySnapshot {
   record_id: string; record_version_id: string; kind: SummaryKind | 'professional'; origin_type: string;
   source_organization: string | null; quality_status: string; field: RecordFieldView;
   confirmation_snapshot_state: 'recorded' | 'not_recorded';
   source_anchor_snapshot_state: 'recorded' | 'not_recorded';
+  source_definition_revision_id?: string | null;
 }
 export interface SummaryView extends SummaryListItem {
+  trend_projection?: SummaryTrendProjection | null;
   display_id: string; scope_timezone: string; include_unknown_time: boolean; record_kinds: SummaryKind[] | null;
   include_source_status: boolean | null; environment: string | null;
   template_id: string; visibility_policy_id: string; template_checksum: string | null; visibility_checksum: string | null;
@@ -26,8 +39,9 @@ export interface SummaryTask {
   status_version: string; poll_after_ms: number | null; allowed_actions: string[];
   result_type: 'summary' | null; result_ref: string | null; error_code: string | null;
 }
-export interface SummaryReceipt { resource_type: 'summary'; resource_id: string; version: '1'; saved_at: string; request_id: string }
+export interface SummaryReceipt { resource_type: 'summary' | 'task'; resource_id: string; version: '1'; saved_at: string; request_id: string }
 export interface SummaryRequest {
+  task?: SummaryTask | null;
   patient_id: string; intent_id: string; request_id: string; operation_id: 'summary_create'; target_key: string;
   prepared_at: string; state: 'pending' | 'committed' | 'failed'; may_retry: boolean; receipt: SummaryReceipt | null;
   error_code: string | null; generation: string; expires_at: string; payload_sha256: string; summary_input: SummaryInput | null;
@@ -66,13 +80,68 @@ export async function readSummary(patientId: string, summaryId: string, signal: 
   for (const item of summary.items) if (item.field_id !== item.snapshot.field.field_id || item.record_version_id !== item.snapshot.record_version_id) {
     throw new Error('摘要项目与保存的来源版本不一致。');
   }
+  verifySummaryTrendBinding(summary);
   return summary;
+}
+
+export function verifySummaryTrendBinding(summary: SummaryView) {
+  const projection = summary.trend_projection;
+  if (!projection) return;
+  if ((summary.validity !== 'valid' || summary.needs_regeneration) && projection.series.length) throw new Error('失效摘要不能显示趋势。');
+  const byField = new Map(summary.items.map(item => [item.field_id, item]));
+  const seen = new Set<string>();
+  for (const series of projection.series) {
+    const ids = new Set<string>();
+    for (const point of series.points) {
+      const item = byField.get(point.field_id);
+      if (!item || seen.has(point.field_id) || point.record_version_id !== item.record_version_id
+        || point.raw_value !== item.snapshot.field.raw_numeric || point.raw_unit !== item.snapshot.field.raw_unit
+        || series.field_code !== item.snapshot.field.field_code || series.concept_code !== item.snapshot.field.concept_code
+        || point.source_definition_revision_id !== (item.snapshot.source_definition_revision_id ?? null)) throw new Error('摘要趋势与保存的依据版本不一致。');
+      const medical = item.snapshot.field.medical_time;
+      if (point.plot_at !== null && (!medical?.instant || !Number.isFinite(Date.parse(point.plot_at))
+        || Date.parse(point.plot_at) !== Date.parse(medical.instant) || medical.resolution_status !== 'resolved'
+        || !['minute', 'second'].includes(medical.precision))) throw new Error('摘要趋势时间与原医学时间不一致。');
+      if (point.plottable && (point.plot_at === null || point.raw_value === null || !point.raw_unit
+        || item.snapshot.field.value_state !== 'known' || item.snapshot.field.qualifier !== 'eq' || point.reason_codes.length)) throw new Error('摘要趋势点缺少有效原值或医学时间。');
+      seen.add(point.field_id); ids.add(point.field_id);
+    }
+    for (const segment of series.segments) if (!ids.has(segment.from_field_id) || !ids.has(segment.to_field_id)
+      || segment.from_field_id === segment.to_field_id || (segment.connect && segment.reason_codes.length)) throw new Error('摘要趋势连线依据无效。');
+  }
 }
 
 export async function readSummaryTask(taskId: string, signal: AbortSignal): Promise<SummaryTask> {
   const task = await checked<SummaryTask>(`/api/tasks/${taskId}`, 'SummaryTaskView', { signal });
   if (task.task_id !== taskId) throw new Error('摘要任务与当前查询不一致。');
   return task;
+}
+
+export function cancelSummaryTask(taskId: string, csrfToken: string, signal: AbortSignal) {
+  return fetchJson(`/api/tasks/${taskId}/cancel`, { method: 'POST', csrfToken, signal, body: {} });
+}
+
+export async function waitForSummaryTask(initial: SummaryTask, requestId: string, signal: AbortSignal,
+  onState: (task: SummaryTask) => void): Promise<SummaryTask> {
+  let task = initial;
+  const until = Date.now() + 6 * 60_000;
+  for (;;) {
+    if (signal.aborted) throw new DOMException('查询已暂停', 'AbortError');
+    if (task.request_id !== requestId) throw new Error('摘要任务与原请求不一致。');
+    onState(task);
+    if (!['accepted', 'queued', 'running'].includes(task.status)) return task;
+    if (Date.now() >= until) throw new Error('摘要仍在处理中，请稍后查询原请求，不要重复生成。');
+    await new Promise<void>((resolve, reject) => {
+      const abort = () => { clearTimeout(timer); reject(new DOMException('查询已暂停', 'AbortError')); };
+      const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); },
+        Math.max(250, Math.min(task.poll_after_ms ?? 1500, 5000)));
+      signal.addEventListener('abort', abort, { once: true });
+      if (signal.aborted) abort();
+    });
+    const next = await readSummaryTask(task.task_id, signal);
+    if (BigInt(next.status_version) < BigInt(task.status_version)) throw new Error('摘要任务状态版本发生倒退，请重新查询。');
+    task = next;
+  }
 }
 
 export async function readSummaryRequest(patientId: string, intentId: string, signal: AbortSignal): Promise<SummaryRequest> {

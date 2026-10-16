@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -24,8 +25,8 @@ async function passed(id, detail = {}) {
   console.log(id);
 }
 await page.goto(`${baseURL}/login`);
-await page.getByPlaceholder('账号', { exact: true }).fill('acceptance-family');
-await page.locator('input[type=password]').fill('Local-accept-2026');
+await page.getByPlaceholder('账号', { exact: true }).fill(acceptanceUsername);
+await page.locator('input[type=password]').fill(acceptancePassword);
 await page.getByRole('button', { name: '登录', exact: true }).click();
 await page.waitForURL(`${baseURL}/home`);
 const csrf = (await (await context.request.get(`${baseURL}/api/auth/bootstrap`)).json()).csrf_token;

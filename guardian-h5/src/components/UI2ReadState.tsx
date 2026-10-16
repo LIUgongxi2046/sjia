@@ -1,29 +1,49 @@
-import { ArrowRight, CircleAlert, LoaderCircle, LockKeyhole, WifiOff } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ChevronRight as ArrowRight, CircleAlert, LoaderCircle, LockKeyhole, WifiOff } from './ThreeDIcon';
 import { useNavigate } from 'react-router';
 import { ApiError } from '../api/client';
 import { useAccess } from '../state/access';
 
 export function UI2ReadState({ loading = false, error, onRetry, requirePatient = true }: {
-  loading?: boolean; error?: Error | null; onRetry?: () => void; requirePatient?: boolean;
+  loading?: boolean; error?: Error | null; onRetry?: () => void | Promise<void>; requirePatient?: boolean;
 }) {
   const access = useAccess();
   const navigate = useNavigate();
+  const pending = useRef(false);
+  const [retrying, setRetrying] = useState(false), [retryError, setRetryError] = useState<Error | null>(null);
+  async function retry() {
+    if (!onRetry || pending.current || access.loading) return;
+    pending.current = true; setRetrying(true); setRetryError(null);
+    try { await onRetry(); }
+    catch (failure) { setRetryError(failure instanceof Error ? failure : new Error('重新读取未完成，请稍后重试。')); }
+    finally { pending.current = false; setRetrying(false); }
+  }
   const permission = !access.principalId || (requirePatient && !access.patientId)
     || (error instanceof ApiError && (error.status === 401 || error.status === 403));
-  if (access.error) return <section className={`status-panel ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
-    <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div><h2>{navigator.onLine ? '身份服务读取失败' : '网络连接已中断'}</h2><p>{access.error}</p>
+  if (access.error) return <section className={`status-panel rich-read-state ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
+    <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div><h2>{navigator.onLine ? (access.errorSource === 'relations' ? '患儿关联暂未读取' : '身份服务读取失败') : '网络连接已中断'}</h2>{access.errorSource === 'relations' && <p>账号已登录，无需重复注册。关联核验成功前不能访问患儿资料。</p>}<p>{access.error}</p>
     <button className="text-action" onClick={() => void access.refresh()}>重新核验访问权限<ArrowRight size={16} /></button>
   </section>;
-  if (permission) return <section className="status-panel permission" role="status">
+  if (permission) return <section className="status-panel permission rich-read-state" role="status">
     <div className="status-top"><LockKeyhole size={22} /><span>页面状态</span></div><h2>当前访问关系需要核验</h2><p>重新取得有效权限后才能查看资料。</p>
+    {error instanceof ApiError && <><p>{error.message}</p><details><summary>查看错误详情</summary><p>HTTP {error.status} · {error.code}</p></details></>}
+    {retryError && <p>{retryError.message}</p>}
+    {onRetry && <button className="text-action" disabled={retrying || access.loading} onClick={() => void retry()}>重新核验访问权限<ArrowRight size={16} /></button>}
     <button className="text-action" onClick={() => navigate(access.principalId ? '/associations' : '/login')}>核验访问权限<ArrowRight size={16} /></button>
   </section>;
-  if (error) return <section className={`status-panel ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
-    <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div>
-    <h2>{navigator.onLine ? '暂时无法取得资料' : '网络连接已中断'}</h2><p>{navigator.onLine ? '重新读取前，现有资料状态保持未知。' : '尚未保存的输入保留在当前页面。'}</p><p>{error.message}</p>
-    {onRetry && <button className="text-action" onClick={onRetry}>重新读取资料<ArrowRight size={16} /></button>}
+  if (error instanceof ApiError && error.code === 'CONTENT_DISPOSED') return <section className="status-panel rich-read-state" role="status">
+    <div className="status-top"><LockKeyhole size={22} /><span>资料状态</span></div><h2>这份内容已处置</h2>
+    <p>原内容已按批准范围移除，无法重新读取。处置状态不代表临床结果。</p>
   </section>;
-  if (loading) return <section className="status-panel loading" role="status">
+  if (error instanceof ApiError && error.code === 'CONTENT_ACCESS_REVOKED') return <section className="status-panel rich-read-state" role="status">
+    <h2>这份资料的访问已撤销</h2><p>内容保留情况以处置记录为准。</p>
+  </section>;
+  if (error) return <section className={`status-panel rich-read-state ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
+    <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div>
+    <h2>{navigator.onLine ? '暂时无法取得资料' : '网络连接已中断'}</h2><p>{navigator.onLine ? '重新读取前，现有资料状态保持未知。' : '尚未保存的输入保留在当前页面。'}</p>{error instanceof ApiError && error.code === 'RUNTIME_CONFIGURATION_PENDING' ? <><p>服务配置尚未完成，暂时无法读取。</p><details><summary>查看技术详情</summary><p>错误代码：{error.code}</p>{error.message !== error.code && <p>{error.message}</p>}</details></> : <p>{error.message}</p>}
+    {retryError && <p>{retryError.message}</p>}{onRetry && <button className="text-action" disabled={retrying || loading} onClick={() => void retry()}>重新读取资料<ArrowRight size={16} /></button>}
+  </section>;
+  if (loading) return <section className="status-panel loading rich-read-state" role="status">
     <div className="status-top"><LoaderCircle size={22} /><span>页面状态</span></div><h2>正在读取当前资料</h2><p>读取完成后显示当前获准内容。</p>
   </section>;
   return null;

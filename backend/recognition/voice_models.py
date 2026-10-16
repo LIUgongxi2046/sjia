@@ -1,18 +1,19 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import FiniteDecimalField, Sha256HexField
 
 
-class VoiceInput(models.Model):
+class VoiceInput(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey('identity.Patient', on_delete=models.RESTRICT, related_name='+')
     actor = models.ForeignKey('identity.Principal', on_delete=models.RESTRICT, related_name='+')
     request_id = models.UUIDField()
-    transcript = models.TextField()
+    transcript = models.TextField(null=True)
     transcript_sha256 = Sha256HexField()
-    transcription_evidence = models.JSONField()
+    transcription_evidence = models.JSONField(null=True)
     input_mode = models.CharField(max_length=32)
     original_file = models.ForeignKey('files.FileObject', on_delete=models.RESTRICT, related_name='+')
     purpose_copy = models.ForeignKey('archives.PurposeCopy', on_delete=models.RESTRICT, related_name='+', null=True)
@@ -44,7 +45,7 @@ class VoiceInput(models.Model):
         ]
 
 
-class TranscriptionReceipt(models.Model):
+class TranscriptionReceipt(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey('identity.Patient', on_delete=models.RESTRICT, related_name='+')
     actor = models.ForeignKey('identity.Principal', on_delete=models.RESTRICT, related_name='+')
@@ -58,7 +59,7 @@ class TranscriptionReceipt(models.Model):
     inference_duration_ms = models.PositiveBigIntegerField()
     model_name = models.CharField(max_length=256)
     implementation_version = models.CharField(max_length=256)
-    transcript = models.TextField()
+    transcript = models.TextField(null=True)
     transcript_sha256 = Sha256HexField()
     confirmed_text = models.TextField(null=True)
     confirmed_text_sha256 = Sha256HexField(null=True)

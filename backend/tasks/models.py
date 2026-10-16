@@ -3,11 +3,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import Sha256HexField
 
 
-class Task(models.Model):
+class Task(ErasureModel, models.Model):
     class TaskType(models.TextChoices):
         FILE_VALIDATION = "file_validation", "file_validation"
         PURPOSE_COPY = 'purpose_copy', 'purpose_copy'
@@ -39,7 +40,7 @@ class Task(models.Model):
     request_row = models.ForeignKey("requests.WriteRequest", on_delete=models.RESTRICT, null=True, db_column="request_row_id", related_name="+")
     task_type = models.CharField(max_length=16, choices=TaskType.choices)
     schema_version = models.TextField()
-    input_refs = models.JSONField()
+    input_refs = models.JSONField(null=True)
     input_sha256 = Sha256HexField()
     status = models.CharField(max_length=32, choices=Status.choices)
     status_version = models.PositiveBigIntegerField()
@@ -63,7 +64,7 @@ class Task(models.Model):
         ]
 
 
-class TaskAttempt(models.Model):
+class TaskAttempt(ErasureModel, models.Model):
     class Status(models.TextChoices):
         RUNNING = "running", "running"
         COMPLETED = "completed", "completed"
@@ -90,7 +91,7 @@ class TaskAttempt(models.Model):
         ]
 
 
-class OutboxEvent(models.Model):
+class OutboxEvent(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     event_type = models.TextField()
     schema_version = models.TextField()
@@ -100,7 +101,9 @@ class OutboxEvent(models.Model):
     causation_id = models.UUIDField(null=True)
     correlation_id = models.UUIDField()
     task = models.ForeignKey(Task, on_delete=models.RESTRICT, null=True, db_column="task_id", related_name="+")
-    resource_refs = models.JSONField()
+    resource_refs = models.JSONField(null=True)
+    # Transport metadata only: excluded from Task input, checksum and business identity.
+    traceparent = models.CharField(max_length=55, blank=True, default='')
     available_at = models.DateTimeField()
     lease_generation = models.BigIntegerField(default=0)
     lease_owner = models.TextField(null=True)

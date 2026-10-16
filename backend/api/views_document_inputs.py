@@ -36,7 +36,7 @@ def archive_document_inputs(request, batch_id):
         field = RecordField.objects.get(id=episode.source_field_id, record_version_id=episode.record_version_id, patient=patient)
         version = RecordVersion.objects.get(id=episode.record_version_id, patient=patient)
         record = Record.objects.get(id=version.record_id, patient=patient)
-        initial = RecordVersion.objects.get(record_id=record.id, patient=patient, version=1)
+        initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=patient, version=1)
         grants = matching_case_grants(actor, patient, 'read_raw', timezone.now(), field_codes=[field.field_code],
             record_id=record.id, author_id=initial.author_id, require_relation=True)
         if record.status != 'active' or not any(grant.purpose == 'family_observation' and grant.evidence_ref.strip() for grant in grants):

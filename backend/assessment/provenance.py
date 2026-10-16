@@ -37,6 +37,8 @@ def document_provenance(fact, file_page, original, *, known_at, mode):
     if (version.grouping_status != 'confirmed' or version.confirmed_by is None or version.confirmed_at is None
             or version.available_at > known_at or version.confirmed_at > known_at):
         return references, 'FACT_DOCUMENT_CONFIRMATION_REQUIRED'
+    if document.retired_at is not None and (mode == 'current' or document.retired_at <= known_at):
+        return references, 'FACT_DOCUMENT_RETIRED'
     if mode == 'current' and document.current_version != version.version:
         return references, 'FACT_DOCUMENT_SUPERSEDED'
     if mode == 'replay' and ArchiveDocumentVersion.objects.filter(document_id=document.id, patient_id=fact.patient_id,

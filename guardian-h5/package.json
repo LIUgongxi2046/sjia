@@ -8,7 +8,9 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
-    "check:browser": "node scripts/check-browser.mjs"
+    "check:browser": "node scripts/check-browser.mjs",
+    "test:registration": "node scripts/check-registration-dom.mjs",
+    "test:registration:browser": "node scripts/check-registration-regressions.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -32,7 +34,9 @@
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "6.1.1",
+    "jsdom": "26.1.0",
     "playwright": "1.63.0",
+    "rolldown": "1.2.11",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
     "vite": "8.3.1"

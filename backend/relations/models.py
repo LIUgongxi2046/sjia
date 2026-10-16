@@ -15,6 +15,8 @@ class RelationApplication(models.Model):
     applicant = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, db_column="applicant_id", related_name="+")
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, null=True, db_column="patient_id", related_name="+")
     evidence_ref = models.TextField()
+    # Immutable self-report, never a Patient display name or verified relation.
+    applicant_declaration = models.JSONField(null=True)
     note = models.TextField(null=True)
     requested_access = models.CharField(max_length=24, null=True, choices=[('read', 'read'), ('read_write', 'read_write'), ('review_decides', 'review_decides')])
     status = models.CharField(max_length=16, choices=Status.choices)

@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "ContentFamilyTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "format": "uuid",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "version"
+      ],
+      "title": "ContentFamilyTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-family-view-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "client_request_id": {
+      "format": "uuid",
+      "title": "Client Request Id",
+      "type": "string"
+    },
+    "request_id": {
+      "format": "uuid",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "policy_id": {
+      "format": "uuid",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/ContentFamilyTarget"
+      },
+      "title": "Targets",
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "requested",
+        "preview",
+        "approved",
+        "retained",
+        "access_revoked",
+        "erasing",
+        "logical_erasure_complete"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "linked_plan_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Linked Plan Id"
+    },
+    "logical_payload_erased": {
+      "title": "Logical Payload Erased",
+      "type": "boolean"
+    },
+    "all_copies_erased": {
+      "const": false,
+      "title": "All Copies Erased",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "client_request_id",
+    "request_id",
+    "patient_id",
+    "policy_id",
+    "created_at",
+    "targets",
+    "status",
+    "linked_plan_id",
+    "logical_payload_erased",
+    "all_copies_erased"
+  ],
+  "title": "ContentFamilyRequestView",
+  "type": "object"
+}

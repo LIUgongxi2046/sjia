@@ -19,6 +19,7 @@ from assessment.models import Assessment
 from alerting.computation import combination_result, trend_signal
 from alerting.policies import DynamicInputPolicy, LifecyclePolicy
 from configurations.evidence import inspect_approved_evidence
+from configurations.models import ConfigVersion
 from configurations.service import compute_checksum
 from dependencies.models import DependencyNode
 from identity.models import Principal
@@ -42,8 +43,21 @@ class DynamicInputs:
     context: dict
 
 
+STATIC_SIGNAL_KINDS = {'classification_met': 'classification', 'ms_threshold_met': 'ms',
+    'hlh_reference_met': 'hlh'}
+
+
 def condition_variable(condition):
     return condition['variable_code'] if condition['kind'] == 'trend' else condition['field_code'] if condition['kind'] == 'professional_finding' else None
+
+
+def qualified_trigger_policy(identifier, *, environment, known_at, mode):
+    row = ConfigVersion.objects.select_for_update().filter(id=identifier, kind='rule',
+        schema_version__in=('alert-trigger-1', 'alert-trigger-2')).first()
+    if row is None:
+        raise QualificationRejected('ASSESSMENT_CONFIGURATION_UNAVAILABLE')
+    return qualified_configuration(identifier, kind='rule', schema_version=row.schema_version,
+        environment=environment, known_at=known_at, mode=mode)
 
 
 def medical_context(policies, selected):
@@ -68,9 +82,22 @@ def medical_context(policies, selected):
     return states, reasons, limitations, applicability
 
 
+def static_output_state(kind, output):
+    if kind == 'classification_met':
+        return 'met' if output['classification_result'] == 'meets' else 'not_met' if output['classification_result'] in ('not_meets', 'not_applicable') else 'unknown'
+    if kind == 'ms_threshold_met':
+        return 'unknown' if output['ms_threshold_result'] is None else 'met' if output['ms_threshold_result'] else 'not_met'
+    if kind == 'hlh_reference_met':
+        # Use the final applicability-qualified reference result, never the raw
+        # molecular/criteria count and never a missing or inapplicable negative.
+        value = (output.get('hlh_result') or {}).get('reference_result')
+        return {'criteria_supported': 'met', 'criteria_not_supported': 'not_met'}.get(value, 'unknown')
+    raise QualificationRejected('DYNAMIC_STATIC_CONDITION_INVALID')
+
+
 def static_signal(condition, patient, actor, epoch, environment, payload):
     query = Assessment.objects.select_for_update().filter(patient=patient, rule_id=condition['assessment_rule_id'],
-        kind='classification' if condition['kind'] == 'classification_met' else 'ms', validity='valid',
+        kind=STATIC_SIGNAL_KINDS[condition['kind']], validity='valid',
         data_epoch=patient.data_epoch, verification_epoch=patient.verification_epoch,
         assessment_at=TIMESTAMP.validate_python(payload['assessment_at']))
     for row in query.order_by('-computed_at', '-id'):
@@ -86,11 +113,7 @@ def static_signal(condition, patient, actor, epoch, environment, payload):
         value = read_assessment(assessment_id=row.id, actor=actor, auth_epoch=epoch, environment=environment)
         if value['validity'] != 'valid' or value['computation_status'] != 'completed':
             continue
-        output = value['output']
-        if condition['kind'] == 'classification_met':
-            state = 'met' if output['classification_result'] == 'meets' else 'not_met' if output['classification_result'] in ('not_meets', 'not_applicable') else 'unknown'
-        else:
-            state = 'unknown' if output['ms_threshold_result'] is None else 'met' if output['ms_threshold_result'] else 'not_met'
+        state = static_output_state(condition['kind'], value['output'])
         return {'state': state, 'reason_codes': ['DYNAMIC_STATIC_RESULT_INSUFFICIENT'] if state == 'unknown' else [],
             'pair_results': [], 'samples': [], 'assessment_reference': entity_reference(row), 'assessment_id': str(row.id), 'assessment_kind': row.kind}
     return {'state': 'unknown', 'reason_codes': ['DYNAMIC_COMPATIBLE_STATIC_RESULT_REQUIRED'], 'pair_results': [], 'samples': []}
@@ -106,7 +129,8 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
     def config(identifier, kind, schema):
         return qualified_configuration(identifier, kind=kind, schema_version=schema, environment=environment,
             known_at=known_at, mode=payload['mode'])
-    policy = config(payload['policy_id'], 'rule', 'alert-trigger-1')
+    policy = qualified_trigger_policy(payload['policy_id'], environment=environment,
+        known_at=known_at, mode=payload['mode'])
     window = config(payload['window_policy_id'], 'window', 'alert-window-1')
     input_rule = config(payload['input_rule_id'], 'rule', 'dynamic-input-policy-2')
     professional = config(payload['verification_policy_id'], 'verification', 'qualification-policy-2')
@@ -133,6 +157,12 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
             or not source.rights_evidence_ref or not source.rights_evidence_ref.strip() or retention.status != 'active'):
         raise QualificationRejected('DYNAMIC_USE_AUTHORIZATION_UNAVAILABLE')
     rows = [runtime, policy, window, input_rule, professional]
+    if policy.schema_version == 'alert-trigger-2':
+        for reference in policy.payload['combination']['evidence_refs']:
+            for point in (known_at, timezone.now()):
+                _, _, reason = inspect_approved_evidence(reference, purpose='clinical_policy', lock=True, now=point)
+                if reason:
+                    raise QualificationRejected(reason)
     context_ids = {'population': window.payload['scope']['population_config_id'], 'therapy': window.payload['scope']['therapy_policy_id'],
         'clinical_finding': window.payload['clinical_finding_validity_policy_id'], 'late_result': window.payload['late_result_policy_id']}
     contexts, variables, context_by_code = {}, {item.variable_code: item for item in definition.variables}, {}
@@ -162,12 +192,16 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
         for condition in conditions:
             code = condition_variable(condition)
             if code is None:
-                rows.append(config(condition['assessment_rule_id'], 'rule', 'assessment-rule-2'))
+                rows.append(config(condition['assessment_rule_id'], 'rule',
+                    'hlh-2004-rule-1' if condition['kind'] == 'hlh_reference_met' else 'assessment-rule-2'))
                 continue
             if code not in variables or code in context_by_code:
                 raise QualificationRejected('DYNAMIC_CONDITION_VARIABLE_REQUIRED')
             if condition['kind'] == 'trend' and variables[code].value_type != 'decimal':
                 raise QualificationRejected('DYNAMIC_CONDITION_TYPE_MISMATCH')
+            if condition['kind'] == 'trend' and condition['unit'] != (
+                    '%' if condition['metric'] == 'relative_delta' else variables[code].normalized_unit):
+                raise QualificationRejected('DYNAMIC_THRESHOLD_UNIT_MISMATCH')
             if condition['kind'] == 'professional_finding':
                 if variables[code].value_type != 'categorical':
                     raise QualificationRejected('DYNAMIC_CONDITION_TYPE_MISMATCH')
@@ -305,7 +339,8 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
             signals.append(value)
         group = policy.payload['combination'] if scope == 'trigger' else lifecycle[scope].combination
         groups[scope] = combination_result(group, results, maximum_depth=definition.max_combination_depth,
-            maximum_operands=definition.max_combination_operands)
+            maximum_operands=definition.max_combination_operands,
+            maximum_digits=runtime.payload['limits']['max_decimal_digits'])
     for variable in variables.values():
         if variable.mapping_config_id is not None:
             rows.append(config(variable.mapping_config_id, 'mapping', 'unit-mapping-2'))
@@ -321,6 +356,9 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
             'upper': period['upper'].isoformat(), 'upper_inclusive': period['upper_inclusive']},
         'use_references': [entity_reference(value) for value in (authorization, source, registry, retention, approver)],
         'configurations': [configuration_proof(row, environment, known_at, payload['mode']) for row in sorted(configurations.values(), key=lambda row: str(row.id))]}
+    if policy.schema_version == 'alert-trigger-2':
+        snapshot['sensitivity_preset'] = {**policy.payload['sensitivity_preset'],
+            'config_id': str(policy.id), 'config_checksum': policy.checksum}
     if len(json.dumps(snapshot, separators=(',', ':')).encode('utf-8')) > runtime.payload['api']['max_json_bytes']:
         raise QualificationRejected('DYNAMIC_CONTEXT_LIMIT_EXCEEDED')
     context = {'environment': environment, 'actor_id': str(actor.id), 'patient_id': str(patient.id), 'purpose': qualification.purpose,

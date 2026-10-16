@@ -50,10 +50,8 @@ def lock_file_access(file, actor, auth_epoch, *, purpose, service_action=None, r
         evaluate(principal=actor, patient=patient, action=service_action, purpose=purpose,
             environment=environment, session_auth_epoch=auth_epoch)
     group = FileGroup.objects.select_for_update().get(id=file.file_group_id, patient=patient)
-    if require_available and group.status != FileGroup.Status.AVAILABLE:
-        raise FileRejected('FILE_GROUP_NOT_AVAILABLE')
     attachments = RecordAttachment.objects.filter(file_id=file.id, patient_id=patient.id)
-    versions = list(RecordVersion.objects.filter(id__in=attachments.values('record_version_id'), patient=patient))
+    versions = list(RecordVersion.all_objects.only('id','record_id','patient_id','author_id').filter(id__in=attachments.values('record_version_id'), patient=patient))
     scopes = [(version.record_id, version.author_id) for version in versions]
     scopes.append((None, group.owner_id))
     for record_id, author_id in scopes:
@@ -65,6 +63,11 @@ def lock_file_access(file, actor, auth_epoch, *, purpose, service_action=None, r
                 Relation.objects.select_for_update().get(id=grant.relation_id, patient=patient)
             current = list(matching_case_grants(actor, patient, 'read_file', timezone.now(), record_id=record_id, author_id=author_id))
             if any(item.id == grant.id and item.purpose == purpose and item.evidence_ref.strip() and not item.field_codes for item in current):
+                if require_available:
+                    from retention.content_fences import assert_content_available
+                    assert_content_available('files.fileobject', file.id)
+                    if group.status != FileGroup.Status.AVAILABLE:
+                        raise FileRejected('FILE_GROUP_NOT_AVAILABLE')
                 return actor, patient, gate, group
     raise FileRejected('PURPOSE_FILE_SCOPE_DENIED')
 
@@ -200,6 +203,8 @@ def lock_plan_scope(config, actor, auth_epoch):
 
 
 def checked_bytes(file):
+    from retention.content_fences import assert_content_available
+    assert_content_available('files.fileobject', file.id)
     if file.status != FileObject.Status.AVAILABLE:
         raise FileRejected('FILE_NOT_AVAILABLE')
     data = object_store.get(file.object_key)

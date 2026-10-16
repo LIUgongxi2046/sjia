@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:clinical-explicit-pairings:2",
+  "title": "Independent explicit event and prompt pairings",
+  "description": "Canonical JSON evidence fixed before dataset freeze. Use UTC Z timestamps consistently in the capture and this artifact; no source or clinical approval is granted by this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "measurement_plan_ref",
+    "events",
+    "periods"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "clinical-explicit-pairings-2"
+    },
+    "measurement_plan_ref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Event"
+      }
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/PairingPeriod"
+      }
+    }
+  },
+  "$defs": {
+    "Prompt": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "positive",
+            "negative",
+            "unknown"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "outcome_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Outcome Ref",
+          "type": "string"
+        },
+        "matched_event_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Matched Event Id"
+        },
+        "occurrence": {
+          "enum": [
+            "first",
+            "repeat"
+          ],
+          "title": "Occurrence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "at",
+        "outcome",
+        "outcome_ref",
+        "matched_event_id",
+        "occurrence"
+      ],
+      "title": "Prompt",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "patient_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "period_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Period Id",
+          "type": "string"
+        },
+        "label_state": {
+          "enum": [
+            "positive",
+            "unknown"
+          ],
+          "title": "Label State",
+          "type": "string"
+        },
+        "reference_answer_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference Answer Ref"
+        },
+        "reference_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference At"
+        },
+        "valid_alert_start": {
+          "format": "date-time",
+          "title": "Valid Alert Start",
+          "type": "string"
+        },
+        "valid_alert_end": {
+          "format": "date-time",
+          "title": "Valid Alert End",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "patient_id",
+        "period_id",
+        "label_state",
+        "reference_answer_ref",
+        "reference_at",
+        "valid_alert_start",
+        "valid_alert_end"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "PairingStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "static",
+        "dynamic"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "static": {
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/Prompt"
+          }
+        },
+        "dynamic": {
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/$defs/Prompt"
+          }
+        }
+      }
+    },
+    "PairingPeriod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "subgroups",
+        "steps"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "subgroups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/PairingStep"
+          }
+        }
+      }
+    }
+  }
+}

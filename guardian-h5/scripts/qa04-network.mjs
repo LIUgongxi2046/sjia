@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -9,8 +10,8 @@ const context = await browser.newContext();
 const page = await context.newPage();
 page.on('dialog', dialog => dialog.accept());
 await page.goto(`${baseURL}/login`);
-await page.getByPlaceholder('账号', { exact: true }).fill('acceptance-family');
-await page.locator('input[type=password]').fill('Local-accept-2026');
+await page.getByPlaceholder('账号', { exact: true }).fill(acceptanceUsername);
+await page.locator('input[type=password]').fill(acceptancePassword);
 await page.getByRole('button', { name: '登录', exact: true }).click();
 await page.waitForURL(`${baseURL}/home`);
 await page.goto(`${baseURL}/register/reports`);

@@ -6,7 +6,8 @@ from django.conf import settings
 from jsonschema import Draft202012Validator
 
 from files.model_input import require_model_image
-from recognition.ark import ArkRejected, _completion
+from recognition.ark import ArkRejected
+from recognition.invocation import invoke_model, assert_authorized_result
 from recognition.schemas import ArkCompletion
 
 
@@ -23,20 +24,21 @@ PROMPT = ('提取全部检验、住院、出院、门诊、治疗和影像报告
     'locator无法准确确定时使用page，bbox、table_row、table_column均为null。原文名称必须完整。JSON Schema：')
 
 
-def recognize_archive_with_evidence(data, media_type, model):
-    require_model_image(data, media_type, settings.ARK_BASE_URL.rstrip('/'))
-    if not model:
-        raise ArkRejected('ARK_VISION_MODEL_NOT_CONFIGURED')
+def recognize_archive_with_evidence(data, media_type, model=None, *, provider=None,
+        before_provider_call=None, timeout_seconds=None):
+    if provider is None or model is not None and model != provider.payload['model_version']:
+        raise ArkRejected('MODEL_GOVERNED_INVOCATION_REQUIRED')
+    require_model_image(data, media_type, provider.payload['endpoint'].rstrip('/'))
     url = f'data:{media_type};base64,' + base64.b64encode(data).decode('ascii')
-    body, raw = _completion([{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': [
+    return invoke_model([{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': [
         {'type': 'text', 'text': PROMPT + json.dumps(SCHEMA, ensure_ascii=False)},
-        {'type': 'image_url', 'image_url': {'url': url}}]}], model=model, max_tokens=max(8192, settings.ARK_VISION_MAX_TOKENS),
-        thinking='disabled', validate_output=False, timeout_seconds=240)
-    return {'provider_request_id': body.id, 'model': body.model,
-        'usage': body.usage, 'raw_response': raw.decode('utf-8')}
+        {'type': 'image_url', 'image_url': {'url': url}}]}], provider, 'archive',
+        max_tokens=max(8192, settings.ARK_VISION_MAX_TOKENS), thinking='disabled',
+        before_provider_call=before_provider_call, timeout_seconds=timeout_seconds)
 
 
-def parse_archive_result(result):
+def parse_archive_result(result, provider):
+    assert_authorized_result(result, provider)
     body = ArkCompletion.model_validate_json(result['raw_response'])
     if len(body.choices) != 1:
         raise ArkRejected('ARK_CHOICE_COUNT_INVALID')

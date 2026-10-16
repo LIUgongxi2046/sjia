@@ -66,7 +66,7 @@ def document_scope(actor, patient, document, version):
         episodes.append({'episode_id': str(episode.id), 'label': episode.label, 'episode_type': episode.episode_type,
             'organization': episode.organization_text, 'record_version_id': str(episode.record_version_id)})
     for field, source in fields:
-        original = RecordVersion.objects.get(record_id=source.record_id, patient_id=patient.id, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=source.record_id, patient_id=patient.id, version=1)
         allowed = grants_for(actor, patient, 'read_raw', record_id=source.record_id,
             author_id=original.author_id, field_codes=[field.field_code])
         if not allowed:
@@ -166,7 +166,7 @@ def current_fields(scope, patient):
         else:
             current = RecordVersion.objects.get(record_id=record.id, patient=patient, version=record.current_version)
             result.extend((value, current) for value in RecordField.objects.filter(record_version_id=current.id,
-                patient=patient, field_code=field.field_code).order_by('ordinal'))
+                patient=patient, field_code=field.field_code, ordinal=field.ordinal).order_by('ordinal'))
     return list({field.id: (field, version) for field, version in result}.values())
 
 
@@ -181,6 +181,33 @@ def verification_status(fields, patient):
         if status in states:
             return status
     return 'unverified'
+
+
+def time_ranges_match(span, instants, query, bounds):
+    if not bounds:
+        return True
+    if span is None:
+        if not query.get('include_unknown_time', False):
+            return False
+    elif bounds.get('from') and span[1] < bounds['from'] or bounds.get('to') and span[0] > bounds['to']:
+        return False
+    if bounds.get('from_instant') or bounds.get('to_instant'):
+        if instants is None:
+            return query.get('include_unknown_time', False)
+        if bounds.get('from_instant') and instants[1] <= bounds['from_instant'] or bounds.get('to_instant') and (
+                instants[0] >= bounds['to_instant'] if bounds.get('to_exclusive') else instants[0] > bounds['to_instant']):
+            return False
+    return True
+
+
+def episode_ranges(start, end):
+    """Unknown encounter boundaries stay unknown, never become document dates."""
+    first, last = date_bounds(start), date_bounds(end)
+    span = (first[0], last[1]) if first and last and first[0] <= last[1] else None
+    first_instant = instant_bounds(start) if start is not None else None
+    last_instant = instant_bounds(end) if end is not None else None
+    instants = (first_instant[0], last_instant[1]) if first_instant and last_instant and first_instant[0] < last_instant[1] else None
+    return span, instants
 
 
 def matches(version, scope, fields, status, query, bounds, medical_time, actor, text_hits):
@@ -212,21 +239,14 @@ def matches(version, scope, fields, status, query, bounds, medical_time, actor, 
         return False
     if requested and requested != 'self' and requested != status:
         return False
-    span = date_bounds(medical_time)
-    if bounds:
-        if span is None:
-            if not query.get('include_unknown_time', False):
-                return False
-        elif bounds.get('from') and span[1] < bounds['from'] or bounds.get('to') and span[0] > bounds['to']:
+    if bounds and query.get('time_basis', 'document') == 'episode':
+        ranges = [episode_ranges(value['start'], value['end']) for value in scope.get('episode_times', [])
+            if not query.get('episode_id') or str(value['episode_id']) == query['episode_id']]
+        if not any(time_ranges_match(span, instants, query, bounds) for span, instants in (ranges or [(None, None)])):
             return False
-        if bounds.get('from_instant') or bounds.get('to_instant'):
-            instants = instant_bounds(medical_time)
-            if instants is None:
-                if not query.get('include_unknown_time', False):
-                    return False
-            elif bounds.get('from_instant') and instants[1] <= bounds['from_instant'] or bounds.get('to_instant') and (
-                    instants[0] >= bounds['to_instant'] if bounds.get('to_exclusive') else instants[0] > bounds['to_instant']):
-                return False
+    elif bounds and not time_ranges_match(date_bounds(medical_time), instant_bounds(medical_time)
+            if medical_time is not None and (bounds.get('from_instant') or bounds.get('to_instant')) else None, query, bounds):
+        return False
     if query.get('confirmed_text') and version.id not in text_hits:
         return False
     if query.get('query') and version.id not in text_hits and not any(query['query'].lower() in value.lower() for value in (
@@ -261,7 +281,7 @@ def archive_search(request, actor, epoch, patient):
         raise ApiError('ARCHIVE_SEARCH_INPUT_INVALID', 422)
     bounds = query_dates(query)
     versions = ArchiveDocumentVersion.objects.filter(patient_id=patient.id).annotate(
-        latest=Subquery(ArchiveDocument.objects.filter(id=OuterRef('document_id'), patient_id=patient.id).values('current_version')[:1]))
+        latest=Subquery(ArchiveDocument.objects.filter(id=OuterRef('document_id'), patient_id=patient.id, retired_at__isnull=True).values('current_version')[:1]))
     versions = versions.filter(version=F('latest')).order_by('-available_at', '-id')
     term = query.get('confirmed_text', query.get('query'))
     text_hits = set(versions.filter(confirmed_by__isnull=False, confirmed_at__isnull=False)
@@ -281,7 +301,8 @@ def archive_search(request, actor, epoch, patient):
         status = context.verification_status(fields)
         medical = context.get(MedicalTime, id=version.documented_time_id, patient_id=patient.id) if version.documented_time_id else None
         allowed.append([entity_reference(document), entity_reference(version),
-            [entity_reference(field) for field, _ in fields], [entity_reference(value) for value in scope['files']], scope['uses']])
+            [entity_reference(field) for field, _ in fields], [entity_reference(value) for value in scope['files']], scope['uses'],
+            [entity_reference(value[key]) for value in scope['episode_times'] for key in ('start', 'end') if value[key] is not None]])
         for grant in scope['grants']:
             grant_refs[str(grant.id)] = entity_reference(grant)
         organizations.update([version.organization] if version.organization else [])
@@ -330,6 +351,9 @@ def archive_search(request, actor, epoch, patient):
             limitations.append('ORGANIZATION_UNKNOWN')
         if not scope['episodes']:
             limitations.append('EPISODE_UNKNOWN')
+        if query.get('time_basis') == 'episode' and (not scope['episode_times'] or any(
+                episode_ranges(value['start'], value['end'])[0] is None for value in scope['episode_times'])):
+            limitations.append('EPISODE_TIME_BOUNDARY_UNKNOWN')
         if medical is None or date_bounds(medical) is None:
             limitations.append('DOCUMENT_TIME_UNKNOWN')
         elif medical.precision in ('year', 'month', 'month_range'):

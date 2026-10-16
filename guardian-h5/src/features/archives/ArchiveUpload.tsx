@@ -51,7 +51,7 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
         await uploadArchiveFile(id, item.id, await item.file.arrayBuffer(), item.file.type, item.ordinal, controller.signal);
       }
       if (controller.signal.aborted) return;
-      await completeFileGroup(id, access.csrfToken ?? undefined);
+      await completeFileGroup(id, access.csrfToken ?? undefined, controller.signal, access.patientId ?? undefined);
       const saved = await readUploadGroup(id, controller.signal);
       if (saved.status !== 'available' || saved.files.length < queue.length) throw new Error('上传完成结果与准确原件数量不一致。');
       if (!controller.signal.aborted) { setGroup(saved); setQueue([]); onSaved(id); }
@@ -65,7 +65,7 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
     if (!ready || !group || !group.files.length || group.status === 'available' || operating.current) return;
     operating.current = true; setBusy(true); setError(null);
     const controller = new AbortController(); pending.current = controller;
-    await completeFileGroup(group.group_id, access.csrfToken ?? undefined).then(async () => {
+    await completeFileGroup(group.group_id, access.csrfToken ?? undefined, controller.signal, access.patientId ?? undefined).then(async () => {
       const saved = await readUploadGroup(group.group_id, controller.signal);
       if (saved.status !== 'available' || saved.files.length !== group.files.length) throw new Error('已保存原件与上传完成结果不一致。');
       if (!controller.signal.aborted) { setGroup(saved); onSaved(saved.group_id); }
@@ -78,10 +78,10 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
     {error && <p role="alert">{error.message}</p>}
     {!options && !error && <p role="status">正在读取当前上传范围</p>}
     {options && <><p>当前启用 {options.media_types.join('、')}；每份文件不超过 {options.max_upload_bytes} bytes，上传组不超过 {options.max_pages} 页。</p>
-      <label className="field"><span>资料用途授权</span><select value={authorization} disabled={busy || !ready || group?.status === 'available'} onChange={event => setAuthorization(event.target.value)}>
+      <label className="field"><span>资料用途授权</span><select value={authorization} disabled={busy || !ready || ['available', 'validating', 'failed'].includes(group?.status ?? '')} onChange={event => setAuthorization(event.target.value)}>
         <option value="">请选择准确资料来源</option>{options.authorizations.map(value => <option key={value.authorization_id} value={value.authorization_id}>{value.source_label} · {value.evidence_ref}</option>)}
       </select></label>
-      <label className="field"><span>选择原始资料文件</span><input type="file" multiple accept={options.media_types.join(',')} disabled={!authorization || busy || !ready || group?.status === 'available'} onChange={event => {
+      <label className="field"><span>选择原始资料文件</span><input type="file" multiple accept={options.media_types.join(',')} disabled={!authorization || busy || !ready || ['available', 'validating', 'failed'].includes(group?.status ?? '')} onChange={event => {
         const files = [...(event.target.files ?? [])]; event.target.value = '';
         setQueue(files.map((file, index) => ({ id: crypto.randomUUID(), file, ordinal: (group?.files.length ?? 0) + index + 1 })));
       }} /></label>
@@ -91,6 +91,10 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
     {group && <><p role="status">上传组状态 {group.status}；已保存 {group.files.length} 份原件。</p>{group.files.map(file => <p key={file.file_id}>文件顺序 {file.ordinal} · {file.media_type} · {file.page_count} 页 · {file.file_id}</p>)}
       {group.status === 'available' && <button className="button" disabled={busy || !ready} onClick={() => onSaved(group.group_id)}>采用已保存原件</button>}</>}
     {group && group.status !== 'available' && group.files.length > 0 && <button className="button" disabled={busy || !ready || queue.length > 0} onClick={() => void finishSavedGroup()}>完成已经保存的原件组</button>}
+    {group?.status === 'failed' && <button className="button secondary" disabled={busy || !ready} onClick={() => {
+      setParams(current => { const next = new URLSearchParams(current); next.delete('upload_group'); return next; }, {replace:true});
+      setGroup(null); setQueue([]); setError(null);
+    }}>重新选择原件建立新上传组</button>}
     <button className="text-action" disabled={busy || !ready} onClick={() => { setError(null); setRefresh(value => value + 1); }}>重新读取上传结果</button>
   </section>;
 }

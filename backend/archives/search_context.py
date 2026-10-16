@@ -63,8 +63,9 @@ class ArchiveSearchContext:
         anchor_ids.update(row.evidence_anchor_id for row in links)
         anchor_ids.update(row.source_anchor_id for row in histories + current_facts if row.source_anchor_id is not None)
         self.load(SourceAnchor.objects.filter(patient_id=patient.id, id__in=anchor_ids))
-        self.load(MedicalTime.objects.filter(patient_id=patient.id,
-            id__in={row.documented_time_id for row in all_versions if row.documented_time_id is not None}))
+        time_ids = {row.documented_time_id for row in all_versions if row.documented_time_id is not None}
+        time_ids.update(identity for row in episodes for identity in (row.start_time_id, row.end_time_id) if identity is not None)
+        self.load(MedicalTime.objects.filter(patient_id=patient.id, id__in=time_ids))
         self.load(FieldVerificationState.objects.filter(patient_id=patient.id, purpose='family_observation',
             field_id__in={row.id for row in fields}))
         copies = self.load(PurposeCopy.objects.filter(patient_id=patient.id,
@@ -132,7 +133,7 @@ class ArchiveSearchContext:
         document_ids = {row.id for row in versions}
         facts = self.rows(ArchiveFactVersion, document_version_id=version.id)
         source_ids = {row.record_version_id for row in facts}
-        if version.version == document.current_version:
+        if version.version == document.current_version and document.retired_at is None:
             fact_ids = {row.fact_id for row in self.rows(ArchiveFactVersion) if row.document_version_id in document_ids}
             for fact_id in fact_ids:
                 fact = self.get(ArchiveFact, id=fact_id)
@@ -214,7 +215,7 @@ class ArchiveSearchContext:
             if not allowed:
                 return None
             grants.extend(allowed)
-        episodes = []
+        episodes, episode_times = [], []
         fields = [self.fact_source(fact) for fact in facts]
         for link in links:
             episode = self.get(ClinicalEpisode, id=link.episode_id)
@@ -223,6 +224,9 @@ class ArchiveSearchContext:
             fields.append((field, source))
             episodes.append({'episode_id': str(episode.id), 'label': episode.label, 'episode_type': episode.episode_type,
                 'organization': episode.organization_text, 'record_version_id': str(episode.record_version_id)})
+            episode_times.append({'episode_id': episode.id,
+                'start': self.get(MedicalTime, id=episode.start_time_id) if episode.start_time_id else None,
+                'end': self.get(MedicalTime, id=episode.end_time_id) if episode.end_time_id else None})
         for field, source in fields:
             initial = self.get(RecordVersion, record_id=source.record_id, version=1)
             allowed = list(self.grants_for(actor, 'read_raw', now, record_id=source.record_id,
@@ -230,7 +234,7 @@ class ArchiveSearchContext:
             if not allowed:
                 return None
             grants.extend(allowed)
-        return {'grants': grants, 'batch': batch, 'pages': pages, 'files': files, 'episodes': episodes,
+        return {'grants': grants, 'batch': batch, 'pages': pages, 'files': files, 'episodes': episodes, 'episode_times': episode_times,
             'fields': fields, 'uses': {str(file.id): self.uses(file, next(group for group in groups
                 if group.id == file.file_group_id), now) for file in files}}
 
@@ -244,7 +248,11 @@ class ArchiveSearchContext:
                 result.append((field, version))
             else:
                 current = self.get(RecordVersion, record_id=record.id, version=record.current_version)
-                values = sorted(self.rows(RecordField, record_version_id=current.id, field_code=field.field_code),
+                # Corrections retain field ordinal identity. Generic report_item
+                # codes can occur many times and must not broaden a document's
+                # source to unrelated fields from the same record.
+                values = sorted(self.rows(RecordField, record_version_id=current.id,
+                    field_code=field.field_code, ordinal=field.ordinal),
                     key=lambda row: row.ordinal)
                 result.extend((value, current) for value in values)
         return list({field.id: (field, version) for field, version in result}.values())

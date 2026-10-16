@@ -1,0 +1,21 @@
+{
+  "operation": "restore",
+  "operator_approved": false,
+  "approval_reference": "",
+  "operator_reference": "",
+  "environment": "",
+  "database": "",
+  "database_service": "",
+  "cluster_id": "",
+  "source": "",
+  "destination": "",
+  "expires_at": "",
+  "timeout_seconds": null,
+  "destination_protected": false,
+  "scope_and_retention_approved": false,
+  "isolated_cluster": false,
+  "outbound_blocked": false,
+  "application_and_workers_stopped": false,
+  "empty_target_approved": false,
+  "backup_trusted_and_reviewed": false
+}

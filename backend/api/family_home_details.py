@@ -37,7 +37,7 @@ def family_read_permissions(principal, patient):
 
 
 def current_readable_codes(principal, patient, record):
-    first_version = RecordVersion.objects.filter(patient=patient, record_id=record.id, version=1).first()
+    first_version = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').filter(patient=patient, record_id=record.id, version=1).first()
     if first_version is None:
         return set()
     return {code for grant in matching_case_grants(principal, patient, 'read_raw', timezone.now(),
@@ -46,7 +46,7 @@ def current_readable_codes(principal, patient, record):
 
 
 def current_read_file_allowed(principal, patient, record):
-    first_version = RecordVersion.objects.filter(patient=patient, record_id=record.id, version=1).first()
+    first_version = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').filter(patient=patient, record_id=record.id, version=1).first()
     if first_version is None:
         return False
     now = timezone.now()
@@ -59,7 +59,7 @@ def current_read_file_allowed(principal, patient, record):
 
 
 def current_read_history_allowed(principal, patient, record):
-    first_version = RecordVersion.objects.filter(patient=patient, record_id=record.id, version=1).first()
+    first_version = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').filter(patient=patient, record_id=record.id, version=1).first()
     if first_version is None:
         return False
     return any(matching_case_grants(principal, patient, 'read_history', timezone.now(),
@@ -117,6 +117,7 @@ def family_record(principal, patient, record, detail):
         materialized = fact_read(fact=fact, patient=patient, version=fact_version)
         facts.append({'field': materialized['field']['field'],
             'verification_status': materialized['field']['verification_status'],
+            'quality_reasons_snapshot_state': materialized['field']['quality_reasons_snapshot_state'],
             'verification_purpose': materialized['field']['verification_purpose']})
         verification_states.append(materialized['field']['verification_status'])
 

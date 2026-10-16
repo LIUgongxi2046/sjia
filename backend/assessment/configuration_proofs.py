@@ -8,14 +8,16 @@ from configurations.models import ConfigApproval, ConfigValidation
 from configurations.qualification import configuration_qualification_reason
 
 
-def configuration_proof(config, environment, known_at, mode, *, artifact_sha256=None):
+def configuration_proof(config, environment, known_at, mode, *, artifact_sha256=None, lock=True):
     now = timezone.now()
     artifact = deployed_artifact_checksum(config) if artifact_sha256 is None else artifact_sha256
-    approval = ConfigApproval.objects.select_for_update().filter(config=config, revoked_at__isnull=True,
+    approvals = ConfigApproval.objects.select_for_update() if lock else ConfigApproval.objects
+    validations = ConfigValidation.objects.select_for_update() if lock else ConfigValidation.objects
+    approval = approvals.filter(config=config, revoked_at__isnull=True,
         approved_at__lte=known_at, effective_scope__environment=environment,
         effective_scope__config_checksum=config.checksum, effective_scope__audience__contains=['support']).filter(
             Q(valid_until__isnull=True) | Q(valid_until__gt=now)).order_by('-approved_at', '-id').first()
-    validation = ConfigValidation.objects.select_for_update().filter(config=config, environment_id=environment,
+    validation = validations.filter(config=config, environment_id=environment,
         config_checksum=config.checksum, artifact_sha256=artifact, executed_at__lte=known_at,
         outcome='pass', revoked_at__isnull=True).order_by('-executed_at', '-id').first()
     if approval is None or validation is None:

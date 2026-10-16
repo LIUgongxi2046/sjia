@@ -111,19 +111,13 @@
     },
     "DocumentList": {"allOf": [{"$ref": "#/$defs/Page"}], "properties": {"items": {"type": "array", "items": {"$ref": "#/$defs/DocumentView"}}}, "unevaluatedProperties": false},
     "ArchiveList": {"$ref": "#/$defs/DocumentList"},
-    "BatchInput": {
-      "type": "object", "additionalProperties": false, "required": ["file_group_ids"],
-      "properties": {"file_group_ids": {"allOf": [{"$ref": "#/$defs/Ids"}], "minItems": 1}}
-    },
+    "BatchInput": {"type": "object", "additionalProperties": false, "required": ["file_group_ids"], "properties": {"file_group_ids": {"allOf": [{"$ref": "#/$defs/Ids"}], "minItems": 1}, "intake_mode": {"enum": ["ocr", "manual"]}}},
     "BatchProcessInput": {"type": "object", "additionalProperties": false, "required": ["expected_version", "page_ids"], "properties": {"expected_version": {"$ref": "#/$defs/Version"}, "page_ids": {"allOf": [{"$ref": "#/$defs/Ids"}], "minItems": 1}}},
     "Counts": {
       "type": "object", "additionalProperties": false, "required": ["originals", "pages", "declared", "receiving", "uploaded", "queued", "processing", "awaiting_confirmation", "confirmed", "archived", "failed", "uncertain", "cancel_requested", "cancelled", "superseded", "facts"],
       "properties": {"originals": {"type": "integer", "minimum": 0}, "pages": {"type": "integer", "minimum": 0}, "declared": {"type": "integer", "minimum": 0}, "receiving": {"type": "integer", "minimum": 0}, "uploaded": {"type": "integer", "minimum": 0}, "queued": {"type": "integer", "minimum": 0}, "processing": {"type": "integer", "minimum": 0}, "awaiting_confirmation": {"type": "integer", "minimum": 0}, "confirmed": {"type": "integer", "minimum": 0}, "archived": {"type": "integer", "minimum": 0}, "failed": {"type": "integer", "minimum": 0}, "uncertain": {"type": "integer", "minimum": 0}, "cancel_requested": {"type": "integer", "minimum": 0}, "cancelled": {"type": "integer", "minimum": 0}, "superseded": {"type": "integer", "minimum": 0}, "facts": {"type": "integer", "minimum": 0}}
     },
-    "BatchView": {
-      "type": "object", "additionalProperties": false, "required": ["batch_id", "patient_id", "version", "status", "counts", "received_at", "budget_status", "pages", "allowed_actions"],
-      "properties": {"batch_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"}, "status": {"enum": ["receiving", "processing", "awaiting_confirmation", "partial", "archived", "cancelled", "failed"]}, "counts": {"$ref": "#/$defs/Counts"}, "received_at": {"$ref": "#/$defs/Timestamp"}, "budget_status": {"enum": ["reserved", "available", "exhausted", "unknown", "released"]}, "pages": {"type": "array", "items": {"$ref": "#/$defs/PageView"}}, "allowed_actions": {"$ref": "#/$defs/Texts"}}
-    },
+    "BatchView": {"type": "object", "additionalProperties": false, "required": ["batch_id", "patient_id", "version", "status", "counts", "received_at", "budget_status", "pages", "allowed_actions", "intake_mode"], "properties": {"batch_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"}, "status": {"enum": ["receiving", "processing", "awaiting_confirmation", "partial", "archived", "cancelled", "failed"]}, "counts": {"$ref": "#/$defs/Counts"}, "received_at": {"$ref": "#/$defs/Timestamp"}, "budget_status": {"enum": ["reserved", "available", "exhausted", "unknown", "released"]}, "pages": {"type": "array", "items": {"$ref": "#/$defs/PageView"}}, "allowed_actions": {"$ref": "#/$defs/Texts"}, "intake_mode": {"enum": ["ocr", "manual"]}}},
     "BatchList": {"allOf": [{"$ref": "#/$defs/Page"}], "properties": {"items": {"type": "array", "items": {"$ref": "#/$defs/BatchView"}}}, "unevaluatedProperties": false},
     "PageView": {
       "type": "object", "additionalProperties": false, "required": ["page_id", "batch_id", "file_page_id", "file_id", "file_object_version", "checksum", "file_status", "version", "status_version", "status", "task", "candidate_set_id", "error_code", "attempts", "allowed_actions"],
@@ -268,7 +262,46 @@
     "DatasetCoverage": {"type": "object", "additionalProperties": false, "required": ["evaluation_kind", "purpose", "available_before", "required_units", "units", "unrecorded_units", "clinical_qualification"], "properties": {"evaluation_kind": {"enum": ["format", "workflow", "clinical"]}, "purpose": {"enum": ["format_evaluation", "workflow_evaluation", "clinical_evaluation"]}, "available_before": {"$ref": "#/$defs/Timestamp"}, "required_units": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/EvaluationUnit"}}, "units": {"type": "array", "items": {"$ref": "#/$defs/DatasetUnitCoverage"}}, "unrecorded_units": {"type": "array", "uniqueItems": true, "items": {"enum": ["files", "pages", "documents", "patients", "encounters", "sampling_events", "mas_events", "observation_periods", "observation_person_hours", "confirmed_labels", "unknown_labels"]}}, "clinical_qualification": {"const": "not_evaluated"}}},
     "DatasetView": {"type": "object", "additionalProperties": false, "required": ["dataset_id", "version_id", "version", "protocol_ref", "source_manifest_ref", "status", "counts", "purpose_copy_ids", "label_version_ref", "checksum", "frozen_at", "partitions", "labels", "coverage", "allowed_actions"], "properties": {"dataset_id": {"$ref": "#/$defs/Uuid"}, "version_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"}, "protocol_ref": {"$ref": "#/$defs/Text"}, "source_manifest_ref": {"$ref": "#/$defs/Text"}, "status": {"enum": ["draft", "frozen", "revoked"]}, "counts": {"$ref": "#/$defs/DatasetCounts"}, "purpose_copy_ids": {"$ref": "#/$defs/Ids"}, "label_version_ref": {"$ref": "#/$defs/NullableText"}, "checksum": {"$ref": "#/$defs/Digest"}, "frozen_at": {"$ref": "#/$defs/NullableTimestamp"}, "partitions": {"type": "array", "items": {"$ref": "#/$defs/DatasetPartitionView"}}, "labels": {"type": "array", "items": {"$ref": "#/$defs/DatasetLabelView"}}, "coverage": {"$ref": "#/$defs/DatasetCoverage"}, "allowed_actions": {"$ref": "#/$defs/Texts"}}},
     "DatasetList": {"allOf": [{"$ref": "#/$defs/Page"}], "properties": {"items": {"type": "array", "items": {"$ref": "#/$defs/DatasetView"}}}, "unevaluatedProperties": false},
-    "EvaluationRunInput": {"type": "object", "additionalProperties": false, "required": ["expected_version", "partition", "config_ids", "code_version", "label_version_ref", "mode"], "properties": {"expected_version": {"$ref": "#/$defs/Version"}, "partition": {"enum": ["development", "validation"]}, "config_ids": {"$ref": "#/$defs/Ids", "minItems": 1}, "code_version": {"$ref": "#/$defs/Digest"}, "label_version_ref": {"$ref": "#/$defs/Text"}, "mode": {"const": "replay"}}},
+    "EvaluationRunInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_version",
+        "partition",
+        "config_ids",
+        "code_version",
+        "label_version_ref",
+        "mode"
+      ],
+      "properties": {
+        "expected_version": {
+          "$ref": "#/$defs/Version"
+        },
+        "partition": {
+          "enum": [
+            "development",
+            "validation"
+          ]
+        },
+        "config_ids": {
+          "$ref": "#/$defs/Ids",
+          "minItems": 1
+        },
+        "code_version": {
+          "$ref": "#/$defs/Digest"
+        },
+        "label_version_ref": {
+          "$ref": "#/$defs/Text"
+        },
+        "mode": {
+          "const": "replay"
+        },
+        "clinical_capture_ref": {
+          "type": "string",
+          "pattern": "^urn:sjia:source-revision:[0-9a-f-]{36}$"
+        }
+      }
+    },
     "EvaluationRunView": {"type": "object", "additionalProperties": false, "required": ["run_id", "dataset_id", "dataset_version", "task", "mode", "status", "result_ref", "denominator_ref", "label_version_ref"], "properties": {"run_id": {"$ref": "#/$defs/Uuid"}, "dataset_id": {"$ref": "#/$defs/Uuid"}, "dataset_version": {"$ref": "#/$defs/Version"}, "task": {"$ref": "#/$defs/TaskView"}, "mode": {"const": "replay"}, "status": {"enum": ["accepted", "running", "completed", "failed", "insufficient", "superseded"]}, "result_ref": {"$ref": "#/$defs/NullableText"}, "denominator_ref": {"$ref": "#/$defs/NullableText"}, "label_version_ref": {"$ref": "#/$defs/Text"}}},
     "EvaluationDenominatorData": {"type": "object", "additionalProperties": false,
       "required": ["counts", "patient_ids", "unit_ids", "eligible_label_ids", "excluded_unknown_label_ids", "clinical_qualification"],
@@ -300,11 +333,74 @@
       "required": ["schema_version", "run_id", "denominators", "limitations", "input_sha256"],
       "properties": {"schema_version": {"const": "evaluation-denominators-1"}, "run_id": {"$ref": "#/$defs/Uuid"},
         "denominators": {"$ref": "#/$defs/EvaluationDenominatorData"}, "limitations": {"type": "array", "items": {"$ref": "#/$defs/EvaluationLimitation"}}, "input_sha256": {"$ref": "#/$defs/Digest"}}},
-    "EvaluationResultsView": {"type": "object", "additionalProperties": false,
-      "required": ["schema_version", "run_id", "status", "results", "rules", "limitations", "implementation_sha256", "input_sha256", "finished_at"],
-      "properties": {"schema_version": {"const": "evaluation-results-1"}, "run_id": {"$ref": "#/$defs/Uuid"}, "status": {"enum": ["completed", "insufficient"]},
-        "results": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/EvaluationUnitResult"}}, "rules": {"type": "array", "items": {"$ref": "#/$defs/EvaluationRuleProof"}},
-        "limitations": {"type": "array", "items": {"$ref": "#/$defs/EvaluationLimitation"}}, "implementation_sha256": {"$ref": "#/$defs/Digest"}, "input_sha256": {"$ref": "#/$defs/Digest"}, "finished_at": {"$ref": "#/$defs/Timestamp"}}},
+    "EvaluationResultsView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "run_id",
+        "status",
+        "results",
+        "rules",
+        "limitations",
+        "implementation_sha256",
+        "input_sha256",
+        "finished_at"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "evaluation-results-1"
+        },
+        "run_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "insufficient"
+          ]
+        },
+        "results": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {
+            "$ref": "#/$defs/EvaluationUnitResult"
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvaluationRuleProof"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvaluationLimitation"
+          }
+        },
+        "implementation_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "input_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "finished_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "clinical_report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClinicalMetricsReport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "VerificationRequestInput": {"$ref": "protocol.schema.json#/$defs/VerificationRequestInput"},
     "VerificationCreationQuery": {"type": "object", "additionalProperties": false, "required": ["purpose"], "properties": {"purpose": {"type": "string", "minLength": 1, "pattern": "\\S"}}},
     "VerificationOriginalQuery": {"type": "object", "additionalProperties": false, "required": ["checksum", "object_version"], "properties": {"checksum": {"$ref": "#/$defs/Digest"}, "object_version": {"type": "string", "minLength": 1, "pattern": "\\S"}}},
@@ -330,19 +426,443 @@
       "properties": {"variable_code": {"$ref": "#/$defs/Text"}, "fact_version_id": {"$ref": "#/$defs/Uuid"},
         "reason": {"$ref": "#/$defs/Text"}, "evidence_ref": {"$ref": "#/$defs/Text"}, "prior_task_id": {"$ref": "#/$defs/NullableUuid"},
         "actor_id": {"$ref": "#/$defs/Uuid"}, "saved_at": {"$ref": "#/$defs/Timestamp"}}},
-    "AssessmentInput": {"type": "object", "additionalProperties": false,
-      "required": ["kind", "assessment_at", "known_at", "mode", "rule_id", "window_policy_id", "verification_policy_id", "observation_period_id"],
-      "properties": {"kind": {"enum": ["classification", "ms"]}, "assessment_at": {"$ref": "#/$defs/Timestamp"},
-        "known_at": {"$ref": "#/$defs/Timestamp"}, "mode": {"enum": ["current", "replay"]}, "rule_id": {"$ref": "#/$defs/Uuid"},
-        "window_policy_id": {"$ref": "#/$defs/Uuid"}, "verification_policy_id": {"$ref": "#/$defs/Uuid"},
-        "observation_period_id": {"$ref": "#/$defs/NullableUuid"},
-        "clinical_selections": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/AssessmentClinicalSelection"}}}},
+    "AssessmentInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "assessment_at",
+        "known_at",
+        "mode",
+        "rule_id",
+        "window_policy_id",
+        "verification_policy_id",
+        "observation_period_id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "classification",
+            "ms",
+            "hlh"
+          ]
+        },
+        "assessment_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "known_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "mode": {
+          "enum": [
+            "current",
+            "replay"
+          ]
+        },
+        "rule_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "window_policy_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "verification_policy_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "observation_period_id": {
+          "$ref": "#/$defs/NullableUuid"
+        },
+        "clinical_selections": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/AssessmentClinicalSelection"
+          }
+        },
+        "input_rule_id": {
+          "$ref": "#/$defs/Uuid"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "hlh"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "input_rule_id"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "input_rule_id"
+              ]
+            }
+          }
+        }
+      ]
+    },
     "AssessmentReason": {"type": "object", "additionalProperties": false, "required": ["variable_code", "reason_codes"], "properties": {"variable_code": {"$ref": "#/$defs/Text"}, "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}}}},
     "AssessmentContextStates": {"type": "object", "additionalProperties": false, "required": ["population", "therapy", "clinical_finding", "late_result"], "properties": {"population": {"enum": ["met", "not_met", "unknown", "not_required_by_policy"]}, "therapy": {"enum": ["met", "not_met", "unknown"]}, "clinical_finding": {"enum": ["met", "not_met", "unknown", "not_required_by_policy"]}, "late_result": {"enum": ["met", "not_met", "unknown", "not_required_by_policy"]}}},
     "AssessmentIntentInput": {"type": "object", "additionalProperties": false, "required": ["operation_id", "target_key", "request_id", "schema_version", "payload"], "properties": {"operation_id": {"const": "assessment_v2_create"}, "target_key": {"type": "string", "minLength": 1, "maxLength": 256}, "request_id": {"$ref": "#/$defs/Uuid"}, "schema_version": {"const": "2.0.0"}, "payload": {"$ref": "#/$defs/AssessmentInput"}}},
     "AssessmentRequestLookup": {"type": "object", "additionalProperties": false, "required": ["lookup", "operation_id", "target_key"], "properties": {"lookup": {"const": "request_id"}, "operation_id": {"const": "assessment_v2_create"}, "target_key": {"type": "string", "minLength": 1, "maxLength": 256}}},
     "AssessmentStoredInput": {"type": "object", "additionalProperties": false, "required": ["variable_code", "input_snapshot"], "properties": {"variable_code": {"$ref": "#/$defs/Text"}, "input_snapshot": {"type": "object", "additionalProperties": false, "required": ["role", "reference", "value", "unit"], "properties": {"role": {"enum": ["current", "context"]}, "reference": {"type": "object"}, "value": {"$ref": "#/$defs/Decimal"}, "unit": {"$ref": "#/$defs/NullableText"}}}}},
-    "AssessmentOutput": {"type": "object", "additionalProperties": false, "required": ["classification_conditions", "classification_result", "ms_contributions", "ms_total", "ms_threshold_result"], "properties": {"classification_conditions": {"type": ["object", "null"], "additionalProperties": {"type": "string"}}, "classification_result": {"enum": ["meets", "not_meets", "insufficient", "not_applicable", null]}, "ms_contributions": {"type": ["object", "null"], "additionalProperties": {"$ref": "#/$defs/Decimal"}}, "ms_total": {"oneOf": [{"$ref": "#/$defs/Decimal"}, {"type": "null"}]}, "ms_threshold_result": {"type": ["boolean", "null"]}}},
+    "AssessmentOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification_conditions",
+        "classification_result",
+        "ms_contributions",
+        "ms_total",
+        "ms_threshold_result"
+      ],
+      "properties": {
+        "classification_conditions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "classification_result": {
+          "enum": [
+            "meets",
+            "not_meets",
+            "insufficient",
+            "not_applicable",
+            null
+          ]
+        },
+        "ms_contributions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/Decimal"
+          }
+        },
+        "ms_total": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Decimal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ms_threshold_result": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "hlh_result": {
+          "anyOf": [
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$defs": {
+                "HLHConditionResult": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "met",
+                        "not_met",
+                        "unknown"
+                      ],
+                      "title": "State",
+                      "type": "string"
+                    },
+                    "reason_codes": {
+                      "items": {
+                        "maxLength": 1024,
+                        "minLength": 1,
+                        "pattern": ".*\\S.*",
+                        "type": "string"
+                      },
+                      "title": "Reason Codes",
+                      "type": "array"
+                    },
+                    "fact_version_ids": {
+                      "items": {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      "title": "Fact Version Ids",
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "reason_codes",
+                    "fact_version_ids"
+                  ],
+                  "title": "HLHConditionResult",
+                  "type": "object"
+                },
+                "HLHCriterionResult": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "met",
+                        "not_met",
+                        "unknown"
+                      ],
+                      "title": "State",
+                      "type": "string"
+                    },
+                    "reason_codes": {
+                      "items": {
+                        "maxLength": 1024,
+                        "minLength": 1,
+                        "pattern": ".*\\S.*",
+                        "type": "string"
+                      },
+                      "title": "Reason Codes",
+                      "type": "array"
+                    },
+                    "fact_version_ids": {
+                      "items": {
+                        "format": "uuid",
+                        "type": "string"
+                      },
+                      "title": "Fact Version Ids",
+                      "type": "array"
+                    },
+                    "code": {
+                      "enum": [
+                        "fever",
+                        "splenomegaly",
+                        "cytopenias",
+                        "lipids_or_fibrinogen",
+                        "hemophagocytosis",
+                        "nk_activity",
+                        "ferritin",
+                        "soluble_cd25"
+                      ],
+                      "title": "Code",
+                      "type": "string"
+                    },
+                    "subconditions": {
+                      "additionalProperties": {
+                        "$ref": "#/$defs/HLHConditionResult"
+                      },
+                      "title": "Subconditions",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "reason_codes",
+                    "fact_version_ids",
+                    "code",
+                    "subconditions"
+                  ],
+                  "title": "HLHCriterionResult",
+                  "type": "object"
+                }
+              },
+              "additionalProperties": false,
+              "properties": {
+                "schema_version": {
+                  "const": "hlh-2004-result-1",
+                  "title": "Schema Version",
+                  "type": "string"
+                },
+                "kind": {
+                  "const": "hlh_2004_reference",
+                  "title": "Kind",
+                  "type": "string"
+                },
+                "use_boundary": {
+                  "const": "offline_reference_support_only",
+                  "title": "Use Boundary",
+                  "type": "string"
+                },
+                "clinical_use_authorized": {
+                  "const": false,
+                  "title": "Clinical Use Authorized",
+                  "type": "boolean"
+                },
+                "policy_revision_id": {
+                  "format": "uuid",
+                  "title": "Policy Revision Id",
+                  "type": "string"
+                },
+                "policy_checksum": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "title": "Policy Checksum",
+                  "type": "string"
+                },
+                "input_checksum": {
+                  "pattern": "^[0-9a-f]{64}$",
+                  "title": "Input Checksum",
+                  "type": "string"
+                },
+                "source_table": {
+                  "enum": [
+                    "histiocyte-society-2004-table-2",
+                    "henter-2007-table-I"
+                  ],
+                  "title": "Source Table",
+                  "type": "string"
+                },
+                "source_revision_id": {
+                  "format": "uuid",
+                  "title": "Source Revision Id",
+                  "type": "string"
+                },
+                "semantics_version": {
+                  "const": "hlh-2004-bounds-1",
+                  "title": "Semantics Version",
+                  "type": "string"
+                },
+                "assessment_at": {
+                  "format": "date-time",
+                  "title": "Assessment At",
+                  "type": "string"
+                },
+                "known_at": {
+                  "format": "date-time",
+                  "title": "Known At",
+                  "type": "string"
+                },
+                "applicability": {
+                  "enum": [
+                    "applicable",
+                    "not_applicable",
+                    "unknown"
+                  ],
+                  "title": "Applicability",
+                  "type": "string"
+                },
+                "applicability_condition": {
+                  "$ref": "#/$defs/HLHConditionResult"
+                },
+                "molecular_condition": {
+                  "$ref": "#/$defs/HLHConditionResult"
+                },
+                "criteria": {
+                  "items": {
+                    "$ref": "#/$defs/HLHCriterionResult"
+                  },
+                  "maxItems": 8,
+                  "minItems": 8,
+                  "title": "Criteria",
+                  "type": "array"
+                },
+                "criteria_met_lower_bound": {
+                  "maximum": 8,
+                  "minimum": 0,
+                  "title": "Criteria Met Lower Bound",
+                  "type": "integer"
+                },
+                "criteria_met_upper_bound": {
+                  "maximum": 8,
+                  "minimum": 0,
+                  "title": "Criteria Met Upper Bound",
+                  "type": "integer"
+                },
+                "criteria_path": {
+                  "enum": [
+                    "met",
+                    "not_met",
+                    "unknown"
+                  ],
+                  "title": "Criteria Path",
+                  "type": "string"
+                },
+                "molecular_or_criteria": {
+                  "enum": [
+                    "met",
+                    "not_met",
+                    "unknown"
+                  ],
+                  "title": "Molecular Or Criteria",
+                  "type": "string"
+                },
+                "reference_result": {
+                  "enum": [
+                    "criteria_supported",
+                    "criteria_not_supported",
+                    "insufficient",
+                    "not_applicable"
+                  ],
+                  "title": "Reference Result",
+                  "type": "string"
+                },
+                "supported_paths": {
+                  "items": {
+                    "enum": [
+                      "molecular",
+                      "five_of_eight"
+                    ],
+                    "type": "string"
+                  },
+                  "title": "Supported Paths",
+                  "type": "array"
+                },
+                "limitation_codes": {
+                  "items": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "pattern": ".*\\S.*",
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "title": "Limitation Codes",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "schema_version",
+                "kind",
+                "use_boundary",
+                "clinical_use_authorized",
+                "policy_revision_id",
+                "policy_checksum",
+                "input_checksum",
+                "source_table",
+                "source_revision_id",
+                "semantics_version",
+                "assessment_at",
+                "known_at",
+                "applicability",
+                "applicability_condition",
+                "molecular_condition",
+                "criteria",
+                "criteria_met_lower_bound",
+                "criteria_met_upper_bound",
+                "criteria_path",
+                "molecular_or_criteria",
+                "reference_result",
+                "supported_paths",
+                "limitation_codes"
+              ],
+              "title": "HLHResult",
+              "type": "object",
+              "$id": "urn:sjia:schema:hlh-2004-result-1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "AssessmentCreationQuery": {"type": "object", "additionalProperties": false, "required": ["known_at", "mode"], "properties": {"known_at": {"$ref": "#/$defs/Timestamp"}, "mode": {"enum": ["current", "replay"]}}},
     "ClinicalDirectoryQuery": {"type": "object", "additionalProperties": false, "required": ["action"], "properties": {"action": {"enum": ["verify_field", "execute_assessment"]}}},
     "ClinicalDirectoryRecord": {"type": "object", "additionalProperties": false, "required": ["record_id", "record_version_id", "version", "kind", "source_organization", "recorded_at", "purpose"], "properties": {"record_id": {"$ref": "#/$defs/Uuid"}, "record_version_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"}, "kind": {"enum": ["observation", "report", "therapy", "professional"]}, "source_organization": {"$ref": "#/$defs/NullableText"}, "recorded_at": {"$ref": "#/$defs/Timestamp"}, "purpose": {"$ref": "#/$defs/Text"}}},
@@ -354,15 +874,130 @@
         "fact_version": {"$ref": "#/$defs/Version"}, "original_name": {"$ref": "#/$defs/NullableText"}, "raw_value": {"$ref": "#/$defs/NullableText"},
         "raw_unit": {"$ref": "#/$defs/NullableText"}, "qualifier": {"enum": ["eq", "lt", "le", "gt", "ge", null]}, "context_type": {"$ref": "#/$defs/Text"},
         "medical_time": {"oneOf": [{"$ref": "#/$defs/AssessmentObservationTime"}, {"type": "null"}]}, "available_at": {"$ref": "#/$defs/NullableTimestamp"}}},
-    "AssessmentCreationPlan": {"type": "object", "additionalProperties": false,
-      "required": ["kind", "purpose", "rule", "window", "verification", "selection_variables", "selection_evidence", "prior_selections"],
-      "properties": {"kind": {"enum": ["classification", "ms"]}, "purpose": {"$ref": "#/$defs/Text"}, "rule": {"$ref": "#/$defs/AssessmentConfigurationOption"},
-        "window": {"$ref": "#/$defs/AssessmentConfigurationOption"}, "verification": {"$ref": "#/$defs/AssessmentConfigurationOption"},
-        "selection_variables": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["variable_code", "concept_code", "candidates"],
-          "properties": {"variable_code": {"$ref": "#/$defs/Text"}, "concept_code": {"$ref": "#/$defs/Text"}, "candidates": {"type": "array", "items": {"$ref": "#/$defs/AssessmentSelectionCandidate"}}}}},
-        "selection_evidence": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
-        "prior_selections": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["task_id", "saved_at", "choices"],
-          "properties": {"task_id": {"$ref": "#/$defs/Uuid"}, "saved_at": {"$ref": "#/$defs/Timestamp"}, "choices": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/AssessmentClinicalSelection"}}}}}}},
+    "AssessmentCreationPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "purpose",
+        "rule",
+        "window",
+        "verification",
+        "selection_variables",
+        "selection_evidence",
+        "prior_selections"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "classification",
+            "ms",
+            "hlh"
+          ]
+        },
+        "purpose": {
+          "$ref": "#/$defs/Text"
+        },
+        "rule": {
+          "$ref": "#/$defs/AssessmentConfigurationOption"
+        },
+        "window": {
+          "$ref": "#/$defs/AssessmentConfigurationOption"
+        },
+        "verification": {
+          "$ref": "#/$defs/AssessmentConfigurationOption"
+        },
+        "selection_variables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "variable_code",
+              "concept_code",
+              "candidates"
+            ],
+            "properties": {
+              "variable_code": {
+                "$ref": "#/$defs/Text"
+              },
+              "concept_code": {
+                "$ref": "#/$defs/Text"
+              },
+              "candidates": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/AssessmentSelectionCandidate"
+                }
+              }
+            }
+          }
+        },
+        "selection_evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Text"
+          }
+        },
+        "prior_selections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "task_id",
+              "saved_at",
+              "choices"
+            ],
+            "properties": {
+              "task_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "saved_at": {
+                "$ref": "#/$defs/Timestamp"
+              },
+              "choices": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/AssessmentClinicalSelection"
+                }
+              }
+            }
+          }
+        },
+        "input_rule": {
+          "$ref": "#/$defs/AssessmentConfigurationOption"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "hlh"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "input_rule"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "input_rule"
+              ]
+            }
+          }
+        }
+      ]
+    },
     "AssessmentCreationOptions": {"type": "object", "additionalProperties": false, "required": ["schema_version", "patient_id", "display_id", "known_at", "mode", "plans", "observation_periods"],
       "properties": {"schema_version": {"const": "assessment-creation-options-2"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "display_id": {"$ref": "#/$defs/Text"},
         "known_at": {"$ref": "#/$defs/Timestamp"}, "mode": {"enum": ["current", "replay"]}, "plans": {"type": "array", "items": {"$ref": "#/$defs/AssessmentCreationPlan"}},
@@ -370,10 +1005,175 @@
           "properties": {"observation_period_id": {"$ref": "#/$defs/Uuid"}, "period_id": {"$ref": "#/$defs/Uuid"}, "version": {"$ref": "#/$defs/Version"}, "label": {"$ref": "#/$defs/NullableText"},
             "start_time": {"oneOf": [{"$ref": "#/$defs/AssessmentObservationTime"}, {"type": "null"}]}, "end_time": {"oneOf": [{"$ref": "#/$defs/AssessmentObservationTime"}, {"type": "null"}]}}}}}},
     "AssessmentObservationTime": {"allOf": [{"$ref": "protocol.schema.json#/$defs/MedicalTime"}], "required": ["precision", "raw_text", "local_date", "local_datetime", "instant", "timezone_name", "resolution_status", "local_year", "local_month", "end_year", "end_month", "relative_text", "utc_offset_minutes"]},
-    "AssessmentView": {"type": "object", "additionalProperties": false,
-      "patternProperties": {"^clinical_selections$": {"type": "array", "items": {"$ref": "#/$defs/AssessmentSelectionView"}}},
-      "required": ["schema_version", "assessment_id", "patient_id", "kind", "assessment_at", "known_at", "mode", "task", "validity", "computation_status", "missing_items", "rule_id", "window_policy_id", "input_sha256", "implementation_sha256", "context_states", "limitations", "applicability", "computed_at", "inputs", "exclusions", "output", "reason_code"],
-      "properties": {"schema_version": {"const": "static-assessment-view-2"}, "assessment_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "kind": {"enum": ["classification", "ms"]}, "assessment_at": {"$ref": "#/$defs/Timestamp"}, "known_at": {"$ref": "#/$defs/Timestamp"}, "mode": {"enum": ["current", "replay"]}, "task": {"$ref": "#/$defs/TaskView"}, "validity": {"enum": ["valid", "invalid"]}, "computation_status": {"enum": ["not_computed", "configuration_pending", "insufficient", "completed", "failed"]}, "missing_items": {"type": "array", "items": {"$ref": "#/$defs/AssessmentReason"}}, "rule_id": {"$ref": "#/$defs/Uuid"}, "window_policy_id": {"$ref": "#/$defs/Uuid"}, "input_sha256": {"$ref": "#/$defs/Digest"}, "implementation_sha256": {"$ref": "#/$defs/Digest"}, "context_states": {"$ref": "#/$defs/AssessmentContextStates"}, "limitations": {"type": "array", "items": {"$ref": "#/$defs/AssessmentReason"}}, "applicability": {"enum": ["applicable", "not_applicable", "insufficient"]}, "computed_at": {"$ref": "#/$defs/Timestamp"}, "inputs": {"type": "array", "items": {"$ref": "#/$defs/AssessmentStoredInput"}}, "exclusions": {"type": "array", "items": {"type": "object", "required": ["field_id", "fact_version_id", "reason_codes"], "additionalProperties": false, "properties": {"field_id": {"$ref": "#/$defs/Uuid"}, "fact_version_id": {"$ref": "#/$defs/Uuid"}, "reason_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}}}}}, "output": {"oneOf": [{"$ref": "#/$defs/AssessmentOutput"}, {"type": "null"}]}, "reason_code": {"$ref": "#/$defs/NullableText"}}},
+    "AssessmentView": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^clinical_selections$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AssessmentSelectionView"
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "assessment_id",
+        "patient_id",
+        "kind",
+        "assessment_at",
+        "known_at",
+        "mode",
+        "task",
+        "validity",
+        "computation_status",
+        "missing_items",
+        "rule_id",
+        "window_policy_id",
+        "input_sha256",
+        "implementation_sha256",
+        "context_states",
+        "limitations",
+        "applicability",
+        "computed_at",
+        "inputs",
+        "exclusions",
+        "output",
+        "reason_code"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "static-assessment-view-2"
+        },
+        "assessment_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "kind": {
+          "enum": [
+            "classification",
+            "ms",
+            "hlh"
+          ]
+        },
+        "assessment_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "known_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "mode": {
+          "enum": [
+            "current",
+            "replay"
+          ]
+        },
+        "task": {
+          "$ref": "#/$defs/TaskView"
+        },
+        "validity": {
+          "enum": [
+            "valid",
+            "invalid"
+          ]
+        },
+        "computation_status": {
+          "enum": [
+            "not_computed",
+            "configuration_pending",
+            "insufficient",
+            "completed",
+            "failed"
+          ]
+        },
+        "missing_items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AssessmentReason"
+          }
+        },
+        "rule_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "window_policy_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "input_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "implementation_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "context_states": {
+          "$ref": "#/$defs/AssessmentContextStates"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AssessmentReason"
+          }
+        },
+        "applicability": {
+          "enum": [
+            "applicable",
+            "not_applicable",
+            "insufficient"
+          ]
+        },
+        "computed_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AssessmentStoredInput"
+          }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "field_id",
+              "fact_version_id",
+              "reason_codes"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "field_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "fact_version_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "reason_codes": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "$ref": "#/$defs/Text"
+                }
+              }
+            }
+          }
+        },
+        "output": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/AssessmentOutput"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_code": {
+          "$ref": "#/$defs/NullableText"
+        }
+      }
+    },
     "DynamicClinicalSelection": {"type": "object", "additionalProperties": false,
       "required": ["variable_code", "fact_version_id", "reason", "evidence_ref", "prior_task_id", "input_role"],
       "properties": {"variable_code": {"$ref": "#/$defs/Text"}, "fact_version_id": {"$ref": "#/$defs/Uuid"},
@@ -415,10 +1215,34 @@
         "inputs": {"type": "array", "items": {"$ref": "#/$defs/DynamicSignalInput"}},
         "pair_results": {"type": "array", "items": {"$ref": "../alert-design/node.schema.json#/$defs/PairResult"}},
         "baseline_current_result": {"oneOf": [{"type": "null"}, {"$ref": "../alert-design/node.schema.json#/$defs/PairResult"}]},
-        "assessment_id": {"$ref": "#/$defs/Uuid"}, "assessment_kind": {"enum": ["classification", "ms"]}, "assessment_reference": {"type": "object", "additionalProperties": false,
+        "assessment_id": {"$ref": "#/$defs/Uuid"}, "assessment_kind": {"enum": ["classification", "ms", "hlh"]}, "assessment_reference": {"type": "object", "additionalProperties": false,
           "required": ["model", "id", "sha256"], "properties": {"model": {"const": "assessment.assessment"}, "id": {"$ref": "#/$defs/Uuid"}, "sha256": {"$ref": "#/$defs/Digest"}}}},
       "allOf": [{"if": {"properties": {"state": {"const": "unknown"}}}, "then": {"properties": {"reason_codes": {"minItems": 1}}}}]},
-    "DynamicGroup": {"type": "object", "additionalProperties": false, "required": ["path", "operator", "state", "operands", "signal_refs", "minimum_met"],
+    "DynamicSensitivityPreset": {"type": "object", "additionalProperties": false,
+      "required": ["schema_version", "preset_key", "display_name", "description", "config_id", "config_checksum"],
+      "properties": {"schema_version": {"const": "dynamic-sensitivity-preset-1"}, "preset_key": {"$ref": "#/$defs/Text"},
+        "display_name": {"$ref": "#/$defs/Text"}, "description": {"$ref": "#/$defs/Text"},
+        "config_id": {"$ref": "#/$defs/Uuid"}, "config_checksum": {"$ref": "#/$defs/Digest"}}},
+    "DynamicWeightFraction": {"type": "object", "additionalProperties": false, "required": ["numerator", "denominator"],
+      "properties": {"numerator": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}, "denominator": {"type": "string", "pattern": "^[1-9][0-9]*$"}}},
+    "DynamicWeightedResult": {"type": "object", "additionalProperties": false,
+      "required": ["schema_version", "denominator", "denominator_weight", "met_weight", "known_weight", "unknown_weight", "threshold_fraction", "minimum_known_fraction", "lower_fraction", "upper_fraction", "known_fraction", "core_gate", "core_state", "coverage_state", "threshold_state", "unknown_policy", "reason_codes", "members"],
+      "properties": {"schema_version": {"const": "weighted-combination-result-1"}, "denominator": {"const": "all_configured_weights"},
+        "denominator_weight": {"$ref": "#/$defs/Decimal"}, "met_weight": {"$ref": "#/$defs/Decimal"}, "known_weight": {"$ref": "#/$defs/Decimal"}, "unknown_weight": {"$ref": "#/$defs/Decimal"},
+        "threshold_fraction": {"$ref": "#/$defs/Decimal"}, "minimum_known_fraction": {"$ref": "#/$defs/Decimal"},
+        "lower_fraction": {"$ref": "#/$defs/DynamicWeightFraction"}, "upper_fraction": {"$ref": "#/$defs/DynamicWeightFraction"}, "known_fraction": {"$ref": "#/$defs/DynamicWeightFraction"},
+        "core_gate": {"type": "object", "additionalProperties": false, "required": ["operator", "minimum_met"],
+          "properties": {"operator": {"enum": ["all", "at_least"]}, "minimum_met": {"type": ["integer", "null"], "minimum": 1}}},
+        "core_state": {"enum": ["met", "not_met", "unknown"]}, "coverage_state": {"enum": ["met", "unknown"]}, "threshold_state": {"enum": ["met", "not_met", "unknown"]},
+        "unknown_policy": {"const": "bounded_no_imputation"}, "reason_codes": {"$ref": "#/$defs/Texts"},
+        "members": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["signal_ref", "classification", "weight", "state"],
+          "properties": {"signal_ref": {"$ref": "#/$defs/Text"}, "classification": {"enum": ["core", "general"]}, "weight": {"$ref": "#/$defs/Decimal"}, "state": {"enum": ["met", "not_met", "unknown"]}}}}}},
+    "DynamicWeightedGroup": {"type": "object", "additionalProperties": false, "required": ["path", "operator", "state", "operands", "signal_refs", "minimum_met", "weighted"],
+      "properties": {"path": {"type": "array", "maxItems": 0}, "operator": {"const": "weighted"}, "state": {"enum": ["met", "not_met", "unknown"]},
+        "operands": {"type": "array", "minItems": 1, "items": {"enum": ["met", "not_met", "unknown"]}}, "signal_refs": {"$ref": "#/$defs/Texts"}, "minimum_met": {"type": "null"},
+        "weighted": {"$ref": "#/$defs/DynamicWeightedResult"}}},
+    "DynamicGroup": {"oneOf": [{"$ref": "#/$defs/DynamicLogicalGroup"}, {"$ref": "#/$defs/DynamicWeightedGroup"}]},
+    "DynamicLogicalGroup": {"type": "object", "additionalProperties": false, "required": ["path", "operator", "state", "operands", "signal_refs", "minimum_met"],
       "properties": {"path": {"type": "array", "items": {"type": "integer", "minimum": 0}}, "operator": {"enum": ["all", "any", "at_least"]},
         "state": {"enum": ["met", "not_met", "unknown"]}, "operands": {"type": "array", "minItems": 1, "items": {"enum": ["met", "not_met", "unknown"]}},
         "signal_refs": {"$ref": "#/$defs/Texts"}, "minimum_met": {"type": ["integer", "null"], "minimum": 1}}},
@@ -459,6 +1283,7 @@
         "relation_refs": {"type": "array", "items": {"type": "object"}}, "relation_proofs": {"type": "array", "items": {"type": "object", "additionalProperties": false,
           "required": ["relation_id", "references", "reason_codes"], "properties": {"relation_id": {"$ref": "#/$defs/Uuid"}, "references": {"type": "array", "items": {"type": "object"}}, "reason_codes": {"$ref": "#/$defs/Texts"}}}},
         "automatic_trigger": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/DynamicAutomaticTrigger"}]},
+        "sensitivity_preset": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/DynamicSensitivityPreset"}]},
         "reason_code": {"$ref": "#/$defs/NullableText"}}},
     "ReminderTarget": {"enum": ["draft", "batch", "record_task"]},
     "ReminderStatus": {"enum": ["disabled", "enabled", "paused", "completed", "cancelled"]},
@@ -501,6 +1326,2569 @@
     "DeliveryQuery": {"type": "object", "additionalProperties": false, "properties": {"cursor": {"$ref": "#/$defs/Text"}, "limit": {"type": "integer", "minimum": 1}, "patient_id": {"$ref": "#/$defs/Uuid"}, "status": {"enum": ["authorized", "started", "accepted", "delivered", "failed", "uncertain", "cancelled"]}}},
     "DeliveryView": {"type": "object", "additionalProperties": false, "required": ["attempt_id", "patient_id", "notice_kind", "channel", "status", "authorized_at", "started_at", "accepted_at", "delivered_at", "read_at", "receipt_refs", "allowed_actions"], "properties": {"attempt_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "notice_kind": {"enum": ["clinical", "material_reminder"]}, "channel": {"$ref": "#/$defs/Text"}, "status": {"enum": ["authorized", "started", "accepted", "delivered", "failed", "uncertain", "cancelled"]}, "authorized_at": {"$ref": "#/$defs/Timestamp"}, "started_at": {"$ref": "#/$defs/NullableTimestamp"}, "accepted_at": {"$ref": "#/$defs/NullableTimestamp"}, "delivered_at": {"$ref": "#/$defs/NullableTimestamp"}, "read_at": {"$ref": "#/$defs/NullableTimestamp"}, "receipt_refs": {"$ref": "#/$defs/Texts"}, "allowed_actions": {"$ref": "#/$defs/Texts"}}},
     "DeliveryList": {"allOf": [{"$ref": "#/$defs/Page"}], "properties": {"items": {"type": "array", "items": {"$ref": "#/$defs/DeliveryView"}}}, "unevaluatedProperties": false},
-    "DeliveryResolveInput": {"type": "object", "additionalProperties": false, "required": ["expected_attempt_status", "reason"], "properties": {"expected_attempt_status": {"enum": ["started", "accepted", "uncertain"]}, "reason": {"$ref": "#/$defs/Text"}}}
+    "DeliveryResolveInput": {"type": "object", "additionalProperties": false, "required": ["expected_attempt_status", "reason"], "properties": {"expected_attempt_status": {"enum": ["started", "accepted", "uncertain"]}, "reason": {"$ref": "#/$defs/Text"}}},
+    "RegroupSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_id",
+        "expected_version"
+      ],
+      "properties": {
+        "document_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "expected_version": {
+          "$ref": "#/$defs/Version"
+        }
+      }
+    },
+    "RegroupOutput": {
+      "type": "object",
+      "required": [
+        "batch_id",
+        "page_ids",
+        "document_type",
+        "organization",
+        "documented_time",
+        "episode_ids",
+        "confirmed_text",
+        "proposed_metadata",
+        "document_id",
+        "metadata_confirmed"
+      ],
+      "properties": {
+        "batch_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "page_ids": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Ids"
+            }
+          ],
+          "minItems": 1
+        },
+        "document_type": {
+          "$ref": "#/$defs/DocumentType"
+        },
+        "organization": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "documented_time": {
+          "$ref": "#/$defs/NullableMedicalTime"
+        },
+        "episode_ids": {
+          "$ref": "#/$defs/Ids"
+        },
+        "confirmed_text": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "proposed_metadata": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ProposedDocumentMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "document_id": {
+          "$ref": "#/$defs/NullableUuid"
+        },
+        "metadata_confirmed": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "RegroupInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "batch_id",
+        "sources",
+        "outputs",
+        "unassigned_page_ids",
+        "reason"
+      ],
+      "properties": {
+        "batch_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/RegroupSource"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/RegroupOutput"
+          }
+        },
+        "unassigned_page_ids": {
+          "type": "array",
+          "maxItems": 1000,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Uuid"
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    },
+    "RegroupResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "regrouping_id",
+        "patient_id",
+        "batch_id",
+        "outputs",
+        "retired_document_ids",
+        "unassigned_page_ids",
+        "sources"
+      ],
+      "properties": {
+        "regrouping_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "batch_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "document_id",
+              "version_id",
+              "version",
+              "page_ids"
+            ],
+            "properties": {
+              "document_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "version_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "version": {
+                "$ref": "#/$defs/Version"
+              },
+              "page_ids": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Uuid"
+                }
+              }
+            }
+          }
+        },
+        "retired_document_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Uuid"
+          }
+        },
+        "unassigned_page_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Uuid"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "document_id",
+              "version_id",
+              "version",
+              "page_ids"
+            ],
+            "properties": {
+              "document_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "version_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "version": {
+                "$ref": "#/$defs/Version"
+              },
+              "page_ids": {
+                "$ref": "#/$defs/Ids"
+              }
+            }
+          }
+        }
+      }
+    },
+    "RegroupReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "resource_type",
+        "resource_id",
+        "version",
+        "saved_at",
+        "request_id",
+        "task_id",
+        "result"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "resource_type": {
+          "const": "archive_regrouping"
+        },
+        "resource_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "version": {
+          "$ref": "#/$defs/Version"
+        },
+        "saved_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "task_id": {
+          "$ref": "#/$defs/NullableUuid"
+        },
+        "result": {
+          "$ref": "#/$defs/RegroupResult"
+        }
+      }
+    },
+    "RegroupIntentInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "target_key",
+        "request_id",
+        "schema_version",
+        "payload"
+      ],
+      "properties": {
+        "operation_id": {
+          "const": "archive_documents_regroup"
+        },
+        "target_key": {
+          "$ref": "#/$defs/Text"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "schema_version": {
+          "const": "2.0.0"
+        },
+        "payload": {
+          "$ref": "#/$defs/RegroupInput"
+        }
+      }
+    },
+    "RegroupRequestView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intent_id",
+        "request_id",
+        "operation_id",
+        "target_key",
+        "prepared_at",
+        "state",
+        "may_retry",
+        "receipt",
+        "error_code",
+        "generation",
+        "expires_at",
+        "payload_sha256",
+        "regroup_input"
+      ],
+      "properties": {
+        "intent_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/Text"
+        },
+        "target_key": {
+          "$ref": "#/$defs/Text"
+        },
+        "prepared_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "state": {
+          "enum": [
+            "pending",
+            "processing",
+            "committed",
+            "failed",
+            "unknown",
+            "not_found"
+          ]
+        },
+        "may_retry": {
+          "type": "boolean"
+        },
+        "receipt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RegroupReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "generation": {
+          "$ref": "#/$defs/Version"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "regroup_input": {
+          "$ref": "#/$defs/RegroupInput"
+        }
+      }
+    },
+    "RegroupOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_id",
+        "batch_id",
+        "documents"
+      ],
+      "properties": {
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "batch_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DocumentView"
+          }
+        }
+      }
+    },
+    "ClinicalMetricSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detected_events",
+        "assessable_positive_events",
+        "positive_prompts",
+        "known_outcome_prompts",
+        "unknown_outcome_prompts",
+        "sensitivity",
+        "ppv",
+        "event_unassessable_fraction",
+        "alerts_per_observation_person_hour",
+        "alerts_per_negative_observation_person_hour",
+        "missed_event_ids",
+        "unassessable_positive_event_ids",
+        "unknown_event_ids",
+        "assessable_observation_person_hours",
+        "all_observation_person_hours",
+        "negative_observation_person_hours",
+        "prompt_counts",
+        "first_alert_difference_seconds_by_event",
+        "confidence_interval",
+        "confidence_interval_status"
+      ],
+      "properties": {
+        "detected_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assessable_positive_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "positive_prompts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "known_outcome_prompts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown_outcome_prompts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sensitivity": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "ppv": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "event_unassessable_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "alerts_per_observation_person_hour": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "alerts_per_negative_observation_person_hour": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "missed_event_ids": {
+          "$ref": "#/$defs/Texts"
+        },
+        "unassessable_positive_event_ids": {
+          "$ref": "#/$defs/Texts"
+        },
+        "unknown_event_ids": {
+          "$ref": "#/$defs/Texts"
+        },
+        "assessable_observation_person_hours": {
+          "$ref": "#/$defs/Text"
+        },
+        "all_observation_person_hours": {
+          "$ref": "#/$defs/Text"
+        },
+        "negative_observation_person_hours": {
+          "$ref": "#/$defs/Text"
+        },
+        "prompt_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "first",
+            "repeat"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "first": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "repeat": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "first_alert_difference_seconds_by_event": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "confidence_interval": {
+          "type": "null"
+        },
+        "confidence_interval_status": {
+          "const": "NOT_MEASURED_REQUIRES_APPROVED_PATIENT_CORRELATED_METHOD"
+        }
+      }
+    },
+    "ClinicalMetricsReportV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "data_mode",
+        "status",
+        "clinical_validation",
+        "evidence_qualification",
+        "binding",
+        "denominators",
+        "future_or_unverified_facts_excluded",
+        "static",
+        "dynamic",
+        "partitions",
+        "subgroups",
+        "confidence_interval_protocol_ref",
+        "limitations",
+        "execution_steps",
+        "sequence_policy"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "clinical-metrics-report-2"
+        },
+        "data_mode": {
+          "enum": [
+            "synthetic",
+            "clinical"
+          ]
+        },
+        "status": {
+          "const": "CALCULATED_FROM_VERIFIED_REPLAYS"
+        },
+        "clinical_validation": {
+          "const": false
+        },
+        "evidence_qualification": {
+          "const": "QUALIFIED_SAVED_REPLAY_BINDINGS"
+        },
+        "binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dataset_version_id",
+            "dataset_checksum",
+            "implementation_sha256",
+            "configuration_checksums",
+            "measurement_plan_ref"
+          ],
+          "properties": {
+            "dataset_version_id": {
+              "$ref": "#/$defs/Uuid"
+            },
+            "dataset_checksum": {
+              "$ref": "#/$defs/Digest"
+            },
+            "implementation_sha256": {
+              "$ref": "#/$defs/Digest"
+            },
+            "configuration_checksums": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "$ref": "#/$defs/Digest"
+              }
+            },
+            "measurement_plan_ref": {
+              "$ref": "#/$defs/Text"
+            }
+          }
+        },
+        "denominators": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "patients",
+            "periods",
+            "labels",
+            "unknown_labels_excluded_from_negative_denominator"
+          ],
+          "properties": {
+            "patients": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "periods": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "unknown_labels_excluded_from_negative_denominator": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "future_or_unverified_facts_excluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "static": {
+          "$ref": "#/$defs/ClinicalMetricSummary"
+        },
+        "dynamic": {
+          "$ref": "#/$defs/ClinicalMetricSummary"
+        },
+        "partitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "development",
+            "validation"
+          ],
+          "properties": {
+            "development": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "periods",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "periods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            },
+            "validation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "periods",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "periods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            }
+          }
+        },
+        "subgroups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            }
+          }
+        },
+        "confidence_interval_protocol_ref": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "limitations": {
+          "$ref": "#/$defs/Texts"
+        },
+        "execution_steps": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "period_id",
+              "step_id",
+              "mode",
+              "task_id",
+              "execution_input_sha256",
+              "result_sha256",
+              "corpus_sha256",
+              "status"
+            ],
+            "properties": {
+              "period_id": {
+                "$ref": "#/$defs/Text"
+              },
+              "step_id": {
+                "$ref": "#/$defs/Text"
+              },
+              "mode": {
+                "enum": [
+                  "static",
+                  "dynamic"
+                ]
+              },
+              "task_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "execution_input_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "result_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "corpus_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "status": {
+                "enum": [
+                  "completed",
+                  "insufficient"
+                ]
+              }
+            }
+          }
+        },
+        "sequence_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assessability",
+            "occurrence_policy",
+            "reset_policy",
+            "static_criterion",
+            "dynamic_criterion"
+          ],
+          "properties": {
+            "assessability": {
+              "const": "all_scheduled_steps_completed"
+            },
+            "occurrence_policy": {
+              "const": "first_positive_then_repeat"
+            },
+            "reset_policy": {
+              "const": "period_boundary_only"
+            },
+            "static_criterion": {
+              "enum": [
+                "classification_meets",
+                "ms_threshold_true"
+              ]
+            },
+            "dynamic_criterion": {
+              "const": "decision_met"
+            }
+          }
+        }
+      }
+    },
+    "ClinicalIntervalMetricSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "spec_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "metric_id": {
+          "enum": [
+            "sensitivity",
+            "missed_event_fraction",
+            "ppv",
+            "alerts_per_observation_person_hour",
+            "alerts_per_negative_observation_person_hour",
+            "event_unassessable_fraction",
+            "first_alert_difference_mean_seconds",
+            "first_alert_difference_median_seconds"
+          ],
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "static",
+            "dynamic"
+          ],
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/ClinicalIntervalScope"
+        },
+        "aggregation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "denominator_policy": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "spec_id",
+        "metric_id",
+        "mode",
+        "scope",
+        "aggregation",
+        "unit",
+        "denominator_policy",
+        "required"
+      ],
+      "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "sensitivity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "missed_event_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "one_minus_ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "ppv"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "known_outcome_prompts_including_first_and_repeat"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_period_hours_including_unknown_labels"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_negative_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_negative_period_hours"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "event_unassessable_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "all_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_mean_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_mean"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_median_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_median"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ClinicalIntervalScope": {
+      "additionalProperties": false,
+      "properties": {
+        "partition": {
+          "enum": [
+            "development",
+            "validation"
+          ],
+          "type": "string"
+        },
+        "subgroup": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClinicalIntervalSubgroup"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "partition",
+        "subgroup"
+      ],
+      "type": "object"
+    },
+    "ClinicalIntervalSubgroup": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "value": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "value"
+      ],
+      "type": "object"
+    },
+    "ClinicalIntervalProtocol": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "clinical-interval-protocol-1",
+          "type": "string"
+        },
+        "protocol_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "measurement_plan_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "method": {
+          "const": "patient_cluster_percentile_v1",
+          "type": "string"
+        },
+        "algorithm_version": {
+          "const": "1",
+          "type": "string"
+        },
+        "confidence_level": {
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        "alternative": {
+          "const": "two_sided",
+          "type": "string"
+        },
+        "quantile_method": {
+          "const": "linear",
+          "type": "string"
+        },
+        "cluster_key": {
+          "const": "patient_id",
+          "type": "string"
+        },
+        "sampling": {
+          "const": "whole_cluster_with_replacement",
+          "type": "string"
+        },
+        "cluster_frame": {
+          "const": "all_frozen_patients_in_selected_partition",
+          "type": "string"
+        },
+        "partition_policy": {
+          "const": "separate_only",
+          "type": "string"
+        },
+        "n_resamples": {
+          "minimum": 2,
+          "type": "integer",
+          "maximum": 9007199254740991
+        },
+        "rng_algorithm": {
+          "const": "PCG64",
+          "type": "string"
+        },
+        "seed": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "patient_order": {
+          "const": "patient_id_lexicographic",
+          "type": "string"
+        },
+        "numpy_version": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "implementation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "invalid_resample_policy": {
+          "const": "fail_interval",
+          "type": "string"
+        },
+        "degenerate_policy": {
+          "const": "not_computed",
+          "type": "string"
+        },
+        "minimum_clusters": {
+          "minimum": 2,
+          "type": "integer",
+          "maximum": 9007199254740991
+        },
+        "minimum_contributing_clusters": {
+          "minimum": 2,
+          "type": "integer",
+          "maximum": 9007199254740991
+        },
+        "coverage": {
+          "const": "pointwise",
+          "type": "string"
+        },
+        "multiplicity_adjustment": {
+          "const": "none",
+          "type": "string"
+        },
+        "metric_specs": {
+          "items": {
+            "$ref": "#/$defs/ClinicalIntervalMetricSpec"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "protocol_ref",
+        "measurement_plan_ref",
+        "method",
+        "algorithm_version",
+        "confidence_level",
+        "alternative",
+        "quantile_method",
+        "cluster_key",
+        "sampling",
+        "cluster_frame",
+        "partition_policy",
+        "n_resamples",
+        "rng_algorithm",
+        "seed",
+        "patient_order",
+        "numpy_version",
+        "implementation_sha256",
+        "invalid_resample_policy",
+        "degenerate_policy",
+        "minimum_clusters",
+        "minimum_contributing_clusters",
+        "coverage",
+        "multiplicity_adjustment",
+        "metric_specs"
+      ],
+      "type": "object"
+    },
+    "ClinicalIntervalResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spec_id",
+        "metric_id",
+        "mode",
+        "scope",
+        "aggregation",
+        "unit",
+        "denominator_policy",
+        "required",
+        "estimate",
+        "lower",
+        "upper",
+        "confidence_level",
+        "method",
+        "status",
+        "reason_codes",
+        "numerator",
+        "denominator",
+        "clusters",
+        "contributing_clusters",
+        "draws_requested",
+        "draws_valid",
+        "draws_invalid",
+        "draw_sequence_sha256",
+        "diagnostics"
+      ],
+      "properties": {
+        "spec_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "metric_id": {
+          "enum": [
+            "sensitivity",
+            "missed_event_fraction",
+            "ppv",
+            "alerts_per_observation_person_hour",
+            "alerts_per_negative_observation_person_hour",
+            "event_unassessable_fraction",
+            "first_alert_difference_mean_seconds",
+            "first_alert_difference_median_seconds"
+          ],
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "static",
+            "dynamic"
+          ],
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/ClinicalIntervalScope"
+        },
+        "aggregation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "denominator_policy": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "estimate": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lower": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "upper": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "method": {
+          "const": "patient_cluster_percentile_v1"
+        },
+        "status": {
+          "enum": [
+            "CALCULATED",
+            "PENDING",
+            "UNSUPPORTED_PROTOCOL",
+            "RESOURCE_LIMIT",
+            "ZERO_DENOMINATOR",
+            "INSUFFICIENT_CLUSTERS",
+            "INVALID_RESAMPLE",
+            "DEGENERATE_DISTRIBUTION",
+            "NUMERIC_FAILURE"
+          ]
+        },
+        "reason_codes": {
+          "$ref": "#/$defs/Texts"
+        },
+        "numerator": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "denominator": {
+          "oneOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clusters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contributing_clusters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws_requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws_valid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws_invalid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draw_sequence_sha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "detected_events",
+            "missed_events",
+            "unknown_events",
+            "unassessable_positive_events"
+          ],
+          "properties": {
+            "detected_events": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "missed_events": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown_events": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unassessable_positive_events": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "sensitivity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "missed_event_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "one_minus_ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "ppv"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "known_outcome_prompts_including_first_and_repeat"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_period_hours_including_unknown_labels"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_negative_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_negative_period_hours"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "event_unassessable_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "all_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_mean_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_mean"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_median_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_median"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "CALCULATED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate": {
+                "type": "number"
+              },
+              "lower": {
+                "type": "number"
+              },
+              "upper": {
+                "type": "number"
+              },
+              "numerator": {
+                "type": "number"
+              },
+              "denominator": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "reason_codes": {
+                "maxItems": 0
+              },
+              "draws_invalid": {
+                "const": 0
+              },
+              "draws_valid": {
+                "minimum": 2
+              },
+              "draw_sequence_sha256": {
+                "$ref": "#/$defs/Digest"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "lower": {
+                "type": "null"
+              },
+              "upper": {
+                "type": "null"
+              },
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ZERO_DENOMINATOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "estimate": {
+                "type": "null"
+              },
+              "denominator": {
+                "const": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NUMERIC_FAILURE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "lower": {
+                "type": "null"
+              },
+              "upper": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ClinicalIntervalEngine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "algorithm_version",
+        "numpy_version",
+        "implementation_sha256",
+        "rng_algorithm",
+        "resource_limits"
+      ],
+      "properties": {
+        "method": {
+          "const": "patient_cluster_percentile_v1"
+        },
+        "algorithm_version": {
+          "const": "1"
+        },
+        "numpy_version": {
+          "$ref": "#/$defs/Text"
+        },
+        "implementation_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "rng_algorithm": {
+          "const": "PCG64"
+        },
+        "resource_limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max_resamples",
+            "max_clusters",
+            "max_draw_cells",
+            "max_work",
+            "max_seconds"
+          ],
+          "properties": {
+            "max_resamples": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max_clusters": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max_draw_cells": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max_work": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max_seconds": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        }
+      }
+    },
+    "ClinicalIntervalSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "status",
+        "required_complete",
+        "reason_codes",
+        "protocol_ref",
+        "protocol_sha256",
+        "input_sha256",
+        "engine",
+        "protocol",
+        "unlisted_metrics_status",
+        "results"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "clinical-interval-results-1"
+        },
+        "status": {
+          "enum": [
+            "COMPLETE",
+            "INCOMPLETE",
+            "PENDING",
+            "NOT_CONFIGURED",
+            "UNSUPPORTED_PROTOCOL",
+            "UNSUPPORTED_METHOD",
+            "RESOURCE_LIMIT"
+          ]
+        },
+        "required_complete": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "$ref": "#/$defs/Texts"
+        },
+        "protocol_ref": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "protocol_sha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "input_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "engine": {
+          "$ref": "#/$defs/ClinicalIntervalEngine"
+        },
+        "protocol": {},
+        "unlisted_metrics_status": {
+          "const": "NOT_REQUESTED"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClinicalIntervalResult"
+          },
+          "maxItems": 64
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "COMPLETE",
+                  "INCOMPLETE",
+                  "PENDING",
+                  "RESOURCE_LIMIT"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protocol": {
+                "$ref": "#/$defs/ClinicalIntervalProtocol"
+              },
+              "protocol_ref": {
+                "$ref": "#/$defs/Text"
+              },
+              "protocol_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "results": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "COMPLETE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "required_complete": {
+                "const": true
+              },
+              "reason_codes": {
+                "maxItems": 0
+              },
+              "results": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "CALCULATED"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "INCOMPLETE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              },
+              "results": {
+                "contains": {
+                  "properties": {
+                    "status": {
+                      "not": {
+                        "const": "CALCULATED"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "required_complete": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "COMPLETE",
+                  "INCOMPLETE"
+                ]
+              },
+              "results": {
+                "items": {
+                  "if": {
+                    "properties": {
+                      "required": {
+                        "const": true
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "status": {
+                        "const": "CALCULATED"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "INCOMPLETE"
+              },
+              "required_complete": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "results": {
+                "contains": {
+                  "properties": {
+                    "required": {
+                      "const": true
+                    },
+                    "status": {
+                      "not": {
+                        "const": "CALCULATED"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NOT_CONFIGURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protocol": {
+                "type": "null"
+              },
+              "protocol_sha256": {
+                "type": "null"
+              },
+              "results": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNSUPPORTED_METHOD"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protocol": {
+                "type": "object"
+              },
+              "results": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "PENDING",
+                  "NOT_CONFIGURED",
+                  "UNSUPPORTED_PROTOCOL",
+                  "UNSUPPORTED_METHOD",
+                  "RESOURCE_LIMIT"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "required_complete": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "PENDING"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "results": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "PENDING"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNSUPPORTED_PROTOCOL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "results": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "UNSUPPORTED_PROTOCOL"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "RESOURCE_LIMIT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "results": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "RESOURCE_LIMIT"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "NOT_CONFIGURED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNSUPPORTED_PROTOCOL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "UNSUPPORTED_METHOD"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "RESOURCE_LIMIT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_codes": {
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "not": {
+                  "const": "NOT_CONFIGURED"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "protocol": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "protocol_sha256": {
+                "$ref": "#/$defs/Digest"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ClinicalMetricsReportV3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "data_mode",
+        "status",
+        "clinical_validation",
+        "evidence_qualification",
+        "binding",
+        "denominators",
+        "future_or_unverified_facts_excluded",
+        "static",
+        "dynamic",
+        "partitions",
+        "subgroups",
+        "confidence_interval_protocol_ref",
+        "limitations",
+        "point_report_schema_version",
+        "confidence_intervals"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "clinical-metrics-report-3"
+        },
+        "data_mode": {
+          "enum": [
+            "synthetic",
+            "clinical"
+          ]
+        },
+        "status": {
+          "const": "CALCULATED_FROM_VERIFIED_REPLAYS"
+        },
+        "clinical_validation": {
+          "const": false
+        },
+        "evidence_qualification": {
+          "const": "QUALIFIED_SAVED_REPLAY_BINDINGS"
+        },
+        "binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dataset_version_id",
+            "dataset_checksum",
+            "implementation_sha256",
+            "configuration_checksums",
+            "measurement_plan_ref"
+          ],
+          "properties": {
+            "dataset_version_id": {
+              "$ref": "#/$defs/Uuid"
+            },
+            "dataset_checksum": {
+              "$ref": "#/$defs/Digest"
+            },
+            "implementation_sha256": {
+              "$ref": "#/$defs/Digest"
+            },
+            "configuration_checksums": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "$ref": "#/$defs/Digest"
+              }
+            },
+            "measurement_plan_ref": {
+              "$ref": "#/$defs/Text"
+            }
+          }
+        },
+        "denominators": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "patients",
+            "periods",
+            "labels",
+            "unknown_labels_excluded_from_negative_denominator"
+          ],
+          "properties": {
+            "patients": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "periods": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "unknown_labels_excluded_from_negative_denominator": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "future_or_unverified_facts_excluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "static": {
+          "$ref": "#/$defs/ClinicalMetricSummary"
+        },
+        "dynamic": {
+          "$ref": "#/$defs/ClinicalMetricSummary"
+        },
+        "partitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "development",
+            "validation"
+          ],
+          "properties": {
+            "development": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "periods",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "periods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            },
+            "validation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "periods",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "periods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            }
+          }
+        },
+        "subgroups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "patients",
+                "static",
+                "dynamic"
+              ],
+              "properties": {
+                "patients": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "static": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                },
+                "dynamic": {
+                  "$ref": "#/$defs/ClinicalMetricSummary"
+                }
+              }
+            }
+          }
+        },
+        "confidence_interval_protocol_ref": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "limitations": {
+          "$ref": "#/$defs/Texts"
+        },
+        "execution_steps": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "period_id",
+              "step_id",
+              "mode",
+              "task_id",
+              "execution_input_sha256",
+              "result_sha256",
+              "corpus_sha256",
+              "status"
+            ],
+            "properties": {
+              "period_id": {
+                "$ref": "#/$defs/Text"
+              },
+              "step_id": {
+                "$ref": "#/$defs/Text"
+              },
+              "mode": {
+                "enum": [
+                  "static",
+                  "dynamic"
+                ]
+              },
+              "task_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "execution_input_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "result_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "corpus_sha256": {
+                "$ref": "#/$defs/Digest"
+              },
+              "status": {
+                "enum": [
+                  "completed",
+                  "insufficient"
+                ]
+              }
+            }
+          }
+        },
+        "sequence_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "assessability",
+            "occurrence_policy",
+            "reset_policy",
+            "static_criterion",
+            "dynamic_criterion"
+          ],
+          "properties": {
+            "assessability": {
+              "const": "all_scheduled_steps_completed"
+            },
+            "occurrence_policy": {
+              "const": "first_positive_then_repeat"
+            },
+            "reset_policy": {
+              "const": "period_boundary_only"
+            },
+            "static_criterion": {
+              "enum": [
+                "classification_meets",
+                "ms_threshold_true"
+              ]
+            },
+            "dynamic_criterion": {
+              "const": "decision_met"
+            }
+          }
+        },
+        "point_report_schema_version": {
+          "enum": [
+            "clinical-metrics-report-1",
+            "clinical-metrics-report-2"
+          ]
+        },
+        "confidence_intervals": {
+          "$ref": "#/$defs/ClinicalIntervalSection"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "point_report_schema_version": {
+                "const": "clinical-metrics-report-2"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "execution_steps",
+              "sequence_policy"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "execution_steps"
+                  ]
+                },
+                {
+                  "required": [
+                    "sequence_policy"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ClinicalMetricsReport": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ClinicalMetricsReportV2"
+        },
+        {
+          "$ref": "#/$defs/ClinicalMetricsReportV3"
+        }
+      ]
+    }
   }
 }

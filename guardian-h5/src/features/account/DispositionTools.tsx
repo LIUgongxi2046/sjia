@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { ApiError } from '../../api/client';
 import { prepareDisposition, readDisposition, readDispositionOptions, readDispositionRequest, submitDisposition } from '../../api/dispositions';
 import { useAccess } from '../../state/access';
+import { FamilyContentDispositionTools } from './FamilyContentDispositionTools';
 import type { DispositionOptions, DispositionView } from '../../../../frontend-design/v2-types';
 
 export function DispositionTools() {
@@ -63,7 +64,7 @@ export function DispositionTools() {
       .finally(() => { running.current = false; setBusy(false); });
   }
   return <><button className="button secondary" disabled={!ready || busy} onClick={() => setOpened(true)}>申请处理我的资料</button>
-    {opened && <section className="card form-card" style={{ overflowWrap: 'anywhere' }}><h2>申请处理我的资料</h2>
+    {opened && <section className="card form-card" style={{ overflowWrap: 'anywhere' }}><h2>申请处理我的资料</h2><p role="note">本申请只处理下列逐项列明的文件或用途副本。文件删除回执不表示数据库记录、模型候选、审计历史或备份已删除；这些类别须另行核对获准保留规则与处置协议。</p>
       {error && <p role="alert">{error.message}</p>}{unknown && <p role="status">申请保存结果待确认，请查询原请求。</p>}
       {!options && !error && <p role="status">正在读取准确资料与批准策略</p>}
       {options && !value && !unknown && <><label className="field"><span>资料保存策略</span><select value={policyId} disabled={busy} onChange={event => { setPolicyId(event.target.value); setSelected([]); }}>
@@ -78,5 +79,5 @@ export function DispositionTools() {
         {value.items.map(item => <article key={item.item_id}><p>资料 {item.target_id}；处置状态 {item.status}。</p>{item.receipt_sha256 && <p>实际处置回执 SHA256 {item.receipt_sha256}</p>}{item.recheck_at && <p>继续保存至重新核查 {item.recheck_at}</p>}</article>)}
         <p>只有具备实际处置回执的项目才登记删除完成；继续保存的项目保留证明和重新核查时间。</p></>}
       <button className="text-action" disabled={busy || !ready} onClick={() => { setError(null); setReload(current => current + 1); }}>{unknown ? '查询原申请请求' : '重新读取申请结果'}</button>
-    </section>}</>;
+    </section>}<FamilyContentDispositionTools /></>;
 }

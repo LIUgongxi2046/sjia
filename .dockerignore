@@ -1,0 +1,17 @@
+.git
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/staticfiles
+.backend-work
+.simulation-work
+.qa-work
+.planning-work
+backend/runtime.json
+demo-data/current-patient
+docs/evidence
+docs/testing/evidence

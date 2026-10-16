@@ -2,9 +2,10 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 
-class Summary(models.Model):
+class Summary(ErasureModel, models.Model):
     class Validity(models.TextChoices):
         VALID = "valid", "valid"
         INVALID = "invalid", "invalid"
@@ -12,10 +13,10 @@ class Summary(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     requested_by = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, db_column="requested_by", related_name="+")
-    from_date = models.DateField()
-    to_date = models.DateField()
-    scope_timezone = models.TextField()
-    include_unknown_time = models.BooleanField()
+    from_date = models.DateField(null=True)
+    to_date = models.DateField(null=True)
+    scope_timezone = models.TextField(null=True)
+    include_unknown_time = models.BooleanField(null=True)
     template = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, db_column="template_id", related_name="+")
     visibility_policy = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, db_column="visibility_policy_id", related_name="+")
     data_epoch = models.BigIntegerField(default=0)
@@ -23,6 +24,10 @@ class Summary(models.Model):
     validity = models.CharField(max_length=16, choices=Validity.choices)
     task_id = models.UUIDField()
     generated_at = models.DateTimeField()
+    # Async tasks retain immutable admission input; render evidence is separate.
+    # Legacy summaries retain their original Task.input_refs representation.
+    execution_snapshot = models.JSONField(null=True)
+    execution_sha256 = models.CharField(max_length=64, null=True)
 
     class Meta:
         db_table = 'sjia"."summary'
@@ -31,14 +36,14 @@ class Summary(models.Model):
         ]
 
 
-class SummaryItem(models.Model):
+class SummaryItem(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     summary_id = models.UUIDField()
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     field_id = models.UUIDField()
     ordinal = models.IntegerField()
-    snapshot = models.JSONField()
+    snapshot = models.JSONField(null=True)
 
     class Meta:
         db_table = 'sjia"."summary_item'

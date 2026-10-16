@@ -1,0 +1,30 @@
+{
+  "clinical_validation": false,
+  "contracts": {
+    "archive": {
+      "contract_version": "fixed-model-invocation-1",
+      "kind": "archive",
+      "prompt_sha256": "5051e8fc07de22c8af5b69493b4c6c2c720488e395c4b82fa985ac07a0d029c4",
+      "schema_sha256": "c902264ce17e49dcd2d79fb017fb1747fb7fa74c58c8dd538250d6431526db8c"
+    },
+    "report": {
+      "contract_version": "fixed-model-invocation-1",
+      "kind": "report",
+      "prompt_sha256": "86b4a692c35010df5e042f9376ed57cf9a894b371db43d7daf2c154bba61ccf0",
+      "schema_sha256": "b43855a668e672a0a22b578d25d2257b3c05c8b2b9507310dfe3a99138a810ed"
+    },
+    "therapy": {
+      "contract_version": "fixed-model-invocation-1",
+      "kind": "therapy",
+      "prompt_sha256": "529d1d4baf52109d41d4c681f2aef9f603f49dda7a66fb06a7fd66b8035c80d2",
+      "schema_sha256": "094917272e9253d940c67bc8f6acad0c84f6a29c24fb6f8e9d64bffead2e8873"
+    },
+    "voice": {
+      "contract_version": "fixed-model-invocation-1",
+      "kind": "voice",
+      "prompt_sha256": "165656b9321470a4ea20e4abe3313ae17482ec65e208f46ddfdad945916e0101",
+      "schema_sha256": "1c5433c70a0d032d4a2012760c7e4a4499f5d1a8e4bb54b3263413378a0565b5"
+    }
+  },
+  "dataset": "SYNTHETIC_SOFTWARE_REGRESSION_ONLY"
+}

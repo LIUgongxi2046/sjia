@@ -1,12 +1,13 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowDown as ChevronDown, ChevronRight } from '../../components/ThreeDIcon';
 import { FileText, UsersRound } from '../../components/ThreeDIcon';
 import { ContextLink } from '../../components/ContextLink';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { useAccess } from '../../state/access';
-import { ApiError } from '../../api/client';
+import { useEndpointAccess } from '../../state/useEndpointAccess';
 import { searchArchives } from '../../api/archiveSearch';
 import { checkDeltaReceipt, prepareDelta, readDelta, readDeltaBatches, readDeltaDocumentHistory, readDeltaRequest, retryDelta, submitDelta } from '../../api/archiveDelta';
 import type { IntentView } from '../../../../frontend-design/types';
@@ -46,6 +47,7 @@ export function UI2DeltaPage() {
 }
 
 function DeltaContent() {
+  const boundary = useEndpointAccess();
   const access = useAccess(), navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const canRead = !!access.principalId && !!access.patientId && !access.loading && !access.error;
@@ -64,7 +66,7 @@ function DeltaContent() {
   const deltaId = params.get('delta'), intentId = params.get('request'), clientRequestId = params.get('client_request');
   const currentDocuments = documents?.items.map(row => row.document).filter(row => row.batch_id === batch) ?? [];
   const baselineDocuments = documents?.items.map(row => row.document).filter(row => row.batch_id === baseline) ?? [];
-  const edit = canRead && visible && !busy && !value && !identity && !deltaId && !intentId && !clientRequestId;
+  const edit = !boundary.blocked.current && canRead && visible && !busy && !value && !identity && !deltaId && !intentId && !clientRequestId;
 
   useEffect(() => {
     mounted.current = true;
@@ -76,25 +78,26 @@ function DeltaContent() {
     return () => { mounted.current = false; automatic.current = ''; pending.current?.abort(); document.removeEventListener('visibilitychange', change); };
   }, []);
   useEffect(() => {
-    if (!canRead) { pending.current?.abort(); setValue(null); setRequest(null); setIntent(null); automatic.current = ''; }
+    if (!canRead) { pending.current?.abort(); pending.current = null; running.current = false; setBusy(false); setValue(null); setRequest(null); setIdentity(null); setIntent(null); automatic.current = ''; }
+    if (boundary.blocked.current) return;
     const controller = new AbortController(); setBatches(null); setDocuments(null); setHistory({}); setDirectoryError(null);
     setLoading(canRead && visible);
     if (canRead && visible && access.patientId) void Promise.all([readDeltaBatches(access.patientId, undefined, controller.signal),
       searchArchives(access.patientId, { limit: 20 }, controller.signal)]).then(([batchList, documentList]) => {
-      if (!controller.signal.aborted) { setBatches(batchList); setDocuments(documentList); }
-    }, failure => { if (!(failure instanceof Error)) throw failure; if (!controller.signal.aborted) setDirectoryError(failure); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      if (boundary.current(controller.signal)) { setBatches(batchList); setDocuments(documentList); }
+    }, failure => { if (!(failure instanceof Error)) throw failure; if (boundary.current(controller.signal)) { setLoading(false); boundary.deny(failure); setDirectoryError(failure); setValue(null); setIdentity(null); setIntent(null); setRequest(null); } })
+      .finally(() => { if (boundary.current(controller.signal)) setLoading(false); });
     return () => controller.abort();
   }, [canRead, visible, access.patientId, reload]);
 
   function run(operation: (signal: AbortSignal) => Promise<void>) {
-    if (!canRead || !visible || running.current) return;
+    if (!canRead || !visible || running.current || !boundary.current()) return;
     const controller = new AbortController(); pending.current = controller; running.current = true; setBusy(true); setError(null);
-    void operation(controller.signal).then(undefined, failure => {
+    void Promise.resolve().then(() => { boundary.guard(controller.signal); return operation(controller.signal); }).then(undefined, failure => {
       if (!(failure instanceof Error)) throw failure;
-      if (!controller.signal.aborted && mounted.current) {
+      if (boundary.current(controller.signal) && mounted.current) {
         setError(failure);
-        if (failure instanceof ApiError && [401, 403].includes(failure.status)) { setValue(null); setRequest(null); void access.refresh(); }
+        if (boundary.deny(failure)) { setValue(null); setRequest(null); setIdentity(null); setIntent(null); setBatches(null); setDocuments(null); setHistory({}); setBatch(''); setBaseline(''); setBaselineVersions([]); }
       }
     }).finally(() => { if (pending.current === controller) {
       running.current = false; pending.current = null;
@@ -104,8 +107,9 @@ function DeltaContent() {
 
   async function adoptReceipt(receipt: WriteReceipt, original: DeltaIdentity, signal: AbortSignal, originalIntentId: string) {
     if (!access.patientId) throw new Error('摘要保存结果尚未取得当前患儿身份。');
+    boundary.guard(signal);
     const saved = await readDelta(receipt.resource_id, access.patientId, signal); checkDeltaReceipt(saved, receipt, original);
-    if (!signal.aborted && mounted.current) {
+    if (boundary.current(signal) && mounted.current) {
       setValue(saved); setBatch(saved.batch_id); setBaseline(saved.baseline_batch_id ?? ''); setBaselineVersions(saved.baseline_document_version_ids);
       automatic.current = `delta:${saved.delta_id}`;
       setParams(current => { const next = new URLSearchParams(current); next.set('batch', saved.batch_id); next.set('client_request', original.request_id);
@@ -119,18 +123,19 @@ function DeltaContent() {
       if (!access.patientId) throw new Error('尚未取得当前患儿身份。');
       if (deltaId) {
         const saved = await readDelta(deltaId, access.patientId, signal);
-        if (!signal.aborted) { setValue(saved); setBatch(saved.batch_id); setBaseline(saved.baseline_batch_id ?? ''); setBaselineVersions(saved.baseline_document_version_ids); }
+        if (boundary.current(signal)) { setValue(saved); setBatch(saved.batch_id); setBaseline(saved.baseline_batch_id ?? ''); setBaselineVersions(saved.baseline_document_version_ids); }
         return;
       }
       if (!intentId && !clientRequestId) throw new Error('尚无需要读取的原请求。');
-      if (!intentId && !batch) throw new Error('原请求尚未提供准确批次。');
+      const originalBatch = batch || params.get('batch');
+      if (!intentId && !originalBatch) throw new Error('原请求尚未提供准确批次。');
       const saved = await readDeltaRequest(intentId ?? clientRequestId!, signal,
-        intentId ? undefined : { request_id: clientRequestId!, target_key: `/archive-batches/${batch}/delta-summaries` });
+        intentId ? undefined : { request_id: clientRequestId!, target_key: `/archive-batches/${originalBatch}/delta-summaries` });
       const original: DeltaIdentity = { operation_id: 'archive_delta_create', target_key: saved.target_key,
         request_id: saved.request_id, schema_version: '2.0.0', payload: saved.delta_input };
       const currentBatch = /^\/archive-batches\/([0-9a-f-]{36})\/delta-summaries$/.exec(saved.target_key);
       if (!currentBatch) throw new Error('摘要原请求没有准确批次。');
-      if (!signal.aborted) {
+      if (boundary.current(signal)) {
         setIdentity(original); setRequest(saved); setBatch(currentBatch[1]); setBaseline(saved.delta_input.baseline_batch_id ?? '');
         setBaselineVersions(saved.delta_input.baseline_document_version_ids);
         setIntent({ intent_id: saved.intent_id, request_id: saved.request_id, generation: saved.generation, expires_at: saved.expires_at,
@@ -157,7 +162,7 @@ function DeltaContent() {
       setIdentity(original); automatic.current = `client:${original.request_id}`;
       setParams(current => { const next = new URLSearchParams(current); next.set('batch', batch); next.set('client_request', original.request_id); return next; }, { replace: true });
       const prepared = intent ?? await prepareDelta(original, signal);
-      if (signal.aborted) return;
+      if (!boundary.current(signal)) return;
       setIntent(prepared); automatic.current = `intent:${prepared.intent_id}`;
       setParams(current => { const next = new URLSearchParams(current); next.set('batch', batch); next.set('client_request', original.request_id);
         next.set('request', prepared.intent_id); return next; }, { replace: true });
@@ -170,7 +175,7 @@ function DeltaContent() {
     run(async signal => {
       if (!request || !identity) throw new Error('尚未取得准确原请求。');
       const prepared = await retryDelta(request, signal);
-      if (!signal.aborted) { setIntent(prepared); setRequest({ ...request, generation: prepared.generation, expires_at: prepared.expires_at, state: 'pending', may_retry: false }); }
+      if (boundary.current(signal)) { setIntent(prepared); setRequest({ ...request, generation: prepared.generation, expires_at: prepared.expires_at, state: 'pending', may_retry: false }); }
     });
   }
 
@@ -181,12 +186,12 @@ function DeltaContent() {
         if (!batches?.next_cursor) throw new Error('没有后续批次页面。');
         const next = await readDeltaBatches(access.patientId, batches.next_cursor, signal);
         if (next.snapshot_version !== batches.snapshot_version || next.items.some(item => batches.items.some(old => old.batch_id === item.batch_id))) throw new Error('批次目录已有更新，请重新读取。');
-        if (!signal.aborted) setBatches({ ...next, items: [...batches.items, ...next.items] });
+        if (boundary.current(signal)) setBatches({ ...next, items: [...batches.items, ...next.items] });
       } else {
         if (!documents?.next_cursor) throw new Error('没有后续文书页面。');
         const next = await searchArchives(access.patientId, { limit: 20, cursor: documents.next_cursor }, signal);
         if (next.snapshot_version !== documents.snapshot_version || next.items.some(item => documents.items.some(old => old.document.document_id === item.document.document_id))) throw new Error('文书目录已有更新，请重新读取。');
-        if (!signal.aborted) setDocuments({ ...next, items: [...documents.items, ...next.items] });
+        if (boundary.current(signal)) setDocuments({ ...next, items: [...documents.items, ...next.items] });
       }
     });
   }
@@ -197,7 +202,7 @@ function DeltaContent() {
       const old = history[document.document_id];
       const next = await readDeltaDocumentHistory(document.document_id, access.patientId, old?.next_cursor ?? undefined, signal);
       if (old && (old.snapshot_version !== next.snapshot_version || next.items.some(value => old.items.some(saved => saved.version_id === value.version_id)))) throw new Error('文书历史已有更新，请重新读取。');
-      if (!signal.aborted) setHistory(current => ({ ...current, [document.document_id]: { ...next, items: [...(old?.items ?? []), ...next.items] } }));
+      if (boundary.current(signal)) setHistory(current => ({ ...current, [document.document_id]: { ...next, items: [...(old?.items ?? []), ...next.items] } }));
     });
   }
 
@@ -213,19 +218,19 @@ function DeltaContent() {
   const readyToSubmit = canRead && visible && !!batch && !value && !busy && (identity ? request?.state === 'pending' && !request.may_retry : edit && !!currentDocuments.length);
 
   return <UI2FamilyFrame title="这次新增了什么" screenId="UI2-30" note="明确比较基准，逐条变化可以查看来源。" backTo="/archives/batches">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
     <section className="delta-hero"><FileText size={47} /><span className="eyebrow">本次资料更新</span><h2>看清新增，<br />也看清依据。</h2><p>每项变化，都能返回原始文书。</p></section>
-    <UI2ReadState loading={loading || busy} error={error ?? directoryError} onRetry={() => { automatic.current = ''; setReload(current => current + 1); if (deltaId || intentId || clientRequestId) inspect(); }} />
-    <section className="card form-card"><div className="pair"><span>比较基准</span><strong>{baseline ? identity && !value ? '原请求已保存的比较基准' : baselineBatch ? `${new Date(baselineBatch.received_at).toLocaleString('zh-CN')} · ${baselineVersions.length || baselineDocuments.length} 份文书版本` : '读取已保存基准' : '尚未选择'}</strong></div>
-      <div className="pair"><span>当前批次</span><strong>{batch ? currentBatch ? `${new Date(currentBatch.received_at).toLocaleString('zh-CN')} · ${currentBatch.counts.pages} 个原页` : '读取已保存批次' : '尚未提供'}</strong></div>
+    <UI2ReadState loading={loading || busy} error={error ?? directoryError} onRetry={() => boundary.revalidate(() => { automatic.current = ''; setError(null); setDirectoryError(null); setReload(current => current + 1); })} />
+    <section className="card form-card"><div className="pair"><span>比较基准</span><strong>{baseline ? identity && !value ? '原请求已保存的比较基准' : baselineBatch ? `${eventTimeLabel(baselineBatch.received_at)} · ${baselineVersions.length || baselineDocuments.length} 份文书版本` : '读取已保存基准' : '尚未选择'}</strong></div>
+      <div className="pair"><span>当前批次</span><strong>{batch ? currentBatch ? `${eventTimeLabel(currentBatch.received_at)} · ${currentBatch.counts.pages} 个原页` : '读取已保存批次' : '尚未提供'}</strong></div>
       <details><summary>选择批次及比较基准</summary><form onSubmit={event => { event.preventDefault(); if (!composing.current) submit(); }}
         onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
         onKeyDown={event => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || composing.current)) event.preventDefault(); }}>
         <label className="field"><span>当前批次</span><select aria-label="当前批次" disabled={!edit || loading} value={batch} onChange={event => { setBatch(event.target.value); setBaseline(''); setBaselineVersions([]); }}>
-          <option value="">请选择已保存批次</option>{batches?.items.map(row => <option key={row.batch_id} value={row.batch_id}>{new Date(row.received_at).toLocaleString('zh-CN')} · {row.counts.pages} 个原页</option>)}</select></label>
+          <option value="">请选择已保存批次</option>{batches?.items.map(row => <option key={row.batch_id} value={row.batch_id}>{eventTimeLabel(row.received_at)} · {row.counts.pages} 个原页</option>)}</select></label>
         <label className="field"><span>比较基准</span><select aria-label="比较基准" disabled={!edit || !batch || loading} value={baseline} onChange={event => { setBaseline(event.target.value);
           setBaselineVersions(documents?.items.filter(row => row.document.batch_id === event.target.value && row.document.batch_id !== batch).map(row => row.document.version_id) ?? []); }}>
-          <option value="">没有基准，仅整理本批内容</option>{batches?.items.map(row => <option key={row.batch_id} value={row.batch_id}>{new Date(row.received_at).toLocaleString('zh-CN')} · {row.counts.pages} 个原页</option>)}</select></label>
+          <option value="">没有基准，仅整理本批内容</option>{batches?.items.map(row => <option key={row.batch_id} value={row.batch_id}>{eventTimeLabel(row.received_at)} · {row.counts.pages} 个原页</option>)}</select></label>
         {baselineDocuments.map(document => <div className="field" key={document.document_id}><span>{documentLabels[document.document_type]} · {document.organization ?? '来源医院未知'}</span>
           <select aria-label={`比较文书版本 ${document.document_id}`} disabled={!edit || !history[document.document_id]} value={baselineVersions.find(id => history[document.document_id]?.items.some(row => row.version_id === id) || document.version_id === id) ?? ''}
             onChange={event => { const identities = new Set([document.version_id, ...(history[document.document_id]?.items.map(row => row.version_id) ?? [])]); setBaselineVersions(current => [...current.filter(id => !identities.has(id)), ...(event.target.value ? [event.target.value] : [])]); }}>
@@ -250,7 +255,7 @@ function DeltaContent() {
       </div>)}</section>) : <section className="card"><div className="empty"><span className="empty-icon"><FileText size={54} /></span><h3>{value ? '当前分类暂无已保存内容' : '尚无可生成的内容'}</h3><p>需要当前资料和明确基准。未知内容不会被补充为临床结论。</p></div></section>}
     {identity && !value && <section className="card"><h2>原请求保存结果需要核验</h2><p>重新读取原请求后，依据实际状态继续提交。</p><button className="text-action" disabled={busy} onClick={inspect}>查询原请求结果</button>
       {request?.may_retry && <button className="text-action" disabled={busy} onClick={retry}>重新准备原请求</button>}{readyToSubmit && <button className="button secondary" onClick={submit}>继续原请求提交</button>}</section>}
-    {value?.validity === 'valid' && <section className="card"><p>已保存 {new Date(value.created_at).toLocaleString('zh-CN')}；每条内容引用生成时的准确来源。</p><button className="text-action" disabled={busy} onClick={restart}>选择其他资料生成摘要</button></section>}
+    {value?.validity === 'valid' && <section className="card"><p>已保存 {eventTimeLabel(value.created_at)}；每条内容引用生成时的准确来源。</p><button className="text-action" disabled={busy} onClick={restart}>选择其他资料生成摘要</button></section>}
     <section className="card"><ContextLink className="list-row" to="/archives/batches"><span className="row-icon"><FileText size={30} /></span><span className="row-text"><strong>选择当前批次</strong></span><ChevronRight size={17} /></ContextLink>
       <ContextLink className="list-row" to="/summaries"><span className="row-icon"><FileText size={30} /></span><span className="row-text"><strong>查看就医摘要</strong><small>按时间范围整理原始资料</small></span><ChevronRight size={17} /></ContextLink></section>
   </UI2FamilyFrame>;

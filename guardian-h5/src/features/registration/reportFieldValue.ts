@@ -12,6 +12,9 @@ export interface ReportItemInput {
   photo_id?: string;
   source_text?: string;
   sampleTime?: TimeInput;
+  timeCandidates?: { item: import('../../api/endpoints').ReportTimeCandidate | null;
+    reportSample: import('../../api/endpoints').ReportTimeCandidate | null;
+    reportResult: import('../../api/endpoints').ReportTimeCandidate | null; sourceText: string };
   dictionaryEntry?: { id: string; concept_code: string; version: string } | null;
 }
 

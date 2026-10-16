@@ -1,90 +1,757 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
-    "Uuid": {"type": "string", "format": "uuid"},
-    "Version": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 19},
-    "NullableText": {"type": ["string", "null"]},
+    "Uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "Version": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "maxLength": 19
+    },
+    "NullableText": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "SummaryInput": {
-      "type": "object", "additionalProperties": false,
-      "required": ["from_date", "to_date", "scope_timezone", "include_unknown_time", "record_kinds", "include_source_status"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from_date",
+        "to_date",
+        "scope_timezone",
+        "include_unknown_time",
+        "record_kinds",
+        "include_source_status"
+      ],
       "properties": {
-        "from_date": {"type": "string", "format": "date"}, "to_date": {"type": "string", "format": "date"},
-        "scope_timezone": {"type": "string", "minLength": 1}, "include_unknown_time": {"type": "boolean"},
-        "record_kinds": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"enum": ["observation", "report", "therapy"]}},
-        "include_source_status": {"type": "boolean"}
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope_timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "include_unknown_time": {
+          "type": "boolean"
+        },
+        "record_kinds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "observation",
+              "report",
+              "therapy"
+            ]
+          }
+        },
+        "include_source_status": {
+          "type": "boolean"
+        }
       }
     },
     "SummaryListItem": {
-      "type": "object", "additionalProperties": false,
-      "required": ["summary_id", "patient_id", "task_id", "from_date", "to_date", "validity", "generated_at", "needs_regeneration"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary_id",
+        "patient_id",
+        "task_id",
+        "from_date",
+        "to_date",
+        "validity",
+        "generated_at",
+        "needs_regeneration"
+      ],
       "properties": {
-        "summary_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "task_id": {"$ref": "#/$defs/Uuid"},
-        "from_date": {"type": "string", "format": "date"}, "to_date": {"type": "string", "format": "date"},
-        "validity": {"enum": ["valid", "invalid"]}, "generated_at": {"type": "string", "format": "date-time"}, "needs_regeneration": {"type": "boolean"}
+        "summary_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "task_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "validity": {
+          "enum": [
+            "valid",
+            "invalid"
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "needs_regeneration": {
+          "type": "boolean"
+        }
       }
     },
     "SummaryList": {
-      "type": "object", "additionalProperties": false, "required": ["patient_id", "summaries"],
-      "properties": {"patient_id": {"$ref": "#/$defs/Uuid"}, "summaries": {"type": "array", "items": {"$ref": "#/$defs/SummaryListItem"}}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_id",
+        "summaries"
+      ],
+      "properties": {
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "summaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SummaryListItem"
+          }
+        }
+      }
     },
     "SummarySnapshot": {
-      "type": "object", "additionalProperties": false,
-      "required": ["record_id", "record_version_id", "kind", "origin_type", "source_organization", "quality_status", "field", "confirmation_snapshot_state", "source_anchor_snapshot_state"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "record_version_id",
+        "kind",
+        "origin_type",
+        "source_organization",
+        "quality_status",
+        "field",
+        "confirmation_snapshot_state",
+        "source_anchor_snapshot_state"
+      ],
       "properties": {
-        "record_id": {"$ref": "#/$defs/Uuid"}, "record_version_id": {"$ref": "#/$defs/Uuid"},
-        "kind": {"$ref": "record-search.schema.json#/$defs/Kind"}, "origin_type": {"$ref": "record-search.schema.json#/$defs/Origin"},
-        "source_organization": {"$ref": "#/$defs/NullableText"}, "quality_status": {"enum": ["pending", "valid", "needs_correction"]},
-        "field": {"$ref": "record-search.schema.json#/$defs/RecordFieldView"}, "confirmation_snapshot_state": {"enum": ["recorded", "not_recorded"]},
-        "source_anchor_snapshot_state": {"enum": ["recorded", "not_recorded"]}
+        "record_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "record_version_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "kind": {
+          "$ref": "record-search.schema.json#/$defs/Kind"
+        },
+        "origin_type": {
+          "$ref": "record-search.schema.json#/$defs/Origin"
+        },
+        "source_organization": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "quality_status": {
+          "enum": [
+            "pending",
+            "valid",
+            "needs_correction"
+          ]
+        },
+        "field": {
+          "$ref": "record-search.schema.json#/$defs/RecordFieldView"
+        },
+        "confirmation_snapshot_state": {
+          "enum": [
+            "recorded",
+            "not_recorded"
+          ]
+        },
+        "source_anchor_snapshot_state": {
+          "enum": [
+            "recorded",
+            "not_recorded"
+          ]
+        },
+        "source_definition_revision_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
       }
     },
     "SummaryView": {
-      "type": "object", "additionalProperties": false,
-      "required": ["summary_id", "patient_id", "display_id", "task_id", "from_date", "to_date", "scope_timezone", "include_unknown_time", "validity", "generated_at", "needs_regeneration", "record_kinds", "include_source_status", "environment", "template_id", "visibility_policy_id", "template_checksum", "visibility_checksum", "items"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary_id",
+        "patient_id",
+        "display_id",
+        "task_id",
+        "from_date",
+        "to_date",
+        "scope_timezone",
+        "include_unknown_time",
+        "validity",
+        "generated_at",
+        "needs_regeneration",
+        "record_kinds",
+        "include_source_status",
+        "environment",
+        "template_id",
+        "visibility_policy_id",
+        "template_checksum",
+        "visibility_checksum",
+        "items"
+      ],
       "properties": {
-        "summary_id": {"$ref": "#/$defs/Uuid"}, "patient_id": {"$ref": "#/$defs/Uuid"}, "display_id": {"type": "string", "minLength": 1}, "task_id": {"$ref": "#/$defs/Uuid"},
-        "from_date": {"type": "string", "format": "date"}, "to_date": {"type": "string", "format": "date"},
-        "scope_timezone": {"type": "string", "minLength": 1}, "include_unknown_time": {"type": "boolean"},
-        "validity": {"enum": ["valid", "invalid"]}, "generated_at": {"type": "string", "format": "date-time"}, "needs_regeneration": {"type": "boolean"},
-        "record_kinds": {"type": ["array", "null"], "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"enum": ["observation", "report", "therapy"]}},
-        "include_source_status": {"type": ["boolean", "null"]}, "environment": {"$ref": "#/$defs/NullableText"},
-        "template_id": {"$ref": "#/$defs/Uuid"}, "visibility_policy_id": {"$ref": "#/$defs/Uuid"},
-        "template_checksum": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}, "visibility_checksum": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
-        "items": {"type": "array", "items": {
-          "type": "object", "additionalProperties": false, "required": ["record_version_id", "field_id", "ordinal", "snapshot"],
-          "properties": {"record_version_id": {"$ref": "#/$defs/Uuid"}, "field_id": {"$ref": "#/$defs/Uuid"}, "ordinal": {"type": "integer", "minimum": 1}, "snapshot": {"$ref": "#/$defs/SummarySnapshot"}}
-        }}
+        "summary_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "display_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope_timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "include_unknown_time": {
+          "type": "boolean"
+        },
+        "validity": {
+          "enum": [
+            "valid",
+            "invalid"
+          ]
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "needs_regeneration": {
+          "type": "boolean"
+        },
+        "record_kinds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "observation",
+              "report",
+              "therapy"
+            ]
+          }
+        },
+        "include_source_status": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "environment": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "template_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "visibility_policy_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "template_checksum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "visibility_checksum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "record_version_id",
+              "field_id",
+              "ordinal",
+              "snapshot"
+            ],
+            "properties": {
+              "record_version_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "field_id": {
+                "$ref": "#/$defs/Uuid"
+              },
+              "ordinal": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "snapshot": {
+                "$ref": "#/$defs/SummarySnapshot"
+              }
+            }
+          }
+        },
+        "trend_projection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SummaryTrendProjection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       }
     },
     "SummaryTaskView": {
-      "type": "object", "additionalProperties": false,
-      "required": ["task_id", "task_type", "request_id", "accepted_at", "status", "status_version", "poll_after_ms", "allowed_actions", "result_type", "result_ref", "error_code"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_type",
+        "request_id",
+        "accepted_at",
+        "status",
+        "status_version",
+        "poll_after_ms",
+        "allowed_actions",
+        "result_type",
+        "result_ref",
+        "error_code"
+      ],
       "properties": {
-        "task_id": {"$ref": "#/$defs/Uuid"}, "task_type": {"const": "summary"}, "request_id": {"type": ["string", "null"], "format": "uuid"},
-        "accepted_at": {"type": "string", "format": "date-time"}, "status": {"enum": ["accepted", "blocked", "queued", "running", "awaiting_confirmation", "completed", "failed", "uncertain", "awaiting_resolution", "cancel_requested", "cancelled", "superseded"]},
-        "status_version": {"$ref": "#/$defs/Version"}, "poll_after_ms": {"type": ["integer", "null"], "minimum": 1},
-        "allowed_actions": {"type": "array", "uniqueItems": true, "items": {"const": "task_cancel"}},
-        "result_type": {"enum": ["summary", null]}, "result_ref": {"type": ["string", "null"], "format": "uuid"}, "error_code": {"$ref": "#/$defs/NullableText"}
+        "task_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "task_type": {
+          "const": "summary"
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "accepted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "blocked",
+            "queued",
+            "running",
+            "awaiting_confirmation",
+            "completed",
+            "failed",
+            "uncertain",
+            "awaiting_resolution",
+            "cancel_requested",
+            "cancelled",
+            "superseded"
+          ]
+        },
+        "status_version": {
+          "$ref": "#/$defs/Version"
+        },
+        "poll_after_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "allowed_actions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "const": "task_cancel"
+          }
+        },
+        "result_type": {
+          "enum": [
+            "summary",
+            null
+          ]
+        },
+        "result_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "error_code": {
+          "$ref": "#/$defs/NullableText"
+        }
       }
     },
     "SummaryReceipt": {
-      "type": "object", "additionalProperties": false, "required": ["resource_type", "resource_id", "version", "saved_at", "request_id"],
-      "properties": {"resource_type": {"const": "summary"}, "resource_id": {"$ref": "#/$defs/Uuid"}, "version": {"const": "1"}, "saved_at": {"type": "string", "format": "date-time"}, "request_id": {"$ref": "#/$defs/Uuid"}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_type",
+        "resource_id",
+        "version",
+        "saved_at",
+        "request_id"
+      ],
+      "properties": {
+        "resource_type": {
+          "enum": [
+            "summary",
+            "task"
+          ]
+        },
+        "resource_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "version": {
+          "const": "1"
+        },
+        "saved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Uuid"
+        }
+      }
     },
     "SummaryRequestView": {
-      "type": "object", "additionalProperties": false,
-      "required": ["patient_id", "intent_id", "request_id", "operation_id", "target_key", "prepared_at", "state", "may_retry", "receipt", "error_code", "generation", "expires_at", "payload_sha256", "summary_input"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_id",
+        "intent_id",
+        "request_id",
+        "operation_id",
+        "target_key",
+        "prepared_at",
+        "state",
+        "may_retry",
+        "receipt",
+        "error_code",
+        "generation",
+        "expires_at",
+        "payload_sha256",
+        "summary_input"
+      ],
       "properties": {
-        "patient_id": {"$ref": "#/$defs/Uuid"}, "intent_id": {"$ref": "#/$defs/Uuid"}, "request_id": {"$ref": "#/$defs/Uuid"}, "operation_id": {"const": "summary_create"},
-        "target_key": {"type": "string", "pattern": "^/api/patients/[0-9a-f-]{36}/summaries$"}, "prepared_at": {"type": "string", "format": "date-time"}, "state": {"enum": ["pending", "committed", "failed"]}, "may_retry": {"type": "boolean"},
-        "receipt": {"oneOf": [{"$ref": "#/$defs/SummaryReceipt"}, {"type": "null"}]}, "error_code": {"$ref": "#/$defs/NullableText"}, "generation": {"$ref": "#/$defs/Version"},
-        "expires_at": {"type": "string", "format": "date-time"}, "payload_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-        "summary_input": {"oneOf": [{"$ref": "#/$defs/SummaryInput"}, {"type": "null"}]}
+        "task": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SummaryTaskView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "intent_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "operation_id": {
+          "const": "summary_create"
+        },
+        "target_key": {
+          "type": "string",
+          "pattern": "^/api/patients/[0-9a-f-]{36}/summaries$"
+        },
+        "prepared_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "pending",
+            "committed",
+            "failed"
+          ]
+        },
+        "may_retry": {
+          "type": "boolean"
+        },
+        "receipt": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SummaryReceipt"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "generation": {
+          "$ref": "#/$defs/Version"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "summary_input": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SummaryInput"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       }
     },
     "SummaryRequestList": {
-      "type": "object", "additionalProperties": false, "required": ["patient_id", "requests"],
-      "properties": {"patient_id": {"$ref": "#/$defs/Uuid"}, "requests": {"type": "array", "items": {"$ref": "#/$defs/SummaryRequestView"}}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_id",
+        "requests"
+      ],
+      "properties": {
+        "patient_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "requests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SummaryRequestView"
+          }
+        }
+      }
+    },
+    "SummaryTrendPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_id",
+        "record_version_id",
+        "source_definition_revision_id",
+        "plot_at",
+        "raw_value",
+        "raw_unit",
+        "plottable",
+        "reason_codes"
+      ],
+      "properties": {
+        "field_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "record_version_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "source_definition_revision_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "plot_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "raw_value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
+        },
+        "raw_unit": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "plottable": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "EXACT_KNOWN_VALUE_REQUIRED",
+              "FINITE_VALUE_REQUIRED",
+              "UNIT_UNKNOWN",
+              "EXACT_MEDICAL_TIME_REQUIRED",
+              "POINT_NOT_PLOTTABLE",
+              "UNPOSITIONED_TIME_GAP",
+              "CONCEPT_UNKNOWN",
+              "DUPLICATE_MEDICAL_TIME",
+              "STRICT_TIME_ORDER_REQUIRED",
+              "TIME_PRECISION_MISMATCH",
+              "UNIT_MISMATCH",
+              "METHOD_UNKNOWN",
+              "METHOD_MISMATCH",
+              "SOURCE_DEFINITION_UNKNOWN",
+              "SOURCE_DEFINITION_MISMATCH",
+              "SOURCE_ORGANIZATION_UNKNOWN",
+              "SOURCE_ORGANIZATION_MISMATCH",
+              "SOURCE_TYPE_UNKNOWN",
+              "SOURCE_TYPE_MISMATCH"
+            ]
+          }
+        }
+      }
+    },
+    "SummaryTrendSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from_field_id",
+        "to_field_id",
+        "connect",
+        "reason_codes"
+      ],
+      "properties": {
+        "from_field_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "to_field_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "connect": {
+          "type": "boolean"
+        },
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "EXACT_KNOWN_VALUE_REQUIRED",
+              "FINITE_VALUE_REQUIRED",
+              "UNIT_UNKNOWN",
+              "EXACT_MEDICAL_TIME_REQUIRED",
+              "POINT_NOT_PLOTTABLE",
+              "UNPOSITIONED_TIME_GAP",
+              "CONCEPT_UNKNOWN",
+              "DUPLICATE_MEDICAL_TIME",
+              "STRICT_TIME_ORDER_REQUIRED",
+              "TIME_PRECISION_MISMATCH",
+              "UNIT_MISMATCH",
+              "METHOD_UNKNOWN",
+              "METHOD_MISMATCH",
+              "SOURCE_DEFINITION_UNKNOWN",
+              "SOURCE_DEFINITION_MISMATCH",
+              "SOURCE_ORGANIZATION_UNKNOWN",
+              "SOURCE_ORGANIZATION_MISMATCH",
+              "SOURCE_TYPE_UNKNOWN",
+              "SOURCE_TYPE_MISMATCH"
+            ]
+          }
+        }
+      }
+    },
+    "SummaryTrendSeries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "concept_code",
+        "field_code",
+        "points",
+        "segments"
+      ],
+      "properties": {
+        "concept_code": {
+          "$ref": "#/$defs/NullableText"
+        },
+        "field_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SummaryTrendPoint"
+          }
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SummaryTrendSegment"
+          }
+        }
+      }
+    },
+    "SummaryTrendProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "snapshot_sha256",
+        "clinical_interpretation",
+        "series"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "summary-raw-trend-1"
+        },
+        "snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "clinical_interpretation": {
+          "const": false
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SummaryTrendSeries"
+          }
+        }
+      }
     }
   }
 }

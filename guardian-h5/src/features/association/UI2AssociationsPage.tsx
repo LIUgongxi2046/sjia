@@ -1,7 +1,9 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowRight, ChevronRight, ShieldCheck } from 'lucide-react';
-import { UsersRound } from '../../components/ThreeDIcon';
+import { ChevronRight as ArrowRight, ChevronRight, ShieldCheck } from '../../components/ThreeDIcon';
+import childIllustration from '../../../../ui-delivery/identity/master/toddler-boy-autumn.png';
+import { Plus, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2Sheet } from '../../components/UI2Frame';
 import { UI2ReadState } from '../../components/UI2ReadState';
@@ -9,6 +11,7 @@ import { ContextLink } from '../../components/ContextLink';
 import { useAccess } from '../../state/access';
 import { useRelationResource } from '../../api/useRelationResource';
 import { UI2ApplicationWithdrawal } from './UI2ApplicationWithdrawal';
+import { ApplicationDeclarationDetails } from './ApplicationDeclarationDetails';
 import type { ApplicationItem, ApplicationView, RelationItem, RelationView } from '../../api/endpoints';
 
 const applicationLabels: Record<ApplicationItem['status'], string> = {
@@ -42,8 +45,9 @@ function ApplicationDetails({ applicationId, onClose, onChanged }: { application
       <div className="pair"><span>保存版本</span><strong>{application.version}</strong></div>
       <div className="pair"><span>申请权限</span><strong>{application.requested_access
         ? ({ read: '查看资料', read_write: '查看与登记', review_decides: '按核验结果确定' } as const)[application.requested_access] : '尚未保存申请权限'}</strong></div>
-      <div className="pair"><span>申请时间</span><strong>{new Date(application.created_at).toLocaleString()}</strong></div>
+      <div className="pair"><span>申请时间</span><strong>{eventTimeLabel(application.created_at)}</strong></div>
       <div className="pair"><span>患儿标识</span><strong>{application.patient_id ?? '尚未匹配患儿'}</strong></div>
+      <ApplicationDeclarationDetails declaration={application.applicant_declaration} />
       <h3>申请说明及证明依据</h3><p>{application.evidence_ref}</p>
       {application.note !== null && <><h3>补充说明</h3><p>{application.note}</p></>}
       <div className="pair"><span>处理说明</span><strong>{application.reason ?? '尚未提供'}</strong></div>
@@ -102,18 +106,19 @@ export function UI2AssociationsPage() {
     {items && (items.length === 0 ? <section className="card"><div className="empty"><span className="empty-icon"><UsersRound size={54} /></span>
       <h3>尚无可访问的患儿</h3><p>每位监护人分别申请，按获准范围查看与登记资料。</p>
       <button className="text-action" onClick={() => navigate('/associations/new')}>申请关联<ArrowRight size={16} /></button>
-    </div></section> : items.map(relation => <section className="card form-card" key={relation.relation_id}>
-      <span className="badge neutral">{relation.patient_id === access.patientId ? '当前患儿' : relationLabel(relation, now)}</span>
-      <h2>{relation.display_id}</h2><div className="pair"><span>关联状态</span><strong>{relationLabel(relation, now)}</strong></div>
-      <div className="pair"><span>本人权限</span><strong>{activeRelation(relation, now) ? relation.actions.map(action => actionLabels[action]).filter(Boolean).join('、') || '尚无资料访问权限' : '当前关联不可访问资料'}</strong></div>
-      <ContextLink className="list-row" to={`/associations/${relation.relation_id}`}><span className="row-text"><strong>查看关联详情</strong><small>本人权限与核验状态</small></span><ChevronRight size={17} /></ContextLink>
-      {activeRelation(relation, now) && relation.patient_id !== access.patientId && <button className="text-action"
-        disabled={selectingRelationId !== null || !access.relations.some(value => value.relation_id === relation.relation_id
-          && value.version === relation.version && activeRelation(value, now) && value.actions.includes('read_raw'))}
-        onClick={() => { void selectRelation(relation); }}>{selectingRelationId === relation.relation_id ? '正在保存选择' : '选择此患儿'}<ArrowRight size={16} /></button>}
-    </section>))}
-    <section className="card">{items?.length ? <button className="list-row" onClick={() => navigate('/associations/new')}><span className="row-text"><strong>申请关联</strong><small>每位监护人分别申请</small></span><ChevronRight size={17} /></button>
-      : <button className="list-row" disabled><span className="row-text"><strong>查看关联详情</strong><small>本人权限与核验状态</small></span><ChevronRight size={17} /></button>}</section>
+    </div></section> : items.map(relation => <div className="rich-relation-group" key={relation.relation_id}>
+      <section className="rich-child-identity"><figure><img src={childIllustration} alt="儿童形象示意，不代表患儿的年龄或性别" /><figcaption>形象示意</figcaption></figure>
+        <div><span className="badge neutral">{relation.patient_id === access.patientId ? '当前患儿' : '本人关联'}</span>
+          <h2>{relation.display_id}</h2><p>{relationLabel(relation, now)}</p>
+          {activeRelation(relation, now) && relation.patient_id !== access.patientId && <button className="text-action"
+            disabled={selectingRelationId !== null || !access.relations.some(value => value.relation_id === relation.relation_id
+              && value.version === relation.version && activeRelation(value, now) && value.actions.includes('read_raw'))}
+            onClick={() => { void selectRelation(relation); }}>{selectingRelationId === relation.relation_id ? '正在保存选择' : '选择此患儿'}<ArrowRight size={16} /></button>}
+        </div>
+      </section>
+      <section className="card"><ContextLink className="list-row" to={`/associations/${relation.relation_id}`}><span className="row-icon"><ShieldCheck size={31} /></span><span className="row-text"><strong>关联与权限</strong><small>{activeRelation(relation, now) ? relation.actions.map(action => actionLabels[action]).filter(Boolean).join('、') || '尚无资料访问权限' : '当前关联不可访问资料'}</small></span><ChevronRight size={17} /></ContextLink></section>
+    </div>))}
+    <button className="button" onClick={() => navigate('/associations/new')}><Plus size={23} />申请关联患儿</button>
     {!canRead && <button className="text-action" onClick={() => navigate('/associations/new')}>查看关联申请入口<ArrowRight size={16} /></button>}
     {canRead && <details className="card form-card"><summary>本人申请</summary>
       <UI2ReadState requirePatient={false} loading={applications.loading} error={applications.error} onRetry={applications.reload} />
@@ -150,21 +155,26 @@ export function UI2AssociationDetailPage() {
   const permission = (action: string) => relation ? active && relation.actions.includes(action) ? '已获准' : '未获准' : '待核验';
   return <UI2FamilyFrame title="关联详情" screenId="UI2-20" note="关联和本人访问范围均以当前核验结果为依据。" backTo="/associations">
     <UI2ReadState requirePatient={false} loading={resource.loading} error={resource.error} onRetry={resource.reload} />
-    <section className="card form-card"><span className="badge neutral">{relation ? state : '尚未选择关联'}</span><h2>本人访问范围</h2>
+    <div className="patient rich-record-patient"><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '尚未选择关联'}</strong><small>本人关联与访问范围</small></span></div>
+    <section className={`rich-relation-status${active ? ' active' : ''}`} role="status"><ShieldCheck size={38} /><h2>{relation ? (active ? '关联有效' : state) : '尚未选择关联'}</h2><p>本人权限以当前核验结果为准</p></section>
+    <section className="card form-card">
       <div className="pair"><span>患儿标识</span><strong>{relation?.display_id ?? '待核验'}</strong></div>
-      <div className="pair"><span>关联状态</span><strong>{state}</strong></div>
-      <div className="pair"><span>允许查看</span><strong>{permission('read_raw')}</strong></div>
-      <div className="pair"><span>允许登记</span><strong>{permission('write_record')}</strong></div>
-      <div className="pair"><span>允许更正</span><strong>{permission('correct_record')}</strong></div>
-      <div className="pair"><span>允许接收提示</span><strong>{permission('receive_alert')}</strong></div>
+      <div className="pair"><span>当前状态</span><strong>{state}</strong></div>
+    </section>
+    <div className="section-heading"><h2>本人权限</h2></div>
+    <section className="card form-card rich-relation-permissions">
+      <div className="pair"><span>允许查看</span><strong className="badge neutral" data-granted={permission('read_raw') === '已获准'}>{permission('read_raw')}</strong></div>
+      <div className="pair"><span>允许登记</span><strong className="badge neutral" data-granted={permission('write_record') === '已获准'}>{permission('write_record')}</strong></div>
+      <div className="pair"><span>允许更正</span><strong className="badge neutral" data-granted={permission('correct_record') === '已获准'}>{permission('correct_record')}</strong></div>
+      <div className="pair"><span>允许接收提示</span><strong className="badge neutral" data-granted={permission('receive_alert') === '已获准'}>{permission('receive_alert')}</strong></div>
     </section>
     <div className="note blue"><ShieldCheck size={17} /><p>关联撤销后，后续读写和提示接收均需重新核验。</p></div>
     <button className="button secondary" onClick={() => navigate('/associations')}>返回患儿管理</button>
     {relation && <details className="card form-card"><summary>关联变化与版本</summary>
       <div className="pair"><span>关联版本</span><strong>{relation.version}</strong></div>
       <div className="pair"><span>授权版本</span><strong>{relation.auth_epoch}</strong></div>
-      <div className="pair"><span>生效时间</span><strong>{new Date(relation.valid_from).toLocaleString()}</strong></div>
-      <div className="pair"><span>有效期限</span><strong>{relation.valid_until ? new Date(relation.valid_until).toLocaleString() : '未指定期限'}</strong></div>
+      <div className="pair"><span>生效时间</span><strong>{eventTimeLabel(relation.valid_from)}</strong></div>
+      <div className="pair"><span>有效期限</span><strong>{relation.valid_until ? eventTimeLabel(relation.valid_until) : '未指定期限'}</strong></div>
       <p>页面展示当前读取到的授权动作。每次读取、登记、更正及接收仍需检查本人身份、关联、字段与记录范围以及运行环境。</p>
       <p>关联变化后重新检查权限，历史资料的保存范围按照资料使用规则处理。</p>
     </details>}

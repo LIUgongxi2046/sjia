@@ -1,0 +1,550 @@
+{
+  "$defs": {
+    "CorpusFact": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Fact Ref",
+          "type": "string"
+        },
+        "field_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "record_version_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "verification_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Verification Id"
+        },
+        "reference_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Reference Sha256",
+          "type": "string"
+        },
+        "source_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Source Ref",
+          "type": "string"
+        },
+        "available_at": {
+          "format": "date-time",
+          "title": "Available At",
+          "type": "string"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Verified At"
+        }
+      },
+      "required": [
+        "fact_ref",
+        "field_id",
+        "record_version_id",
+        "verification_id",
+        "reference_sha256",
+        "source_ref",
+        "available_at",
+        "verified_at"
+      ],
+      "title": "CorpusFact",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "patient_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "period_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Period Id",
+          "type": "string"
+        },
+        "label_state": {
+          "enum": [
+            "positive",
+            "unknown"
+          ],
+          "title": "Label State",
+          "type": "string"
+        },
+        "reference_answer_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference Answer Ref"
+        },
+        "reference_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference At"
+        },
+        "valid_alert_start": {
+          "format": "date-time",
+          "title": "Valid Alert Start",
+          "type": "string"
+        },
+        "valid_alert_end": {
+          "format": "date-time",
+          "title": "Valid Alert End",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "patient_id",
+        "period_id",
+        "label_state",
+        "reference_answer_ref",
+        "reference_at",
+        "valid_alert_start",
+        "valid_alert_end"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "PairedStep": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "assessment_at": {
+          "format": "date-time",
+          "title": "Assessment At",
+          "type": "string"
+        },
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "corpus_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Corpus Sha256",
+          "type": "string"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/CorpusFact"
+          },
+          "title": "Facts",
+          "type": "array"
+        },
+        "static": {
+          "$ref": "#/$defs/ReplayExecution"
+        },
+        "dynamic": {
+          "$ref": "#/$defs/ReplayExecution"
+        }
+      },
+      "required": [
+        "id",
+        "assessment_at",
+        "known_at",
+        "corpus_sha256",
+        "facts",
+        "static",
+        "dynamic"
+      ],
+      "title": "PairedStep",
+      "type": "object"
+    },
+    "PatientPartition": {
+      "additionalProperties": false,
+      "properties": {
+        "patient_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "partition": {
+          "enum": [
+            "development",
+            "validation"
+          ],
+          "title": "Partition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "patient_id",
+        "partition"
+      ],
+      "title": "PatientPartition",
+      "type": "object"
+    },
+    "PeriodV2": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "patient_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "label_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Label Id",
+          "type": "string"
+        },
+        "label_state": {
+          "enum": [
+            "positive",
+            "negative",
+            "unknown"
+          ],
+          "title": "Label State",
+          "type": "string"
+        },
+        "reference_answer_ref": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference Answer Ref"
+        },
+        "start": {
+          "format": "date-time",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date-time",
+          "title": "End",
+          "type": "string"
+        },
+        "subgroups": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Subgroups",
+          "type": "object"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/PairedStep"
+          },
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "patient_id",
+        "label_id",
+        "label_state",
+        "reference_answer_ref",
+        "start",
+        "end",
+        "subgroups",
+        "steps"
+      ],
+      "title": "PeriodV2",
+      "type": "object"
+    },
+    "Prompt": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Id",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "positive",
+            "negative",
+            "unknown"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "outcome_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Outcome Ref",
+          "type": "string"
+        },
+        "matched_event_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Matched Event Id"
+        },
+        "occurrence": {
+          "enum": [
+            "first",
+            "repeat"
+          ],
+          "title": "Occurrence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "at",
+        "outcome",
+        "outcome_ref",
+        "matched_event_id",
+        "occurrence"
+      ],
+      "title": "Prompt",
+      "type": "object"
+    },
+    "ReplayExecution": {
+      "additionalProperties": false,
+      "properties": {
+        "execution_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Execution Ref",
+          "type": "string"
+        },
+        "task_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Task Id",
+          "type": "string"
+        },
+        "rule_config_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Rule Config Id",
+          "type": "string"
+        },
+        "execution_input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Execution Input Sha256",
+          "type": "string"
+        },
+        "result_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Result Sha256",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "insufficient"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "used_fact_refs": {
+          "items": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "title": "Used Fact Refs",
+          "type": "array"
+        },
+        "prompts": {
+          "items": {
+            "$ref": "#/$defs/Prompt"
+          },
+          "maxItems": 1,
+          "title": "Prompts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "execution_ref",
+        "task_id",
+        "rule_config_id",
+        "execution_input_sha256",
+        "result_sha256",
+        "status",
+        "used_fact_refs",
+        "prompts"
+      ],
+      "title": "ReplayExecution",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "clinical-result-capture-2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "data_mode": {
+      "enum": [
+        "synthetic",
+        "clinical"
+      ],
+      "title": "Data Mode",
+      "type": "string"
+    },
+    "mode": {
+      "const": "replay",
+      "title": "Mode",
+      "type": "string"
+    },
+    "dataset_version_id": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Dataset Version Id",
+      "type": "string"
+    },
+    "dataset_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Dataset Checksum",
+      "type": "string"
+    },
+    "implementation_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Implementation Sha256",
+      "type": "string"
+    },
+    "configuration_checksums": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "title": "Configuration Checksums",
+      "type": "object"
+    },
+    "measurement_plan_ref": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Measurement Plan Ref",
+      "type": "string"
+    },
+    "captured_at": {
+      "format": "date-time",
+      "title": "Captured At",
+      "type": "string"
+    },
+    "patients": {
+      "items": {
+        "$ref": "#/$defs/PatientPartition"
+      },
+      "minItems": 1,
+      "title": "Patients",
+      "type": "array"
+    },
+    "periods": {
+      "items": {
+        "$ref": "#/$defs/PeriodV2"
+      },
+      "minItems": 1,
+      "title": "Periods",
+      "type": "array"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/Event"
+      },
+      "title": "Events",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "data_mode",
+    "mode",
+    "dataset_version_id",
+    "dataset_checksum",
+    "implementation_sha256",
+    "configuration_checksums",
+    "measurement_plan_ref",
+    "captured_at",
+    "patients",
+    "periods",
+    "events"
+  ],
+  "title": "ClinicalCaptureV2",
+  "type": "object"
+}

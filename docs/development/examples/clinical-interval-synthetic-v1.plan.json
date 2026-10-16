@@ -1,0 +1,131 @@
+{
+  "schema_version": "clinical-measurement-plan-2",
+  "plan_ref": "urn:sjia:source-revision:edc78b9b-5b09-5e2c-962f-0724a19a2984",
+  "matching_policy_ref": "urn:sjia:source-revision:07b633bb-5b31-5b1b-873c-543017c543df",
+  "matching_mode": "independent_explicit_pairings",
+  "confidence_interval_protocol_ref": "urn:sjia:source-revision:ba4e93f9-9d5d-5514-9334-c3f1cbe22f9a",
+  "subgroup_dimensions": [
+    "treatment",
+    "age",
+    "infection",
+    "completeness"
+  ],
+  "fixed_before": "2026-01-01T00:00:00Z",
+  "criteria_refs": [
+    "urn:sjia:source-revision:d6caa139-a788-5a59-b3c6-a8fa47d27d40"
+  ],
+  "static_criterion": "classification_meets",
+  "dynamic_criterion": "decision_met",
+  "assessability": "all_scheduled_steps_completed",
+  "occurrence_policy": "first_positive_then_repeat",
+  "reset_policy": "period_boundary_only",
+  "schedule": [
+    {
+      "assessment_at": "2026-01-01T00:50:00Z",
+      "known_at": "2026-01-01T00:50:00Z",
+      "corpus_sha256": "3f2b3e6888e6d3552eb7bcdd9af5549fe01c64b2db02f3390b6b7a00c273989a",
+      "period_id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "step_id": "step-0",
+      "static_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "dynamic_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "static_policies": {
+        "window_policy_id": "899312a4-270d-555d-9864-00809503a1a8",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      },
+      "dynamic_policies": {
+        "input_rule_id": "6c78a3d2-2e10-517e-a89d-05580bbcedee",
+        "window_policy_id": "0fab9d58-38d7-5d35-b44a-5f88a1f0b929",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      }
+    },
+    {
+      "assessment_at": "2026-01-01T01:05:00Z",
+      "known_at": "2026-01-01T01:05:00Z",
+      "corpus_sha256": "db7fa75c6964578bcfa480cbdcad1dc4493f79f2fa7f85c1efed8edbde9d8bba",
+      "period_id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "step_id": "step-1",
+      "static_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "dynamic_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "static_policies": {
+        "window_policy_id": "899312a4-270d-555d-9864-00809503a1a8",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      },
+      "dynamic_policies": {
+        "input_rule_id": "6c78a3d2-2e10-517e-a89d-05580bbcedee",
+        "window_policy_id": "0fab9d58-38d7-5d35-b44a-5f88a1f0b929",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      }
+    },
+    {
+      "assessment_at": "2026-01-01T01:10:00Z",
+      "known_at": "2026-01-01T01:10:00Z",
+      "corpus_sha256": "94acd1461f27ce4ab63e2e029b50184a555bdaaaa95668357c8188757094e0cb",
+      "period_id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "step_id": "step-2",
+      "static_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "dynamic_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "static_policies": {
+        "window_policy_id": "899312a4-270d-555d-9864-00809503a1a8",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      },
+      "dynamic_policies": {
+        "input_rule_id": "6c78a3d2-2e10-517e-a89d-05580bbcedee",
+        "window_policy_id": "0fab9d58-38d7-5d35-b44a-5f88a1f0b929",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      }
+    },
+    {
+      "assessment_at": "2026-01-02T01:00:00Z",
+      "known_at": "2026-01-02T01:00:00Z",
+      "corpus_sha256": "5971f3a0d45855576c3b9605ae1d31a44226cb392f043b499d5b5fdbcbe56097",
+      "period_id": "043d2d90-ca5b-5a58-b3f2-4924026b32e6",
+      "step_id": "step-0",
+      "static_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "dynamic_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "static_policies": {
+        "window_policy_id": "899312a4-270d-555d-9864-00809503a1a8",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      },
+      "dynamic_policies": {
+        "input_rule_id": "6c78a3d2-2e10-517e-a89d-05580bbcedee",
+        "window_policy_id": "0fab9d58-38d7-5d35-b44a-5f88a1f0b929",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      }
+    },
+    {
+      "assessment_at": "2026-01-03T01:00:00Z",
+      "known_at": "2026-01-03T01:00:00Z",
+      "corpus_sha256": "85b3e77ca434907183c24cef841e4a54f41d2e966bb26b86ec892dd70e136b33",
+      "period_id": "f0edacff-3e6a-5a26-a088-fba1b3f8650c",
+      "step_id": "step-0",
+      "static_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "dynamic_rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+      "static_policies": {
+        "window_policy_id": "899312a4-270d-555d-9864-00809503a1a8",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      },
+      "dynamic_policies": {
+        "input_rule_id": "6c78a3d2-2e10-517e-a89d-05580bbcedee",
+        "window_policy_id": "0fab9d58-38d7-5d35-b44a-5f88a1f0b929",
+        "verification_policy_id": "007575fa-159d-5745-a9e2-af329775fca5",
+        "runtime_config_id": "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6"
+      }
+    }
+  ],
+  "confidence_interval_binding": {
+    "protocol_sha256": "a02fecb9fdd7be601084f392d6de8736735d15c32ad91ca17b73b9f76d8493c5",
+    "approval_evidence_ref": "urn:sjia:source-revision:fef3311c-a6eb-5d4a-b221-a9911ca3dae5",
+    "approval_evidence_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "approval_audit_id": "e0929ab3-0d18-50a5-836a-e33a821be364",
+    "purpose": "clinical_evaluation"
+  }
+}

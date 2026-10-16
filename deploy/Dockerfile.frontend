@@ -1,0 +1,25 @@
+# The build context is the repository root because H5 imports shared design assets.
+FROM node:24-bookworm-slim AS build
+WORKDIR /app/guardian-h5
+COPY guardian-h5/package.json guardian-h5/package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY guardian-h5 /app/guardian-h5
+COPY frontend-design /app/frontend-design
+COPY backend-design /app/backend-design
+COPY data-design /app/data-design
+COPY alert-design /app/alert-design
+COPY ui-delivery /app/ui-delivery
+# These schemas are imported directly by H5; copy only public contract artifacts.
+COPY backend/api/*.schema.json /app/backend/api/
+COPY backend/files/*.schema.json /app/backend/files/
+COPY backend/recognition/*.schema.json /app/backend/recognition/
+COPY backend/records/*.schema.json /app/backend/records/
+COPY backend/relations/*.schema.json /app/backend/relations/
+COPY backend/summaries/*.schema.json /app/backend/summaries/
+RUN npm run build
+
+FROM nginx:1.27
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/guardian-h5/dist /usr/share/nginx/html
+# Certificates are supplied as explicit read-only runtime mounts, never built in.
+EXPOSE 443

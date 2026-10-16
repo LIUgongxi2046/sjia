@@ -68,7 +68,7 @@ def confirmed_reference(reference, item, *, kind, purpose, environment):
 
 
 def current_field_scope(actor, patient, field, version, purpose):
-    initial = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
+    initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
     for grant in matching_case_grants(actor, patient, 'read_raw', timezone.now(),
             field_codes=[field.field_code], record_id=version.record_id, author_id=initial.author_id):
         if grant.purpose != purpose or not grant.evidence_ref.strip():

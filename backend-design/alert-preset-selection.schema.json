@@ -1,0 +1,33 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assignment_id": {
+      "format": "uuid",
+      "title": "Assignment Id",
+      "type": "string"
+    },
+    "assignment_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Assignment Checksum",
+      "type": "string"
+    },
+    "expected_version": {
+      "pattern": "^(0|[1-9][0-9]*)$",
+      "title": "Expected Version",
+      "type": "string"
+    },
+    "schedule_config_id": {
+      "format": "uuid",
+      "title": "Schedule Config Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "assignment_id",
+    "assignment_checksum",
+    "expected_version",
+    "schedule_config_id"
+  ],
+  "title": "PresetSelectionInput",
+  "type": "object"
+}

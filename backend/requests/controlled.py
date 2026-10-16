@@ -95,8 +95,11 @@ def controlled_target_ready(actor, gate, operation, target, payload):
     if operation == 'release_create':
         if payload['environment'] != gate.environment:
             return False
-        kinds = [item['kind'] for item in payload['components']]
-        if len(kinds) != len(set(kinds)):
+        from family_content.publication_groups import group_input_reason, GROUP_KINDS
+        if group_input_reason(payload):
+            return False
+        if any(not ConfigVersion.objects.filter(id=group[kind + '_id'], kind=kind).exists()
+                for group in payload.get('publication_groups', []) for kind in GROUP_KINDS):
             return False
         return (ContactVersion.objects.filter(id=payload['contact_version_id']).exists()
             and ConfigVersion.objects.filter(id=payload['validation_config_id'], kind='validation').exists()

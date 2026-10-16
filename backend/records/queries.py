@@ -6,8 +6,8 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from django.core import signing
-from django.db.models import Q, F, OuterRef, Subquery, IntegerField
-from django.db.models.functions import Coalesce, ExtractYear, ExtractMonth, ExtractDay, ExtractHour, ExtractMinute
+from django.db.models import Q, F, OuterRef, Subquery, IntegerField, Count
+from django.db.models.functions import Coalesce, Extract, ExtractYear, ExtractMonth, ExtractDay, ExtractHour, ExtractMinute
 
 from medical_time.models import MedicalTime
 from records.models import Record, RecordField, RecordVersion
@@ -20,6 +20,9 @@ class QueryRejected(Exception):
 
 
 def source_resolve(*, patient, record_version_id, field_id) -> dict:
+    from retention.content_fences import assert_content_available
+    assert_content_available('records.recordversion', record_version_id)
+    assert_content_available('records.recordfield', field_id)
     field = RecordField.objects.filter(id=field_id, patient=patient, record_version_id=record_version_id).first()
     if field is None:
         raise QueryRejected("FIELD_NOT_FOUND")
@@ -40,6 +43,8 @@ def source_resolve(*, patient, record_version_id, field_id) -> dict:
 
 
 def record_version_read(*, patient, record_version_id) -> dict:
+    from retention.content_fences import assert_content_available
+    assert_content_available('records.recordversion', record_version_id)
     version = RecordVersion.objects.filter(id=record_version_id, patient=patient).first()
     if version is None:
         raise QueryRejected("VERSION_NOT_FOUND")
@@ -56,6 +61,26 @@ def record_history_read(*, patient, record_id) -> dict:
                           'recorded_at': value.recorded_at.isoformat(), 'quality_status': value.quality_status} for value in versions]}
 
 
+def _permitted_fields(*, patient, principal, permission_scopes):
+    fields = RecordField.objects.filter(patient=patient)
+    if permission_scopes is None:
+        return fields
+    allowed = Q(pk__in=[])
+    for grant in permission_scopes:
+        condition = Q(field_code__in=grant['field_codes'])
+        if grant['record_scope'] == 'own':
+            if principal is None:
+                continue
+            owned = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').filter(patient=patient, version=1, author=principal).values('record_id')
+            condition &= Q(record_version_id__in=RecordVersion.objects.filter(patient=patient, record_id__in=owned).values('id'))
+        elif grant['record_scope'] == 'assigned':
+            condition &= Q(record_version_id__in=RecordVersion.objects.filter(patient=patient, record_id=grant['assigned_record_id']).values('id'))
+        elif grant['record_scope'] != 'all':
+            continue
+        allowed |= condition
+    return fields.filter(allowed)
+
+
 def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=20, original_name=None, origin_type=None, verification_status=None, from_date=None, to_date=None, field_codes=None, source_organization=None, confirmed_by_self=False, principal=None, permission_scopes=None) -> dict:
     if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
         raise QueryRejected('LIMIT_INVALID')
@@ -64,25 +89,20 @@ def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=2
     records = records.annotate(current_version_id=Subquery(current_versions.values('id')[:1]))
     if kind is not None:
         records = records.filter(kind=kind)
-    fields = RecordField.objects.filter(patient=patient)
+    fields = _permitted_fields(patient=patient, principal=principal, permission_scopes=permission_scopes)
     if permission_scopes is not None:
-        allowed = Q(pk__in=[])
-        for grant in permission_scopes:
-            condition = Q(field_code__in=grant['field_codes'])
-            if grant['record_scope'] == 'own':
-                owned = RecordVersion.objects.filter(patient=patient, version=1, author=principal).values('record_id')
-                condition &= Q(record_version_id__in=RecordVersion.objects.filter(patient=patient, record_id__in=owned).values('id'))
-            elif grant['record_scope'] == 'assigned':
-                condition &= Q(record_version_id__in=RecordVersion.objects.filter(patient=patient, record_id=grant['assigned_record_id']).values('id'))
-            allowed |= condition
-        fields = fields.filter(allowed)
         records = records.filter(current_version_id__in=fields.values('record_version_id'))
     if field_codes is not None:
         fields = fields.filter(field_code__in=field_codes)
         records = records.filter(current_version_id__in=fields.values('record_version_id'))
+    # Query matches determine chronology, while the projection keeps every
+    # authorized field. A later unrelated field must not promote this record.
+    ordering_fields = fields
     if concept_code:
+        ordering_fields = ordering_fields.filter(concept_code=concept_code)
         records = records.filter(current_version_id__in=fields.filter(concept_code=concept_code).values('record_version_id'))
     if original_name:
+        ordering_fields = ordering_fields.filter(Q(original_name__icontains=original_name) | Q(field_code__icontains=original_name))
         records = records.filter(current_version_id__in=fields.filter(Q(original_name__icontains=original_name) | Q(field_code__icontains=original_name)).values('record_version_id'))
     if origin_type:
         records = records.filter(current_version_id__in=RecordVersion.objects.filter(patient=patient, origin_type=origin_type).values('id'))
@@ -122,6 +142,7 @@ def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=2
             times = times.filter(Q(local_date__gte=from_date) | Q(local_datetime__date__gte=from_date) | Q(instant__date__gte=from_date))
         if to_date:
             times = times.filter(Q(local_date__lte=to_date) | Q(local_datetime__date__lte=to_date) | Q(instant__date__lte=to_date))
+        ordering_fields = ordering_fields.filter(medical_time_id__in=times.values('id'))
         records = records.filter(current_version_id__in=fields.filter(medical_time_id__in=times.values('id')).values('record_version_id'))
     # 各精度分别参与排序，不为未知日期补充时间。
     times = MedicalTime.objects.filter(patient=patient, id=OuterRef('medical_time_id')).annotate(
@@ -130,13 +151,17 @@ def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=2
         sort_day=Coalesce(ExtractDay('instant'), ExtractDay('local_datetime'), ExtractDay('local_date'), output_field=IntegerField()),
         sort_hour=Coalesce(ExtractHour('instant'), ExtractHour('local_datetime'), output_field=IntegerField()),
         sort_minute=Coalesce(ExtractMinute('instant'), ExtractMinute('local_datetime'), output_field=IntegerField()),
+        # PostgreSQL microseconds includes the seconds component exactly. It
+        # distinguishes matched measurements in one minute without rounding.
+        sort_subminute=Coalesce(Extract('instant', 'microseconds'), Extract('local_datetime', 'microseconds'), output_field=IntegerField()),
     )
-    sort_names = ['sort_year', 'sort_month', 'sort_day', 'sort_hour', 'sort_minute']
-    timed_fields = fields.filter(record_version_id=OuterRef('current_version_id')).annotate(**{name: Subquery(times.values(name)[:1]) for name in sort_names})
+    sort_names = ['sort_year', 'sort_month', 'sort_day', 'sort_hour', 'sort_minute', 'sort_subminute']
+    timed_fields = ordering_fields.filter(record_version_id=OuterRef('current_version_id')).annotate(**{name: Subquery(times.values(name)[:1]) for name in sort_names})
     order = [F(name).desc(nulls_last=True) for name in sort_names]
     timed_fields = timed_fields.order_by(*order, 'ordinal')
     records = records.annotate(**{name: Subquery(timed_fields.values(name)[:1]) for name in sort_names}).order_by(*order, '-created_at', 'id')
-    scope = {'patient': str(patient.id), 'data_epoch': patient.data_epoch, 'verification_epoch': patient.verification_epoch,
+    scope = {'ordering_revision': 'matched-medical-time-v2',
+             'patient': str(patient.id), 'data_epoch': patient.data_epoch, 'verification_epoch': patient.verification_epoch,
              'kind': kind, 'concept': concept_code, 'name': original_name, 'origin': origin_type,
              'verification': verification_status, 'from': from_date, 'to': to_date,
              'organization': source_organization, 'confirmed_by_self': confirmed_by_self,
@@ -162,7 +187,7 @@ def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=2
                 "status": r.status,
                 "current_version": r.current_version,
                 "created_at": r.created_at.isoformat(),
-                "detail": _record_detail(r, patient),
+                "detail": _record_detail(r, patient, fields if permission_scopes is not None or field_codes is not None else None),
             }
             for r in page
         ],
@@ -170,24 +195,32 @@ def record_search(*, patient, kind=None, concept_code=None, cursor=None, limit=2
     }
 
 
-def _record_detail(record, patient):
+def _record_detail(record, patient, permitted_fields=None):
     from records.service import read_record
 
-    return read_record(record.id, patient)
+    detail = read_record(record.id, patient)
+    if permitted_fields is not None:
+        visible = {str(field_id) for field_id in permitted_fields.filter(
+            record_version_id=detail['record_version_id']).values_list('id', flat=True)}
+        detail['fields'] = [field for field in detail['fields'] if field['field_id'] in visible]
+        detail['fact_refs'] = [reference for reference in detail['fact_refs'] if reference['field_id'] in visible]
+    return detail
 
 
-def _comparable_direction(prev: RecordField, curr: RecordField, time_by_id: dict) -> str | None:
+def _comparable_direction(prev: RecordField, curr: RecordField, time_by_id: dict, basis=None) -> str | None:
     if prev.value_state != "known" or curr.value_state != "known":
         return None
     if prev.value_type != "decimal" or curr.value_type != "decimal":
         return None
-    if not prev.raw_unit or not prev.method or prev.raw_unit != curr.raw_unit or prev.method != curr.method:
+    if not prev.raw_unit or not curr.raw_unit or not prev.method or prev.method != curr.method or (prev.raw_unit != curr.raw_unit and basis is None):
         return None
     if prev.qualifier != 'eq' or curr.qualifier != 'eq':
         return None
     before = time_by_id.get(prev.medical_time_id)
     after = time_by_id.get(curr.medical_time_id)
     if not before or not after or before.precision != after.precision:
+        return None
+    if _time_resolution_reason(before, after):
         return None
     if before.instant is not None and after.instant is not None:
         if before.instant >= after.instant:
@@ -202,9 +235,11 @@ def _comparable_direction(prev: RecordField, curr: RecordField, time_by_id: dict
         return None
     if prev.raw_numeric is None or curr.raw_numeric is None:
         return None
-    if prev.raw_numeric == curr.raw_numeric:
+    previous_value = Decimal(basis['previous_value']) if basis else prev.raw_numeric
+    current_value = Decimal(basis['current_value']) if basis else curr.raw_numeric
+    if previous_value == current_value:
         return "same"
-    return "up" if curr.raw_numeric > prev.raw_numeric else "down"
+    return "up" if current_value > previous_value else "down"
 
 
 def _sort_key(field: RecordField, time_by_id: dict):
@@ -213,6 +248,22 @@ def _sort_key(field: RecordField, time_by_id: dict):
     local_date = time_row.local_date if time_row else None
     local_datetime = time_row.local_datetime if time_row else None
     return (instant is None, instant or datetime.min.replace(tzinfo=timezone.utc), local_datetime is None, local_datetime.isoformat() if local_datetime else '', local_date is None, local_date or datetime.min.date())
+
+
+def _time_resolution_reason(before, after):
+    statuses = {before.resolution_status, after.resolution_status}
+    if 'invalid' in statuses:
+        return 'time_invalid'
+    if 'ambiguous' in statuses:
+        return 'time_ambiguous'
+    if not statuses <= {'local_only', 'resolved'}:
+        return 'time_unknown'
+    # Local clock values cannot establish physical order across DST transitions.
+    # Exact-time inputs are resolved server-side before they can be compared.
+    if before.precision in ('minute', 'second') or after.precision in ('minute', 'second'):
+        if statuses != {'resolved'} or before.instant is None or after.instant is None:
+            return 'time_unresolved'
+    return None
 
 
 def comparison_reasons(previous, current, time_by_id):
@@ -235,6 +286,8 @@ def comparison_reasons(previous, current, time_by_id):
         reasons.append('time_unknown')
     elif before.precision != after.precision:
         reasons.append('precision_mismatch')
+    elif reason := _time_resolution_reason(before, after):
+        reasons.append(reason)
     elif before.instant is not None and after.instant is not None:
         if before.instant == after.instant:
             reasons.append('same_time')
@@ -246,7 +299,7 @@ def comparison_reasons(previous, current, time_by_id):
     return reasons
 
 
-def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
+def analyte_search(*, patient, concept_code, field_codes=None, principal=None, permission_scopes=None) -> dict:
     from collections import Counter
 
     current_records = Record.objects.filter(patient=patient, status='active', id=OuterRef('record_id'), current_version=OuterRef('version'))
@@ -255,7 +308,8 @@ def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
     from verification.models import FieldVerificationState
 
     current_versions = RecordVersion.objects.filter(patient=patient).filter(Exists(current_records))
-    fields = list(RecordField.objects.filter(patient=patient, concept_code=concept_code, record_version_id__in=current_versions.values('id')))
+    fields = list(_permitted_fields(patient=patient, principal=principal, permission_scopes=permission_scopes).filter(
+        concept_code=concept_code, record_version_id__in=current_versions.values('id')))
     if field_codes is not None:
         fields = [field for field in fields if field.field_code in field_codes]
     time_by_id = {t.id: t for t in MedicalTime.objects.filter(id__in=[f.medical_time_id for f in fields if f.medical_time_id])}
@@ -275,6 +329,9 @@ def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
 
     counts = Counter(key for field in fields if (key := time_key(field)) is not None)
     versions = {version.id: version for version in current_versions}
+    from records.comparison import approved_projections, comparison_basis
+
+    projections = approved_projections(fields, versions)
     states = {}
     for state in FieldVerificationState.objects.filter(patient_id=patient.id, field_id__in=[field.id for field in fields]):
         states.setdefault(state.field_id, []).append({'purpose': state.purpose, 'status': state.status, 'version': str(state.version)})
@@ -293,6 +350,7 @@ def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
             "medical_time": medical_time_view(field.medical_time_id, patient),
             "medical_time_id": str(field.medical_time_id) if field.medical_time_id else None,
             "direction": None,
+            "comparison": None,
             "not_comparable_reason": None,
             "comparison_reasons": [],
             "origin_type": versions[field.record_version_id].origin_type,
@@ -301,7 +359,8 @@ def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
         }
         if index > 0:
             conflicting_time = counts.get(time_key(fields[index - 1]), 0) > 1 or counts.get(time_key(field), 0) > 1
-            direction = None if conflicting_time else _comparable_direction(fields[index - 1], field, time_by_id)
+            basis = comparison_basis(fields[index - 1], field, projections)
+            direction = None if conflicting_time else _comparable_direction(fields[index - 1], field, time_by_id, basis)
             if direction is None:
                 entry["not_comparable_reason"] = "unit_or_method_or_precision_mismatch"
                 entry["comparison_reasons"] = comparison_reasons(fields[index - 1], field, time_by_id)
@@ -309,24 +368,15 @@ def analyte_search(*, patient, concept_code, field_codes=None) -> dict:
                     entry['comparison_reasons'].append('same_time')
             else:
                 entry["direction"] = direction
+                entry["comparison"] = basis
         trend.append(entry)
     return {"patient_id": str(patient.id), "concept_code": concept_code, "trend": trend}
 
 
-def history_search(*, patient, from_date=None, to_date=None, scope_timezone=None, limit=20) -> dict:
-    times = MedicalTime.objects.filter(patient=patient).order_by("instant", "id")
-    entries = []
-    for time_row in times[:limit]:
-        field_count = RecordField.objects.filter(patient=patient, medical_time_id=time_row.id).count()
-        entries.append(
-            {
-                "medical_time_id": str(time_row.id),
-                "precision": time_row.precision,
-                "raw_text": time_row.raw_text,
-                "local_date": time_row.local_date.isoformat() if time_row.local_date else None,
-                "instant": time_row.instant.isoformat() if time_row.instant else None,
-                "resolution_status": time_row.resolution_status,
-                "field_count": field_count,
-            }
-        )
-    return {"entries": entries}
+def history_search(*, patient, from_date=None, to_date=None, scope_timezone=None, limit=20,
+                   principal=None, permission_scopes=None, kind=None, precision=None, cursor=None) -> dict:
+    from records.history import search
+
+    return search(patient=patient, principal=principal, permission_scopes=permission_scopes,
+        from_date=from_date, to_date=to_date, scope_timezone=scope_timezone, limit=limit,
+        kind=kind, precision=precision, cursor=cursor)

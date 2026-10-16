@@ -1,5 +1,6 @@
 from django.urls import path
 
+from api import views_alert_presets as presets
 from api import views_family as family
 from api import views_family2 as family2
 from api import views_family3 as family3
@@ -11,8 +12,11 @@ from api import views_contacts as contacts
 from api import views_configs as configs
 from api import views_sources as sources
 from api.patient_selection import patient_selection_write
+from api import views_corrections as correction_reviews
 
 urlpatterns = [
+    path('patients/<uuid:patient_id>/alert-presets', presets.alert_preset_directory, name='alert_preset_directory'),
+    path('patients/<uuid:patient_id>/alert-preset-selection', presets.alert_preset_select, name='alert_preset_select'),
     path('record-versions/<uuid:record_version_id>/originals', originals.record_originals_read),
     # 会话与身份
     path("auth/bootstrap", family.auth_bootstrap),
@@ -30,6 +34,7 @@ urlpatterns = [
     path("relation-applications", family.application_list, name='application_create'),
     path("relation-applications/<uuid:application_id>", family.application_read),
     path("relation-applications/<uuid:application_id>/withdraw", family.application_withdraw, name='application_withdraw'),
+    path("support/relation-applications/<uuid:application_id>", support.application_review),
     path("support/relation-applications/<uuid:application_id>/decide", support.application_decide),
     path("support/relations/<uuid:relation_id>/revoke", support.relation_revoke),
     # 记录与来源
@@ -66,7 +71,8 @@ urlpatterns = [
     path("tasks/<uuid:task_id>", family.task_read),
     path("tasks/<uuid:task_id>/cancel", family.task_cancel),
     path("tasks/<uuid:task_id>/retry", support2.task_retry),
-    path("support/tasks/<uuid:task_id>/reconcile", support2.task_reconcile),
+    path("support/tasks/<uuid:task_id>/reconcile", support2.task_reconcile, name="task_reconcile"),
+    path("support/reconciliation-tasks/<uuid:task_id>", support2.task_reconcile_read, name="task_reconcile_read"),
     # 受控支持：权限
     path("support/access-grants", support.grant_create),
     path("support/access-grants/<uuid:grant_id>/revoke", support.grant_revoke),
@@ -127,9 +133,11 @@ urlpatterns = [
     path("candidate-sets/<uuid:candidate_set_id>", family3.candidate_read),
     # 字典、更正申请、处置、联系、提示详情
     path("dictionaries/search", family3.dictionary_search),
-    path("records/<uuid:record_id>/correction-requests", family3.correction_request_create),
+    path("records/<uuid:record_id>/correction-requests", family3.correction_request_create, name="correction_request_create"),
     path("correction-requests/<uuid:correction_request_id>", family3.correction_request_read),
-    path("support/correction-requests/<uuid:correction_request_id>/resolve", support2.correction_request_resolve),
+    path('support/correction-requests', correction_reviews.correction_review_queue, name="correction_review_queue"),
+    path('support/correction-requests/<uuid:correction_request_id>', correction_reviews.correction_review_read, name="correction_review_read"),
+    path("support/correction-requests/<uuid:correction_request_id>/resolve", support2.correction_request_resolve, name="correction_request_resolve"),
     path("patients/<uuid:patient_id>/dispositions", family3.disposition_create),
     path("dispositions/<uuid:disposition_id>", family3.disposition_read),
     path("patients/<uuid:patient_id>/contact", family3.contact_read),

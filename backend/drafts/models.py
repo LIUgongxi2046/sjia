@@ -1,9 +1,10 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 
-class Draft(models.Model):
+class Draft(ErasureModel, models.Model):
     class FormType(models.TextChoices):
         OBSERVATION = "observation", "observation"
         REPORT = "report", "report"
@@ -22,7 +23,7 @@ class Draft(models.Model):
     form_type = models.CharField(max_length=16, choices=FormType.choices)
     version = models.PositiveBigIntegerField()
     schema_version = models.TextField()
-    payload = models.JSONField()
+    payload = models.JSONField(null=True)
     # correction_record_id 与 correction_version 参与复合外键 (correction_record_id, patient_id, correction_version)，约束由原生 SQL 迁移建立
     correction_record_id = models.UUIDField(null=True)
     correction_version = models.BigIntegerField(null=True)

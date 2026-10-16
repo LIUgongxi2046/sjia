@@ -1,7 +1,8 @@
 import type { IntentView } from '../../../frontend-design/types';
-import type { DynamicCreationOptions, DynamicCreationPlan, DynamicIntentInput, DynamicTriggerHistory, DynamicView, RequestView, TaskView, WriteReceipt } from '../../../frontend-design/v2-types';
+import type { AssessmentCreationQuery, DynamicCreationOptionsWire, DynamicCreationPlan, DynamicIntentInput, DynamicRequestLookup, DynamicTriggerHistory, DynamicTriggerQuery, DynamicView, RequestView, TaskView, WriteReceipt } from '../../../frontend-design/v2-types';
 import { fetchJson } from './client';
 import { validateApiValue } from './schema';
+import { projectDynamicCreationOptions } from './assessmentWire';
 
 const schema = 'v2-protocol.schema.json#/$defs/';
 const terminal = new Set<TaskView['status']>(['completed', 'failed', 'cancelled', 'superseded']);
@@ -33,9 +34,10 @@ function checkTask(value: unknown) {
 }
 export async function readDynamicOptions(patientId: string, knownAt: string, mode: 'current' | 'replay', signal?: AbortSignal) {
   validateApiValue(schema + 'Uuid', patientId);
-  const query = { known_at: knownAt, mode }; validateApiValue(schema + 'AssessmentCreationQuery', query);
-  const options = validateApiValue<DynamicCreationOptions>(schema + 'DynamicCreationOptions', await fetchJson<unknown>(
+  const query = { known_at: knownAt, mode } satisfies AssessmentCreationQuery; validateApiValue(schema + 'AssessmentCreationQuery', query);
+  const wire = validateApiValue<DynamicCreationOptionsWire>(schema + 'DynamicCreationOptions', await fetchJson<unknown>(
     `/api/v2/support/patients/${encodeURIComponent(patientId)}/alert-evaluation-options?${new URLSearchParams(query)}`, { signal }));
+  const options = projectDynamicCreationOptions(wire);
   if (options.patient_id !== patientId || options.mode !== mode || Date.parse(options.known_at) !== Date.parse(knownAt)
       || new Set(options.plans.map(dynamicPlanKey)).size !== options.plans.length
       || new Set(options.observation_periods.map(item => item.period_id)).size !== options.observation_periods.length)
@@ -80,9 +82,11 @@ export async function readDynamic(evaluationId: string, signal?: AbortSignal) {
     if (result.signals.length || result.combinations !== null || result.context_states !== null || result.lifecycle !== null
         || Object.keys(result.selected_refs).length || result.exclusions.length || result.clinical_selections.length
         || result.relation_refs.length || result.relation_proofs.length
-        || result.automatic_trigger != null
+        || result.automatic_trigger != null || result.sensitivity_preset != null
         || result.decision !== 'unknown' || result.reason_code === null) throw new Error('失效动态评估含有不能采用的内容。');
   } else {
+    if (result.sensitivity_preset && result.sensitivity_preset.config_id !== result.policy_id)
+      throw new Error('动态方案名称与准确规则版本不一致。');
     if (!result.combinations || !result.context_states || !result.lifecycle || result.reason_code !== null
         || result.decision !== result.combinations.trigger.state) throw new Error('动态结果缺少完整保存依据。');
     if (new Set(result.signals.map(item => item.signal_id)).size !== result.signals.length) throw new Error('动态信号身份重复。');
@@ -101,7 +105,7 @@ export async function readDynamic(evaluationId: string, signal?: AbortSignal) {
 }
 export async function readDynamicTriggers(patientId: string, signal?: AbortSignal, cursor?: string) {
   validateApiValue(schema + 'Uuid', patientId);
-  const query: Record<string, string> = cursor ? { cursor } : {};
+  const query: Record<string, string> = cursor ? { cursor } satisfies DynamicTriggerQuery : {} satisfies DynamicTriggerQuery;
   validateApiValue(schema + 'DynamicTriggerQuery', query);
   const history = validateApiValue<DynamicTriggerHistory>(schema + 'DynamicTriggerHistory', await fetchJson<unknown>(
     `/api/v2/support/patients/${encodeURIComponent(patientId)}/alert-evaluation-triggers?${new URLSearchParams(query)}`, { signal }));
@@ -132,7 +136,7 @@ export async function readDynamicRequest(intentId: string, signal?: AbortSignal)
 }
 export async function findDynamicRequest(requestId: string, patientId: string, signal?: AbortSignal) {
   validateApiValue(schema + 'Uuid', requestId); validateApiValue(schema + 'Uuid', patientId);
-  const lookup = { lookup: 'request_id', operation_id: 'alert_evaluation_v2_create', target_key: `/support/patients/${patientId}/alert-evaluations` };
+  const lookup = { lookup: 'request_id', operation_id: 'alert_evaluation_v2_create', target_key: `/support/patients/${patientId}/alert-evaluations` } satisfies DynamicRequestLookup;
   validateApiValue(schema + 'DynamicRequestLookup', lookup);
   const request = checkRequest(await fetchJson<unknown>(`/api/v2/requests/${encodeURIComponent(requestId)}?${new URLSearchParams(lookup)}`, { signal }));
   if (request.request_id !== requestId || request.target_key !== lookup.target_key) throw new Error('动态恢复与原请求范围不一致。');

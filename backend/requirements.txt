@@ -17,3 +17,9 @@ python-dateutil>=2.9,<3
 jsonschema>=4.26,<5
 Werkzeug>=3.1.9,<4
 faster-whisper==1.2.1
+opentelemetry-sdk>=1.45,<2
+opentelemetry-exporter-otlp-proto-http>=1.45,<2
+prometheus-client>=0.26,<1
+
+# Explicit patient-cluster interval numerical dependency; exact build is protocol-bound.
+numpy==2.5.3

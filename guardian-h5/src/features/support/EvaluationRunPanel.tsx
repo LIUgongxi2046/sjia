@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { DatasetCounts, DatasetView, EvaluationDenominatorsView, EvaluationResultsView, EvaluationRuleProof, EvaluationRunView } from '../../../../frontend-design/v2-types';
+import { ClinicalMetricsPanel } from './ClinicalMetricsPanel';
 import { ApiError } from '../../api/client';
 import { readEvaluationDenominators, readEvaluationResults, readEvaluationRun } from '../../api/evaluationRuns';
 
@@ -78,6 +79,7 @@ export function EvaluationRunPanel({ dataset, runId, onPermission, onRules }: {
         {item.limitations.map(text => <p key={text}>{text}</p>)}
       </details>)}
       {results.limitations.some(item => item.reason === 'clinical_metrics_not_run') && <p>临床指标尚未测量，当前结果仅覆盖统计单位核验。</p>}
+      {results.clinical_report ? <ClinicalMetricsPanel report={results.clinical_report} /> : null}
       {results.rules.map(rule => <div className="pair" key={rule.id}><span>{rule.config_key}</span><strong>版本 {rule.version}</strong></div>)}
     </>}
     {(error || run?.status === 'failed') && <button className="text-action" onClick={() => setRefresh(value => value + 1)}>重新读取评价运行</button>}

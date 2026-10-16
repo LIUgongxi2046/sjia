@@ -61,15 +61,25 @@ class SummaryServiceTest(TestCase):
         self.assertTrue(needs_regeneration(summary, self.patient))
 
     def test_read_summary_with_items(self):
-        summary = self._summary()
-        result = create_record(patient=self.patient, actor=self.principal, kind="observation", capture_method="manual", origin_type="self_report", retention_policy=self.retention, use_authorization_id=self.use_auth.id, fields=[{"field_code": "temp", "value_type": "decimal", "value_state": "known", "raw_numeric": "38.0", "raw_unit": "C", "sample_time_origin": "observation"}])
-        from records.models import RecordField
-
-        field = RecordField.objects.get(record_version_id=result["record_version_id"])
-        add_summary_item(summary=summary, record_version_id=result["record_version_id"], field_id=field.id, ordinal=1, snapshot={"temp": "38.0"})
+        from tests.synthetic_fixtures import SyntheticEvidence
+        from tests.integration.helpers import activate_summary_configs
+        from summaries.service import generate_summary
+        self.synthetic = SyntheticEvidence(self, self.principal)
+        activate_summary_configs(self)
+        create_record(patient=self.patient, actor=self.principal, kind='observation', capture_method='manual',
+            origin_type='self_report', retention_policy=self.retention, use_authorization_id=self.use_auth.id,
+            fields=[{'field_code': 'temp', 'value_type': 'decimal', 'value_state': 'known',
+                'raw_numeric': '38.0', 'raw_unit': 'C', 'sample_time_origin': 'observation',
+                'medical_time': {'precision': 'date', 'local_date': '2026-09-15', 'resolution_status': 'local_only'}}])
+        self.patient.refresh_from_db()
+        summary = generate_summary(patient=self.patient, requested_by=self.principal, from_date=date(2026,9,1),
+            to_date=date(2026,9,30), scope_timezone='Asia/Shanghai', include_unknown_time=False,
+            field_codes=['temp'], environment='test')
         read = read_summary(summary.id, self.patient)
-        self.assertEqual(len(read["items"]), 1)
-        self.assertEqual(read["items"][0]["snapshot"], {"temp": "38.0"})
+        self.assertFalse(read['needs_regeneration'])
+        self.assertEqual(len(read['items']), 1)
+        self.assertEqual(read['items'][0]['snapshot']['field']['raw_numeric'], '38.0')
+        self.assertEqual(read['items'][0]['snapshot']['field']['field_code'], 'temp')
 
     def test_read_summary_scoped_to_patient(self):
         summary = self._summary()

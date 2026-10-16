@@ -286,6 +286,8 @@ export function PurposeCopyPage({ session, accessState, accessError, onRefresh, 
 
   return <UI2Frame title="用途与副本" screenId="UI2-38" note="必要副本处理及人工复核在外发前完成。" onBack={() => navigate('/account/data-use')}>
     <div className="support-banner"><LockKeyhole size={16} />受控支持 · 需独立岗位授权</div>
+    {accessState === 'default' && session?.capabilities.some(row => row.capability_id === 'decide_relation' && row.state === 'available')
+      && <button className="text-action" onClick={() => navigate('/support/applications')}>核验指定患儿关联申请</button>}
     <SupportReadStatus state={state} error={accessError ?? error} onRefresh={state === 'permission' ? () => navigate('/support/login') : () => void refreshCopy()} />
     {taskId && <PurposeTaskProgress taskId={taskId} active={available} onCompleted={taskCompleted} onPermission={onRefresh} />}
     <DispositionPanel active={accessState === 'default' && !!session?.capabilities.some(item => item.capability_id === 'manage_disposition' && item.state === 'available')} onPermission={onRefresh} />

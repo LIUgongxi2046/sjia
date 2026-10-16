@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -10,8 +11,8 @@ const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 await page.goto('http://127.0.0.1:5173/login');
-await page.getByPlaceholder('账号', { exact: true }).fill('acceptance-family');
-await page.getByPlaceholder('密码（至少 8 位）').fill('Local-accept-2026');
+await page.getByPlaceholder('账号', { exact: true }).fill(acceptanceUsername);
+await page.getByPlaceholder('密码（至少 8 位）').fill(acceptancePassword);
 await page.getByRole('button', { name: '登录', exact: true }).click();
 await page.waitForURL('**/home');
 const relations = (await (await context.request.get('http://127.0.0.1:5173/api/relations')).json()).relations;

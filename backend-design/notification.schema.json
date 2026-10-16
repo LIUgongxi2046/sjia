@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "Query": {"type": "object", "additionalProperties": false, "properties": {"cursor": {"type": ["string", "null"], "minLength": 1, "maxLength": 65536}}},
     "Receipt": {"type": "object", "additionalProperties": false, "required": ["receipt_id", "provider", "provider_event_id", "status", "occurred_at", "received_at", "evidence_sha256"], "properties": {
       "receipt_id": {"$ref": "protocol.schema.json#/$defs/Uuid"}, "provider": {"$ref": "protocol.schema.json#/$defs/Text"}, "provider_event_id": {"$ref": "protocol.schema.json#/$defs/Text"}, "status": {"enum": ["accepted", "delivered", "failed"]}, "occurred_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "received_at": {"$ref": "protocol.schema.json#/$defs/Timestamp"}, "evidence_sha256": {"$ref": "protocol.schema.json#/$defs/Digest"}
     }},

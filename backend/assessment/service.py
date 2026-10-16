@@ -93,8 +93,10 @@ def locked_inputs(patient, actor, auth_epoch, payload, environment, runtime):
     inputs = collect_static_inputs(patient=patient, actor=actor, auth_epoch=auth_epoch, rule_id=payload['rule_id'],
         window_policy_id=payload['window_policy_id'], verification_policy_id=payload['verification_policy_id'],
         environment=environment, known_at=known_at, assessment_at=assessment_at, mode=payload['mode'],
-        maximum_bytes=runtime.payload['api']['max_json_bytes'], observation_scope=period, selection_payload=payload)
-    if inputs.rule.payload['kind'] != payload['kind']:
+        maximum_bytes=runtime.payload['api']['max_json_bytes'], observation_scope=period, selection_payload=payload,
+        input_rule_id=payload.get('input_rule_id'))
+    expected_kind = 'hlh_2004_reference' if payload['kind'] == 'hlh' else payload['kind']
+    if inputs.rule.payload['kind'] != expected_kind:
         raise QualificationRejected('ASSESSMENT_RULE_KIND_MISMATCH')
     return inputs, period
 
@@ -102,6 +104,8 @@ def locked_inputs(patient, actor, auth_epoch, payload, environment, runtime):
 def input_snapshot(inputs, period, runtime, payload):
     selected = {**inputs.selections, **inputs.context_selections}
     configs = {row.id: row for row in (runtime, inputs.rule, inputs.window, inputs.verification_policy, *inputs.context_policies)}
+    if inputs.input_rule is not None:
+        configs[inputs.input_rule.id] = inputs.input_rule
     for selection in selected.values():
         if selection.selected is not None:
             for reference in selection.selected.reference['entity_refs']:
@@ -110,7 +114,7 @@ def input_snapshot(inputs, period, runtime, payload):
                     if entity_reference(row) != reference:
                         raise QualificationRejected('ASSESSMENT_CONFIGURATION_REFERENCE_CHANGED')
                     configs[row.id] = row
-    return {'schema_version': 'static-assessment-inputs-2', 'context_sha256': inputs.sha256,
+    snapshot = {'schema_version': 'static-assessment-inputs-2', 'context_sha256': inputs.sha256,
         'candidate_refs': list(inputs.candidate_refs), 'exclusions': list(inputs.exclusions),
         'relation_refs': list(inputs.relation_refs), 'context_states': inputs.context_states,
         'clinical_selections': list(inputs.clinical_selections),
@@ -120,6 +124,9 @@ def input_snapshot(inputs, period, runtime, payload):
         'configurations': [configuration_proof(value, runtime.payload['environment'], TIMESTAMP.validate_python(payload['known_at']),
             payload['mode']) for value in sorted(configs.values(), key=lambda item: str(item.id))],
         'observation_period': None if period is None else json.loads(json.dumps(period, cls=DjangoJSONEncoder))}
+    if inputs.hlh_inputs is not None:
+        snapshot['hlh_inputs'] = inputs.hlh_inputs.model_dump(mode='json')
+    return snapshot
 
 
 @transaction.atomic
@@ -172,6 +179,7 @@ def checked_task(task):
 RESOURCE_NAMES = {
     'archives.archivefactversion': 'archive_fact_version', 'archives.archivedocumentversion': 'archive_document_version',
     'archives.archivedocumentpage': 'archive_document_page', 'archives.archivepage': 'archive_page',
+    'records.report': 'report',
     'records.recordfield': 'record_field', 'records.recordversion': 'record_version',
     'records.normalizedmeasurement': 'normalized_measurement', 'recognition.sourceanchor': 'source_anchor',
     'recognition.candidateconfirmation': 'candidate_confirmation', 'recognition.candidatefield': 'candidate_field',
@@ -286,9 +294,13 @@ def execute_static_assessment(event, owner):
                     finish_attempt(attempt, 'superseded', error_code='ASSESSMENT_CONTEXT_CHANGED')
                     record_receipt('assessment', event, task.id)
                 return
-            computed = compute_static(task.input_refs['payload']['kind'], inputs.selections,
-                maximum_digits=runtime.payload['limits']['max_decimal_digits'], context_reasons=list(inputs.context_reasons),
-                applicability=inputs.applicability)
+            if task.input_refs['payload']['kind'] == 'hlh':
+                from assessment.hlh_inputs import compute_hlh
+                computed = compute_hlh(inputs)
+            else:
+                computed = compute_static(task.input_refs['payload']['kind'], inputs.selections,
+                    maximum_digits=runtime.payload['limits']['max_decimal_digits'], context_reasons=list(inputs.context_reasons),
+                    applicability=inputs.applicability)
             stop_heartbeat()
             task = Task.objects.select_for_update().get(id=task.id)
             checked_task(task)
@@ -313,6 +325,7 @@ def execute_static_assessment(event, owner):
             if computed['ms_contributions'] is not None:
                 computed['ms_contributions'] = {code: format(Decimal(value), 'f') for code, value in computed['ms_contributions'].items()}
             output = AssessmentOutput.objects.create(assessment=assessment, schema_version='static-assessment-output-2',
+                hlh_result=computed.get('hlh_result'),
                 **{key: computed[key] for key in ('classification_conditions', 'classification_result', 'ms_contributions', 'ms_total', 'ms_threshold_result')})
             save_dependencies(assessment, inputs, snapshot, context)
             task.status, task.status_version, task.lease_until = 'completed', task.status_version + 1, timezone.now()
@@ -423,5 +436,5 @@ def read_assessment(*, assessment_id, actor, auth_epoch, environment):
             for item in task.input_refs['snapshot']['clinical_selections']] if valid else [],
         'output': {'classification_conditions': output.classification_conditions, 'classification_result': output.classification_result,
             'ms_contributions': output.ms_contributions, 'ms_total': format(output.ms_total, 'f') if output.ms_total is not None else None,
-            'ms_threshold_result': output.ms_threshold_result} if valid else None,
+            'ms_threshold_result': output.ms_threshold_result, 'hlh_result': output.hlh_result} if valid else None,
         'reason_code': None if valid else 'ASSESSMENT_CONTEXT_INVALIDATED'}

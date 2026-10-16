@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "HLHConditionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "met",
+            "not_met",
+            "unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "fact_version_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": "Fact Version Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "state",
+        "reason_codes",
+        "fact_version_ids"
+      ],
+      "title": "HLHConditionResult",
+      "type": "object"
+    },
+    "HLHCriterionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "met",
+            "not_met",
+            "unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "fact_version_ids": {
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": "Fact Version Ids",
+          "type": "array"
+        },
+        "code": {
+          "enum": [
+            "fever",
+            "splenomegaly",
+            "cytopenias",
+            "lipids_or_fibrinogen",
+            "hemophagocytosis",
+            "nk_activity",
+            "ferritin",
+            "soluble_cd25"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "subconditions": {
+          "additionalProperties": {
+            "$ref": "#/$defs/HLHConditionResult"
+          },
+          "title": "Subconditions",
+          "type": "object"
+        }
+      },
+      "required": [
+        "state",
+        "reason_codes",
+        "fact_version_ids",
+        "code",
+        "subconditions"
+      ],
+      "title": "HLHCriterionResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "hlh-2004-result-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "kind": {
+      "const": "hlh_2004_reference",
+      "title": "Kind",
+      "type": "string"
+    },
+    "use_boundary": {
+      "const": "offline_reference_support_only",
+      "title": "Use Boundary",
+      "type": "string"
+    },
+    "clinical_use_authorized": {
+      "const": false,
+      "title": "Clinical Use Authorized",
+      "type": "boolean"
+    },
+    "policy_revision_id": {
+      "format": "uuid",
+      "title": "Policy Revision Id",
+      "type": "string"
+    },
+    "policy_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Policy Checksum",
+      "type": "string"
+    },
+    "input_checksum": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Input Checksum",
+      "type": "string"
+    },
+    "source_table": {
+      "enum": [
+        "histiocyte-society-2004-table-2",
+        "henter-2007-table-I"
+      ],
+      "title": "Source Table",
+      "type": "string"
+    },
+    "source_revision_id": {
+      "format": "uuid",
+      "title": "Source Revision Id",
+      "type": "string"
+    },
+    "semantics_version": {
+      "const": "hlh-2004-bounds-1",
+      "title": "Semantics Version",
+      "type": "string"
+    },
+    "assessment_at": {
+      "format": "date-time",
+      "title": "Assessment At",
+      "type": "string"
+    },
+    "known_at": {
+      "format": "date-time",
+      "title": "Known At",
+      "type": "string"
+    },
+    "applicability": {
+      "enum": [
+        "applicable",
+        "not_applicable",
+        "unknown"
+      ],
+      "title": "Applicability",
+      "type": "string"
+    },
+    "applicability_condition": {
+      "$ref": "#/$defs/HLHConditionResult"
+    },
+    "molecular_condition": {
+      "$ref": "#/$defs/HLHConditionResult"
+    },
+    "criteria": {
+      "items": {
+        "$ref": "#/$defs/HLHCriterionResult"
+      },
+      "maxItems": 8,
+      "minItems": 8,
+      "title": "Criteria",
+      "type": "array"
+    },
+    "criteria_met_lower_bound": {
+      "maximum": 8,
+      "minimum": 0,
+      "title": "Criteria Met Lower Bound",
+      "type": "integer"
+    },
+    "criteria_met_upper_bound": {
+      "maximum": 8,
+      "minimum": 0,
+      "title": "Criteria Met Upper Bound",
+      "type": "integer"
+    },
+    "criteria_path": {
+      "enum": [
+        "met",
+        "not_met",
+        "unknown"
+      ],
+      "title": "Criteria Path",
+      "type": "string"
+    },
+    "molecular_or_criteria": {
+      "enum": [
+        "met",
+        "not_met",
+        "unknown"
+      ],
+      "title": "Molecular Or Criteria",
+      "type": "string"
+    },
+    "reference_result": {
+      "enum": [
+        "criteria_supported",
+        "criteria_not_supported",
+        "insufficient",
+        "not_applicable"
+      ],
+      "title": "Reference Result",
+      "type": "string"
+    },
+    "supported_paths": {
+      "items": {
+        "enum": [
+          "molecular",
+          "five_of_eight"
+        ],
+        "type": "string"
+      },
+      "title": "Supported Paths",
+      "type": "array"
+    },
+    "limitation_codes": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Limitation Codes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "use_boundary",
+    "clinical_use_authorized",
+    "policy_revision_id",
+    "policy_checksum",
+    "input_checksum",
+    "source_table",
+    "source_revision_id",
+    "semantics_version",
+    "assessment_at",
+    "known_at",
+    "applicability",
+    "applicability_condition",
+    "molecular_condition",
+    "criteria",
+    "criteria_met_lower_bound",
+    "criteria_met_upper_bound",
+    "criteria_path",
+    "molecular_or_criteria",
+    "reference_result",
+    "supported_paths",
+    "limitation_codes"
+  ],
+  "title": "HLHResult",
+  "type": "object"
+}

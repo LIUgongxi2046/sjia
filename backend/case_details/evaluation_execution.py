@@ -79,10 +79,50 @@ def execute_evaluation_run(event, owner):
         run.result_refs = inventory_results(run, sources, current, task.input_sha256)
         incomplete = any(getattr(sources.manifest, name).state != 'complete'
             or not snapshot['denominators']['unit_ids'][name] for name in sources.protocol.required_units)
-        # 临床指标使用独立评价程序；单位核验保留完整结果及尚未测量的范围。
-        if sources.protocol.evaluation_kind == 'clinical':
+        clinical = None
+        if current['input'].get('clinical_capture_ref') is not None:
+            from case_details.clinical_adoption import adopt_clinical_capture, clinical_admission_binding
+            clinical = adopt_clinical_capture(row=row, sources=sources, snapshot=current,
+                capture_ref=current['input']['clinical_capture_ref'])
+            if clinical_admission_binding(clinical) != current['clinical_capture_binding']:
+                raise EvaluationUnitsRejected('CLINICAL_CAPTURE_BINDING_CHANGED')
+            incomplete = incomplete or any(item['status'] != 'completed' for item in clinical['report']['execution_steps'])
+        elif sources.protocol.evaluation_kind == 'clinical':
             incomplete = True
             run.limitations = [*run.limitations, {'unit': 'confirmed_labels', 'reason': 'clinical_metrics_not_run'}]
+        prepared_clinical = clinical
+        prepared_results, prepared_limitations = run.result_refs, run.limitations
+        prepared_input_sha256 = task.input_sha256
+    # The bounded estimator never runs while holding admission/read DB locks.
+    if clinical is not None:
+        from case_details.clinical_interval_adoption import calculate_interval_adoption
+        clinical = calculate_interval_adoption(clinical, prepared_input_sha256)
+    with transaction.atomic():
+        run, task = checked_event(event)
+        if (task.status != 'running' or task.lease_owner != owner
+                or task.lease_generation != attempt.lease_generation):
+            finish_attempt(attempt, 'superseded')
+            return
+        snapshot = run_snapshot(run)
+        row, sources, runtime, policy, current, context = lock_run_inputs(dataset_id=snapshot['dataset_id'],
+            payload=snapshot['input'], actor=task.actor,
+            auth_epoch=int(task.input_refs['authorization_context']['auth_epoch']))
+        if (current != snapshot or context != task.input_refs['authorization_context']
+                or task.input_sha256 != prepared_input_sha256):
+            raise EvaluationUnitsRejected('DATASET_RUN_INPUT_CHANGED')
+        if task.deadline_at <= timezone.now():
+            raise EvaluationUnitsRejected('TASK_DEADLINE_EXCEEDED')
+        if prepared_clinical is not None:
+            from case_details.clinical_adoption import adopt_clinical_capture, clinical_admission_binding
+            fresh = adopt_clinical_capture(row=row, sources=sources, snapshot=current,
+                capture_ref=current['input']['clinical_capture_ref'])
+            if clinical_admission_binding(fresh) != clinical_admission_binding(prepared_clinical):
+                raise EvaluationUnitsRejected('CLINICAL_CAPTURE_BINDING_CHANGED')
+            if '_interval_inputs' in fresh:
+                from case_details.clinical_interval_adoption import verify_saved_interval_adoption
+                verify_saved_interval_adoption(fresh, clinical, task.input_sha256)
+                incomplete = incomplete or not clinical['report']['confidence_intervals']['required_complete']
+        run.result_refs, run.limitations = prepared_results, prepared_limitations
         run.status, run.finished_at = ('insufficient' if incomplete else 'completed'), timezone.now()
         run.save(update_fields=['result_refs', 'limitations', 'status', 'finished_at'])
         task.status, task.status_version, task.lease_until = 'completed', task.status_version + 1, run.finished_at
@@ -90,7 +130,7 @@ def execute_evaluation_run(event, owner):
         finish_attempt(attempt, TaskAttempt.Status.COMPLETED, usage_evidence={
             'scope': 'inventory', 'result_sha256': compute_checksum(run.result_refs),
             'denominators_sha256': compute_checksum(run.denominators), 'input_sha256': task.input_sha256,
-            'clinical_metrics': 'NOT_RUN', 'family_notifications': False})
+            'clinical_metrics': 'CALCULATED' if clinical else 'NOT_RUN', 'clinical_adoption': clinical, 'family_notifications': False})
         record_receipt('evaluation_run', event, run.id)
         write_audit(actor=task.actor, action='dataset_run_execute', object_type='evaluation_run',
             object_id=run.id, object_version='1', request_id=task.request_row.request_id,

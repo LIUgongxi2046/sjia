@@ -1,0 +1,182 @@
+// Real home/frame/archive/access/read validator. Synthetic in-memory HTTP only;
+// no browser, persisted clinical data, database, external provider or screenshot.
+import './registration-test-loader.mjs';
+import { syntheticBootstrap, syntheticSession, fixtureDigest } from './response-test-fixtures.mjs';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
+import { randomUUID, webcrypto } from 'node:crypto';
+import { JSDOM } from 'jsdom';
+registerHooks({ load(url, context, nextLoad) {
+  if (/\.(png|webp|jpg|svg)$/.test(url)) return { format: 'module', source: `export default ${JSON.stringify(url)};`, shortCircuit: true };
+  return nextLoad(url, context);
+} });
+const dom = new JSDOM('<!doctype html><div id="root"></div>', { url: 'http://localhost/home', pretendToBeVisual: true });
+for (const key of ['window', 'document', 'navigator', 'HTMLElement', 'HTMLInputElement', 'HTMLSelectElement', 'HTMLButtonElement', 'Event', 'KeyboardEvent', 'ShadowRoot', 'StorageEvent']) Object.defineProperty(globalThis, key, { value: dom.window[key], configurable: true });
+Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
+Object.defineProperty(HTMLElement.prototype, 'getClientRects', { value() { return [{ x: 0, y: 0, width: 10, height: 10 }]; } });
+window.localStorage.setItem('sjia.display.companion.v1', 'unapproved-path-or-patient');
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const { createElement: h, act } = await import('react');
+const { createRoot } = await import('react-dom/client');
+const { Simulate } = await import('react-dom/test-utils');
+const { createMemoryRouter, RouterProvider, Outlet } = await import('react-router');
+const { AccessProvider, useAccess } = await import('../src/state/access.tsx');
+const { UI2HomePage } = await import('../src/features/home/UI2HomePage.tsx');
+const { chooseCompanionImage, companionImages, companionPreferenceKey } = await import('../src/state/companionPreference.ts');
+const { validateRecordSearchPage } = await import('../src/api/recordSearchSchema.ts');
+const actor = randomUUID(), patient = randomUUID(), other = randomUUID();
+const relation = id => ({ relation_id: randomUUID(), patient_id: id, display_id: id === patient ? 'SYNTHETIC A' : 'SYNTHETIC B', status: 'active', version: '1', valid_from: '2020-01-01T00:00:00Z', valid_until: null, authorization_scope_fingerprint: fixtureDigest, authorization_scope_valid_until: null, actions: ['read_raw'] });
+const time = date => ({ precision: 'date', raw_text: date, local_date: date, local_datetime: null, instant: null, timezone_name: 'UTC', resolution_status: 'local_only', local_year: null, local_month: null, end_year: null, end_month: null, relative_text: null, utc_offset_minutes: null });
+function field(code, value, at, extras = {}) { return { field_id: randomUUID(), field_code: code, concept_code: null, original_name: null, value_type: code === 'temp' ? 'decimal' : 'categorical', value_state: value === null ? 'unknown' : 'known', raw_text: null, raw_numeric: code === 'temp' ? value : null, categorical_value: code === 'temp' ? null : value, qualifier: code === 'temp' ? 'eq' : null, raw_unit: code === 'temp' ? 'C' : null, medical_time: at ? time(at) : null, medical_time_id: at ? randomUUID() : null, sample_time_origin: 'unknown', method: null, reference_interval: null, report_flag: null, verification_states: [], confirmation_id: null, source_anchor: null, ...extras }; }
+function record(kind, fields) { const id = randomUUID(); return { record_id: id, kind, status: 'active', current_version: 1, created_at: '2026-10-01T00:00:00Z', detail: { patient_id: patient, record_id: id, record_version_id: randomUUID(), kind, version: 1, origin_type: 'self_report', capture_method: 'manual', quality_status: 'pending', recorded_at: '2026-10-01T00:00:00Z', source_organization: null, corrected_at: null, correction_reason: null, fields, fact_refs: fields.map(field => ({ field_id: field.field_id, fact_id: randomUUID(), version_id: randomUUID(), version: '1' })), attachments: [], report: null } }; }
+const oldTemp = field('temp', '36.1', '2026-10-01');
+const newestTemp = field('temp', '37.234567890123456789', '2026-10-02');
+const rash = field('rash', 'yes', '2026-10-03');
+const observations = [record('observation', [oldTemp, rash]), record('observation', [newestTemp]), record('observation', [field('joint_discomfort', null, null)])];
+const reports = [record('report', [field('lab_one', 'yes', '2026-10-04'), field('lab_two', 'no', '2026-10-04')])];
+const initialRecords = [...observations, ...reports];
+validateRecordSearchPage({ records: initialRecords, next_cursor: null });
+const state = { session: syntheticSession(actor, patient), relations: [relation(patient), relation(other)], records: initialRecords, denied: false, calls: [], held: null };
+let access;
+function Capture() { access = useAccess(); return null; }
+const fail = () => Response.json({ code: 'RECORD_READ_FORBIDDEN', message: 'Synthetic archive access denied', retryable: false, recovery: 'reauthenticate' }, { status: 403 });
+globalThis.fetch = async (input, options = {}) => {
+  const path = new URL(input, 'http://localhost').pathname; state.calls.push({ path, options });
+  if (path === '/api/auth/bootstrap') return Response.json(syntheticBootstrap());
+  if (path === '/api/session') return state.session ? Response.json(state.session) : fail();
+  if (path === '/api/relations') return Response.json({ relations: state.relations });
+  if (path === '/api/session/logout') { state.session = null; return Response.json({}); }
+  if (path === '/api/patient-selection') { state.session.selected_patient_id = JSON.parse(options.body).patient_id; return Response.json({ selected_patient_id: state.session.selected_patient_id }); }
+  if (/\/home$/.test(path)) return Response.json({ patient_id: state.session.selected_patient_id, display_id: 'SYNTHETIC', service_state: 'disabled', data_state: 'incomplete', processing_state: 'idle', alert_state: 'none', read_state: 'not_applicable', capabilities: [], assessment_state: 'configuration_pending', assessed_at: null, current_alert_id: null, recent_records: [] });
+  if (/\/records\/search$/.test(path)) {
+    const body = JSON.parse(options.body);
+    if (state.denied) return fail();
+    if (state.held && !body.kind) return state.held;
+    const result = path.includes(other) ? [] : state.records.filter(record => !body.kind || record.kind === body.kind).filter(record => !body.original_name || record.detail.fields.some(field => field.field_code === body.original_name));
+    return Response.json({ records: result, next_cursor: null });
+  }
+  throw new Error(`Unexpected synthetic request ${path}`);
+};
+const root = createRoot(document.getElementById('root'));
+const router = createMemoryRouter([{ element: h(AccessProvider, null, h(Capture), h(Outlet)), children: [{ path: '*', element: h(UI2HomePage) }] }], { initialEntries: ['/home'] });
+const screen = () => document.querySelector('[data-screen-id]')?.shadowRoot;
+const text = () => screen().textContent;
+const button = label => [...screen().querySelectorAll('button')].find(node => node.textContent.trim() === label);
+const flush = async () => act(async () => { await new Promise(done => setTimeout(done, 15)); });
+const run = async fn => { await act(async () => { await fn(); }); await flush(); };
+const click = async node => { assert.ok(node); assert.equal(node.disabled, false); await run(() => { node.focus(); Simulate.click(node); }); };
+const open = () => click(screen().querySelector('.home-twin-heading>button'));
+const choose = async id => { await click(button('选择形象')); await run(() => Simulate.change(screen().querySelector(`input[value="${id}"]`), { target: { value: id } })); };
+const checks = [];
+try {
+  await run(() => root.render(h(RouterProvider, { router }))); await flush();
+  assert.match(screen().querySelector('.home-child-view>img').getAttribute('src'), /child-neutral-front/);
+  await open();
+  assert.equal(screen().querySelector('.sheet-archive>h2').textContent, '孩子的记录');
+  assert.ok(screen().querySelector('.sheet-archive').parentElement.classList.contains('archive-backdrop'));
+  assert.equal(screen().querySelector('.archive-patient-initial').textContent, 'S');
+  assert.equal(screen().querySelectorAll('.archive-summary').length, 4);
+  for (const icon of screen().querySelectorAll('.archive-summary>.three-d-icon')) {
+    assert.equal(icon.getAttribute('width'), '19'); assert.equal(icon.getAttribute('height'), '19');
+  }
+  const archiveCss = readFileSync(new URL('../src/styles/rich-archive.css', import.meta.url), 'utf8');
+  assert.match(archiveCss, /\.archive-child-view \.symptom-pin span\{width:max\(23px,1\.75em\);height:max\(23px,1\.75em\);line-height:1\}/);
+  assert.match(archiveCss, /grid-template-rows:minmax\(82px,max-content\) minmax\(82px,max-content\)/);
+  assert.match(archiveCss, /\.archive-symptom-trio>img\{display:block;width:100%;height:120px;margin:0;/);
+  assert.match(archiveCss, /\.archive-symptom-cards\{margin-top:-5px;/);
+  assert.match(archiveCss, /\.archive-symptom-cards strong>span\{color:#97501b;/);
+  assert.match(archiveCss, /\.device\[data-theme=dark\] \.archive-symptom-cards strong>span\{color:#ffbe6a/);
+  assert.match(archiveCss, /border:1px solid color-mix\(in srgb,var\(--line\) 55%,var\(--dim-edge\)\);box-shadow:var\(--dim-tile-shadow\);z-index:2/);
+  // This guards source sizing and natural long-value growth, not rendered geometry.
+  assert.equal(screen().querySelectorAll('.archive-symptom-cards>button').length, 3);
+  assert.match(screen().querySelector('.archive-summary.temperature').textContent, /37\.234567890123456789 C/);
+  assert.match(screen().querySelector('.archive-summary.reports').textContent, /1 份记录/);
+  assert.match(screen().querySelectorAll('.archive-symptom-cards>button')[1].textContent, /观察到/);
+  assert.match(screen().querySelectorAll('.archive-symptom-cards>button')[2].textContent, /无法确定/);
+  assert.equal(screen().querySelector('.archive-source-details').open, false);
+  assert.match(screen().querySelector('.archive-source-details').textContent, /2026-10-02/);
+  assert.match(screen().querySelector('.archive-source-details').textContent, /监护人自报/);
+  assert.match(screen().querySelector('.archive-source-details').textContent, /未核对/);
+  assert.match(screen().querySelector('.archive-source-details').textContent, /37\.234567890123456789 C/);
+  assert.ok(screen().querySelector('.archive-source-details').previousElementSibling.classList.contains('archive-time-control'));
+  assert.equal(screen().querySelector('.phone-scroll').hasAttribute('inert'), true);
+  assert.equal(screen().activeElement.getAttribute('aria-label'), '关闭孩子的记录');
+  checks.push('Original four summaries, large illustration, symptom triptych, exact raw values and distinct readable-record counts');
+  await choose('toddler-girl-winter'); await click(button('取消选择'));
+  assert.equal(window.localStorage.getItem(companionPreferenceKey), 'unapproved-path-or-patient');
+  assert.match(screen().querySelector('.archive-child-view>img').getAttribute('src'), /child-neutral-front/);
+  await choose('infant-boy-summer');
+  await run(() => screen().querySelector('.companion-options').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true })));
+  assert.equal(screen().querySelector('.companion-options'), null); assert.ok(screen().querySelector('.health-archive'));
+  assert.equal(screen().activeElement.textContent.trim(), '选择形象');
+  await choose('toddler-girl-winter');
+  assert.match(screen().querySelector('.companion-options .section-note').textContent, /当前：通用儿童示意形象/);
+  assert.equal(screen().querySelectorAll('.companion-options p').length, 1);
+  assert.ok(!text().includes('所有患儿页面共用的当前浏览器外观'));
+  await click(button('应用形象'));
+  assert.equal(window.localStorage.getItem(companionPreferenceKey), 'toddler-girl-winter');
+  for (const selector of ['.home-child-view>img', '.archive-child-view>img']) assert.match(screen().querySelector(selector).getAttribute('src'), /toddler-girl-winter/);
+  assert.equal(screen().querySelector('.companion-preference-heading>span').textContent, '示意形象');
+  assert.equal(screen().querySelector('.companion-preference [role=status]').textContent, '形象已更新');
+  assert.match(screen().querySelector('.archive-child-view>img').alt, /示意，不代表患儿身份或健康情况/);
+  assert.equal(screen().querySelectorAll('.companion-image-grid input').length, 0);
+  checks.push('Allowlisted generic fallback, choose/cancel/apply, Escape leaves outer modal open, focus restoration and shared home/archive image');
+  await click(button('历史时间'));
+  await run(() => Simulate.change(screen().querySelector('.archive-time-control select'), { target: { value: oldTemp.medical_time_id } }));
+  assert.match(screen().querySelector('.archive-summary.temperature').textContent, /36\.1 C/);
+  assert.match(screen().querySelector('.archive-summary.reports').textContent, /0 份记录/);
+  await click(screen().querySelector('.archive-summary.temperature'));
+  const link = screen().querySelector('.health-archive .report-item a');
+  assert.ok(link.href.includes(`version=${observations[0].detail.record_version_id}`));
+  assert.ok(link.href.includes(`field=${oldTemp.field_id}`));
+  assert.equal([...screen().querySelectorAll('.health-archive a')].some(link => link.href.includes('/register/')), false);
+  checks.push('Exact medical-time selection and immutable detail reference; read-only archive has no registration link');
+  await click(button('返回档案分类'));
+  await run(() => screen().querySelector('.archive-child-view>img').dispatchEvent(new Event('error')));
+  assert.match(text(), /形象暂时无法显示/); assert.equal(screen().querySelectorAll('.archive-summary').length, 4);
+  await click(button('重新加载示意形象'));
+  assert.ok(screen().querySelector('.archive-child-view>img'));
+  await run(() => access.selectPatient(other));
+  await open(); assert.match(text(), /SYNTHETIC B/); assert.ok(!screen().querySelector('.health-archive').textContent.includes('37.234567890123456789'));
+  assert.match(screen().querySelector('.archive-child-view>img').getAttribute('src'), /toddler-girl-winter/);
+  checks.push('Image failure keeps textual entries; patient switch clears all clinical content while explicit browser appearance remains');
+  await run(() => access.selectPatient(patient)); state.denied = true; await open();
+  assert.match(text(), /Synthetic archive access denied/); assert.ok(!screen().querySelector('.health-archive').textContent.includes('37.234567890123456789'));
+  assert.match(screen().querySelector('.archive-summary.reports').textContent, /读取失败/);
+  assert.ok(!screen().querySelector('.archive-summary.reports').textContent.includes('0 份'));
+  state.denied = false; await click(button('重新核验访问权限')); assert.match(screen().querySelector('.archive-summary.temperature').textContent, /37\.234567890123456789 C/);
+  checks.push('Denied archive hides prior values/counts; explicit retry reloads actual data without false zero');
+  // Reload-equivalent module instance reads only the saved decorative asset ID.
+  const reloadedPreference = await import('../src/state/companionPreference.ts?reload-regression');
+  const probeHost = document.createElement('div'); document.body.append(probeHost); const probeRoot = createRoot(probeHost);
+  function ReloadProbe() { const { image } = reloadedPreference.useCompanionPreference(); return h('span', null, image.id); }
+  await run(() => probeRoot.render(h(ReloadProbe))); assert.equal(probeHost.textContent, 'toddler-girl-winter');
+  await run(() => probeRoot.unmount()); probeHost.remove();
+  const originalSetItem = dom.window.Storage.prototype.setItem;
+  dom.window.Storage.prototype.setItem = () => { throw new Error('Synthetic storage denied'); };
+  await choose('infant-girl-spring'); await click(button('应用形象'));
+  assert.match(text(), /浏览器未允许保存/); assert.match(screen().querySelector('.home-child-view>img').getAttribute('src'), /infant-girl-spring/);
+  assert.equal(window.localStorage.getItem(companionPreferenceKey), 'toddler-girl-winter');
+  dom.window.Storage.prototype.setItem = originalSetItem;
+  await click(screen().querySelector('button[aria-label="关闭孩子的记录"]'));
+  assert.equal(screen().querySelector('.health-archive'), null); assert.equal(screen().querySelector('.phone-scroll').hasAttribute('inert'), false);
+  assert.ok(screen().activeElement === screen().querySelector('.home-twin-heading>button'), 'outer modal restores opener focus');
+  await open();
+  let release; state.held = new Promise(resolve => { release = resolve; });
+  await click(screen().querySelector('button[aria-label="关闭孩子的记录"]')); await open();
+  assert.match(screen().querySelector('.archive-summary.temperature').textContent, /正在读取/);
+  await run(() => access.selectPatient(other)); state.held = null;
+  await run(() => release(Response.json({ records: initialRecords, next_cursor: null })));
+  await open(); assert.ok(!screen().querySelector('.health-archive').textContent.includes('37.234567890123456789'));
+  checks.push('Reload restores only allowlisted asset; storage denial is disclosed; outer modal restores focus; late previous-patient reads discarded');
+  const postPaths = state.calls.filter(call => call.options.method === 'POST').map(call => call.path);
+  assert.ok(postPaths.every(path => path.endsWith('/records/search') || path === '/api/patient-selection'));
+  assert.deepEqual([...Array(window.localStorage.length)].map((_, index) => window.localStorage.key(index)).filter(key => key !== 'sjia.display.theme.v1'), [companionPreferenceKey]);
+  assert.equal(companionImages.length, 17); assert.throws(() => chooseCompanionImage('patient:secret'));
+  await run(() => window.dispatchEvent(new StorageEvent('storage', { key: companionPreferenceKey, newValue: 'not-an-image' })));
+  assert.match(screen().querySelector('.home-child-view>img').getAttribute('src'), /child-neutral-front/);
+  await run(() => access.logout()); assert.equal(screen().querySelector('.health-archive'), null); assert.ok(!text().includes('SYNTHETIC A'));
+  checks.push('Only asset preference persisted, invalid external storage falls back, logout clears clinical modal and no clinical write submitted');
+} finally { await act(async () => root.unmount()); router.dispose(); dom.window.close(); }
+console.log(JSON.stringify({ status: 'PASS', mode: 'SYNTHETIC_NONVISUAL_DOM_NOT_PIXEL_EVIDENCE', checks }, null, 2));

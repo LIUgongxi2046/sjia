@@ -5,6 +5,11 @@ from pathlib import Path
 
 import django
 
+username = os.environ.get('SJIA_ACCEPTANCE_USERNAME')
+password = os.environ.get('SJIA_ACCEPTANCE_PASSWORD')
+if not username or not password:
+    raise RuntimeError('SJIA_ACCEPTANCE_USERNAME and SJIA_ACCEPTANCE_PASSWORD are required')
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.qa'
 os.environ['SJIA_ARK_REQUEST_TIMEOUT_SECONDS'] = '2'
 django.setup()
@@ -17,7 +22,7 @@ checksum = hashlib.sha256((root / 'report.png').read_bytes()).hexdigest()
 file = FileObject.objects.filter(checksum=checksum, status='available').first()
 assert file is not None
 client = Client(HTTP_HOST='127.0.0.1')
-login = client.post('/api/auth/login', {'username': 'acceptance-family', 'password': 'Local-accept-2026'}, content_type='application/json')
+login = client.post('/api/auth/login', {'username': username, 'password': password}, content_type='application/json')
 assert login.status_code == 200, login.content
 response = client.post('/api/recognition/report-ocr', {'file_id': str(file.id)}, content_type='application/json')
 body = response.json()

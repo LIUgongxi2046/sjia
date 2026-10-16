@@ -191,6 +191,8 @@ class TherapyServiceTest(TestCase):
         relation = decide_application(application=application, decision='approved', checked_by=self.principal,
             expected_version=1, action='read_raw', field_codes=['medication_name', 'therapy_status', 'therapy_start', 'therapy_end'],
             purpose='family_observation')
+        from tests.synthetic_fixtures import ensure_synthetic_audit_policy
+        ensure_synthetic_audit_policy(self.principal, case=self)
         session = self.client.session
         session['_sjia_principal_id'] = str(self.principal.id)
         session['_sjia_auth_epoch'] = self.principal.auth_epoch

@@ -20,6 +20,8 @@ from identity.models import Patient, Principal
 from recognition.models import VoiceInput
 from recognition.voice_input_service import _verify_confirmed_text_copy
 from recognition.voice_completion import checked_voice_candidates, voice_completion_with_evidence
+from recognition.invocation import contract_snapshot, provider_timeout_seconds, actual_cost, failure_state
+from recognition.invocation_runtime import provider_marker, lock_receipt_identity
 from sources.models import DataUseAuthorization
 from tasks.models import ConsumerReceipt, Task, TaskAttempt
 from tasks.outbox import record_receipt
@@ -49,6 +51,8 @@ def _execution_scope(task):
     task = Task.objects.select_for_update().select_related('patient', 'actor').get(
         id=task.id, patient=patient, actor=actor)
     refs = task.input_refs
+    if refs.get('invocation_contract') != contract_snapshot('voice'):
+        raise ValueError('MODEL_INVOCATION_CONTRACT_CHANGED')
     if refs['environment'] != settings.SJIA_ENVIRONMENT or refs['auth_epoch'] != str(task.actor.auth_epoch):
         raise ValueError('VOICE_AUTHORIZATION_CHANGED')
     voice_input = VoiceInput.objects.select_for_update().select_related('patient', 'actor').get(
@@ -106,21 +110,10 @@ def _usage_dict(result):
 
 
 def _provider_timeout_seconds(task, execution_until):
-    now = timezone.now()
-    deadlines = [task.deadline_at, execution_until]
-    if task.lease_until is None:
-        raise ValueError('VOICE_PROVIDER_CALL_AUTHORITY_UNAVAILABLE')
-    if task.lease_until <= now:
-        raise ValueError('VOICE_PROVIDER_CALL_AUTHORITY_UNAVAILABLE')
-    remaining = (min(deadlines) - now).total_seconds()
-    if remaining <= 0:
-        raise ValueError('VOICE_PROVIDER_CALL_AUTHORITY_UNAVAILABLE')
-    return min(remaining, settings.ARK_REQUEST_TIMEOUT_SECONDS)
+    return provider_timeout_seconds(task, execution_until, task.input_refs.get('provider_entry'))
 
 
 def _persist_provider_receipt(*, task, attempt, voice_input, original, result, provider, elapsed_ms):
-    from archives.page_execution import actual_cost
-
     raw = result['raw_response']
     raw = raw.encode('utf-8') if isinstance(raw, str) else raw
     checksum = digest_bytes(raw)
@@ -128,7 +121,7 @@ def _persist_provider_receipt(*, task, attempt, voice_input, original, result, p
     key = build_object_key(task.patient_id, response_id, 'voice_response')
     object_store.put_immutable(key, raw)
     usage = _usage_dict(result)
-    usage_evidence = {'phase': 'provider_finished', 'provider_called': True,
+    usage_evidence = {**result['invocation'], 'phase': 'provider_finished', 'provider_called': True,
         'provider_request_id': result['provider_request_id'], 'model': result['model'], 'usage': usage,
         'provider_config_id': str(provider.id), 'provider_checksum': provider.checksum,
         'pricing_evidence_ref': provider.payload['pricing_evidence_ref'],
@@ -138,6 +131,8 @@ def _persist_provider_receipt(*, task, attempt, voice_input, original, result, p
         'provider_duration_ms': elapsed_ms, 'raw_response_file_id': str(response_id),
         'raw_response_sha256': checksum, 'raw_response_size_bytes': len(raw)}
     with transaction.atomic():
+        lock_receipt_identity(task)
+        Task.objects.select_for_update().get(id=task.id)
         response = FileObject.objects.create(id=response_id, patient=task.patient,
             file_group_id=original.file_group_id, object_key=key, object_version=checksum,
             checksum=checksum, size_bytes=len(raw), media_type='application/json',
@@ -210,18 +205,7 @@ def execute_voice_input(event, owner):
         if execution_until <= timezone.now():
             raise ValueError('VOICE_EXECUTION_DEADLINE_EXCEEDED')
 
-        def mark_provider_started():
-            with transaction.atomic():
-                current_task = Task.objects.select_for_update().get(id=task.id)
-                current_attempt = TaskAttempt.objects.select_for_update().get(id=attempt.id)
-                if (current_task.status != 'running' or current_task.lease_generation != current_attempt.lease_generation
-                        or current_task.lease_owner != owner or current_task.lease_until is None
-                        or current_task.lease_until <= timezone.now() or current_task.deadline_at <= timezone.now()
-                        or execution_until <= timezone.now()):
-                    raise ValueError('VOICE_PROVIDER_CALL_AUTHORITY_UNAVAILABLE')
-                current_attempt.usage_evidence = {**(current_attempt.usage_evidence or {}),
-                    'phase': 'provider_started', 'provider_called': True}
-                current_attempt.save(update_fields=['usage_evidence'])
+        mark_provider_started = provider_marker(task, attempt, owner, execution_until)
 
         with lease_heartbeat(task.id, attempt.lease_generation, task_config, execution_until) as stop_heartbeat:
             started = time.perf_counter()
@@ -229,11 +213,14 @@ def execute_voice_input(event, owner):
                 before_provider_call=mark_provider_started,
                 timeout_seconds=_provider_timeout_seconds(task, execution_until))
             elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
+            response, usage_evidence = _persist_provider_receipt(task=task, attempt=attempt,
+                voice_input=voice_input, original=original, result=result, provider=provider, elapsed_ms=elapsed_ms)
             stop_heartbeat()
-    response, usage_evidence = _persist_provider_receipt(task=task, attempt=attempt,
-        voice_input=voice_input, original=original, result=result, provider=provider, elapsed_ms=elapsed_ms)
-    candidates = checked_voice_candidates(result)
+    candidates = checked_voice_candidates(result, provider)
     with transaction.atomic():
+        # Revalidate the captured contract, configuration, consent and purpose
+        # after the response; lock the gate before the task for adoption.
+        task, voice_input, original, use_auth, provider, runtime, task_config = _execution_scope(task)
         task = Task.objects.select_for_update().get(id=task.id)
         attempt = TaskAttempt.objects.select_for_update().get(id=attempt.id)
         voice_input = VoiceInput.objects.select_for_update().get(id=voice_input.id, task=task)
@@ -309,7 +296,7 @@ def record_voice_failure(event, owner, reason):
     if ConsumerReceipt.objects.filter(consumer='voice_input', event=event).exists():
         return
     now = timezone.now()
-    if task.status not in ('accepted', 'queued', 'running', 'cancel_requested'):
+    if task.status not in ('accepted', 'queued', 'running', 'cancel_requested', 'cancelled'):
         return
     if task.status == 'running' and task.lease_owner != owner and task.lease_until is not None and task.lease_until > now:
         return
@@ -319,12 +306,8 @@ def record_voice_failure(event, owner, reason):
     provider_started = usage.get('phase') in ('provider_started', 'provider_finished') or usage.get('provider_called') is True
     provider_response_known = bool(attempt and attempt.provider_request_id
         and usage.get('raw_response_file_id'))
-    if task.status == 'cancel_requested' and not provider_started:
-        task_state, voice_state, attempt_state = 'cancelled', 'cancelled', TaskAttempt.Status.CANCELLED
-    elif provider_started and not provider_response_known:
-        task_state, voice_state, attempt_state = 'uncertain', 'uncertain', TaskAttempt.Status.UNCERTAIN
-    else:
-        task_state, voice_state, attempt_state = 'failed', 'failed', TaskAttempt.Status.FAILED
+    task_state = failure_state(usage, task.status in ('cancel_requested', 'cancelled'))
+    voice_state = attempt_state = task_state
     task.status = task_state
     task.status_version += 1
     task.lease_until = now

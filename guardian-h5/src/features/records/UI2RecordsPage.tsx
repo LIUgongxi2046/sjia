@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { ArrowRight, ChevronDown, ChevronRight, ShieldCheck } from 'lucide-react';
-import { CalendarDays, ClipboardList, FileClock, FileText, Layers, Pill, Thermometer, UsersRound } from '../../components/ThreeDIcon';
+import { ChevronRight as ArrowRight, ArrowDown as ChevronDown, ChevronRight, ShieldCheck } from '../../components/ThreeDIcon';
+import { CalendarDays, ClipboardList, FileClock, FileText, Layers, Pill, SlidersHorizontal, Thermometer, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
+import { RecordFieldValue } from '../../components/RecordFieldPrimary';
 import { searchRecords } from '../../api/endpoints';
 import { fieldLabel, fieldValue, originLabels, timeLabel, verificationLabel } from '../../api/records';
 import type { RecordItem } from '../../api/records';
@@ -22,14 +23,17 @@ function RecordRow({ record }: { record: RecordItem }) {
   const medicalTime = detail.report?.sample_time ?? primary?.medical_time ?? null;
   const timeTitle = detail.report?.sample_time ? '报告采样时间' : primary ? `${fieldLabel(primary)}时间` : '项目时间';
   const Icon = record.kind === 'observation' ? Thermometer : record.kind === 'therapy' ? Pill : FileText;
-  return <section className="card form-card">
-    <ContextLink className="list-row" to={`/records/${record.record_id}`}><span className="row-icon"><Icon size={30} /></span>
-      <span className="row-text"><strong>{labels[record.kind]}</strong><small>{primary ? fieldValue(primary) : record.kind === 'report' ? `${detail.fields.length} 项结果` : '观察记录'}</small></span><ChevronRight size={17} />
+  return <section className="rich-record-card">
+    <ContextLink className="rich-record-link" to={`/records/${record.record_id}`}>
+      <span className="rich-record-symbol"><Icon size={24} /></span>
+      <div className="rich-record-copy"><div className="rich-record-top"><strong>{labels[record.kind]}</strong>
+        <span className="rich-record-time">{timeTitle} · {medicalTime ? timeLabel(medicalTime) : '各项目时间见完整记录'}</span></div>
+        <div className="rich-record-value">{primary ? <RecordFieldValue field={primary} /> : record.kind === 'report' ? <><span className="rich-record-number">{detail.fields.length}</span><span className="rich-record-unit"> 项结果</span></> : '观察记录'}</div>
+        <p>{fields.slice(0, 3).map(field => `${fieldLabel(field)}：${fieldValue(field)}`).join(' · ') || '查看原始记录'}{fields.length > 3 ? ` · 另有 ${fields.length - 3} 项` : ''}</p>
+        <div className="rich-record-tags"><span className="badge">{originLabels[detail.origin_type]}{detail.source_organization ? ` · ${detail.source_organization}` : ''}</span>
+          <span>{primary ? verificationLabel(primary) : '核对状态见详情'}</span></div>
+      </div><ChevronRight size={17} />
     </ContextLink>
-    <p>{fields.slice(0, 3).map(field => `${fieldLabel(field)}：${fieldValue(field)}`).join(' · ') || '查看原始记录'}{fields.length > 3 ? ` · 另有 ${fields.length - 3} 项` : ''}</p>
-    <div className="pair"><span>{timeTitle}</span><strong>{medicalTime ? timeLabel(medicalTime) : '各项目时间见完整记录'}</strong></div>
-    <div className="pair"><span>资料来源</span><strong>{originLabels[detail.origin_type]}{detail.source_organization ? ` · ${detail.source_organization}` : ''}</strong></div>
-    <div className="pair"><span>核对状态</span><strong>{primary ? verificationLabel(primary) : '核对状态见详情'}</strong></div>
   </section>;
 }
 
@@ -122,11 +126,11 @@ export function UI2RecordsPage() {
   return <UI2FamilyFrame title="记录" screenId="UI2-05" note="时间轴、档案、摘要和草稿各有明确入口。" backTo="/home" primary="records">
     <UI2ReadState loading={loading} error={error} onRetry={() => setReload(value => value + 1)} />
     {canRead && !loading && !error && <>
-      <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{active?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-      <div className="feature-grid"><button onClick={() => navigate('/archives')}><Layers size={34} /><strong>长期档案</strong><small>按医院与就诊查找</small></button><button onClick={() => navigate('/summaries')}><FileText size={34} /><strong>就医摘要</strong><small>准备本次沟通资料</small></button></div>
-      <div className="section-heading"><h2>记录时间轴</h2><button className="text-action" onClick={() => change('open', !filters.open)}>筛选<ChevronRight size={14} /></button></div>
+      <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{active?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+      <div className="feature-grid"><button onClick={() => navigate('/summaries')}><FileText size={34} /><strong>就医摘要</strong><small>准备本次沟通资料</small></button><button onClick={() => navigate('/drafts')}><FileClock size={34} /><strong>我的草稿</strong><small>继续本人尚未完成的记录</small></button></div>
+      <div className="section-heading"><h2>记录时间轴</h2><button className="text-action" aria-expanded={filters.open} aria-controls="record-filters" onClick={() => change('open', !filters.open)}>筛选<SlidersHorizontal size={14} /></button></div>
       <div className="segments" role="tablist" aria-label="记录类别">{categories.map(category => <button key={category} role="tab" aria-selected={filters.category === category} className={filters.category === category ? 'selected' : ''} onClick={() => change('category', category, true)}>{category}</button>)}</div>
-      {filters.open && <section className="card form-card" aria-label="筛选记录" onBlur={event => {
+      {filters.open && <section id="record-filters" className="card form-card" aria-label="筛选记录" onBlur={event => {
         if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) applyFilters();
       }} onKeyDown={event => { if (event.key === 'Enter' && !event.nativeEvent.isComposing && event.target instanceof HTMLInputElement) { event.preventDefault(); applyFilters(); } }}>
         <div className="field-grid"><label className="field"><span>开始日期</span><input type="date" value={filters.start} onChange={event => change('start', event.target.value)} /></label>
@@ -147,11 +151,11 @@ export function UI2RecordsPage() {
       {!records.length ? <section className="card"><div className="empty"><span className="empty-icon"><ClipboardList size={54} /></span><h3>{Object.entries(query).some(([key, value]) => key !== 'limit' && value !== undefined && value !== false) ? '没有符合筛选条件的记录' : '记录从这里开始'}</h3><p>体温、报告和治疗资料，按实际发生时间排列。</p><button className="text-action" onClick={() => navigate('/register/reports')}>添加已有资料<ArrowRight size={16} /></button></div></section>
         : ['已有医学时间', '时间待补充'].map(group => {
           const values = records.filter(record => (record.detail.fields.some(field => field.medical_time && field.medical_time.precision !== 'unknown') ? '已有医学时间' : '时间待补充') === group);
-          return values.length > 0 && <section key={group}><div className="section-heading"><h2>{group}</h2></div>{values.map(record => <RecordRow key={record.record_id} record={record} />)}</section>;
+          return values.length > 0 && <section className="rich-record-group" key={group}><div className="section-heading"><h2>{group}</h2></div>{values.map(record => <RecordRow key={record.record_id} record={record} />)}</section>;
         })}
       {nextCursor && <button className="button secondary" disabled={loadingMore} onClick={() => void loadMore()}>{loadingMore ? '正在读取后续记录' : '读取更多记录'}</button>}
-      <section className="card"><button className="list-row" onClick={() => navigate('/records/period')}><span className="row-icon"><CalendarDays size={30} /></span><span className="row-text"><strong>观察时段</strong><small>明确时间范围与检查间隔</small></span><ChevronRight size={17} /></button>
-        <button className="list-row" onClick={() => navigate('/drafts')}><span className="row-icon"><FileClock size={30} /></span><span className="row-text"><strong>我的草稿</strong><small>继续本人尚未完成的记录</small></span><ChevronRight size={17} /></button></section>
+      <section className="card"><button className="list-row" onClick={() => navigate('/archives')}><span className="row-icon"><Layers size={30} /></span><span className="row-text"><strong>长期档案</strong><small>按医院与就诊查找</small></span><ChevronRight size={17} /></button>
+        <button className="list-row" onClick={() => navigate('/records/period')}><span className="row-icon"><CalendarDays size={30} /></span><span className="row-text"><strong>观察时段</strong><small>明确时间范围与检查间隔</small></span><ChevronRight size={17} /></button></section>
       <div className="note blue"><ShieldCheck size={17} /><p>没有新增资料，不代表当前健康状况正常。</p></div>
     </>}
   </UI2FamilyFrame>;

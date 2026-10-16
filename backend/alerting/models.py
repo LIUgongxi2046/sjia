@@ -4,11 +4,35 @@ import uuid
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import Sha256HexField
 
 
-class AlertEvaluation(models.Model):
+class AlertPresetChoice(models.Model):
+    """Immutable patient-scoped selection history; a choice grants no access."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    patient = models.ForeignKey('identity.Patient', on_delete=models.RESTRICT, related_name='+')
+    environment = models.TextField()
+    purpose = models.TextField()
+    version = models.PositiveBigIntegerField()
+    assignment = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    schedule = models.ForeignKey('configurations.ConfigVersion', on_delete=models.RESTRICT, related_name='+')
+    selected_by = models.ForeignKey('identity.Principal', on_delete=models.RESTRICT, related_name='+')
+    selected_at = models.DateTimeField()
+    authorization_context = models.JSONField()
+    write_request = models.ForeignKey('requests.WriteRequest', on_delete=models.RESTRICT, null=True, related_name='+')
+
+    class Meta:
+        db_table = 'sjia"."alert_preset_choice'
+        constraints = [
+            models.UniqueConstraint(fields=['patient', 'environment', 'purpose', 'version'], name='preset_choice_scope_version_uniq'),
+            models.CheckConstraint(condition=models.Q(version__gte=1), name='preset_choice_positive_version'),
+        ]
+
+
+class AlertEvaluation(ErasureModel, models.Model):
     class Mode(models.TextChoices):
         CURRENT = "current", "current"
         REPLAY = "replay", "replay"
@@ -35,12 +59,12 @@ class AlertEvaluation(models.Model):
     environment = models.TextField()
     policy = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, null=True, db_column="policy_id", related_name="+")
     window_policy = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, null=True, db_column="window_policy_id", related_name="+")
-    assessment_at = models.DateTimeField()
-    known_at = models.DateTimeField()
+    assessment_at = models.DateTimeField(null=True)
+    known_at = models.DateTimeField(null=True)
     context_sequence = models.PositiveBigIntegerField()
     mode = models.CharField(max_length=16, choices=Mode.choices)
     status = models.CharField(max_length=24, choices=Status.choices)
-    decision = models.CharField(max_length=16, choices=Decision.choices)
+    decision = models.CharField(max_length=16, choices=Decision.choices, null=True)
     data_epoch = models.BigIntegerField(default=0)
     verification_epoch = models.BigIntegerField(default=0)
     publication_epoch = models.BigIntegerField(default=0)
@@ -48,7 +72,7 @@ class AlertEvaluation(models.Model):
     lease_generation = models.PositiveBigIntegerField()
     use_authorization_id = models.UUIDField()
     input_digest = Sha256HexField()
-    missing_items = models.JSONField()
+    missing_items = models.JSONField(null=True)
     computed_at = models.DateTimeField()
     validity = models.CharField(max_length=16, choices=Validity.choices)
 
@@ -63,7 +87,7 @@ class AlertEvaluation(models.Model):
         ]
 
 
-class AlertEvaluationInput(models.Model):
+class AlertEvaluationInput(ErasureModel, models.Model):
     class InputRole(models.TextChoices):
         BASELINE = "baseline", "baseline"
         CURRENT = "current", "current"
@@ -73,10 +97,10 @@ class AlertEvaluationInput(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     evaluation_id = models.UUIDField()
     patient_id = models.UUIDField()
-    signal_id = models.TextField()
+    signal_id = models.TextField(null=True)
     position = models.IntegerField()
-    variable_code = models.TextField()
-    input_role = models.CharField(max_length=16, choices=InputRole.choices)
+    variable_code = models.TextField(null=True)
+    input_role = models.CharField(max_length=16, choices=InputRole.choices, null=True)
     record_version_id = models.UUIDField()
     field_id = models.UUIDField()
     verification_id = models.UUIDField()
@@ -94,12 +118,12 @@ class AlertEvaluationInput(models.Model):
         ]
 
 
-class AlertEvaluationAssessment(models.Model):
+class AlertEvaluationAssessment(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     evaluation_id = models.UUIDField()
     assessment_id = models.UUIDField()
     patient_id = models.UUIDField()
-    role = models.TextField()
+    role = models.TextField(null=True)
 
     class Meta:
         db_table = 'sjia"."alert_evaluation_assessment'
@@ -108,7 +132,7 @@ class AlertEvaluationAssessment(models.Model):
         ]
 
 
-class AlertSignalResult(models.Model):
+class AlertSignalResult(ErasureModel, models.Model):
     class State(models.TextChoices):
         MET = "met", "met"
         NOT_MET = "not_met", "not_met"
@@ -117,13 +141,13 @@ class AlertSignalResult(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     evaluation_id = models.UUIDField()
     patient_id = models.UUIDField()
-    signal_id = models.TextField()
+    signal_id = models.TextField(null=True)
     schema_version = models.TextField()
-    state = models.CharField(max_length=16, choices=State.choices)
+    state = models.CharField(max_length=16, choices=State.choices, null=True)
     algorithm_version = models.TextField()
     input_field_ids = ArrayField(models.UUIDField())
-    reason_codes = ArrayField(models.TextField())
-    pair_results = models.JSONField()
+    reason_codes = ArrayField(models.TextField(), null=True)
+    pair_results = models.JSONField(null=True)
 
     class Meta:
         db_table = 'sjia"."alert_signal_result'
@@ -132,7 +156,7 @@ class AlertSignalResult(models.Model):
         ]
 
 
-class AlertEpisode(models.Model):
+class AlertEpisode(ErasureModel, models.Model):
     class Status(models.TextChoices):
         OPEN = "open", "open"
         CLOSED = "closed", "closed"
@@ -140,14 +164,14 @@ class AlertEpisode(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
-    rule_family_key = models.TextField()
+    rule_family_key = models.TextField(null=True)
     status = models.CharField(max_length=16, choices=Status.choices)
-    opened_at = models.DateTimeField()
+    opened_at = models.DateTimeField(null=True)
     last_evaluation_id = models.UUIDField()
     last_event_id = models.UUIDField(null=True)
     state_version = models.PositiveBigIntegerField()
     reset_evaluation_id = models.UUIDField(null=True)
-    last_assessment_at = models.DateTimeField()
+    last_assessment_at = models.DateTimeField(null=True)
     last_context_sequence = models.PositiveBigIntegerField()
 
     class Meta:
@@ -158,7 +182,7 @@ class AlertEpisode(models.Model):
         ]
 
 
-class AlertDecision(models.Model):
+class AlertDecision(ErasureModel, models.Model):
     class State(models.TextChoices):
         MET = "met", "met"
         NOT_MET = "not_met", "not_met"
@@ -174,10 +198,10 @@ class AlertDecision(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     evaluation_id = models.UUIDField()
     patient_id = models.UUIDField()
-    rule_key = models.TextField()
-    state = models.CharField(max_length=16, choices=State.choices)
-    action = models.CharField(max_length=16, choices=Action.choices)
-    reason_codes = ArrayField(models.TextField())
+    rule_key = models.TextField(null=True)
+    state = models.CharField(max_length=16, choices=State.choices, null=True)
+    action = models.CharField(max_length=16, choices=Action.choices, null=True)
+    reason_codes = ArrayField(models.TextField(), null=True)
     episode_id = models.UUIDField(null=True)
     sequence = models.PositiveBigIntegerField()
     previous_decision_id = models.UUIDField(null=True)
@@ -191,7 +215,7 @@ class AlertDecision(models.Model):
         ]
 
 
-class AlertEvent(models.Model):
+class AlertEvent(ErasureModel, models.Model):
     class Validity(models.TextChoices):
         VALID = "valid", "valid"
         INVALID = "invalid", "invalid"
@@ -200,9 +224,9 @@ class AlertEvent(models.Model):
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     evaluation_id = models.UUIDField()
     release = models.ForeignKey("family_content.ReleaseBundle", on_delete=models.RESTRICT, db_column="release_id", related_name="+")
-    trigger_key = models.TextField()
+    trigger_key = models.TextField(null=True)
     trigger_policy = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, db_column="trigger_policy_id", related_name="+")
-    input_snapshot = models.JSONField()
+    input_snapshot = models.JSONField(null=True)
     validity = models.CharField(max_length=16, choices=Validity.choices)
     created_at = models.DateTimeField()
 
@@ -214,7 +238,7 @@ class AlertEvent(models.Model):
         ]
 
 
-class AlertRecipient(models.Model):
+class AlertRecipient(ErasureModel, models.Model):
     class DeliveryStatus(models.TextChoices):
         NOT_SENT = "not_sent", "not_sent"
         PENDING = "pending", "pending"

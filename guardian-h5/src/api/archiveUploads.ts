@@ -3,17 +3,17 @@ import { validateApiValue } from './schema';
 import type { ArchiveUploadOptions } from '../../../frontend-design/v2-types';
 import { completeFileGroup, createFileGroup, uploadFile } from './endpoints';
 
-export async function readUploadOptions(patientId: string, signal?: AbortSignal): Promise<ArchiveUploadOptions> {
+export async function readUploadOptions(patientId: string, signal?: AbortSignal, isCurrent?: () => boolean): Promise<ArchiveUploadOptions> {
   const value = validateApiValue<ArchiveUploadOptions>('v2-protocol.schema.json#/$defs/ArchiveUploadOptions',
-    await fetchJson<unknown>(`/api/v2/patients/${encodeURIComponent(patientId)}/archive-upload-options`, { signal }));
+    await fetchJson<unknown>(`/api/v2/patients/${encodeURIComponent(patientId)}/archive-upload-options`, { signal, isCurrent }));
   if (value.patient_id !== patientId) throw new Error('上传来源与当前患儿不一致。');
   return value;
 }
 
-export async function readUploadGroup(groupId: string, signal?: AbortSignal) {
+export async function readUploadGroup(groupId: string, signal?: AbortSignal, isCurrent?: () => boolean) {
   const value = validateApiValue<{ group_id: string; patient_id: string; authorization_id: string; source_revision_id: string; version: string; status: string;
     files: { file_id: string; media_type: string; purpose: string; checksum: string; size_bytes: number; ordinal: number; page_count: number }[] }>(
-    'v2-protocol.schema.json#/$defs/UploadGroupView', await fetchJson<unknown>(`/api/uploads/${encodeURIComponent(groupId)}`, { signal }));
+    'v2-protocol.schema.json#/$defs/UploadGroupView', await fetchJson<unknown>(`/api/uploads/${encodeURIComponent(groupId)}`, { signal, isCurrent }));
   if (value.group_id !== groupId || value.files.some(file => file.purpose !== 'original')) throw new Error('原件上传结果与准确上传组不一致。');
   return value;
 }
@@ -38,7 +38,7 @@ export async function saveConfirmedVoiceText(patientId: string, sourceRevisionId
   const created = await createFileGroup(patientId, csrfToken, authorization.authorization_id, groupId);
   if (created.group_id !== groupId) throw new Error('上传组回执与本次请求标识不一致。');
   const receipt = await uploadFile(groupId, request.uploadId, await file.arrayBuffer(), 'text/plain');
-  await completeFileGroup(groupId, csrfToken);
+  await completeFileGroup(groupId, csrfToken, signal, patientId);
   const saved = await readUploadGroup(groupId, signal);
   if (saved.group_id !== groupId || saved.patient_id !== patientId || saved.authorization_id !== authorization.authorization_id
       || saved.source_revision_id !== sourceRevisionId || saved.status !== 'available' || saved.files.length !== 1) {

@@ -10,7 +10,7 @@ from django.utils import timezone
 from tasks.models import OutboxEvent, Task, TaskAttempt
 
 LOCAL_TASK_TYPES = (Task.TaskType.FILE_VALIDATION, Task.TaskType.ASSESSMENT,
-    Task.TaskType.ALERT_EVALUATION, Task.TaskType.SUMMARY)
+    Task.TaskType.ALERT_EVALUATION, Task.TaskType.SUMMARY, Task.TaskType.RECONCILE)
 
 class TaskRejected(Exception):
     def __init__(self, reason_code):
@@ -36,6 +36,9 @@ def register_task(
 ) -> Task:
     if task_type not in Task.TaskType.values:
         raise TaskRejected("TASK_TYPE_UNREGISTERED")
+    if task_type == Task.TaskType.FILE_VALIDATION:
+        from files.validation import validate_registration
+        validate_registration(actor, patient, schema_version, input_refs)
     now = timezone.now()
     return Task.objects.create(
         actor=actor,
@@ -150,6 +153,8 @@ def cancel_task(task_id) -> int:
 
 @transaction.atomic
 def create_attempt(task, lease_generation, provider_request_id=None) -> TaskAttempt:
+    from retention.content_fences import assert_content_available
+    assert_content_available('tasks.task', task.id)
     task = Task.objects.select_for_update().get(id=task.id)
     if task.lease_generation != lease_generation:
         raise TaskRejected("LEASE_GENERATION_MISMATCH")
@@ -171,6 +176,9 @@ def create_attempt(task, lease_generation, provider_request_id=None) -> TaskAtte
 
 @transaction.atomic
 def finish_attempt(attempt, status, error_code=None, usage_evidence=None) -> None:
+    from retention.content_fences import assert_content_available
+    assert_content_available('tasks.task', attempt.task_id)
+    assert_content_available('tasks.taskattempt', attempt.id)
     if status not in TaskAttempt.Status.values or status == TaskAttempt.Status.RUNNING:
         raise TaskRejected('TASK_ATTEMPT_FINAL_STATUS_INVALID')
     if usage_evidence is not None and not isinstance(usage_evidence, dict):

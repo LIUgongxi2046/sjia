@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { ArrowDown as ChevronDown, ShieldCheck } from '../../components/ThreeDIcon';
 import { UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
 import { PrivateSourceGallery } from '../../components/PrivateSourceGallery';
 import { useAccess } from '../../state/access';
+import { useEndpointAccess } from '../../state/useEndpointAccess';
 import { useArchiveRelations } from '../../api/useArchiveRelations';
 import { ApiError } from '../../api/client';
 import { timeLabel } from '../../api/records';
@@ -32,6 +33,7 @@ export function UI2DuplicatesPage() {
 }
 
 function DuplicatesContent() {
+  const boundary = useEndpointAccess();
   const access = useAccess();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -40,7 +42,7 @@ function DuplicatesContent() {
   const clientRequestId = params.get('client_request');
   const association = access.relations.find(value => value.patient_id === access.patientId);
   const canRead = !!access.principalId && !!access.patientId && !access.loading && !access.error;
-  const directory = useArchiveRelations(canRead ? access.patientId : null, canRead ? access.principalId : null);
+  const directory = useArchiveRelations(canRead && !boundary.blocked.current ? access.patientId : null, canRead && !boundary.blocked.current ? access.principalId : null);
   const canWrite = canRead && directory.visible && !!directory.data && !directory.loading && !directory.error
     && !!access.csrfToken && association?.status === 'active'
     && association.actions.includes('write_record') && Date.parse(association.valid_from) <= Date.now()
@@ -74,15 +76,19 @@ function DuplicatesContent() {
     return fileId ? [{ file_id: fileId, ordinal: index + 1, checksum: value?.checksum ?? undefined }] : [];
   });
 
+  function wipe() { setSaved(null); setRequest(null); setSelected(null); setIdentity(null); setIntent(null); setLeftId(''); setRightId(''); setType(''); setReason(''); setEvidence(''); }
+  useEffect(() => {
+    if (directory.error && boundary.current() && boundary.deny(directory.error)) { setError(directory.error); active.current?.abort(); wipe(); }
+  }, [directory.error]);
   function run(operation: (controller: AbortController) => Promise<void>) {
-    if (!canRead || !directory.visible || busyRef.current) return;
+    if (!canRead || !directory.visible || busyRef.current || !boundary.current()) return;
     const controller = new AbortController(); active.current = controller; busyRef.current = true;
     setBusy(true); setError(null);
-    void operation(controller).then(undefined, failure => {
+    void Promise.resolve().then(() => { boundary.guard(controller.signal); return operation(controller); }).then(undefined, failure => {
       if (!(failure instanceof Error)) throw failure;
-      if (!controller.signal.aborted && mounted.current) {
+      if (boundary.current(controller.signal) && mounted.current) {
         setError(failure);
-        if (failure instanceof ApiError && [401, 403].includes(failure.status)) { setSaved(null); setRequest(null); setSelected(null); directory.reload(); void access.refresh(); }
+        if (boundary.deny(failure)) wipe();
         if (failure instanceof ApiError && failure.status === 409) directory.reload();
       }
     }).finally(() => { if (active.current === controller) { active.current = null; busyRef.current = false; if (mounted.current) setBusy(false); } });
@@ -96,11 +102,13 @@ function DuplicatesContent() {
 
   async function adopt(receipt: WriteReceipt, payload: RelationIdentity['payload'], controller: AbortController) {
     if (!access.patientId) throw new Error('当前患儿尚未取得访问资格。');
+    boundary.guard(controller.signal);
     const original = await readArchiveRelation(receipt.resource_id, access.patientId, controller.signal, receipt.version);
     if (!relationPayloadMatches(original, payload)) throw new Error('原关系回执与重新读取的保存内容不一致。');
+    boundary.guard(controller.signal);
     const current = await readArchiveRelation(receipt.resource_id, access.patientId, controller.signal);
     if (BigInt(current.version) < BigInt(receipt.version)) throw new Error('当前关系版本早于保存回执。');
-    if (!controller.signal.aborted && mounted.current) { setSaved({ receipt, current }); setSelected(current); directory.reload(); }
+    if (boundary.current(controller.signal) && mounted.current) { setSaved({ receipt, current }); setSelected(current); directory.reload(); }
   }
 
   function inspect(identifier: string, byRequest = false) {
@@ -113,7 +121,7 @@ function DuplicatesContent() {
       if (value.operation_id === 'archive_relation_verify' || !('relation_type' in value.relation_input)) throw new Error('该原请求不属于本人资料整理。');
       if (value.operation_id === 'archive_relation_create' ? value.target_key !== `/patients/${access.patientId}/archive-relations`
         : relationId && value.target_key !== `/archive-relations/${relationId}/relationships`) throw new Error('原请求目标与当前资料关系不一致。');
-      if (controller.signal.aborted || !mounted.current) return;
+      if (!boundary.current(controller.signal) || !mounted.current) return;
       fill(value.relation_input); setRequest(value);
       setIdentity({ operation_id: value.operation_id, target_key: value.target_key, request_id: value.request_id, schema_version: '2.0.0', payload: value.relation_input });
       setIntent({ intent_id: value.intent_id, request_id: value.request_id, generation: value.generation, expires_at: value.expires_at,
@@ -133,7 +141,7 @@ function DuplicatesContent() {
       recovered.current = null; loaded.current = null; document.removeEventListener('visibilitychange', changed); };
   }, []);
   useEffect(() => {
-    if (!canRead) { active.current?.abort(); setSaved(null); setSelected(null); setRequest(null); setIdentity(null); setIntent(null); setLeftId(''); setRightId(''); setReason(''); setEvidence(''); recovered.current = null; loaded.current = null; }
+    if (!canRead) { active.current?.abort(); active.current = null; busyRef.current = false; setBusy(false); setSaved(null); setSelected(null); setRequest(null); setIdentity(null); setIntent(null); setLeftId(''); setRightId(''); setReason(''); setEvidence(''); recovered.current = null; loaded.current = null; }
   }, [canRead]);
   useEffect(() => {
     const lookup = requestId ? `intent:${requestId}` : clientRequestId ? `request:${clientRequestId}` : null;
@@ -141,9 +149,9 @@ function DuplicatesContent() {
     else if (canRead && directory.visible && relationId && !lookup && loaded.current !== relationId && !busyRef.current) {
       loaded.current = relationId;
       run(async controller => { const value = await readArchiveRelation(relationId, access.patientId!, controller.signal);
-        if (!controller.signal.aborted && mounted.current) { setSelected(value); fill(inputFrom(value)); } });
+        if (boundary.current(controller.signal) && mounted.current) { setSelected(value); fill(inputFrom(value)); } });
     }
-  }, [canRead, directory.visible, relationId, requestId, clientRequestId, busy]);
+  }, [canRead, directory.visible, directory.data, relationId, requestId, clientRequestId, busy]);
 
   function chooseRelation(value: RelationView) {
     if (!edit) return;
@@ -175,7 +183,7 @@ function DuplicatesContent() {
       setIdentity(current); recovered.current = `request:${current.request_id}`;
       setParams(next => { const copy = new URLSearchParams(next); copy.set('client_request', current.request_id); copy.set('operation', current.operation_id); return copy; }, { replace: true });
       const prepared = intent ?? await prepareRelationRequest(current, controller.signal);
-      if (controller.signal.aborted || !mounted.current) return;
+      if (!boundary.current(controller.signal) || !mounted.current) return;
       setIntent(prepared); recovered.current = `intent:${prepared.intent_id}`;
       setParams(next => { const copy = new URLSearchParams(next); copy.set('request', prepared.intent_id); return copy; }, { replace: true });
       if (prepared.status === 'failed' || prepared.status === 'prepared' && Date.parse(prepared.expires_at) <= Date.now()) throw new Error('原关系请求需要重新核验。');
@@ -184,7 +192,7 @@ function DuplicatesContent() {
   }
   function retry() {
     run(async controller => { if (!identity || !request?.may_retry) throw new Error('原关系请求尚不具备重新提交条件。');
-      const prepared = await retryRelationRequest(request, controller.signal); setIntent(prepared); setRequest(null);
+      const prepared = await retryRelationRequest(request, controller.signal); boundary.guard(controller.signal); setIntent(prepared); setRequest(null);
       await adopt(await submitRelationRequest(identity, prepared, controller.signal), identity.payload, controller); });
   }
   function continueCurrent() {
@@ -204,8 +212,8 @@ function DuplicatesContent() {
   }
 
   return <UI2FamilyFrame title="重复资料核对" screenId="UI2-29" note="同一文件、同次采样和独立检查分别判断。" backTo="/archives/confirm">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{association?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-    <UI2ReadState loading={directory.loading} error={directory.error} onRetry={directory.reload} />
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{association?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    <UI2ReadState loading={directory.loading || busy} error={error ?? directory.error} onRetry={() => boundary.revalidate(() => { recovered.current = null; loaded.current = null; setError(null); directory.reload(); })} />
     <section className="card form-card"><div className="section-heading"><h2>确认资料关系</h2><span className="badge neutral">{selected ? statuses[selected.status] : left && right ? '待确认关系' : '待选择原件'}</span></div>
       <div className="pair"><span>原始文书</span><strong>{left && right ? `${left.label}；${right.label}` : '尚未提供'}</strong></div>
       <div className="pair"><span>页面与顺序</span><strong>{selected ? `关系版本 ${selected.version}，来源版本分别保留` : '尚未提供'}</strong></div>

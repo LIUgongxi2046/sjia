@@ -47,6 +47,7 @@ def prepare_confirmed_fields(*, candidate_set_id, patient, actor, fields, decisi
         field.pop('candidate_field_id', None)
         field.pop('source_file_id', None)
         field.pop('source_text', None)
+        field.pop('recognition_time_candidates', None)
         if field.get('field_code') != candidate.proposed_field['field_code']:
             raise RecognitionRejected('CANDIDATE_FIELD_CODE_CHANGED')
         if decision == 'unknown':

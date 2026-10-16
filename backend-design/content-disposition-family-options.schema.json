@@ -1,0 +1,143 @@
+{
+  "$defs": {
+    "ContentFamilyChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "format": "uuid",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        },
+        "record_id": {
+          "format": "uuid",
+          "title": "Record Id",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "version",
+        "record_id",
+        "recorded_at"
+      ],
+      "title": "ContentFamilyChoice",
+      "type": "object"
+    },
+    "ContentPolicyChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "format": "uuid",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "mode": {
+          "enum": [
+            "retain",
+            "revoke_access",
+            "erase_selected_content"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "execution_enabled": {
+          "title": "Execution Enabled",
+          "type": "boolean"
+        },
+        "retention_seconds": {
+          "minimum": 0,
+          "title": "Retention Seconds",
+          "type": "integer"
+        },
+        "clock": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Clock",
+          "type": "string"
+        },
+        "access_purpose": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Access Purpose",
+          "type": "string"
+        },
+        "recheck_at": {
+          "format": "date-time",
+          "title": "Recheck At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "version",
+        "mode",
+        "execution_enabled",
+        "retention_seconds",
+        "clock",
+        "access_purpose",
+        "recheck_at"
+      ],
+      "title": "ContentPolicyChoice",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-family-options-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "policies": {
+      "items": {
+        "$ref": "#/$defs/ContentPolicyChoice"
+      },
+      "title": "Policies",
+      "type": "array"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/ContentFamilyChoice"
+      },
+      "title": "Targets",
+      "type": "array"
+    },
+    "default_policy": {
+      "title": "Default Policy",
+      "type": "null"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patient_id",
+    "policies",
+    "targets",
+    "default_policy"
+  ],
+  "title": "ContentFamilyOptions",
+  "type": "object"
+}

@@ -89,7 +89,8 @@ def page_candidate_set(page, patient):
 def current_document(page):
     links = ArchiveDocumentPage.objects.filter(page_id=page.id, patient_id=page.patient_id)
     versions = ArchiveDocumentVersion.objects.filter(id__in=links.values('document_version_id'), patient_id=page.patient_id)
-    current = [version for version in versions if ArchiveDocument.objects.get(id=version.document_id).current_version == version.version]
+    current = [version for version in versions if ArchiveDocument.objects.filter(id=version.document_id,
+        retired_at__isnull=True, current_version=version.version).exists()]
     if len(current) > 1:
         raise ApiError('ARCHIVE_CANDIDATE_DOCUMENT_AMBIGUOUS', 409)
     return current[0] if current else None

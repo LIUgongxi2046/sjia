@@ -3,34 +3,427 @@
   "$id": "report-recognition.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["candidates"],
+  "required": [
+    "candidates"
+  ],
   "properties": {
     "candidates": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["items"],
-      "properties": {
-        "items": { "type": "array", "items": { "$ref": "#/$defs/reportItem" } }
-      }
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/reportItem"
+              }
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/reportTimeCandidates"
+        }
+      ]
     }
   },
   "$defs": {
-    "decimal": { "type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
-    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
-    "nullableText": { "anyOf": [{ "$ref": "#/$defs/text" }, { "type": "null" }] },
+    "decimal": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "nullableText": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "reportItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "value", "comparator", "unit", "reference", "method", "source_text"],
+      "required": [
+        "name",
+        "value",
+        "comparator",
+        "unit",
+        "reference",
+        "method",
+        "source_text"
+      ],
       "properties": {
-        "name": { "$ref": "#/$defs/text" },
-        "value": { "$ref": "#/$defs/nullableText" },
-        "comparator": { "enum": ["=", "<", "<=", "≤", ">", ">=", "≥", null] },
-        "unit": { "$ref": "#/$defs/nullableText" },
-        "reference": { "$ref": "#/$defs/nullableText" },
-        "method": { "$ref": "#/$defs/nullableText" },
-        "source_text": { "$ref": "#/$defs/text" }
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "value": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "comparator": {
+          "enum": [
+            "=",
+            "<",
+            "<=",
+            "≤",
+            ">",
+            ">=",
+            "≥",
+            null
+          ]
+        },
+        "unit": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "reference": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "method": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "source_text": {
+          "$ref": "#/$defs/text"
+        }
       }
+    },
+    "ReportTimeCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "raw_text": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Raw Text",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "unknown",
+            "year",
+            "month",
+            "month_range",
+            "relative",
+            "date",
+            "minute",
+            "second"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "local_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Local Year"
+        },
+        "local_month": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Local Month"
+        },
+        "end_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End Year"
+        },
+        "end_month": {
+          "anyOf": [
+            {
+              "maximum": 12,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "End Month"
+        },
+        "relative_text": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Relative Text"
+        },
+        "local_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Local Date"
+        },
+        "local_datetime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Local Datetime"
+        },
+        "timezone_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Timezone Name"
+        },
+        "utc_offset_minutes": {
+          "anyOf": [
+            {
+              "maximum": 1439,
+              "minimum": -1439,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Utc Offset Minutes"
+        },
+        "instant": {
+          "title": "Instant",
+          "type": "null"
+        },
+        "resolution_status": {
+          "enum": [
+            "unknown",
+            "local_only"
+          ],
+          "title": "Resolution Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw_text",
+        "precision",
+        "local_year",
+        "local_month",
+        "end_year",
+        "end_month",
+        "relative_text",
+        "local_date",
+        "local_datetime",
+        "timezone_name",
+        "utc_offset_minutes",
+        "instant",
+        "resolution_status"
+      ],
+      "title": "ReportTimeCandidate",
+      "type": "object"
+    },
+    "ReportTimeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "comparator": {
+          "anyOf": [
+            {
+              "enum": [
+                "=",
+                "<",
+                "<=",
+                "≤",
+                ">",
+                ">=",
+                "≥"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Comparator"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit"
+        },
+        "reference": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reference"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Method"
+        },
+        "source_text": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Source Text",
+          "type": "string"
+        },
+        "sample_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReportTimeCandidate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "comparator",
+        "unit",
+        "reference",
+        "method",
+        "source_text",
+        "sample_time"
+      ],
+      "title": "ReportTimeItem",
+      "type": "object"
+    },
+    "reportTimeCandidates": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "report-recognition-3",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_text": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Source Text",
+          "type": "string"
+        },
+        "sample_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReportTimeCandidate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result_time": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReportTimeCandidate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ReportTimeItem"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "source_text",
+        "sample_time",
+        "result_time",
+        "items"
+      ],
+      "title": "ReportTimeCandidates",
+      "type": "object"
     }
   }
 }

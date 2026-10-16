@@ -1,3 +1,4 @@
+import { acceptanceUsername, acceptancePassword } from './acceptance-credentials.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -10,7 +11,7 @@ const bootstrap = await client.get('/api/auth/bootstrap');
 assert.equal(bootstrap.status(), 200);
 const token = (await bootstrap.json()).csrf_token;
 const login = await client.post('/api/auth/login', {
-  data: { username: 'acceptance-family', password: 'Local-accept-2026' },
+  data: { username: acceptanceUsername, password: acceptancePassword },
   headers: { 'X-CSRFToken': token },
 });
 assert.equal(login.status(), 200);

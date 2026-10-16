@@ -19,7 +19,8 @@ APPLICATION_OPERATIONS = ('application_create', 'application_withdraw')
 
 def application_payload(operation, payload):
     if operation == 'application_create':
-        return ApplicationInput.model_validate(payload).model_dump()
+        # Omitting the additive declaration must retain old intent hashes exactly.
+        return ApplicationInput.model_validate(payload).model_dump(exclude_unset=True)
     if operation == 'application_withdraw':
         return ApplicationAction.model_validate(payload).model_dump()
     raise RelationRejected('APPLICATION_OPERATION_INVALID')

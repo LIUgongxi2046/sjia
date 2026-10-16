@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "registry_sha256",
+    "preservation_sha256",
+    "profile",
+    "runtime_execution_enabled",
+    "default_policy",
+    "adapters",
+    "unsupported",
+    "proof_scope"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-catalog-1"
+    },
+    "registry_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "preservation_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "profile": {
+      "const": "relationship-skeleton-1"
+    },
+    "runtime_execution_enabled": {
+      "type": "boolean"
+    },
+    "default_policy": {
+      "type": "null"
+    },
+    "adapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "adapter",
+          "payload_fields",
+          "preserved_fields"
+        ],
+        "properties": {
+          "adapter": {
+            "type": "string"
+          },
+          "payload_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preserved_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "unsupported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_scope": {
+      "const": "logical_payload_and_controlled_local_path_absence"
+    }
+  }
+}

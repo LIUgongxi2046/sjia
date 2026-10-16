@@ -71,6 +71,8 @@ export interface FamilyField {
   field: ClinicalField;
   verification_status: VerificationStatus;
   verification_purpose: NullableText;
+  /** Absent only in legacy responses that satisfy the complete clinical-field contract. */
+  quality_reasons_snapshot_state?: 'recorded' | 'not_recorded';
 }
 export interface ReportInput {
   external_ref: NullableText;
@@ -96,6 +98,7 @@ export interface RecordInput {
   capture_method: CaptureMethod;
   source_revision_id: Uuid | null;
   field_config_version: Uuid;
+  family_confirmation?: true;
   report: ReportInput | null;
   fields: FieldInput[];
   original_file_ids: Uuid[];
@@ -137,8 +140,10 @@ export interface SessionView {
   principal_id: Uuid;
   account_status: 'active';
   expires_at: Timestamp;
+  session_binding?: string | null;
   audience: 'family' | 'support';
   capabilities: Capability[];
+  selected_patient_id: Uuid | null;
 }
 export interface RelationView {
   relation_id: Uuid;
@@ -149,9 +154,20 @@ export interface RelationView {
   valid_from: Timestamp;
   valid_until: Timestamp | null;
   actions: string[];
+  authorization_scope_fingerprint?: string | null;
+  authorization_scope_valid_until?: Timestamp | null;
 }
-export interface ApplicationInput { evidence_ref: string; note: NullableText; requested_access: 'read' | 'read_write' | 'review_decides' }
-export interface ApplicationView {
+/** Unverified applicant statements, never patient identity, D02 proof or access. */
+export interface ApplicationDeclaration {
+  schema_version: '1.0.0'; declared_patient_name: string;
+  declared_relationship: 'mother' | 'father' | 'other_guardian'; guardian_scope_acknowledged: true;
+}
+export interface ApplicationDeclarationRead {
+  applicant_declaration?: ApplicationDeclaration | null;
+  declaration_verification?: 'unverified' | 'not_provided';
+}
+export interface ApplicationInput { evidence_ref: string; note: NullableText; requested_access: 'read' | 'read_write' | 'review_decides'; applicant_declaration?: ApplicationDeclaration }
+export interface ApplicationView extends ApplicationDeclarationRead {
   application_id: Uuid;
   version: Version;
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
@@ -255,6 +271,9 @@ export interface RequestView {
   payload_sha256?: string;
   application_input?: ApplicationInput | { expected_state: 'pending'; expected_version: Version; reason: string } | null;
   controlled_input?: ReleaseInput | ContactInput | StateAction | GateAction | ConfigInput | ApprovalInput | ValidationInput;
+  correction_input?:
+    | { record_version_id: Uuid; field_ids: Uuid[]; reason: string; proposed_text: NullableText }
+    | { expected_version: Version; decision: 'resolved' | 'rejected'; reason: string; resolution_record_version_id: Uuid | null };
 }
 export interface StateAction { expected_state: string; expected_version?: Version; reason: string }
 export interface GateAction { expected_gate_version: Version; reason: string }
@@ -262,7 +281,9 @@ export interface ContactInput {
   contact_id: Uuid; contact_name: string; purpose: string; channel: string; channel_value: string;
   source_revision_id: Uuid; approval_config_id: Uuid; valid_until: Timestamp;
 }
+export interface ReleasePublicationGroup { rule_id: Uuid; window_id: Uuid; verification_id: Uuid; mapping_id: Uuid; content_id: Uuid; validation_id: Uuid }
 export interface ReleaseInput {
+  publication_groups?: ReleasePublicationGroup[];
   environment: string;
   components: { kind: 'rule' | 'window' | 'verification' | 'mapping' | 'visibility' | 'content' | 'notification'; config_id: Uuid }[];
   contact_version_id: Uuid; validation_config_id: Uuid;

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FileValidationRecovery",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "intent_id",
+    "request_id",
+    "operation_id",
+    "target_key",
+    "patient_id",
+    "status",
+    "generation",
+    "may_retry",
+    "task",
+    "file_group_input"
+  ],
+  "properties": {
+    "intent_id": {
+      "$ref": "protocol.schema.json#/$defs/Uuid"
+    },
+    "request_id": {
+      "$ref": "protocol.schema.json#/$defs/Uuid"
+    },
+    "operation_id": {
+      "const": "file_group_complete"
+    },
+    "target_key": {
+      "type": "string",
+      "pattern": "^/api/(v1/)?uploads/[0-9a-f-]{36}/complete$"
+    },
+    "patient_id": {
+      "$ref": "protocol.schema.json#/$defs/Uuid"
+    },
+    "status": {
+      "enum": [
+        "prepared",
+        "committed",
+        "failed"
+      ]
+    },
+    "generation": {
+      "$ref": "protocol.schema.json#/$defs/Version"
+    },
+    "may_retry": {
+      "type": "boolean"
+    },
+    "task": {
+      "oneOf": [
+        {
+          "$ref": "protocol.schema.json#/$defs/TaskView"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "file_group_input": {
+      "$ref": "protocol.schema.json#/$defs/FileGroupComplete"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "committed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "may_retry": {
+            "const": false
+          },
+          "task": {
+            "$ref": "protocol.schema.json#/$defs/TaskView"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "task": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

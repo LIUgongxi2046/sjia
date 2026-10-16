@@ -108,7 +108,7 @@ def context_check(actor, patient, field, context):
         source = RecordField.objects.get(id=episode.source_field_id, patient=patient, record_version_id=episode.record_version_id)
         version = RecordVersion.objects.get(id=episode.record_version_id, patient=patient)
         record = Record.objects.get(id=version.record_id, patient=patient, status='active')
-        initial = RecordVersion.objects.get(record_id=record.id, patient=patient, version=1)
+        initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=patient, version=1)
         return [{**proof, 'episode_id': str(episode.id), 'episode_record_version_id': str(version.id),
             'episode_source_field_id': str(source.id)} for proof in
             field_grants(actor, patient, 'read_raw', [source.field_code], initial.author_id, record.id)]
@@ -192,7 +192,7 @@ def fact_scope(actor, epoch, operation, identifier, payload, *, mutating):
     fact = ArchiveFact.objects.select_for_update().get(id=seed.id, patient_id=patient.id)
     version = ArchiveFactVersion.objects.get(fact_id=fact.id, patient_id=patient.id, version=fact.current_version)
     original_field, record_version = fact_source(version, patient)
-    initial = RecordVersion.objects.get(record_id=record_version.record_id, patient=patient, version=1)
+    initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient=patient, version=1)
     proofs = field_grants(actor, patient, 'read_raw', [original_field.field_code], initial.author_id, record_version.record_id)
     proofs += field_grants(actor, patient, 'correct_record', [original_field.field_code], initial.author_id, record_version.record_id)
     field = payload['field']

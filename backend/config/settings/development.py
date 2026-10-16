@@ -29,7 +29,7 @@ if not DATABASES["default"]["NAME"]:
         {
             "NAME": "sjia_dev",
             "USER": "sjia",
-            "PASSWORD": "sjia_dev_password",
+            "PASSWORD": os.environ.get("SJIA_DB_PASSWORD", ""),
             "HOST": "127.0.0.1",
             "PORT": "5433",
         }

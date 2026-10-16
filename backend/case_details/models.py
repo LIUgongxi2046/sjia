@@ -3,11 +3,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import FiniteDecimalField
 
 
-class PatientProfileVersion(models.Model):
+class PatientProfileVersion(ErasureModel, models.Model):
     class Sex(models.TextChoices):
         MALE = "male", "male"
         FEMALE = "female", "female"
@@ -18,7 +19,7 @@ class PatientProfileVersion(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField(unique=True)
     source_field_id = models.UUIDField()
-    sex = models.CharField(max_length=16, choices=Sex.choices)
+    sex = models.CharField(max_length=16, choices=Sex.choices, null=True)
     reported_age_years = models.IntegerField(null=True)
     reported_age_months = models.SmallIntegerField(null=True)
     age_raw_text = models.TextField(null=True)
@@ -34,7 +35,7 @@ class PatientProfileVersion(models.Model):
         ]
 
 
-class ClinicalEpisode(models.Model):
+class ClinicalEpisode(ErasureModel, models.Model):
     class EpisodeType(models.TextChoices):
         ONSET = "onset", "onset"
         HOSPITALIZATION = "hospitalization", "hospitalization"
@@ -49,8 +50,8 @@ class ClinicalEpisode(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    episode_type = models.CharField(max_length=16, choices=EpisodeType.choices)
-    label = models.TextField()
+    episode_type = models.CharField(max_length=16, choices=EpisodeType.choices, null=True)
+    label = models.TextField(null=True)
     start_time_id = models.UUIDField(null=True)
     end_time_id = models.UUIDField(null=True)
     organization_text = models.TextField(null=True)
@@ -66,7 +67,7 @@ class ClinicalEpisode(models.Model):
         ]
 
 
-class RecordFieldGroup(models.Model):
+class RecordFieldGroup(ErasureModel, models.Model):
     class GroupType(models.TextChoices):
         LABORATORY = "laboratory", "laboratory"
         VITALS = "vitals", "vitals"
@@ -78,8 +79,8 @@ class RecordFieldGroup(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    group_type = models.CharField(max_length=16, choices=GroupType.choices)
-    label = models.TextField()
+    group_type = models.CharField(max_length=16, choices=GroupType.choices, null=True)
+    label = models.TextField(null=True)
     specimen_text = models.TextField(null=True)
     method_text = models.TextField(null=True)
     medical_time_id = models.UUIDField(null=True)
@@ -96,7 +97,7 @@ class RecordFieldGroup(models.Model):
         ]
 
 
-class RecordFieldGroupMember(models.Model):
+class RecordFieldGroupMember(ErasureModel, models.Model):
     class Role(models.TextChoices):
         RESULT = "result", "result"
         SPECIMEN = "specimen", "specimen"
@@ -110,7 +111,7 @@ class RecordFieldGroupMember(models.Model):
     record_version_id = models.UUIDField()
     field_id = models.UUIDField()
     ordinal = models.IntegerField()
-    role = models.CharField(max_length=16, choices=Role.choices)
+    role = models.CharField(max_length=16, choices=Role.choices, null=True)
 
     class Meta:
         db_table = 'sjia"."record_field_group_member'
@@ -120,7 +121,7 @@ class RecordFieldGroupMember(models.Model):
         ]
 
 
-class ClinicalStatement(models.Model):
+class ClinicalStatement(ErasureModel, models.Model):
     class StatementType(models.TextChoices):
         HISTORY = "history", "history"
         PHYSICAL_EXAM = "physical_exam", "physical_exam"
@@ -156,13 +157,13 @@ class ClinicalStatement(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    statement_type = models.CharField(max_length=24, choices=StatementType.choices)
-    subject = models.CharField(max_length=16, choices=Subject.choices)
+    statement_type = models.CharField(max_length=24, choices=StatementType.choices, null=True)
+    subject = models.CharField(max_length=16, choices=Subject.choices, null=True)
     category = models.TextField(null=True)
     concept_code = models.TextField(null=True)
-    label = models.TextField()
-    assertion_status = models.CharField(max_length=32, choices=AssertionStatus.choices)
-    status_raw_text = models.TextField()
+    label = models.TextField(null=True)
+    assertion_status = models.CharField(max_length=32, choices=AssertionStatus.choices, null=True)
+    status_raw_text = models.TextField(null=True)
     medical_time_id = models.UUIDField(null=True)
     body_site = models.TextField(null=True)
     laterality = models.CharField(max_length=16, choices=Laterality.choices, null=True)
@@ -177,7 +178,7 @@ class ClinicalStatement(models.Model):
         ]
 
 
-class StatementEvidence(models.Model):
+class StatementEvidence(ErasureModel, models.Model):
     class Role(models.TextChoices):
         SUPPORTS = "supports", "supports"
         CONTRADICTS = "contradicts", "contradicts"
@@ -188,7 +189,7 @@ class StatementEvidence(models.Model):
     patient_id = models.UUIDField()
     evidence_field_id = models.UUIDField()
     evidence_record_version_id = models.UUIDField()
-    role = models.CharField(max_length=16, choices=Role.choices)
+    role = models.CharField(max_length=16, choices=Role.choices, null=True)
 
     class Meta:
         db_table = 'sjia"."statement_evidence'
@@ -197,7 +198,7 @@ class StatementEvidence(models.Model):
         ]
 
 
-class ImagingStudy(models.Model):
+class ImagingStudy(ErasureModel, models.Model):
     class Modality(models.TextChoices):
         CT = "CT", "CT"
         MRI = "MRI", "MRI"
@@ -215,7 +216,7 @@ class ImagingStudy(models.Model):
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
     report_id = models.UUIDField()
-    modality = models.CharField(max_length=16, choices=Modality.choices)
+    modality = models.CharField(max_length=16, choices=Modality.choices, null=True)
     contrast = models.CharField(max_length=16, choices=Contrast.choices, null=True)
     study_time_id = models.UUIDField(null=True)
     external_study_ref = models.TextField(null=True)
@@ -230,7 +231,7 @@ class ImagingStudy(models.Model):
         ]
 
 
-class ImagingStudySite(models.Model):
+class ImagingStudySite(ErasureModel, models.Model):
     class Laterality(models.TextChoices):
         LEFT = "left", "left"
         RIGHT = "right", "right"
@@ -241,7 +242,7 @@ class ImagingStudySite(models.Model):
     study_id = models.UUIDField()
     patient_id = models.UUIDField()
     ordinal = models.IntegerField()
-    body_site = models.TextField()
+    body_site = models.TextField(null=True)
     laterality = models.CharField(max_length=16, choices=Laterality.choices, null=True)
 
     class Meta:
@@ -251,7 +252,7 @@ class ImagingStudySite(models.Model):
         ]
 
 
-class ImagingAssetLink(models.Model):
+class ImagingAssetLink(ErasureModel, models.Model):
     class LinkStatus(models.TextChoices):
         REQUIRES_CONFIRMATION = "requires_confirmation", "requires_confirmation"
         CONFIRMED = "confirmed", "confirmed"
@@ -263,7 +264,7 @@ class ImagingAssetLink(models.Model):
     source_field_id = models.UUIDField()
     file_id = models.UUIDField()
     study_id = models.UUIDField(null=True)
-    link_status = models.CharField(max_length=24, choices=LinkStatus.choices)
+    link_status = models.CharField(max_length=24, choices=LinkStatus.choices, null=True)
     evidence_field_id = models.UUIDField(null=True)
     evidence_record_version_id = models.UUIDField(null=True)
     confirmed_by = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, null=True, db_column="confirmed_by", related_name="+")
@@ -277,7 +278,7 @@ class ImagingAssetLink(models.Model):
         ]
 
 
-class MedicationEvent(models.Model):
+class MedicationEvent(ErasureModel, models.Model):
     class Action(models.TextChoices):
         HISTORICAL_TREATMENT = "historical_treatment", "historical_treatment"
         STOPPED_BY_FAMILY = "stopped_by_family", "stopped_by_family"
@@ -294,7 +295,7 @@ class MedicationEvent(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    action = models.CharField(max_length=24, choices=Action.choices)
+    action = models.CharField(max_length=24, choices=Action.choices, null=True)
     medical_time_id = models.UUIDField(null=True)
     previous_event_id = models.UUIDField(null=True)
     reason_statement_id = models.UUIDField(null=True)
@@ -311,7 +312,7 @@ class MedicationEvent(models.Model):
         ]
 
 
-class MedicationEventItem(models.Model):
+class MedicationEventItem(ErasureModel, models.Model):
     class IntervalUnit(models.TextChoices):
         HOUR = "hour", "hour"
         DAY = "day", "day"
@@ -324,7 +325,7 @@ class MedicationEventItem(models.Model):
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
     ordinal = models.IntegerField()
-    medication_name = models.TextField()
+    medication_name = models.TextField(null=True)
     medication_code = models.TextField(null=True)
     dose = FiniteDecimalField(null=True)
     dose_unit = models.TextField(null=True)
@@ -345,12 +346,12 @@ class MedicationEventItem(models.Model):
         ]
 
 
-class ProcedureEvent(models.Model):
+class ProcedureEvent(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    procedure_name = models.TextField()
+    procedure_name = models.TextField(null=True)
     medical_time_id = models.UUIDField(null=True)
     related_medication_event_id = models.UUIDField(null=True)
     body_site = models.TextField(null=True)
@@ -362,12 +363,12 @@ class ProcedureEvent(models.Model):
         ]
 
 
-class ExternalScoreObservation(models.Model):
+class ExternalScoreObservation(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    instrument = models.TextField()
+    instrument = models.TextField(null=True)
     instrument_version = models.TextField(null=True)
     medical_time_id = models.UUIDField()
     total_field_id = models.UUIDField()
@@ -385,13 +386,13 @@ class ExternalScoreObservation(models.Model):
         ]
 
 
-class ExternalScoreComponent(models.Model):
+class ExternalScoreComponent(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     score_id = models.UUIDField()
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     field_id = models.UUIDField()
-    component_code = models.TextField()
+    component_code = models.TextField(null=True)
     ordinal = models.IntegerField()
 
     class Meta:
@@ -402,7 +403,7 @@ class ExternalScoreComponent(models.Model):
         ]
 
 
-class FollowupEncounter(models.Model):
+class FollowupEncounter(ErasureModel, models.Model):
     class Kind(models.TextChoices):
         BASELINE_ASSESSMENT = "baseline_assessment", "baseline_assessment"
         TREATMENT_ASSESSMENT = "treatment_assessment", "treatment_assessment"
@@ -414,8 +415,8 @@ class FollowupEncounter(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    kind = models.CharField(max_length=24, choices=Kind.choices)
-    label = models.TextField()
+    kind = models.CharField(max_length=24, choices=Kind.choices, null=True)
+    label = models.TextField(null=True)
     medical_time_id = models.UUIDField()
     channel_text = models.TextField(null=True)
 
@@ -429,7 +430,7 @@ class FollowupEncounter(models.Model):
         ]
 
 
-class FollowupReference(models.Model):
+class FollowupReference(ErasureModel, models.Model):
     class RelationKind(models.TextChoices):
         OUTCOME = "outcome", "outcome"
         LABORATORY = "laboratory", "laboratory"
@@ -444,13 +445,13 @@ class FollowupReference(models.Model):
     group_id = models.UUIDField(null=True)
     score_id = models.UUIDField(null=True)
     medication_event_id = models.UUIDField(null=True)
-    relation_kind = models.CharField(max_length=32, choices=RelationKind.choices)
+    relation_kind = models.CharField(max_length=32, choices=RelationKind.choices, null=True)
 
     class Meta:
         db_table = 'sjia"."followup_reference'
 
 
-class DataQualityIssue(models.Model):
+class DataQualityIssue(ErasureModel, models.Model):
     class Status(models.TextChoices):
         OPEN = "open", "open"
         NEEDS_REVIEW = "needs_review", "needs_review"
@@ -460,10 +461,10 @@ class DataQualityIssue(models.Model):
     patient_id = models.UUIDField()
     record_version_id = models.UUIDField()
     source_field_id = models.UUIDField()
-    category = models.TextField()
-    description = models.TextField()
-    handling = models.TextField()
-    status = models.CharField(max_length=16, choices=Status.choices)
+    category = models.TextField(null=True)
+    description = models.TextField(null=True)
+    handling = models.TextField(null=True)
+    status = models.CharField(max_length=16, choices=Status.choices, null=True)
     resolution_text = models.TextField(null=True)
     resolution_field_id = models.UUIDField(null=True)
     resolution_record_version_id = models.UUIDField(null=True)
@@ -480,7 +481,7 @@ class DataQualityIssue(models.Model):
         ]
 
 
-class DataQualityIssueReference(models.Model):
+class DataQualityIssueReference(ErasureModel, models.Model):
     class Role(models.TextChoices):
         SOURCE = "source", "source"
         COMPARISON = "comparison", "comparison"
@@ -492,7 +493,7 @@ class DataQualityIssueReference(models.Model):
     field_id = models.UUIDField(null=True)
     record_version_id = models.UUIDField(null=True)
     file_id = models.UUIDField(null=True)
-    role = models.CharField(max_length=16, choices=Role.choices)
+    role = models.CharField(max_length=16, choices=Role.choices, null=True)
 
     class Meta:
         db_table = 'sjia"."data_quality_issue_reference'

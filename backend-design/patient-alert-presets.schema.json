@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "ApprovedPresetOption": {
+      "additionalProperties": false,
+      "properties": {
+        "schedule_config_id": {
+          "format": "uuid",
+          "title": "Schedule Config Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Label",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_config_id",
+        "label",
+        "description"
+      ],
+      "title": "ApprovedPresetOption",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "patient-alert-presets-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "environment": {
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Environment",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "purpose": {
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Purpose",
+      "type": "string"
+    },
+    "display_name": {
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Display Name",
+      "type": "string"
+    },
+    "options": {
+      "items": {
+        "$ref": "#/$defs/ApprovedPresetOption"
+      },
+      "minItems": 1,
+      "title": "Options",
+      "type": "array"
+    },
+    "default_schedule_config_id": {
+      "format": "uuid",
+      "title": "Default Schedule Config Id",
+      "type": "string"
+    },
+    "stale_selection_action": {
+      "const": "require_reselection",
+      "title": "Stale Selection Action",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "environment",
+    "patient_id",
+    "purpose",
+    "display_name",
+    "options",
+    "default_schedule_config_id",
+    "stale_selection_action",
+    "evidence_refs"
+  ],
+  "title": "PatientPresetAssignment",
+  "type": "object"
+}

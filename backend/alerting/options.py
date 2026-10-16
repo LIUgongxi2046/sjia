@@ -80,8 +80,9 @@ def dynamic_creation_options(patient_id, actor, auth_epoch, environment, query):
     for purpose in purposes:
         lock_case_permissions(actor, patient, 'execute_assessment', purpose, timezone.now(), whole_resource=True)
     configs = approved_configurations(environment, known_at, query['mode'],
-        (('rule', 'alert-trigger-1'), ('rule', 'dynamic-input-policy-2'), ('rule', 'alert-lifecycle-2')))
-    rules = [row for row in configs.values() if row.schema_version == 'alert-trigger-1']
+        (('rule', 'alert-trigger-1'), ('rule', 'alert-trigger-2'),
+            ('rule', 'dynamic-input-policy-2'), ('rule', 'alert-lifecycle-2'), ('rule', 'hlh-2004-rule-1')))
+    rules = [row for row in configs.values() if row.schema_version in ('alert-trigger-1', 'alert-trigger-2')]
     inputs = [row for row in configs.values() if row.schema_version == 'dynamic-input-policy-2']
     policies = [row for row in configs.values() if row.schema_version == 'qualification-policy-2']
     plans = []
@@ -114,7 +115,7 @@ def dynamic_creation_options(patient_id, actor, auth_epoch, environment, query):
             continue
         conditions = [*rule.payload['conditions'], *(item for value in definitions for item in value.conditions)]
         if any(condition_variable(item) is not None and condition_variable(item) not in {v.variable_code for v in definition.variables}
-                or item['kind'] in ('classification_met', 'ms_threshold_met') and UUID(item['assessment_rule_id']) not in configs
+                or item['kind'] in ('classification_met', 'ms_threshold_met', 'hlh_reference_met') and UUID(item['assessment_rule_id']) not in configs
                 or item['kind'] == 'professional_finding' and (UUID(item['verification_policy_id']) not in configs
                     or configs[UUID(item['verification_policy_id'])].payload['purpose'] != purpose) for item in conditions):
             continue

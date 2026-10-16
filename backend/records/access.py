@@ -11,6 +11,10 @@ def permitted_field_codes(principal, patient, action, *, record_id, author_id):
 
 
 def query_permissions(principal, patient):
+    # Used only by the three family record/history/analyte query endpoints.
+    # A still-valid grant must not reopen a restricted or disposed patient.
+    if patient.status != 'active':
+        return []
     now = timezone.now()
     grants = {}
     for candidate in AccessGrant.objects.filter(principal=principal, patient=patient,

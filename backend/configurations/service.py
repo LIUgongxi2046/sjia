@@ -13,12 +13,12 @@ SUPPORTED_SCHEMAS = {
     "mapping": {"mapping-1", "unit-mapping-2"},
     "verification": {"verification-1", "qualification-policy-2"},
     "window": {"window-1", "alert-window-1", "sampling-frequency-1"},
-    "rule": {"rule-1", "alert-trigger-1", "assessment-rule-2", "assessment-context-policy-2", "dynamic-input-policy-2", "alert-lifecycle-2"},
+    "rule": {"rule-1", "alert-trigger-1", "alert-trigger-2", "hlh-2004-rule-1", "hlh-input-policy-1", "assessment-rule-2", "assessment-context-policy-2", "dynamic-input-policy-2", "alert-lifecycle-2"},
     "visibility": {"visibility-1"},
     "content": {"field-config-1", "content-1", "contact-1"},
     "summary": {"summary-1"},
     "notification": {"notification-1", "material-reminder-channel-2"},
-    "provider": {"backend-runtime-1", "provider-1", "purpose-processing-2", "purpose-processing-text-1", "archive-quota-1", "dynamic-schedule-2", "notification-in-app-2"},
+    "provider": {"backend-runtime-1", "provider-1", "purpose-processing-2", "purpose-processing-text-1", "archive-quota-1", "dynamic-schedule-2", "patient-alert-presets-1", "notification-in-app-2"},
     "validation": {"validation-1"},
 }
 
@@ -140,10 +140,10 @@ def enable_config(*, config, environment: EnvironmentGate, actor, expected_gate_
     return environment
 
 
-def loaded_config_version(environment: EnvironmentGate) -> dict:
-    return {
-        "environment": environment.environment,
-        "gate_version": environment.version,
-        "publication_epoch": environment.publication_epoch,
-        "runtime_config_id": str(environment.runtime_config_id) if environment.runtime_config_id else None,
-    }
+def loaded_config_version(environment: EnvironmentGate | None = None) -> dict | None:
+    """Actual process admission only; the desired DB gate is a separate concept."""
+    from config.runtime_admission import process_snapshot
+    value = process_snapshot()
+    if environment is not None and value is not None and value['identity']['environment'] != environment.environment:
+        return None
+    return value

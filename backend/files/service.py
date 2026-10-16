@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from django.db import transaction
 
 from files.models import FileGroup, FileObject, FilePage, UploadPart
-from files.storage import LocalFileStore, build_object_key, digest_bytes
+from files.storage import LocalFileStore, ObjectConflict, build_object_key, digest_bytes
 from files.errors import FileRejected
 from files.source_pages import inspect_source
 
@@ -47,19 +47,36 @@ def declare_upload_part(*, file_group, client_upload_id, ordinal, declared_check
 
 @transaction.atomic
 def store_file_object(*, file_group, upload_part, data: bytes, purpose, retention_policy, media_type=None, limits=None) -> FileObject:
+    # 按统一顺序锁定并重读，调用者可能持有另一请求提交前的旧 UploadPart。
+    file_group = FileGroup.objects.select_for_update().get(id=file_group.id)
+    upload_part = UploadPart.objects.select_for_update().get(
+        id=upload_part.id, file_group_id=file_group.id, patient_id=file_group.patient_id)
     checksum = digest_bytes(data)
     if checksum != upload_part.declared_checksum:
         raise FileRejected("CHECKSUM_MISMATCH")
     if len(data) != upload_part.declared_size_bytes:
         raise FileRejected("SIZE_MISMATCH")
     selected_type = media_type or upload_part.declared_media_type
+    object_key = build_object_key(file_group.patient_id, upload_part.client_upload_id, purpose)
+    if upload_part.status == UploadPart.Status.STORED:
+        saved = FileObject.objects.filter(id=upload_part.file_id, patient_id=file_group.patient_id,
+            file_group_id=file_group.id, object_key=object_key, object_version=checksum,
+            checksum=checksum, size_bytes=len(data), media_type=selected_type, purpose=purpose,
+            retention_policy=retention_policy, status=FileObject.Status.AVAILABLE).first()
+        if (saved is None or upload_part.object_version != checksum
+                or object_store.get(object_key) != data):
+            raise FileRejected('UPLOAD_REQUEST_MISMATCH')
+        return saved
+    if upload_part.file_id is not None:
+        raise FileRejected('UPLOAD_REQUEST_MISMATCH')
     pages = inspect_source(data, selected_type, limits) if purpose == FileObject.Purpose.ORIGINAL else []
-    file_group = FileGroup.objects.select_for_update().get(id=file_group.id)
     existing = list(FilePage.objects.filter(file_group_id=file_group.id).order_by('ordinal'))
     if limits is not None and len(existing) + len(pages) > limits['max_pages']:
         raise FileRejected('FILE_PAGE_LIMIT_EXCEEDED')
-    object_key = build_object_key(file_group.patient_id, upload_part.client_upload_id, purpose)
-    object_store.put_immutable(object_key, data)
+    try:
+        object_store.put_immutable(object_key, data)
+    except ObjectConflict as exc:
+        raise FileRejected('UPLOAD_REQUEST_MISMATCH') from exc
     file_object = FileObject.objects.create(
         patient_id=file_group.patient_id,
         file_group_id=file_group.id,
@@ -119,6 +136,8 @@ def complete_file_group(*, file_group) -> FileGroup:
 
 
 def read_object_bytes(file_id) -> bytes:
+    from retention.content_fences import assert_content_available
+    assert_content_available('files.fileobject', file_id)
     file_object = FileObject.objects.filter(id=file_id).first()
     if file_object is None or file_object.status != FileObject.Status.AVAILABLE:
         raise FileRejected("OBJECT_UNAVAILABLE")

@@ -13,6 +13,7 @@ from authorization.models import ServiceRoleGrant
 from configurations.models import ConfigVersion
 from contacts.models import ContactVersion
 from family_content.models import EnvironmentGate, ReleaseBundle, ReleaseComponent
+from family_content.publication_groups import publication_groups, add_publication_groups, GROUP_KINDS, group_input_reason
 from family_content.service import add_release_component, approve_release, create_release_bundle, disable_release, enable_release
 from identity.models import Principal
 from requests.controlled import controlled_submit_intent, controlled_receipt
@@ -64,12 +65,16 @@ def save_release_receipt(intent, principal, release, action):
 
 
 def release_view(release):
-    return {'release_id': str(release.id), 'version': str(release.version), 'status': release.status,
+    value = {'release_id': str(release.id), 'version': str(release.version), 'status': release.status,
         'publication_epoch': str(release.publication_epoch), 'release': {
             'environment': release.environment, 'contact_version_id': str(release.contact_version_id),
             'validation_config_id': str(release.validation_config_id),
             'components': [{'kind': item.component_kind, 'config_id': str(item.config_id)}
                 for item in ReleaseComponent.objects.filter(release=release).order_by('component_kind', 'config_id')]}}
+    groups = publication_groups(release)
+    if groups:
+        value['release']['publication_groups'] = [{kind + '_id': str(getattr(group, kind + '_id')) for kind in GROUP_KINDS} for group in groups]
+    return value
 
 
 @api_view(['GET'])
@@ -91,6 +96,9 @@ def release_read(request, release_id):
 def release_create(request):
     principal, gate = release_principal(request, writing=True)
     data = checked_input('ReleaseInput', request.data)
+    reason = group_input_reason(data)
+    if reason:
+        raise ApiError(reason, 422)
     if data['environment'] != gate.environment:
         raise ApiError('RELEASE_ENVIRONMENT_MISMATCH', 409)
     intent = release_intent(request, principal, 'release_create')
@@ -99,6 +107,8 @@ def release_create(request):
     contact = ContactVersion.objects.get(id=data['contact_version_id'])
     validation = ConfigVersion.objects.get(id=data['validation_config_id'])
     release = create_release_bundle(environment=gate.environment, contact_version=contact, validation_config=validation)
+    if data.get('publication_groups'):
+        add_publication_groups(release=release, groups=data['publication_groups'])
     for item in data['components']:
         config = ConfigVersion.objects.get(id=item['config_id'])
         add_release_component(release=release, component_kind=item['kind'], config=config)

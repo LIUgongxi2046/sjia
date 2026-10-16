@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "ContentCopyObligation": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "physical_database_storage",
+            "external_provider_copies",
+            "backup_copies"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason_code": {
+          "const": "NO_VERIFIED_COPY_ERASURE_PROTOCOL",
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "review_due_at": {
+          "format": "date-time",
+          "title": "Review Due At",
+          "type": "string"
+        },
+        "all_copies_erased": {
+          "const": false,
+          "title": "All Copies Erased",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "reason_code",
+        "review_due_at",
+        "all_copies_erased"
+      ],
+      "title": "ContentCopyObligation",
+      "type": "object"
+    },
+    "ContentReviewAttestation": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-review-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "plan_id": {
+          "format": "uuid",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Manifest Sha256",
+          "type": "string"
+        },
+        "policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Sha256",
+          "type": "string"
+        },
+        "review_version": {
+          "minimum": 1,
+          "title": "Review Version",
+          "type": "integer"
+        },
+        "reviewed_by": {
+          "format": "uuid",
+          "title": "Reviewed By",
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "next_recheck_at": {
+          "format": "date-time",
+          "title": "Next Recheck At",
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "approved_retention_continues",
+            "copy_obligations_unresolved",
+            "hold_requires_review",
+            "metadata_retry_window_unproven"
+          ],
+          "title": "Reason Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "plan_id",
+        "manifest_sha256",
+        "policy_sha256",
+        "review_version",
+        "reviewed_by",
+        "reviewed_at",
+        "next_recheck_at",
+        "reason_code"
+      ],
+      "title": "ContentReviewAttestation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-lifecycle-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "plan_id": {
+      "format": "uuid",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "retention_basis_source_revision_id": {
+      "format": "uuid",
+      "title": "Retention Basis Source Revision Id",
+      "type": "string"
+    },
+    "next_recheck_at": {
+      "format": "date-time",
+      "title": "Next Recheck At",
+      "type": "string"
+    },
+    "review_due": {
+      "title": "Review Due",
+      "type": "boolean"
+    },
+    "review_evidence_status": {
+      "enum": [
+        "not_reviewed",
+        "valid",
+        "invalid_or_revoked"
+      ],
+      "title": "Review Evidence Status",
+      "type": "string"
+    },
+    "review_version": {
+      "minimum": 0,
+      "title": "Review Version",
+      "type": "integer"
+    },
+    "receipt_keep_until": {
+      "format": "date-time",
+      "title": "Receipt Keep Until",
+      "type": "string"
+    },
+    "metadata_keep_until": {
+      "format": "date-time",
+      "title": "Metadata Keep Until",
+      "type": "string"
+    },
+    "receipt_expiry_review_due": {
+      "title": "Receipt Expiry Review Due",
+      "type": "boolean"
+    },
+    "metadata_expiry_review_due": {
+      "title": "Metadata Expiry Review Due",
+      "type": "boolean"
+    },
+    "expiry_disposal_status": {
+      "const": "blocked_pending_backup_and_retry_window_proof",
+      "title": "Expiry Disposal Status",
+      "type": "string"
+    },
+    "unresolved_copy_obligations": {
+      "items": {
+        "$ref": "#/$defs/ContentCopyObligation"
+      },
+      "title": "Unresolved Copy Obligations",
+      "type": "array"
+    },
+    "last_review": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentReviewAttestation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "retention_basis_source_revision_id",
+    "next_recheck_at",
+    "review_due",
+    "review_evidence_status",
+    "review_version",
+    "receipt_keep_until",
+    "metadata_keep_until",
+    "receipt_expiry_review_due",
+    "metadata_expiry_review_due",
+    "expiry_disposal_status",
+    "unresolved_copy_obligations",
+    "last_review"
+  ],
+  "title": "ContentLifecycle",
+  "type": "object"
+}

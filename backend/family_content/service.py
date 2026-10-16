@@ -9,6 +9,7 @@ from contacts.models import ContactVersion
 from contacts.service import activate_saved_contact, save_contact
 from family_content.models import EnvironmentGate, ReleaseBundle, ReleaseComponent
 from family_content.gate_locks import read_environment_gate_shared
+from family_content.publication_groups import publication_groups, GROUP_KINDS, grouped_component_reason
 from family_content.qualification import REQUIRED_COMPONENTS, component_qualification_reason, release_qualification_reason
 
 
@@ -60,7 +61,17 @@ def add_release_component(*, release, component_kind, config) -> ReleaseComponen
         raise ReleaseRejected('RELEASE_NOT_DRAFT')
     if component_kind not in REQUIRED_COMPONENTS or config.kind != component_kind:
         raise ReleaseRejected('RELEASE_COMPONENT_KIND_MISMATCH')
-    if ReleaseComponent.objects.filter(release=release, component_kind=component_kind).exists():
+    groups = publication_groups(release)
+    if groups:
+        if component_kind in ('visibility', 'notification'):
+            duplicate = ReleaseComponent.objects.filter(release=release, component_kind=component_kind).exists()
+        else:
+            if config.id not in {getattr(group, component_kind + '_id') for group in groups}:
+                raise ReleaseRejected('RELEASE_GROUP_COMPONENT_MISMATCH')
+            duplicate = ReleaseComponent.objects.filter(release=release, component_kind=component_kind, config=config).exists()
+    else:
+        duplicate = ReleaseComponent.objects.filter(release=release, component_kind=component_kind).exists()
+    if duplicate:
         raise ReleaseRejected('RELEASE_COMPONENT_DUPLICATE')
     return ReleaseComponent.objects.create(release=release, component_kind=component_kind, config=config)
 
@@ -72,7 +83,8 @@ def approve_release(*, release) -> ReleaseBundle:
     if release.status != ReleaseBundle.Status.DRAFT:
         raise ReleaseRejected("RELEASE_NOT_DRAFT")
     components = list(ReleaseComponent.objects.filter(release=release).select_related('config'))
-    reason = component_qualification_reason(components)
+    groups = publication_groups(release, lock=True)
+    reason = grouped_component_reason(release, components, groups) if groups else component_qualification_reason(components)
     if reason:
         raise ReleaseRejected(reason)
     release.status = ReleaseBundle.Status.APPROVED
@@ -92,6 +104,8 @@ def lock_release_dependencies(release, environment_gate, *, read_only=False):
         raise ReleaseRejected('RELEASE_ENVIRONMENT_MISMATCH')
     contact = ContactVersion.objects.select_for_update().get(id=release.contact_version_id)
     config_ids = set(ReleaseComponent.objects.filter(release=release).values_list('config_id', flat=True))
+    groups = publication_groups(release, lock=True)
+    config_ids.update(getattr(group, kind + '_id') for group in groups for kind in GROUP_KINDS)
     config_ids.update((release.validation_config_id, contact.approval_config_id))
     list(ConfigVersion.objects.select_for_update().filter(id__in=config_ids).order_by('id'))
     list(ConfigApproval.objects.select_for_update().filter(config_id__in=config_ids).order_by('id'))

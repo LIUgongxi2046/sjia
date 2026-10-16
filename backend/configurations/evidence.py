@@ -196,7 +196,10 @@ def inspect_validation_report(config, gate, data, *, lock=False, now=None, expec
     datasets = SourceRevision.objects.select_related('source', 'retention_policy')
     grants = ServiceRoleGrant.objects.select_related('principal')
     if lock:
-        datasets = datasets.select_for_update(of=('self',))
+        # Schema-qualified db_table names cannot be used in PostgreSQL's
+        # FOR UPDATE OF list. Lock this row without joins; related source and
+        # nullable retention rows are explicitly locked below in the same order.
+        datasets = SourceRevision.objects.select_for_update()
         grants = grants.select_for_update()
     dataset = datasets.filter(id=report.dataset_revision_id).first()
     if dataset is None:

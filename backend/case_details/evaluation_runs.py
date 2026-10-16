@@ -93,6 +93,8 @@ def lock_run_read(*, run_id, actor, auth_epoch):
         if not any(item.id in locked and item.purpose == row.purpose and item.evidence_ref.strip()
                 for item in matching_case_grants(actor, patient, 'read_assessment', timezone.now(), whole_resource=True)):
             raise EvaluationUnitsRejected('DATASET_RUN_CASE_SCOPE_DENIED')
+    from case_details.clinical_adoption import checked_saved_clinical
+    checked_saved_clinical(run, task, row, sources)
     return run, task, row, evaluation_runtime(gate)
 
 

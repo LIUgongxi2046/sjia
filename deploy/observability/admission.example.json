@@ -1,0 +1,11 @@
+{
+  "operator_approved": false,
+  "approval_reference": "",
+  "scrape_target": "127.0.0.1:8000",
+  "receiver_url_file": "/run/secrets/approved_alert_webhook",
+  "alert_for_seconds": null,
+  "outbox_age_seconds": null,
+  "http_5xx_ratio": null,
+  "http_p95_seconds": null,
+  "failed_or_uncertain_tasks": null
+}

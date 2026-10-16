@@ -1,4 +1,5 @@
 from decimal import Decimal
+import json
 
 from django.db import transaction
 from django.db.models import Q
@@ -192,6 +193,12 @@ def lock_run_inputs(*, dataset_id, payload, actor, auth_epoch, action='execute_a
         'denominators': denominators, 'available_before': sources.protocol.available_before.isoformat(),
         'implementation_sha256': data['code_version'], 'environment': row.environment,
         'purpose': row.purpose, 'mode': 'replay'}
+    if data.get('clinical_capture_ref') is not None:
+        from case_details.clinical_adoption import adopt_clinical_capture, clinical_admission_binding
+        adoption = adopt_clinical_capture(row=row, sources=sources, snapshot=snapshot, capture_ref=data['clinical_capture_ref'])
+        snapshot['clinical_capture_binding'] = clinical_admission_binding(adoption)
+    if len(json.dumps(snapshot, separators=(',', ':')).encode()) > runtime.payload['api']['max_json_bytes']:
+        raise EvaluationUnitsRejected('DATASET_RUN_CONTEXT_LIMIT_EXCEEDED')
     context = {'actor_id': str(actor.id), 'auth_epoch': str(actor.auth_epoch), 'gate_version': str(gate.version),
         'service_grant_id': str(grant.id), 'case_permissions': permissions,
         'runtime_id': str(runtime.id), 'runtime_checksum': runtime.checksum,

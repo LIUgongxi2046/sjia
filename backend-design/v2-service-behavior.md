@@ -8,7 +8,7 @@ support_session 使用现有账号密码及当前环境的有效 ServiceRoleGran
 
 家庭操作依当前 Session、account_status、auth_epoch、EnvironmentGate、Relation、AccessGrant、字段范围、来源用途与保留规则取得资格。authorize_case 的 purpose 和 environment 必须来自当前运行配置及实际动作；不采用请求声明。家庭写入只保存本人采用事实；专业评估同时取得 verify_field 证明与 execute_assessment 授权。岗位 UI 位于独立 support audience，导航不可代替服务端权限。
 
-本人申请关联、受控人员核验、明确授予患儿动作后可上传。文书归组保存本人说明及未知就诊；创建 professional clinical_episode 必须通过专业记录流程。关系判断中的 same_sampling、formal_correction 对计算集合的影响需要指定专业核对；document_copy 与 same_bytes 的结构判断不授予医学资格。manage_data_use 负责用途副本和评价集合；verify_field 标签操作还逐患儿检查字段范围。manage_notifications 只允许运行元数据；准确目标患儿的病例读取需要另行授权。
+本人申请关联、受控人员核验、明确授予患儿动作后可上传。文书归组保存本人说明及未知就诊；创建 professional clinical_episode 必须通过专业记录流程。关系判断中的 same_sampling、formal_correction 对计算集合的影响需要指定专业核对；document_copy 与 same_bytes 的结构判断不授予医学资格。manage_data_use 负责用途副本和评价集合；verify_field 标签操作还逐患儿检查字段范围。manage_notifications 只允许运行元数据；准确目标患儿的病例读取需要另行授权。 clinical_directory_read 的 auth 列列出 verify_field;execute_assessment 两个可选动作；调用者必须显式提交 action，实际只按该动作核验对应岗位和逐患儿范围，不因列出两项而合并或扩大授权。
 
 所有读取、总数、游标、子项和附件执行同一 Policy Gate；家庭 projection 不包括受控全文、内部计算、标签答案、Provider 身份或费用。本人提醒过滤 owner_id，支持角色不能修改另一主体的个人设置。资料使用说明返回当前真实用途、保留与 Provider 能力，未配置值保持未知。
 
@@ -35,7 +35,6 @@ purpose_copy_options 按准确原件身份与目标用途执行当前岗位、�
 | archive_cancel | 页 current_task、status_version、租约；禁止后续采用并登记取消请求 | 已开始外部调用的停止状态依据真实回执；取消不能清除原件 |
 | archive_confirm | 候选集合与原页、原文位置、逐项决定、时间和语境；建立 RecordVersion、Field、ArchiveFactVersion、确认、epoch | 完整决定才能提交；字段初态未核对；source_anchor 与 page/document 同患儿且一致 |
 
-archive_fact_read 与 archive_fact_history 读取准确事实、记录版本及字段，逐项执行当前家庭权限。事实读取保留历史缺少状态；FactFieldSnapshot 的 quality_reasons_snapshot_state 为 not_recorded 时，仅允许 unknown／invalid 字段及原有空原因集合。新资料输入继续使用 clinicalField 的完整性约束。历史分页读取批准的 backend-runtime-1 的 api.max_page_size，绑定人员、身份版本、患儿、事实当前版本、数据及核对版本、授权字段与运行配置；游标到期时间不得超过当前会话有效期。历史每项重新检查当前记录及字段授权。
 | archive_grouping | document 当前版本、ordered page IDs、documented_time、组织、类型及真实就诊关联；新版本与当前指针 | 跨文书复用页需明确副本关系；就诊未知保持 proposed_metadata；任何缺少引用拒绝 |
 | archive_relation | 患儿、两个准确事实或原件版本、类型、依据、原因；关系不可变版本 | disputed/released 不产生有效去重；患者列表锁后复核，禁止循环更正和关联自引用 |
 | archive_delta | 固定 comparison baseline、全部输入版本、当前权限和 epoch；DeltaSummary 与逐条来源 | unknown baseline 不输出“新增”；输入改变标 superseded；更正与重复分别呈现 |
@@ -43,13 +42,24 @@ archive_fact_read 与 archive_fact_history 读取准确事实、记录版本及�
 | purpose_copy / purpose_review | 原件版本、用途、目标、复制文件、checksum、处理版本、复核版本及全部 scopes | 一项未通过即禁止外发；撤销或新版本使旧资格失效；原件字节保持 |
 | evaluation_dataset | exact dataset version、protocol、患者集合、用途授权与副本；分组唯一性 | 同患儿和全部更正版本在同协议中不得跨 tuning/acceptance；current 计算与 evaluation run 分开 |
 | evaluation_label | 专业 scope、答案来源、独立标注人与参考版本；分歧状态显式保存 | unknown 不补答案；unresolved 不计入已裁定分母；服务结果不能作为其自身答案 |
+| verification_request | 当前专业岗位、逐字段用途授权、准确记录版本、受指派人员资格与状态；建立 VerificationRequest 和 pending 字段状态，提交原 WriteIntent/WriteRequest 与审计 | 核对请求不是核对结论；已提交请求按原意图回读，不重复建立 |
+| verification_submit | 原核对请求、受指派人员、逐字段 expected_state_version、批准核对政策、证据及来源资格；保存 Verification/VerificationField、字段核对状态、verification_epoch，提交意图与审计 | 字段集合、状态或资格改变拒绝整项；consistent/needs_correction/uncertain 保持各自原结果，不推断未核对字段 |
+| verification_revoke | 逐患儿 revoke_verification 权限、准确旧 proof 摘要与撤销原因；保存撤销人员/时间/原因、撤销对应当前字段状态并更新 verification_epoch，提交意图与审计 | 已撤销或摘要变化拒绝新操作；原已提交意图仍按当前权限恢复原回执，撤销不删除原证据 |
 | evaluation_run / assessment / alert_evaluation | 固定数据集或字段、核对、可得时间、规则、观察期、relation版本及全部 epoch；Task、Outbox | 计算细节引用 T37；replay 不产生家庭事件或通知；未执行不返回 completed |
 | material_reminder | 本人、准确 target_type/ref、版本、enabled/paused/snoozed/disabled、真实渠道订阅与定时条件 | 初始 disabled；填写正式目标后完成关闭；个人文字不生成临床分级 |
 | notification_reconcile / notification_receipt | 准确 attempt/provider_request、签名原字节摘要、event_id 与许可；回执及结果去重 | accepted、delivered、read 独立；未知先查询，禁止跨渠道自动重复；不能用手动结果标送达 |
+| notification_send | 当前 recipient、expected_snapshot、明确写入意图、manage_notifications 岗位及整患儿 read_case 权限；重新核验许可、发布和有效事件 | 返回准确 notification.Record；登记发送与 delivered/read 不同，未知结果不得手工标记成功 |
+| archive_regrouping | 同一患儿/批次的全部来源文书准确版本、页集合、目标归组与原请求身份一次事务核验 | 保存拆分/合并/移动后的新版本，旧事实与来源仍可追溯；冲突不部分采用 |
+
+archive_fact_read 与 archive_fact_history 读取准确事实、记录版本及字段，逐项执行当前家庭权限。事实读取保留历史缺少状态；FactFieldSnapshot 的 quality_reasons_snapshot_state 为 not_recorded 时，仅允许 unknown／invalid 字段及原有空原因集合。新资料输入继续使用 clinicalField 的完整性约束。历史分页读取批准的 backend-runtime-1 的 api.max_page_size，绑定人员、身份版本、患儿、事实当前版本、数据及核对版本、授权字段与运行配置；游标到期时间不得超过当前会话有效期。历史每项重新检查当前记录及字段授权。
+
+当前 UI2-39 使用 notification_scopes、notification_support_history、notification_support_record 和 notification_v2_send；分页参数只有 cursor。旧设计中的 /support/deliveries API 与 notification_resolve 不作为实现接口，也不将“resolve”悄悄映射为再次发送。界面路由 /support/deliveries 保留，实际组件为 NotificationPage。发送后的核对与恢复沿用原任务/请求协议，管理人员不能手动制造提供方回执。接口目录中的 manage_notifications 为岗位入口要求，不替代逐患儿 read_case 及完整资源权限。
+
+disposition_coverage_read 是要求 manage_disposition 和具体患儿授权的只读覆盖清单，显式传入 purpose；不是删除计划或批准。UI2-38 的页面岗位入口不赋予此操作权限，具体调用仍独立核验。未定义的数据库版本、审计和备份清除能力明确返回未支持，不以只读清单冒充物理删除执行器。
 
 锁顺序沿用 EnvironmentGate → Patient → Principal／授权 → 意图 → 业务对象；多个 ID 排序。当前指针使用条件更新，旧版本不可覆盖；读取使用一次短 REPEATABLE READ 快照。网络请求与长文件处理位于事务外。原件、资料用途、授权、核对、映射、规则或观察期变化使对应采用资格失效，新请求即时核验，异步遍历只维护查询状态。
 
-字段映射的唯一维护位置为 [v2-field-map.csv](v2-field-map.csv)。purpose_copy 创建任务尚无副本时只返回 Task；真实副本与 checksum 已保存后才能读取 PurposeCopyView。副本 status 使用 DATA 的 pending_review/approved/rejected/revoked/disposed；目标和处理配置保存在 processing_evidence。用途、环境、目标与精确副本复核共同校验。
+字段映射的唯一维护位置为 [v2-field-map.csv](v2-field-map.csv)。 既有 V2 字段使用 Definition.field；独立 Schema 使用 namespace.Definition::field，检查器逐层解析本地 $ref 与组合属性。个人资料任务和站内提醒消息分别以 personal-record-task、material-reminder-notice 的现行契约为准；消息公开字段为 receipts 和 snapshot_version，内部 permit_refs 不作为公开 API 字段。purpose_copy 创建任务尚无副本时只返回 Task；真实副本与 checksum 已保存后才能读取 PurposeCopyView。副本 status 使用 DATA 的 pending_review/approved/rejected/revoked/disposed；目标和处理配置保存在 processing_evidence。用途、环境、目标与精确副本复核共同校验。
 
 评价集合分组使用 development/validation，分别对应调参和业务验收。positive/negative 标签只保存独立答案已经确认的结果；分歧及待裁定保留 unknown 与 limitations，实际裁定依据写入 reference_answer_ref。coverage 保存真实 source_manifest_ref、purpose_copy_ids、label_version_ref 与分母说明；这些字段不得由界面展示数量推断。资料目录需要不可变 dataset_version 的冻结动作，冻结前逐用途、分组、答案与checksum核验，完整检查后设置 frozen_at。
 
@@ -84,3 +94,15 @@ local_disposition 使用当前批准保留策略和准确范围摘要准备 Writ
 每项 write_operation 用合法账号操作、查询意图、读取资源和后续消费；相同键、异内容、旧版本、跨患儿、撤权和失败恢复分别检查。批次逐页选择正确任务与配额；数量守恒含拒绝、未知及取消项目。用途测试取得真实副本与人工复核；评价测试取得独立答案、分组与实际分母；通知取得实际接收对象和签名回执。没有这些输入时保留对应业务 NOT_RUN。
 
 T36 的 STATIC 检查校验目录完整性、Schema 自身及引用、逐写入读取入口、权限、FR 与 UI2引用、事务与任务定义，并读取当前运行 View、URL 与 Policy Gate 的实际 identifier。静态证据不代替业务、设备、视觉、临床或真实发送验收。T37 接收候选及计算，T38 接收 UI2 与状态，T39 接收实体，T40—T53 分别实施并回读。
+
+## T26 内容处置与本人申请的实际补充契约
+
+目录中 13 个 content-disposition 路由对应 15 个 HTTP 方法操作。family_content_disposition_requests_read/create 共用按方法分支的 family_content_disposition_requests handler；content_disposition_review_read/record 共用 content_disposition_review handler。所有 schema 来自独立 content-disposition 系列文件，不扩展旧文件处置请求或模拟提供方协议。
+
+- content_family_request：family 当前主体、有效关系、request_disposition 与准确版本的 whole-resource 读取权限共同限制：当前版本允许 read_raw 或 read_history，历史版本必须 read_history；处理时再次按 current_version 判断，旧申请不固定扩大历史权限。actor_client_key 是 `(requested_by, client_request_id)` 加准确请求摘要；相同键异内容拒绝，原申请不可更新。申请时 auth_epoch 留作证据；后续处理核验当前主体/关系/动作权限，正常退出重登不等于撤回。GET 仅返回本人请求的选定版本和有限状态，不返回内部 72 类清单或他人申请。
+- content_disposition_preview：support 还须当前 manage_disposition、政策明确目的的 whole-resource read_case、获准政策/hold 证据。预览创建待批准清单，不执行删除；独立技术预览没有通用写入意图去重，网络不确定时查历史，不能把重建清单当作执行重试。关联本人申请时 OneToOne 身份与 family_request_id 固定请求、政策和完全相同的来源 roots；内部复制项须经单独清单批准。
+- content_disposition_approval：manifest_source 绑定 plan、manifest SHA256 和准确 SourceRevision，重复同一批准返回原结果；改范围必须新证明。家庭没有此接口权限。
+- content_disposition_execution：plan_journal 绑定 plan、manifest SHA256、独立 journal sequence 和本地对象 operation ID。执行必须无外层事务；HTTP admission audit、SQL 载荷/读写 fence 提交、本地 unlink、验证回执、outcome audit 按边界分别持久化。outcome audit 失败返回不确定/503 也不能回滚已提交 fence。同步成功返回 200 的 plan-view，不伪称 Task/202。默认 runtime/policy 执行开关关闭，所有副本擦除始终 false。
+- content_disposition_review：review_version_source 绑定申请、原清单/政策摘要、版本、审查人、时间、明确原因、下次复查时间及 SourceRevision。只记录复查事实，不触发擦除。证据或审查权限失效时历史事实保留且重新标为 due，幂等重试同样复核证据。receipt/metadata 日期到期仅进入证明核查，缺备份/重试窗口证明不得销毁防复活身份。
+
+目录 auth 列列出主动作；上述 current case scope、关系、目的、完整字段范围与 SourceRevision 门禁均为额外必需条件。未获准政策不默认选择，不注册生产期限。逻辑 SQL 载荷/受控本地路径证明与物理 PostgreSQL/WAL、Provider 和备份副本义务分别返回。详见 [内容处置执行边界](content-disposition-engine.md)。

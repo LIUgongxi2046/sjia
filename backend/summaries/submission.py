@@ -6,14 +6,14 @@ from django.db import transaction
 from django.urls import resolve, reverse
 from django.utils import timezone
 
-from authorization.policy import evaluate, check_principal_session
+from authorization.policy import Denied, evaluate, check_principal_session
 from identity.models import Patient, Principal
 from requests.models import WriteIntent
 from requests.service import prepare_intent, compute_digest, commit_intent
 from summaries.inputs import SummaryInput, SummaryIntentInput, SummaryWriteHeaders
 from summaries.models import Summary
 from summaries.service import SummaryRejected, generate_summary
-from tasks.models import Task
+from tasks.models import Task, TaskAttempt
 
 
 def summary_permission(actor, patient, auth_epoch, audience, action='create_summary'):
@@ -21,6 +21,8 @@ def summary_permission(actor, patient, auth_epoch, audience, action='create_summ
         raise SummaryRejected('FAMILY_AUDIENCE_REQUIRED')
     decision = evaluate(principal=actor, patient=patient, action=action, purpose='family_observation',
         environment=settings.SJIA_ENVIRONMENT, session_auth_epoch=auth_epoch)
+    if action == 'read_summary' and not Patient.objects.filter(id=patient.id, status='active').exists():
+        raise Denied('SUMMARY_PATIENT_SCOPE_DENIED')
     if decision.grant.record_scope != 'all':
         raise SummaryRejected('SUMMARY_SCOPE_NOT_AVAILABLE')
     return decision
@@ -41,23 +43,27 @@ def summary_task_view(task):
     return {'task_id': str(task.id), 'task_type': task.task_type,
         'request_id': str(task.request_row.request_id) if task.request_row_id else None,
         'accepted_at': task.created_at.isoformat(), 'status': task.status, 'status_version': str(task.status_version),
-        'poll_after_ms': None if task.status in ('completed', 'failed', 'cancelled', 'superseded') else 1500,
+        'poll_after_ms': 1500 if task.status in ('accepted', 'queued', 'running') else None,
         'allowed_actions': ['task_cancel'] if task.status in ('accepted', 'queued', 'running', 'awaiting_confirmation') else [],
         'result_type': 'summary' if summary else None, 'result_ref': str(summary.id) if summary else None,
-        'error_code': None}
+        'error_code': TaskAttempt.objects.filter(task=task).order_by('-attempt_number').values_list('error_code', flat=True).first()}
 
 
 def summary_receipt(intent):
     saved = intent.write_request
     if (intent.status != 'committed' or saved is None or saved.status != 'committed'
-        or saved.resource_type != 'summary' or saved.completed_at is None or saved.resource_id is None
+        or saved.resource_type not in ('summary', 'task') or saved.completed_at is None or saved.resource_id is None
         or saved.actor_id != intent.actor_id or saved.patient_id != intent.patient_id
         or saved.request_id != intent.request_id or saved.target_key != intent.target_key
         or saved.action != 'summary_create' or saved.payload_sha256 != intent.payload_sha256):
         raise SummaryRejected('SUMMARY_RECEIPT_INVALID')
-    summary = Summary.objects.get(id=saved.resource_id, patient_id=intent.patient_id, requested_by_id=intent.actor_id)
-    Task.objects.get(id=summary.task_id, request_row=saved, actor_id=intent.actor_id, patient_id=intent.patient_id)
-    return {'resource_type': 'summary', 'resource_id': str(summary.id), 'version': '1',
+    if saved.resource_type == 'summary':
+        summary = Summary.objects.get(id=saved.resource_id, patient_id=intent.patient_id, requested_by_id=intent.actor_id)
+        Task.objects.get(id=summary.task_id, request_row=saved, actor_id=intent.actor_id, patient_id=intent.patient_id)
+    else:
+        Task.objects.get(id=saved.resource_id, task_type='summary', schema_version='summary-task-2',
+            request_row=saved, actor_id=intent.actor_id, patient_id=intent.patient_id)
+    return {'resource_type': saved.resource_type, 'resource_id': str(saved.resource_id), 'version': '1',
         'saved_at': saved.completed_at.isoformat(), 'request_id': str(saved.request_id)}
 
 
@@ -73,18 +79,26 @@ def summary_request_view(intent):
         if intent.payload_sha256 != compute_digest('summary_create', intent.target_key, '1.0.0', payload):
             raise SummaryRejected('SUMMARY_REQUEST_PAYLOAD_INVALID')
     changed = intent.authorization_context != {'audience': 'family', 'auth_epoch': str(intent.actor.auth_epoch)}
+    receipt = summary_receipt(intent) if intent.status == 'committed' else None
+    task = None
+    if receipt is not None:
+        task_id = receipt['resource_id'] if receipt['resource_type'] == 'task' else Summary.objects.get(
+            id=receipt['resource_id'], patient_id=intent.patient_id).task_id
+        task = summary_task_view(Task.objects.get(id=task_id, actor_id=intent.actor_id, patient_id=intent.patient_id))
     return {'patient_id': str(intent.patient_id), 'intent_id': str(intent.id), 'request_id': str(intent.request_id),
         'operation_id': intent.operation_id, 'target_key': intent.target_key, 'prepared_at': intent.prepared_at.isoformat(),
         'state': {'prepared': 'pending', 'committed': 'committed', 'failed': 'failed'}[intent.status],
         'may_retry': payload is not None and intent.write_request_id is None and (intent.status == 'failed'
             or (intent.status == 'prepared' and (intent.expires_at <= timezone.now() or changed))),
-        'receipt': summary_receipt(intent) if intent.status == 'committed' else None,
+        'receipt': receipt, 'task': task,
         'error_code': intent.error_code, 'generation': str(intent.generation), 'expires_at': intent.expires_at.isoformat(),
         'payload_sha256': intent.payload_sha256, 'summary_input': payload}
 
 
 @transaction.atomic
 def prepare_summary_intent(*, actor, auth_epoch, audience, data, retention_policy):
+    from family_content.models import EnvironmentGate
+    EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
     actor = Principal.objects.select_for_update().get(id=actor.id)
     check_principal_session(actor, auth_epoch)
     data = SummaryIntentInput.model_validate(data)
@@ -98,7 +112,11 @@ def prepare_summary_intent(*, actor, auth_epoch, audience, data, retention_polic
 
 @transaction.atomic
 def submit_summary(*, actor, patient, auth_epoch, audience, target, data, headers):
-    actor = Principal.objects.select_for_update().get(id=actor.id)
+    from summaries.jobs import SCHEMA, admission_context, lock_summary_scope
+    from tasks.outbox import emit_event
+    from configurations.service import compute_checksum
+
+    _, actor, patient = lock_summary_scope(actor.id, patient.id, settings.SJIA_ENVIRONMENT)
     check_principal_session(actor, auth_epoch)
     decision = summary_permission(actor, patient, auth_epoch, audience)
     if summary_target(target).id != patient.id:
@@ -116,24 +134,31 @@ def submit_summary(*, actor, patient, auth_epoch, audience, target, data, header
         raise SummaryRejected('SUMMARY_AUTHORIZATION_CHANGED')
     if intent.status == 'committed':
         receipt = summary_receipt(intent)
-        summary = Summary.objects.get(id=receipt['resource_id'], patient=patient, requested_by=actor)
-        return summary_task_view(Task.objects.get(id=summary.task_id))
+        task_id = receipt['resource_id'] if receipt['resource_type'] == 'task' else Summary.objects.get(
+            id=receipt['resource_id'], patient=patient, requested_by=actor).task_id
+        return summary_task_view(Task.objects.get(id=task_id))
     if intent.status != 'prepared' or intent.expires_at <= timezone.now():
         raise SummaryRejected('SUMMARY_INTENT_EXPIRED')
-    summary = generate_summary(patient=patient, requested_by=actor, from_date=date.fromisoformat(data['from_date']),
-        to_date=date.fromisoformat(data['to_date']), scope_timezone=data['scope_timezone'],
-        include_unknown_time=data['include_unknown_time'], field_codes=decision.grant.field_codes,
-        environment=settings.SJIA_ENVIRONMENT, record_kinds=data['record_kinds'], include_source_status=data['include_source_status'])
-    saved = commit_intent(intent=intent, action='summary_create', resource_type='summary', resource_id=summary.id)
-    task = Task.objects.get(id=summary.task_id)
+    _, _, context = admission_context(actor, patient, auth_epoch, audience, settings.SJIA_ENVIRONMENT)
+    inputs = {'scope': data, 'context': context}
+    now = timezone.now()
+    task = Task.objects.create(actor=actor, patient=patient, task_type='summary', schema_version=SCHEMA,
+        input_refs=inputs, input_sha256=compute_checksum(inputs), status='accepted', status_version=1,
+        created_at=now, deadline_at=now + timedelta(seconds=context['task_policy']['queue_wait_seconds']
+            + context['task_policy']['execution_seconds']))
+    saved = commit_intent(intent=intent, action='summary_create', resource_type='task', resource_id=task.id)
     task.request_row = saved
     task.save(update_fields=['request_row'])
+    emit_event(event_type='summary.requested', schema_version=SCHEMA, aggregate_id=task.id,
+        aggregate_version=1, correlation_id=intent.request_id, resource_refs={'task_id': str(task.id)}, task=task)
     summary_receipt(intent)
     return summary_task_view(task)
 
 
 @transaction.atomic
 def retry_summary_intent(*, actor, auth_epoch, audience, intent_id, expected_generation):
+    from family_content.models import EnvironmentGate
+    EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
     actor = Principal.objects.select_for_update().get(id=actor.id)
     check_principal_session(actor, auth_epoch)
     intent = WriteIntent.objects.select_for_update().filter(id=intent_id, actor=actor, operation_id='summary_create').first()

@@ -1,13 +1,15 @@
+from copy import deepcopy
 from datetime import timedelta
 from decimal import Decimal
 import json
 from uuid import uuid4
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from api.base import ApiError, authorize_case, get_patient
+from api.base import ApiError, authorize_case
 from archives.batches import batch_grants, batch_runtime
 from archives.documents import document_record_scope, document_sources
 from archives.models import ArchiveBatch, ArchiveDocument, ArchiveDocumentVersion, ArchiveFact, ArchiveFactVersion, ArchivePage, ArchiveRelationVersion, DeltaSummary, DeltaSummaryItem
@@ -22,25 +24,59 @@ from configurations.qualification import configuration_qualification_reason
 from configurations.service import compute_checksum
 from configurations.evidence import deployed_artifact_checksum
 from dependencies.models import DependencyEdge, DependencyNode
-from family_content.models import EnvironmentGate
 from files.purpose_dependencies import connect, resource_node
 from files.models import FileGroup
 from files.purpose import checked_bytes, lock_original, lock_use_authorization
-from identity.models import Patient
 from medical_time.models import MedicalTime
 from records.models import Record, RecordVersion
 from records.service import medical_time_view
 from relations.models import Relation
 from summaries.delta_schemas import checked_delta
+from summaries.jobs import lock_summary_scope
 from summaries.service import current_summary_config
-from tasks.models import Task
+from tasks.models import Task, TaskAttempt
 from tasks.service import acquire_lease, complete_task, create_attempt, finish_attempt, register_task
 from verification.models import FieldVerificationState, Verification, VerificationField
 
 
+DELTA_SCHEMA = 'archive-delta-1'
+DELTA_OWNER = 'archive-delta-deterministic'
+
+
+def delta_task_policy(runtime, *, required=True):
+    """Select the explicit policy from an already-qualified runtime, never a default."""
+    policies = [row for row in runtime.payload['tasks'] if row['task_type'] == 'summary']
+    if len(policies) != 1:
+        if required:
+            raise ApiError('ARCHIVE_DELTA_TASK_POLICY_UNAVAILABLE', 503)
+        return None
+    return deepcopy(policies[0])
+
+
+def lock_delta_scope(actor, epoch, patient_id):
+    gate, actor, patient = lock_summary_scope(actor.id, patient_id, settings.SJIA_ENVIRONMENT)
+    if actor.account_status != 'active' or actor.auth_epoch != epoch:
+        raise ApiError('AUTH_REQUIRED', 401)
+    if patient.status != 'active':
+        raise ApiError('PATIENT_INACTIVE', 403)
+    return gate, actor, patient
+
+
+def check_delta_execution(task, generation):
+    """Fence local output at checkpoints; expiration never renews or takes over work."""
+    task.refresh_from_db()
+    now = timezone.now()
+    if (task.status != 'running' or task.lease_owner != DELTA_OWNER
+            or task.lease_generation != generation):
+        raise ApiError('ARCHIVE_DELTA_TASK_RESULT_REJECTED', 409)
+    if task.deadline_at <= now or task.lease_until is None or task.lease_until <= now:
+        raise ApiError('ARCHIVE_DELTA_TASK_DEADLINE_EXCEEDED', 409)
+
+
 def documents_in_batch(batch, patient):
     return [version for version in ArchiveDocumentVersion.objects.filter(batch_id=batch.id, patient_id=patient.id).order_by('id')
-        if ArchiveDocument.objects.get(id=version.document_id, patient_id=patient.id).current_version == version.version]
+        if ArchiveDocument.objects.filter(id=version.document_id, patient_id=patient.id,
+            retired_at__isnull=True, current_version=version.version).exists()]
 
 
 def fact_value(fact, field, patient, *, artifact_sha256=None):
@@ -84,12 +120,11 @@ def source_refs(document, version, scope, fact=None):
 
 def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, generating=False):
     checked_delta('Input', payload)
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+    seed = ArchiveBatch.objects.get(id=batch_id)
+    gate, actor, patient = lock_delta_scope(actor, epoch, seed.patient_id)
     runtime = batch_runtime()
-    batch = ArchiveBatch.objects.select_for_update().get(id=batch_id)
-    patient = Patient.objects.select_for_update().get(id=get_patient(batch.patient_id).id)
-    if patient.status != 'active':
-        raise ApiError('PATIENT_INACTIVE', 403)
+    policy = delta_task_policy(runtime, required=generating)
+    batch = ArchiveBatch.objects.select_for_update().get(id=batch_id, patient_id=patient.id)
     pages = list(ArchivePage.objects.filter(batch_id=batch.id, patient_id=patient.id).order_by('ordinal'))
     grants = batch_grants(actor, patient, batch, pages)
     if not pages or not grants:
@@ -131,13 +166,13 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
                     'retention': entity_reference(file.retention_policy)})
                 if generating:
                     checked_bytes(lock_original(file.id))
-            if version.version != document.current_version:
+            if version.version != document.current_version or document.retired_at is not None:
                 decision = authorize_case(request, actor, patient, 'read_history', require_relation=True,
                     author_id=scope['batch'].submitted_by, record_id=document_record_scope(document, patient, version), whole_resource=True)
                 grants.append(decision.grant)
             grants.extend(scope['grants'])
             _, _, _, _, _, linked = document_sources(document=document, patient=patient, version=version)
-            if side == 'current' or version.version == document.current_version:
+            if document.retired_at is None and (side == 'current' or version.version == document.current_version):
                 document_versions = ArchiveDocumentVersion.objects.filter(document_id=document.id, patient_id=patient.id).values('id')
                 candidates = ArchiveFactVersion.objects.filter(document_version_id__in=document_versions, patient_id=patient.id).order_by('id')
                 linked = [fact for fact in candidates if ArchiveFact.objects.get(id=fact.fact_id, patient_id=patient.id).current_version == fact.version]
@@ -146,7 +181,7 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
                 field, record_version = fact_source(fact, patient)
                 if field.field_code not in visibility.payload['field_codes']:
                     raise ApiError('ARCHIVE_DELTA_FIELD_VISIBILITY_DENIED', 403)
-                original = RecordVersion.objects.get(record_id=record_version.record_id, patient=patient, version=1)
+                original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient=patient, version=1)
                 record = Record.objects.get(id=record_version.record_id, patient=patient)
                 decision = authorize_case(request, actor, patient, 'read_raw', require_relation=True,
                     author_id=original.author_id, record_id=record.id, field_codes=[field.field_code])
@@ -164,7 +199,7 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
                 if source_scope is None:
                     raise ApiError('ARCHIVE_DELTA_SCOPE_DENIED', 403)
                 grants.extend(source_scope['grants'])
-                if source_version.version != document.current_version:
+                if source_version.version != document.current_version or document.retired_at is not None:
                     decision = authorize_case(request, actor, patient, 'read_history', require_relation=True,
                         author_id=source_scope['batch'].submitted_by, record_id=document_record_scope(document, patient, source_version), whole_resource=True)
                     grants.append(decision.grant)
@@ -194,7 +229,7 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
     context = {**bound, 'patient_id': str(patient.id), 'batch_id': str(batch.id), 'baseline_batch_id': payload['baseline_batch_id'],
         'actor_id': str(actor.id), 'auth_epoch': str(epoch), 'environment': settings.SJIA_ENVIRONMENT,
         'implementation_sha256': deployed_artifact_checksum(runtime),
-        'gate': entity_reference(gate), 'runtime': entity_reference(runtime), 'batch': entity_reference(batch),
+        'gate': entity_reference(gate), 'runtime': entity_reference(runtime), 'task_policy': policy, 'batch': entity_reference(batch),
         'data_epoch': str(patient.data_epoch), 'verification_epoch': str(patient.verification_epoch),
         'visibility': entity_reference(visibility), 'policy_reason': policy_reason, 'sources': references, 'relations': relation_refs,
         'grants': [entity_reference(grant) for grant in sorted({row.id: row for row in grants}.values(), key=lambda row: str(row.id))],
@@ -231,14 +266,44 @@ def comparable(before, after, patient):
     return list(dict.fromkeys(reasons))
 
 
+def qualified_sampling_relation(relation, facts):
+    """A family relationship choice is not a professional sampling proof.
+
+    `facts` contain proofs already checked by fact_value/verification_proof.
+    Verification is record-scoped, so the relationship may reference either
+    endpoint's proof, but must retain that verifier and exact evidence.
+    """
+    if relation.status != 'confirmed' or relation.verification_id is None:
+        return False
+    endpoints = {relation.left_fact_version_id, relation.right_fact_version_id}
+    if not endpoints.issubset({value['fact'].id for value in facts}):
+        return False
+    now = timezone.now()
+    return any(value['fact'].id in endpoints and value['proof'] is not None
+        and value['proof'].id == relation.verification_id
+        and value['proof'].revoked_at is None and value['proof'].verified_at <= now
+        and value['proof'].verifier_id == relation.author_id
+        and value['proof'].evidence_ref == relation.evidence_ref
+        for value in facts)
+
+
 def build_items(context, materials, facts, relations, patient):
     results = []
     baseline = context['baseline_document_version_ids']
     before_files = {source['checksum'] for identity in baseline for source in source_refs(*materials[identity])}
     observed_files = set(before_files)
-    same_groups = sampling_groups({str(value['fact'].id) for rows in facts.values() for value in rows},
+    all_facts = [value for rows in facts.values() for value in rows]
+    qualified_relations = [row for row in relations if qualified_sampling_relation(row, all_facts)]
+    same_groups = sampling_groups({str(value['fact'].id) for value in all_facts},
         [(str(row.left_fact_version_id), str(row.right_fact_version_id)) for row in relations
-            if row.status == 'confirmed' and row.relation_type == 'same_sampling'])
+            if row in qualified_relations and row.relation_type == 'same_sampling'])
+    for row in relations:
+        if row.status == 'confirmed' and row.relation_type == 'same_sampling' and row not in qualified_relations:
+            sources = [source for value in all_facts if value['fact'].id in
+                (row.left_fact_version_id, row.right_fact_version_id) for source in value['sources']]
+            if sources:
+                results.append(item('conflict', '采样关系尚待专业核对', sources,
+                    reasons=['SAMPLING_VERIFICATION_REQUIRED'], relations=[row]))
     for identity in context['current_document_version_ids']:
         document, version, scope = materials[identity]
         sources = source_refs(document, version, scope)
@@ -278,7 +343,7 @@ def build_items(context, materials, facts, relations, patient):
         seen_facts.append(current)
         if repeated:
             results.append(item('duplicate', '本批同次采样的重复引用', [source for previous in repeated for source in previous['sources']] + sources,
-                after=value, reasons=['SAME_SAMPLING_OR_FACT'], relations=[row for row in relations if row.status == 'confirmed' and row.relation_type == 'same_sampling'
+                after=value, reasons=['SAME_SAMPLING_OR_FACT'], relations=[row for row in qualified_relations if row.relation_type == 'same_sampling'
                     and any(str(row.left_fact_version_id) in group and str(row.right_fact_version_id) in group and str(current['fact'].id) in group for group in same_groups)]))
             continue
         existing = [old for old in facts['baseline'] if old['fact'].fact_id == current['fact'].fact_id]
@@ -306,11 +371,11 @@ def build_items(context, materials, facts, relations, patient):
         if any(row.status in ('proposed', 'disputed') for row in pairs):
             results.append(item('conflict', '采样关系尚待核对', pair_sources, old['value'], value, ['SAMPLING_RELATION_UNRESOLVED'], pairs))
             continue
-        same = [row for row in pairs if row.status == 'confirmed' and row.relation_type == 'same_sampling']
+        same = [row for row in pairs if row in qualified_relations and row.relation_type == 'same_sampling']
         correction = [row for row in pairs if row.status == 'confirmed' and row.relation_type == 'formal_correction']
         same_group = next((group for group in same_groups if str(old['fact'].id) in group and str(current['fact'].id) in group), None)
         if same_group:
-            same = [row for row in relations if row.status == 'confirmed' and row.relation_type == 'same_sampling'
+            same = [row for row in qualified_relations if row.relation_type == 'same_sampling'
                 and str(row.left_fact_version_id) in same_group and str(row.right_fact_version_id) in same_group]
         if same_group or old['fact'].fact_id == current['fact'].fact_id and old['fact'].version == current['fact'].version:
             results.append(item('duplicate', '同次采样或同一事实引用', pair_sources, old['value'], value, ['SAME_SAMPLING_OR_FACT'], same))
@@ -323,8 +388,7 @@ def build_items(context, materials, facts, relations, patient):
         if not old['record_current'] or not current['record_current']:
             reasons.append('SOURCE_RECORD_NOT_CURRENT')
         for row in independent:
-            proof = Verification.objects.get(id=row.verification_id, patient=patient) if row.verification_id else None
-            if proof is None or proof.revoked_at is not None or proof.id not in {old['proof'].id if old['proof'] else None, current['proof'].id if current['proof'] else None}:
+            if row not in qualified_relations:
                 reasons.append('SAMPLING_VERIFICATION_REQUIRED')
         if not independent:
             reasons.append('INDEPENDENT_SAMPLING_REQUIRED')
@@ -335,14 +399,37 @@ def build_items(context, materials, facts, relations, patient):
     return results
 
 
+@transaction.atomic
 def generate_delta(actor, epoch, patient, context, materials, facts, relations, request_row=None):
-    task = register_task(actor=actor, patient=patient, task_type='summary', schema_version='archive-delta-1',
-        input_refs=context, request_row=request_row)
-    if acquire_lease(task.id, 'archive-delta-deterministic', timezone.now() + timedelta(seconds=300)) != 1:
+    # Admission, capacity and the entire synchronous render share the same gate
+    # lock as asynchronous summaries. No outbox, retry or takeover is introduced.
+    gate, actor, patient = lock_delta_scope(actor, epoch, patient.id)
+    runtime = batch_runtime()
+    policy = delta_task_policy(runtime)
+    current = {'actor_id': str(actor.id), 'auth_epoch': str(epoch), 'patient_id': str(patient.id),
+        'environment': settings.SJIA_ENVIRONMENT, 'data_epoch': str(patient.data_epoch),
+        'verification_epoch': str(patient.verification_epoch), 'gate': entity_reference(gate),
+        'runtime': entity_reference(runtime), 'task_policy': policy}
+    if any(context.get(key) != value for key, value in current.items()):
+        raise ApiError('ARCHIVE_DELTA_PREPARATION_CHANGED', 409)
+    now = timezone.now()
+    inflight = Task.objects.filter(task_type='summary', status='running', lease_until__gt=now,
+        deadline_at__gt=now).filter(
+            Q(schema_version='summary-task-2', input_refs__context__runtime_id=str(runtime.id))
+            | Q(schema_version=DELTA_SCHEMA, input_refs__runtime__id=str(runtime.id))).count()
+    if inflight >= policy['max_concurrency']:
+        raise ApiError('ARCHIVE_DELTA_TASK_CONCURRENCY_EXCEEDED', 409)
+    task = register_task(actor=actor, patient=patient, task_type='summary', schema_version=DELTA_SCHEMA,
+        input_refs=context, request_row=request_row, deadline_seconds=policy['execution_seconds'])
+    if TaskAttempt.objects.filter(task=task).count() >= policy['max_attempts']:
+        raise ApiError('ARCHIVE_DELTA_TASK_ATTEMPT_LIMIT_EXCEEDED', 409)
+    if acquire_lease(task.id, DELTA_OWNER, timezone.now() + timedelta(seconds=policy['lease_seconds'])) != 1:
         raise ApiError('ARCHIVE_DELTA_TASK_LEASE_FAILED', 409)
     task.refresh_from_db()
     attempt = create_attempt(task, task.lease_generation)
+    check_delta_execution(task, attempt.lease_generation)
     values = build_items(context, materials, facts, relations, patient)
+    check_delta_execution(task, attempt.lease_generation)
     result = DeltaSummary.objects.create(patient_id=patient.id, owner_id=actor.id, batch_id=context['batch_id'],
         baseline_refs=[row for row in context['sources'] if row['side'] == 'baseline'] or None,
         current_refs=[row for row in context['sources'] if row['side'] == 'current'], data_epoch=patient.data_epoch,
@@ -356,8 +443,8 @@ def generate_delta(actor, epoch, patient, context, materials, facts, relations, 
         connect(node, resource_node('archive_document_version', version.id, entity_reference(version)['sha256'], patient.id), 'source')
         for source in scope['files']:
             connect(node, resource_node('file_object', source.id, source.object_version, patient.id), 'source')
-    for values in facts.values():
-        for value in values:
+    for side_facts in facts.values():
+        for value in side_facts:
             fact, proof = value['fact'], value['proof']
             connect(node, resource_node('archive_fact_version', fact.id, entity_reference(fact)['sha256'], patient.id), 'input')
             if proof:
@@ -365,16 +452,23 @@ def generate_delta(actor, epoch, patient, context, materials, facts, relations, 
     for row in relations:
         connect(node, resource_node('archive_relation_version', row.id, entity_reference(row)['sha256'], patient.id), 'input')
     connect(node, resource_node('config_version', result.visibility_policy_id, context['visibility']['sha256'], None), 'policy')
+    check_delta_execution(task, attempt.lease_generation)
     finish_attempt(attempt, 'completed', usage_evidence={'engine': 'archive-delta-deterministic-1', 'item_count': len(values), 'input_sha256': task.input_sha256})
-    if complete_task(task.id, task.lease_generation, 'archive_delta', result.id) != 1:
+    if complete_task(task.id, attempt.lease_generation, 'archive_delta', result.id) != 1:
         raise ApiError('ARCHIVE_DELTA_TASK_RESULT_REJECTED', 409)
     return result, task
 
 
 def read_delta(request, actor, epoch, result):
-    if result.owner_id != actor.id:
+    # Caller objects are identity hints only. Read current scope without a row
+    # lock, then reload under the common gate/actor/patient lock prefix.
+    seed = DeltaSummary.objects.get(id=result.id)
+    if seed.owner_id != actor.id:
         raise ApiError('ARCHIVE_DELTA_SCOPE_DENIED', 403)
-    task = Task.objects.select_for_update().get(id=result.task_id, actor=actor, patient_id=result.patient_id, schema_version='archive-delta-1', status__in=['completed', 'superseded'])
+    _, actor, patient = lock_delta_scope(actor, epoch, seed.patient_id)
+    result = DeltaSummary.objects.select_for_update().get(id=seed.id,
+        owner_id=actor.id, patient_id=patient.id)
+    task = Task.objects.select_for_update().get(id=result.task_id, actor=actor, patient_id=patient.id, schema_version=DELTA_SCHEMA, status__in=['completed', 'superseded'])
     frozen = task.input_refs
     if compute_checksum(frozen) != task.input_sha256:
         raise ApiError('ARCHIVE_DELTA_TASK_INPUT_INVALID', 409)

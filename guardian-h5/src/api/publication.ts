@@ -18,7 +18,8 @@ export interface ContactDetail { id: string; version: string; status: 'draft' | 
 export interface ReleaseDetail { resource: { release_id: string; version: string; status: 'draft' | 'approved' | 'enabled' | 'disabled';
   publication_epoch: string; release: ReleaseInput }; gate_version: string; publication_epoch: string; active_release_id: string | null;
   readiness: { key: 'verification' | 'rules' | 'validation' | 'content' | 'contact' | 'notification'; state: 'available' | 'blocked'; reason: string | null }[];
-  qualification_reason: string | null; may_enable: boolean; approved_text: string | null; recipient_permission_state: 'individual_check_required' }
+  qualification_reason: string | null; may_enable: boolean; approved_text: string | null;
+  approved_contents?: { rule_id: string; content_id: string; approved_text: string | null }[]; recipient_permission_state: 'individual_check_required' }
 
 export const publicationOperations = {
   source_register: ['manage_config', 'SourceInput', 'source_registry', '登记来源'],

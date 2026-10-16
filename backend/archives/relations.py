@@ -50,7 +50,7 @@ def source_scope(request, actor, patient, kind, identity, action, *, require_cur
     if kind == 'fact':
         fact = ArchiveFactVersion.objects.get(id=identity, patient_id=patient.id)
         field, version = fact_source(fact, patient)
-        original = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
         authorize_case(request, actor, patient, action if family else 'read_case',
             record_id=version.record_id, author_id=original.author_id, field_codes=[field.field_code], require_relation=family)
         if require_current:
@@ -169,7 +169,7 @@ def relation_actions(request, actor, patient, row, audience):
         if kind == 'fact':
             fact = ArchiveFactVersion.objects.get(id=identity, patient_id=patient.id)
             field, version = fact_source(fact, patient)
-            original = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
+            original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
             scope = {'record_id': version.record_id, 'author_id': original.author_id, 'field_codes': [field.field_code]}
         else:
             source = FileObject.objects.get(id=identity, patient_id=patient.id)
@@ -201,7 +201,7 @@ def relation_verification(request, actor, patient, previous, payload):
     for identity in (previous.left_fact_version_id, previous.right_fact_version_id):
         fact, field, version = source_scope(request, actor, patient, 'fact', identity, 'read_case',
             require_current=previous.relation_type != 'formal_correction' or identity == previous.right_fact_version_id)
-        original = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
         for point in (proof.verified_at, timezone.now()):
             lock_case_permissions(actor, patient, 'verify_field', proof.purpose, point,
                 record_id=version.record_id, author_id=original.author_id, field_codes=[field.field_code])

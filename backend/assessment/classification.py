@@ -34,7 +34,7 @@ def evaluate_threshold(value, qualifier, operator, threshold):
         if qualifier == "le":
             return "met" if value <= threshold else "unknown"
         if qualifier == "gt":
-            return "not_met" if value > threshold else "unknown"
+            return "not_met" if value >= threshold else "unknown"
         if qualifier == "ge":
             return "not_met" if value > threshold else "unknown"
     return "unknown"
@@ -81,6 +81,7 @@ def classify_2016(*, premise, ferritin, platelet, ast, triglycerides, fibrinogen
     premise_result = "met" if premise_met else "not_met"
     if premise_state != "known":
         premise_result = "unknown"
+    conditions["BR-C00"] = premise_result
     ferritin_result = conditions["BR-C01"]
 
     four = [conditions["BR-C02"], conditions["BR-C03"], conditions["BR-C04"], conditions["BR-C05"]]

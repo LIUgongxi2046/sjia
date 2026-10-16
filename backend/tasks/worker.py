@@ -3,13 +3,29 @@ from django.db import transaction
 from django.utils import timezone
 
 from config.celery import app
+from retention.content_fences import guarded_consumer
 from tasks.models import ConsumerReceipt, OutboxEvent, Task, TaskAttempt
 
 
 class RecognitionWorker(CeleryTask):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         event_id = kwargs['event_id']
-        event = OutboxEvent.objects.get(id=event_id)
+        event = OutboxEvent.objects.filter(id=event_id).first()
+        if event is None:
+            return
+        if event.event_type == 'reconcile.requested':
+            from tasks.reconciliation import record_reconcile_failure
+            record_reconcile_failure(event, task_id, getattr(exc, 'reason_code', 'RECONCILE_EXECUTION_FAILED'))
+            return
+        if event.event_type == 'file_validation.requested':
+            from files.validation import record_failure
+            record_failure(event, task_id, getattr(exc, 'reason_code', 'FILE_VALIDATION_FAILED'))
+            return
+        if event.event_type == 'summary.requested':
+            from summaries.jobs import record_summary_failure
+
+            record_summary_failure(event, task_id, getattr(exc, 'reason_code', 'SUMMARY_EXECUTION_FAILED'))
+            return
         if event.event_type == 'voice_input.requested':
             from recognition.voice_input_jobs import record_voice_failure
 
@@ -122,10 +138,36 @@ class RecognitionWorker(CeleryTask):
 
 
 @app.task(name="tasks.worker.consume", bind=True, base=RecognitionWorker)
+@guarded_consumer
 def consume(self, event_id):
     event = OutboxEvent.objects.filter(id=event_id).first()
     if event is None:
         return
+    from tasks.registry import require_worker_event
+
+    require_worker_event(event.event_type)
+    if event.event_type == 'reconcile.requested':
+        from tasks.reconciliation import ReconcileDeferred, execute_reconcile
+        try:
+            execute_reconcile(event, self.request.id)
+        except ReconcileDeferred as deferred:
+            raise self.retry(countdown=deferred.seconds, max_retries=deferred.max_retries)
+        return event_id
+    if event.event_type == 'file_validation.requested':
+        from files.validation import ValidationDeferred, execute_validation
+        try:
+            execute_validation(event, self.request.id)
+        except ValidationDeferred as deferred:
+            raise self.retry(countdown=deferred.seconds, max_retries=deferred.max_retries)
+        return event_id
+    if event.event_type == 'summary.requested':
+        from summaries.jobs import SummaryDeferred, execute_summary
+
+        try:
+            execute_summary(event, self.request.id)
+        except SummaryDeferred as deferred:
+            raise self.retry(countdown=deferred.seconds, max_retries=deferred.max_retries)
+        return event_id
     if event.event_type == 'archive_page.requested':
         from archives.page_execution import execute_page
 

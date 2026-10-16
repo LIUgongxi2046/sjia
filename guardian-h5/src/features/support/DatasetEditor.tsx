@@ -58,7 +58,8 @@ export function DatasetEditor({ operation, dataset, pending, onSubmit }: {
       if (partition !== 'development' && partition !== 'validation') throw new Error('评价运行集合划分无效。');
       onSubmit({ expected_version: dataset!.version, partition,
         config_ids: (values.config_ids ?? '').split(/\s+/u).filter(Boolean), code_version: values.code_version,
-        label_version_ref: dataset!.label_version_ref, mode: 'replay' });
+        label_version_ref: dataset!.label_version_ref, mode: 'replay',
+        ...(values.clinical_capture_ref ? { clinical_capture_ref: values.clinical_capture_ref } : {}) });
     } else onSubmit({ expected_version: dataset!.version, checksum: dataset!.checksum, evidence_ref: values.evidence_ref });
   }
   return <form onSubmit={submit} onCompositionStart={() => { composing.current = true; }}
@@ -101,6 +102,7 @@ export function DatasetEditor({ operation, dataset, pending, onSubmit }: {
         </select></label>
         {field('config_ids', '已批准规则版本标识，每行一项', true, true)}
         {field('code_version', '本次采用的已验证程序摘要')}
+        {dataset!.coverage.evaluation_kind === 'clinical' && field('clinical_capture_ref', '已批准的实际回放结果采集引用（v2）', false)}
         <p>历史回放保留准确输入和完整分母，不发送家庭通知。</p>
       </>}
       <button className="button" type="submit" disabled={pending}>{pending ? '正在保存并核验' : datasetOperationNames[operation]}</button>

@@ -1,9 +1,10 @@
 import hashlib
+import os
 import uuid
 from datetime import timedelta
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
@@ -35,9 +36,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not settings.DEBUG or settings.DATABASES['default']['NAME'] not in ('sjia_dev', 'sjia_qa03'):
             raise RuntimeError('此命令仅允许在指定的本地开发或验收数据库执行')
+        username = os.environ.get('SJIA_ACCEPTANCE_USERNAME')
+        password = os.environ.get('SJIA_ACCEPTANCE_PASSWORD')
+        if not username or not password:
+            raise CommandError('SJIA_ACCEPTANCE_USERNAME and SJIA_ACCEPTANCE_PASSWORD are required')
         now = timezone.now()
-        credential = PrincipalCredential.objects.filter(username='acceptance-family').first()
-        actor = credential.principal if credential else register_account(username='acceptance-family', password='Local-accept-2026')
+        credential = PrincipalCredential.objects.filter(username=username).first()
+        actor = credential.principal if credential else register_account(username=username, password=password)
         gate, _ = EnvironmentGate.objects.get_or_create(environment='test', defaults={'version': 1, 'enabled': True, 'updated_at': now})
         if not gate.enabled:
             raise RuntimeError('本地测试环境没有启用')
@@ -114,4 +119,4 @@ class Command(BaseCommand):
         event = AlertEvent.objects.create(patient=patient, evaluation_id=evaluation.id, release=release, trigger_key=f'qa02-{sequence}', trigger_policy=components['rule'], input_snapshot={'simulation': True}, validity='valid', created_at=now)
         relation = Relation.objects.get(patient=patient, guardian=actor, status='active')
         AlertRecipient.objects.create(patient_id=patient.id, alert_id=event.id, relation_id=relation.id, channel='in_app', delivery_status='delivered')
-        self.stdout.write(f'本地模拟验收资料已建立：账号 acceptance-family，患儿 {len(patients)}，摘要模板 {summary.version}，提示 {event.id}')
+        self.stdout.write(f'本地模拟验收资料已建立：账号 {username}，患儿 {len(patients)}，摘要模板 {summary.version}，提示 {event.id}')

@@ -1,0 +1,151 @@
+{
+  "$defs": {
+    "ContentPlanInput": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-request-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "database": "#/$defs/DatabaseTarget",
+                "local_object": "#/$defs/LocalObjectTarget"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/DatabaseTarget"
+              },
+              {
+                "$ref": "#/$defs/LocalObjectTarget"
+              }
+            ]
+          },
+          "maxItems": 5000,
+          "minItems": 1,
+          "title": "Targets",
+          "type": "array"
+        },
+        "hold_id": {
+          "format": "uuid",
+          "title": "Hold Id",
+          "type": "string"
+        },
+        "hold_version": {
+          "minimum": 1,
+          "title": "Hold Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "targets",
+        "hold_id",
+        "hold_version"
+      ],
+      "title": "ContentPlanInput",
+      "type": "object"
+    },
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "database",
+          "title": "Kind",
+          "type": "string"
+        },
+        "adapter": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Adapter",
+          "type": "string"
+        },
+        "object_id": {
+          "format": "uuid",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "adapter",
+        "object_id",
+        "version"
+      ],
+      "title": "DatabaseTarget",
+      "type": "object"
+    },
+    "LocalObjectTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "local_object",
+          "title": "Kind",
+          "type": "string"
+        },
+        "file_id": {
+          "format": "uuid",
+          "title": "File Id",
+          "type": "string"
+        },
+        "object_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Object Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "file_id",
+        "object_version"
+      ],
+      "title": "LocalObjectTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "family_request_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Family Request Id"
+    },
+    "policy_id": {
+      "format": "uuid",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/ContentPlanInput"
+    }
+  },
+  "required": [
+    "policy_id",
+    "request"
+  ],
+  "title": "PlanRequest",
+  "type": "object"
+}

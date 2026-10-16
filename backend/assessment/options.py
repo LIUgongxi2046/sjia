@@ -7,8 +7,10 @@ from django.utils import timezone
 
 from archives.models import ArchiveFactVersion, ObservationPeriodVersion
 from assessment.configuration_proofs import configuration_proof
+from assessment.hlh_contracts import HLHInputPolicy, HLHRulePolicy, validate_hlh_policy_pair
+from assessment.hlh_inputs import validate_hlh_windows
 from assessment.policies import QualificationPolicy, StaticContextPolicy, StaticRulePolicy, static_variable
-from assessment.qualified_facts import QualificationRejected, lock_case_permissions
+from assessment.qualified_facts import QualificationRejected, configuration_evidence_refs, lock_case_permissions
 from assessment.service import TIMESTAMP, lock_actor
 from authorization.models import AccessGrant
 from authorization.policy import check_principal_session, check_service_grant, matching_case_grants
@@ -45,7 +47,7 @@ def selection_candidate_view(fact, field, patient):
         'available_at': fact.available_at.isoformat() if fact.available_at else None}
 
 
-def selection_options(patient, actor, rule_row, window_row, policy_row, variables, known_at):
+def selection_options(patient, actor, rule_row, window_row, policy_row, variables, known_at, input_rule_row=None):
     windows = {item['variable_code']: item for item in window_row.payload['variables']}
     result = []
     for variable in variables:
@@ -77,6 +79,8 @@ def selection_options(patient, actor, rule_row, window_row, policy_row, variable
             status='completed', created_at__lte=known_at, input_refs__payload__mode='current',
             input_refs__payload__rule_id=str(rule_row.id), input_refs__payload__window_policy_id=str(window_row.id),
             input_refs__payload__verification_policy_id=str(policy_row.id)).order_by('created_at', 'id'):
+        if input_rule_row is not None and task.input_refs['payload'].get('input_rule_id') != str(input_rule_row.id):
+            continue
         if task.request_row_id is None:
             continue
         saved = WriteRequest.objects.get(id=task.request_row_id, patient=patient)
@@ -136,7 +140,7 @@ def clinical_directory(actor, auth_epoch, environment, action):
 
 def approved_configurations(environment, known_at, mode, additional_kinds=()):
     result = {}
-    kinds = (('rule', 'assessment-rule-2'), ('window', 'alert-window-1'),
+    kinds = (('rule', 'assessment-rule-2'), ('rule', 'hlh-2004-rule-1'), ('rule', 'hlh-input-policy-1'), ('window', 'alert-window-1'),
         ('verification', 'qualification-policy-2'), ('rule', 'assessment-context-policy-2'), ('mapping', 'unit-mapping-2'), *additional_kinds)
     rows = [row for kind, schema in kinds for row in ConfigVersion.objects.select_for_update().filter(
         kind=kind, schema_version=schema, created_at__lte=known_at).order_by('id')]
@@ -149,7 +153,7 @@ def approved_configurations(environment, known_at, mode, additional_kinds=()):
                 allow_historical=mode == 'replay', artifact_sha256=artifact) for point in points):
             continue
         if any(inspect_approved_evidence(reference, purpose='clinical_policy', lock=True, now=point)[2]
-                for point in points for reference in row.payload['evidence_refs']):
+                for point in points for reference in configuration_evidence_refs(row)):
             continue
         configuration_proof(row, environment, known_at, mode, artifact_sha256=artifact)
         result[row.id] = row
@@ -174,11 +178,22 @@ def assessment_creation_options(patient_id, actor, auth_epoch, environment, quer
     rules = [row for row in configurations.values() if row.schema_version == 'assessment-rule-2']
     windows = [row for row in configurations.values() if row.schema_version == 'alert-window-1']
     policies = [row for row in configurations.values() if row.schema_version == 'qualification-policy-2']
+    pairs = [(row, None) for row in rules]
+    pairs.extend(product([row for row in configurations.values() if row.schema_version == 'hlh-2004-rule-1'],
+        [row for row in configurations.values() if row.schema_version == 'hlh-input-policy-1']))
     plans = []
-    for rule_row, window_row, policy_row in product(rules, windows, policies):
-        rule = StaticRulePolicy.model_validate_json(json.dumps(rule_row.payload))
+    for (rule_row, input_rule_row), window_row, policy_row in product(pairs, windows, policies):
+        hlh = input_rule_row is not None
+        rule = (HLHRulePolicy if hlh else StaticRulePolicy).model_validate_json(json.dumps(rule_row.payload))
+        bindings = HLHInputPolicy.model_validate_json(json.dumps(input_rule_row.payload)) if hlh else None
+        if hlh:
+            try:
+                validate_hlh_policy_pair(rule, bindings)
+                validate_hlh_windows(rule, window_row.payload)
+            except (ValueError, QualificationRejected):
+                continue
         policy = QualificationPolicy.model_validate(policy_row.payload)
-        if policy.purpose not in purposes:
+        if policy.purpose not in purposes or hlh and bindings.purpose != policy.purpose:
             continue
         context_ids = {'population': window_row.payload['scope']['population_config_id'],
             'therapy': window_row.payload['scope']['therapy_policy_id'],
@@ -191,7 +206,8 @@ def assessment_creation_options(patient_id, actor, auth_epoch, environment, quer
         if any(definition.role != role or definition.purpose != policy.purpose
                 for role, definition in zip(context_ids, definitions)):
             continue
-        variables = [static_variable(rule, code) for code in ['sjia', 'fever', *(item.variable_code for item in rule.variables)]]
+        variables = (list(bindings.variables) if hlh else
+            [static_variable(rule, code) for code in ['sjia', 'fever', *(item.variable_code for item in rule.variables)]])
         variables.extend(item for definition in definitions for item in definition.conditions)
         if (len({item.variable_code for item in variables}) != len(variables)
                 or len({item.concept_code for item in variables}) != len(variables)
@@ -199,10 +215,13 @@ def assessment_creation_options(patient_id, actor, auth_epoch, environment, quer
                 or any(item.mapping_config_id is not None and item.mapping_config_id not in configurations for item in variables)):
             continue
         selection_variables, selection_evidence, prior_selections = selection_options(patient, actor, rule_row,
-            window_row, policy_row, variables, known_at)
-        plans.append({'kind': rule.kind, 'purpose': policy.purpose, 'rule': configuration_view(rule_row),
+            window_row, policy_row, variables, known_at, input_rule_row)
+        plan = {'kind': 'hlh' if hlh else rule.kind, 'purpose': policy.purpose, 'rule': configuration_view(rule_row),
             'window': configuration_view(window_row), 'verification': configuration_view(policy_row),
-            'selection_variables': selection_variables, 'selection_evidence': selection_evidence, 'prior_selections': prior_selections})
+            'selection_variables': selection_variables, 'selection_evidence': selection_evidence, 'prior_selections': prior_selections}
+        if hlh:
+            plan['input_rule'] = configuration_view(input_rule_row)
+        plans.append(plan)
     periods = []
     latest = set()
     for row in ObservationPeriodVersion.objects.filter(patient_id=patient.id, created_at__lte=known_at).order_by('period_id', '-version'):

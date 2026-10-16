@@ -4,6 +4,8 @@ from rest_framework.response import Response
 
 from api.base import ApiError, current_principal, handle
 from api.views_purpose import prepare_purpose_intent, retry_purpose_intent, read_purpose_request
+from requests.archive_regrouping import OPERATIONS as REGROUP_OPERATIONS
+from requests.archive_regrouping import prepare_regroup_intent, read_regroup_request, retry_regroup_intent
 from requests.archive_documents import prepare_document_intent, read_document_request, retry_document_intent
 from requests.archive_facts import OPERATIONS as FACT_OPERATIONS
 from requests.archive_facts import prepare_fact_intent, read_fact_request, retry_fact_intent
@@ -74,6 +76,8 @@ def v2_intent_prepare(request):
             return Response(prepare_batch_intent(request), status=201)
         if isinstance(request.data, dict) and request.data.get('operation_id') in REMINDER_OPERATIONS:
             return Response(prepare_reminder_intent(request), status=201)
+        if isinstance(request.data, dict) and request.data.get('operation_id') in REGROUP_OPERATIONS:
+            return Response(prepare_regroup_intent(request), status=201)
         return Response(prepare_document_intent(request), status=201)
     if isinstance(request.data, dict) and request.data.get('operation_id') in VERIFICATION_OPERATIONS:
         return Response(prepare_verification_intent(request), status=201)
@@ -112,6 +116,8 @@ def v2_request_read(request, intent_id):
             return Response(read_batch_request(request, intent_id))
         if operation_request(request, intent_id, REMINDER_OPERATIONS, lookup=True):
             return Response(read_reminder_request(request, intent_id))
+        if operation_request(request, intent_id, REGROUP_OPERATIONS, lookup=True):
+            return Response(read_regroup_request(request, intent_id))
         return Response(read_document_request(request, intent_id))
     if operation_request(request, intent_id, VERIFICATION_OPERATIONS, lookup=True):
         return Response(read_verification_request(request, intent_id))
@@ -150,6 +156,8 @@ def v2_intent_retry(request, intent_id):
             return Response(retry_batch_intent(request, intent_id))
         if operation_request(request, intent_id, REMINDER_OPERATIONS):
             return Response(retry_reminder_intent(request, intent_id))
+        if operation_request(request, intent_id, REGROUP_OPERATIONS):
+            return Response(retry_regroup_intent(request, intent_id))
         return Response(retry_document_intent(request, intent_id))
     if operation_request(request, intent_id, VERIFICATION_OPERATIONS):
         return Response(retry_verification_intent(request, intent_id))

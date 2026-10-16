@@ -3,7 +3,10 @@
 本地用途核验已有病例全部结构；临床边界与 Gold 由 T32 依据 D08 验证。
 运行：backend/.venv/bin/python backend/manage.py test tests.test_T27 --keepdb
 """
+import os
 import uuid
+from pathlib import Path
+from unittest import skipUnless
 from datetime import datetime, timezone
 
 from django.test import TestCase
@@ -22,8 +25,14 @@ def _now():
     return datetime.now(timezone.utc)
 
 
+@skipUnless(os.environ.get('SJIA_RUN_CLINICAL_EVIDENCE_TESTS') == '1',
+    'external_clinical_input: real-case evidence tests are opt-in; not a synthetic development pass')
 class CaseImportTest(TestCase):
     def setUp(self):
+        projection = Path(__file__).resolve().parents[2] / 'data-design' / 'case-design-projection.json'
+        if not projection.is_file():
+            self.skipTest('external_clinical_input: authorized case-design-projection.json is unavailable')
+        self.skipTest('external_clinical_input: separate qualified real-data admission and authorized evidence runner required; offline suite does not open clinical input')
         now = _now()
         self.principal = Principal.objects.create(account_status="active", created_at=now, updated_at=now)
         self.patient = Patient.objects.create(id=uuid.UUID("a5e40001-11b2-4023-8dcc-19800ae724b0"), display_id="case-demo", status="active", created_at=now)

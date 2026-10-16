@@ -24,16 +24,20 @@ def lock_relation_for_access(relation_id, *, patient_id=None):
 
 
 @transaction.atomic
-def create_application(*, applicant, evidence_ref, patient=None, note=None, requested_access=None) -> RelationApplication:
+def create_application(*, applicant, evidence_ref, patient=None, note=None, requested_access=None, applicant_declaration=None) -> RelationApplication:
     if not isinstance(evidence_ref, str) or not evidence_ref.strip():
         raise RelationRejected("EVIDENCE_REQUIRED")
     if requested_access is not None and requested_access not in ('read', 'read_write', 'review_decides'):
         raise RelationRejected('APPLICATION_ACCESS_INVALID')
+    if applicant_declaration is not None:
+        from relations.inputs import ApplicationDeclaration
+        applicant_declaration = ApplicationDeclaration.model_validate(applicant_declaration).model_dump()
     return RelationApplication.objects.create(
         version=1,
         applicant=applicant,
         patient=patient,
         evidence_ref=evidence_ref,
+        applicant_declaration=applicant_declaration,
         note=note,
         requested_access=requested_access,
         status=RelationApplication.Status.PENDING,
@@ -66,6 +70,8 @@ def decide_application(
     action=None,
     field_codes=None,
     purpose=None,
+    patient=None,
+    reason=None,
 ) -> Relation:
     application = RelationApplication.objects.select_for_update().get(id=application.id)
     if decision not in (RelationApplication.Status.APPROVED, RelationApplication.Status.REJECTED):
@@ -74,14 +80,28 @@ def decide_application(
         raise RelationRejected("APPLICATION_NOT_PENDING")
     if application.version != expected_version:
         raise RelationRejected("VERSION_CONFLICT")
+    if decision == RelationApplication.Status.APPROVED:
+        from identity.models import Patient
+        if patient is not None:
+            patient = Patient.objects.select_for_update().get(id=patient.id)
+            if application.patient_id is not None and application.patient_id != patient.id:
+                raise RelationRejected('APPLICATION_PATIENT_MISMATCH')
+            application.patient = patient
+        if application.patient_id is None:
+            raise RelationRejected('APPLICATION_PATIENT_REQUIRED')
+        if Patient.objects.select_for_update().get(id=application.patient_id).status != 'active':
+            raise RelationRejected('APPLICATION_PATIENT_UNAVAILABLE')
+    if reason is not None and (not isinstance(reason, str) or not reason.strip()):
+        raise RelationRejected('APPLICATION_REASON_INVALID')
     now = datetime.now(timezone.utc)
+    application.reason = reason
     application.status = decision
     application.checked_by = checked_by
     application.checked_at = now
     application.version = application.version + 1
     if application.version > 9_223_372_036_854_775_807:
         raise RelationRejected('VERSION_RANGE_EXCEEDED')
-    application.save(update_fields=["status", "checked_by", "checked_at", "version"])
+    application.save(update_fields=["status", "checked_by", "checked_at", "version", "patient", "reason"])
     if decision != RelationApplication.Status.APPROVED:
         return None
     relation = Relation.objects.create(

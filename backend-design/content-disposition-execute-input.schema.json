@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "expected_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Expected Manifest Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "expected_manifest_sha256"
+  ],
+  "title": "ExecuteRequest",
+  "type": "object"
+}

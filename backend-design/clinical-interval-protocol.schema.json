@@ -1,0 +1,474 @@
+{
+  "$defs": {
+    "MetricSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "spec_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Spec Id",
+          "type": "string"
+        },
+        "metric_id": {
+          "enum": [
+            "sensitivity",
+            "missed_event_fraction",
+            "ppv",
+            "alerts_per_observation_person_hour",
+            "alerts_per_negative_observation_person_hour",
+            "event_unassessable_fraction",
+            "first_alert_difference_mean_seconds",
+            "first_alert_difference_median_seconds"
+          ],
+          "title": "Metric Id",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "static",
+            "dynamic"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "aggregation": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Aggregation",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Unit",
+          "type": "string"
+        },
+        "denominator_policy": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Denominator Policy",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "spec_id",
+        "metric_id",
+        "mode",
+        "scope",
+        "aggregation",
+        "unit",
+        "denominator_policy",
+        "required"
+      ],
+      "title": "MetricSpec",
+      "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "sensitivity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "missed_event_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "one_minus_ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "assessable_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "ppv"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "known_outcome_prompts_including_first_and_repeat"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_period_hours_including_unknown_labels"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "alerts_per_negative_observation_person_hour"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "prompts_per_person_hour"
+              },
+              "denominator_policy": {
+                "const": "completed_negative_period_hours"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "event_unassessable_fraction"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "ratio_of_sums"
+              },
+              "unit": {
+                "const": "fraction"
+              },
+              "denominator_policy": {
+                "const": "all_independently_positive_events"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_mean_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_mean"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "metric_id": {
+                "const": "first_alert_difference_median_seconds"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "aggregation": {
+                "const": "pooled_detected_event_median"
+              },
+              "unit": {
+                "const": "seconds"
+              },
+              "denominator_policy": {
+                "const": "detected_events_only"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Scope": {
+      "additionalProperties": false,
+      "properties": {
+        "partition": {
+          "enum": [
+            "development",
+            "validation"
+          ],
+          "title": "Partition",
+          "type": "string"
+        },
+        "subgroup": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Subgroup"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "partition",
+        "subgroup"
+      ],
+      "title": "Scope",
+      "type": "object"
+    },
+    "Subgroup": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Dimension",
+          "type": "string"
+        },
+        "value": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "value"
+      ],
+      "title": "Subgroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "clinical-interval-protocol-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "protocol_ref": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Protocol Ref",
+      "type": "string"
+    },
+    "measurement_plan_ref": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Measurement Plan Ref",
+      "type": "string"
+    },
+    "method": {
+      "const": "patient_cluster_percentile_v1",
+      "title": "Method",
+      "type": "string"
+    },
+    "algorithm_version": {
+      "const": "1",
+      "title": "Algorithm Version",
+      "type": "string"
+    },
+    "confidence_level": {
+      "exclusiveMaximum": 1,
+      "exclusiveMinimum": 0,
+      "title": "Confidence Level",
+      "type": "number"
+    },
+    "alternative": {
+      "const": "two_sided",
+      "title": "Alternative",
+      "type": "string"
+    },
+    "quantile_method": {
+      "const": "linear",
+      "title": "Quantile Method",
+      "type": "string"
+    },
+    "cluster_key": {
+      "const": "patient_id",
+      "title": "Cluster Key",
+      "type": "string"
+    },
+    "sampling": {
+      "const": "whole_cluster_with_replacement",
+      "title": "Sampling",
+      "type": "string"
+    },
+    "cluster_frame": {
+      "const": "all_frozen_patients_in_selected_partition",
+      "title": "Cluster Frame",
+      "type": "string"
+    },
+    "partition_policy": {
+      "const": "separate_only",
+      "title": "Partition Policy",
+      "type": "string"
+    },
+    "n_resamples": {
+      "maximum": 9007199254740991,
+      "minimum": 2,
+      "title": "N Resamples",
+      "type": "integer"
+    },
+    "rng_algorithm": {
+      "const": "PCG64",
+      "title": "Rng Algorithm",
+      "type": "string"
+    },
+    "seed": {
+      "maximum": 9007199254740991,
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "patient_order": {
+      "const": "patient_id_lexicographic",
+      "title": "Patient Order",
+      "type": "string"
+    },
+    "numpy_version": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Numpy Version",
+      "type": "string"
+    },
+    "implementation_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Implementation Sha256",
+      "type": "string"
+    },
+    "invalid_resample_policy": {
+      "const": "fail_interval",
+      "title": "Invalid Resample Policy",
+      "type": "string"
+    },
+    "degenerate_policy": {
+      "const": "not_computed",
+      "title": "Degenerate Policy",
+      "type": "string"
+    },
+    "minimum_clusters": {
+      "maximum": 9007199254740991,
+      "minimum": 2,
+      "title": "Minimum Clusters",
+      "type": "integer"
+    },
+    "minimum_contributing_clusters": {
+      "maximum": 9007199254740991,
+      "minimum": 2,
+      "title": "Minimum Contributing Clusters",
+      "type": "integer"
+    },
+    "coverage": {
+      "const": "pointwise",
+      "title": "Coverage",
+      "type": "string"
+    },
+    "multiplicity_adjustment": {
+      "const": "none",
+      "title": "Multiplicity Adjustment",
+      "type": "string"
+    },
+    "metric_specs": {
+      "items": {
+        "$ref": "#/$defs/MetricSpec"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Metric Specs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "protocol_ref",
+    "measurement_plan_ref",
+    "method",
+    "algorithm_version",
+    "confidence_level",
+    "alternative",
+    "quantile_method",
+    "cluster_key",
+    "sampling",
+    "cluster_frame",
+    "partition_policy",
+    "n_resamples",
+    "rng_algorithm",
+    "seed",
+    "patient_order",
+    "numpy_version",
+    "implementation_sha256",
+    "invalid_resample_policy",
+    "degenerate_policy",
+    "minimum_clusters",
+    "minimum_contributing_clusters",
+    "coverage",
+    "multiplicity_adjustment",
+    "metric_specs"
+  ],
+  "title": "IntervalProtocol",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

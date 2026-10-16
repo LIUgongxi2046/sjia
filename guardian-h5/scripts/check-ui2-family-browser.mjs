@@ -267,15 +267,15 @@ try {
       }
       if (route.path === '/drafts') {
         const tabs = page.getByRole('tablist', { name: '草稿类别', exact: true });
-        assert.deepEqual(await tabs.getByRole('tab').allTextContents(), ['全部', '体温症状', '报告', '治疗']);
+        assert.deepEqual(await tabs.getByRole('tab').allTextContents(), ['全部', '体温症状', '报告', '治疗', '记录更正']);
         assert.equal(await page.getByRole('heading', { name: '没有可恢复的草稿', exact: true }).count(), 0);
         assert.equal(await page.getByRole('link', { name: '继续编辑', exact: true }).count(), 0);
         assert.equal(await page.getByRole('button', { name: '放弃草稿', exact: true }).count(), 0);
         await tabs.getByRole('tab', { name: '报告', exact: true }).click();
         assert.equal(await tabs.getByRole('tab', { name: '报告', exact: true }).getAttribute('aria-selected'), 'true');
         await page.getByText('恢复草稿时需要注意什么', { exact: true }).click();
-        await page.getByLabel('草稿筛选', { exact: true }).selectOption('记录更正');
-        assert.equal(await page.getByLabel('草稿筛选', { exact: true }).inputValue(), '记录更正');
+        await tabs.getByRole('tab', { name: '记录更正', exact: true }).click();
+        assert.equal(await tabs.getByRole('tab', { name: '记录更正', exact: true }).getAttribute('aria-selected'), 'true');
         assert.equal(await page.getByRole('dialog', { name: '放弃草稿', exact: true }).count(), 0);
       }
       if (['UI2-06', 'UI2-10'].includes(route.id)) {

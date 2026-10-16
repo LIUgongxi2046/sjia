@@ -7,7 +7,7 @@
     "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
     "Timestamp": {"type": "string", "format": "date-time"},
     "NullableTimestamp": {"anyOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]},
-    "Action": {"enum": ["read_raw", "write_record", "correct_record", "read_history", "read_file", "view_request", "manage_draft", "receive_alert", "create_summary", "read_summary", "request_correction", "request_disposition", "read_case"]},
+    "Action": {"enum": ["read_raw", "write_record", "correct_record", "read_history", "read_file", "view_request", "manage_draft", "receive_alert", "select_alert_preset", "create_summary", "read_summary", "request_correction", "request_disposition", "read_case"]},
     "RelationItem": {
       "type": "object", "additionalProperties": false,
       "required": ["relation_id", "patient_id", "display_id", "status", "version", "valid_from", "valid_until", "actions"],
@@ -17,29 +17,18 @@
         "version": {"$ref": "#/$defs/Version"}, "valid_from": {"$ref": "#/$defs/Timestamp"},
         "valid_until": {"$ref": "#/$defs/NullableTimestamp"},
         "actions": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/Action"}},
+        "authorization_scope_fingerprint": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$", "readOnly": true, "description": "Opaque server-derived permission revision, never an authorization credential. Missing/null/changed values require clearing local clinical state; equality only permits retention within the same authenticated session and patient."},
+        "authorization_scope_valid_until": {"anyOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}], "readOnly": true, "description": "Earliest known future permission boundary. Suspend, clear local clinical state and revalidate at this deadline; this is not a promise of access. Explicit null means no known future boundary; absent means unknown."},
         "auth_epoch": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}
       }
     },
     "RelationView": {"allOf": [{"$ref": "#/$defs/RelationItem"}, {"type": "object", "required": ["auth_epoch"], "properties": {"auth_epoch": {"type": "string"}}}]},
     "RelationList": {"type": "object", "additionalProperties": false, "required": ["relations"], "properties": {"relations": {"type": "array", "items": {"$ref": "#/$defs/RelationItem"}}}},
-    "ApplicationItem": {
-      "type": "object", "additionalProperties": false,
-      "required": ["application_id", "version", "status", "patient_id", "reason", "note", "requested_access"],
-      "properties": {
-        "application_id": {"$ref": "#/$defs/Id"}, "version": {"$ref": "#/$defs/Version"},
-        "status": {"enum": ["pending", "approved", "rejected", "withdrawn"]},
-        "patient_id": {"anyOf": [{"$ref": "#/$defs/Id"}, {"type": "null"}]},
-        "reason": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]},
-        "requested_access": {"enum": ["read", "read_write", "review_decides", null]},
-        "evidence_ref": {"type": "string", "minLength": 1},
-        "created_at": {"$ref": "#/$defs/Timestamp"}
-      }
-    },
+    "ApplicationItem": {"type": "object", "additionalProperties": false, "required": ["application_id", "version", "status", "patient_id", "reason", "note", "requested_access"], "properties": {"application_id": {"$ref": "#/$defs/Id"}, "version": {"$ref": "#/$defs/Version"}, "status": {"enum": ["pending", "approved", "rejected", "withdrawn"]}, "patient_id": {"anyOf": [{"$ref": "#/$defs/Id"}, {"type": "null"}]}, "reason": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}, "requested_access": {"enum": ["read", "read_write", "review_decides", null]}, "evidence_ref": {"type": "string", "minLength": 1}, "created_at": {"$ref": "#/$defs/Timestamp"}, "applicant_declaration": {"anyOf": [{"$ref": "#/$defs/ApplicationDeclaration"}, {"type": "null"}]}, "declaration_verification": {"enum": ["unverified", "not_provided"], "readOnly": true}}},
     "ApplicationView": {"allOf": [{"$ref": "#/$defs/ApplicationItem"}, {"type": "object", "required": ["evidence_ref", "created_at"], "properties": {"evidence_ref": {"type": "string"}, "created_at": {"type": "string"}}}]},
     "ApplicationList": {"type": "object", "additionalProperties": false, "required": ["applications"], "properties": {"applications": {"type": "array", "items": {"$ref": "#/$defs/ApplicationItem"}}}},
-    "ApplicationInput": {"type": "object", "additionalProperties": false, "required": ["evidence_ref", "note", "requested_access"], "properties": {
-      "evidence_ref": {"type": "string", "minLength": 1, "maxLength": 10000, "pattern": "\\S"},
-      "note": {"type": ["string", "null"], "maxLength": 10000}, "requested_access": {"enum": ["read", "read_write", "review_decides"]}}},
+    "ApplicationDeclaration": {"type": "object", "additionalProperties": false, "description": "申请人未经核验的自述；不代表患儿身份、监护资格证明、临床同意或访问授权。", "required": ["schema_version", "declared_patient_name", "declared_relationship", "guardian_scope_acknowledged"], "properties": {"schema_version": {"const": "1.0.0"}, "declared_patient_name": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "\\S"}, "declared_relationship": {"enum": ["mother", "father", "other_guardian"]}, "guardian_scope_acknowledged": {"type": "boolean", "const": true}}},
+    "ApplicationInput": {"type": "object", "additionalProperties": false, "required": ["evidence_ref", "note", "requested_access"], "properties": {"evidence_ref": {"type": "string", "minLength": 1, "maxLength": 10000, "pattern": "\\S"}, "note": {"type": ["string", "null"], "maxLength": 10000}, "requested_access": {"enum": ["read", "read_write", "review_decides"]}, "applicant_declaration": {"$ref": "#/$defs/ApplicationDeclaration"}}},
     "ApplicationAction": {"type": "object", "additionalProperties": false, "required": ["expected_state", "expected_version", "reason"], "properties": {
       "expected_state": {"const": "pending"}, "expected_version": {"$ref": "#/$defs/Version"}, "reason": {"type": "string", "minLength": 1, "maxLength": 10000, "pattern": "\\S"}}},
     "WriteReceipt": {"type": "object", "additionalProperties": false, "required": ["resource_type", "resource_id", "version", "saved_at", "request_id"], "properties": {

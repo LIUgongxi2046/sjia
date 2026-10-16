@@ -4,6 +4,7 @@
 运行：backend/.venv/bin/python backend/manage.py test tests.test_T28 --keepdb
 """
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from django.test import TestCase
 
@@ -17,6 +18,8 @@ def _now():
 
 class HealthCheckTest(TestCase):
     def setUp(self):
+        state = patch('config.runtime_admission._ADMITTED', None)
+        state.start(); self.addCleanup(state.stop)
         EnvironmentGate.objects.create(environment="test", version=1, enabled=True, updated_at=_now())
 
     def test_database_reachable(self):
@@ -25,10 +28,12 @@ class HealthCheckTest(TestCase):
     def test_broker_reachable(self):
         self.assertTrue(check_broker())
 
-    def test_readiness_ready(self):
+    def test_readiness_requires_runtime_configuration(self):
         result = readiness("test")
-        self.assertEqual(result["status"], "ready")
+        self.assertEqual(result["status"], "not_ready")
+        self.assertEqual(result["errors"]["configuration"], "RUNTIME_CONFIGURATION_REQUIRED")
         self.assertTrue(result["dependencies"]["database"])
         self.assertTrue(result["dependencies"]["broker"])
-        self.assertIsNotNone(result["loaded_config_version"])
-        self.assertEqual(result["loaded_config_version"]["environment"], "test")
+        # A database gate row is desired state, not evidence of process adoption.
+        self.assertIsNone(result["loaded_config_version"])
+        self.assertEqual(result["runtime_admission"], "not_ready")

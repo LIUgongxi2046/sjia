@@ -1,0 +1,21 @@
+{
+  "operation": "backup",
+  "operator_approved": false,
+  "approval_reference": "",
+  "operator_reference": "",
+  "environment": "",
+  "database": "",
+  "database_service": "",
+  "cluster_id": "",
+  "compose_project": "",
+  "release_reference": "",
+  "destination": "",
+  "object_root": "",
+  "evidence_root": "",
+  "expires_at": "",
+  "timeout_seconds": null,
+  "destination_protected": false,
+  "scope_and_retention_approved": false,
+  "exclusive_object_writer_scope_confirmed": false,
+  "external_effects_reconciled": false
+}

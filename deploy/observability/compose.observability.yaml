@@ -1,0 +1,36 @@
+# Explicit optional profile. Rendering config does not start this or send alerts.
+# The operator supplies approved pinned official image digests and mounted config.
+services:
+  prometheus:
+    image: ${SJIA_PROMETHEUS_IMAGE:?Approved pinned Prometheus image required}
+    profiles: [approved-observability]
+    # Scrape loopback inside the API network namespace. Do not widen probe allowlists.
+    network_mode: service:api
+    command: [--config.file=/etc/prometheus/prometheus.yaml]
+    volumes:
+      - type: bind
+        source: ${SJIA_OBSERVABILITY_CONFIG_DIRECTORY:?Rendered approved configuration required}
+        target: /etc/prometheus
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      api:
+        condition: service_healthy
+  alertmanager:
+    image: ${SJIA_ALERTMANAGER_IMAGE:?Approved pinned Alertmanager image required}
+    profiles: [approved-observability]
+    command: [--config.file=/etc/alertmanager/alertmanager.yaml]
+    volumes:
+      - type: bind
+        source: ${SJIA_OBSERVABILITY_CONFIG_DIRECTORY:?Rendered approved configuration required}
+        target: /etc/alertmanager
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${SJIA_APPROVED_ALERT_WEBHOOK_FILE:?Approved receiver URL file required}
+        target: /run/secrets/approved_alert_webhook
+        read_only: true
+        bind:
+          create_host_path: false

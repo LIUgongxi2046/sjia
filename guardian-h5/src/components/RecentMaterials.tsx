@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { fetchJson } from '../api/client';
-import { type FieldConfigView } from '../api/endpoints';
+import { searchRecords, type FieldConfigView } from '../api/endpoints';
 import { fieldLabel, fieldValue, timeLabel, type RecordView } from '../api/records';
 import { useResource } from '../api/useResource';
 import { useAccess } from '../state/access';
@@ -23,7 +22,7 @@ export function RecentMaterials({ kind }: { kind: 'report' | 'therapy' }) {
     setError(null);
     if (!patientId) return;
     setLoading(true);
-    void fetchJson<{ records: typeof records }>(`/api/patients/${patientId}/records/search`, { method: 'POST', body: { kind, limit: 1 }, signal: controller.signal }).then(value => {
+    void searchRecords(patientId, { kind, limit: 1 }, { signal: controller.signal }).then(value => {
       if (!controller.signal.aborted) setRecords(value.records);
     }, failure => { if (!controller.signal.aborted) setError(failure.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();

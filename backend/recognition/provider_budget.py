@@ -74,6 +74,35 @@ def _task_cost(task, task_attempts, currency, reject, unknown_reservations):
             return measured + _valid_amount(task.input_refs['reserved_cost'], 'PROVIDER_RESERVATION_INVALID', reject)
         return measured
 
+    # A legacy multi-page job is one task/attempt but several independently paid calls.
+    # Keep only started unknown calls reserved after cancellation; retain unstarted
+    # page reservations while the task is still able to issue those calls.
+    if task.input_refs.get('call_limit') is not None:
+        measured = Decimal('0')
+        started_count = 0
+        for attempt in task_attempts:
+            calls = (attempt.usage_evidence or {}).get('provider_calls', [])
+            for call in calls:
+                started_count += 1
+                if call.get('currency', task.input_refs['provider_entry']['currency']) != currency:
+                    raise reject('PROVIDER_BUDGET_CURRENCY_CHANGED')
+                if call.get('actual_cost') is not None:
+                    measured += _valid_amount(call['actual_cost'], 'PROVIDER_COST_INVALID', reject)
+                else:
+                    reserved = _valid_amount(call['reserved_cost'], 'PROVIDER_RESERVATION_INVALID', reject)
+                    if reserved <= 0:
+                        raise reject('PROVIDER_BUDGET_UNKNOWN')
+                    measured += reserved
+                    unknown_reservations.append({'task_id': str(task.id), 'attempt_id': str(attempt.id),
+                        'call_index': call['call_index'], 'reserved_cost': str(reserved),
+                        'currency': currency, 'actual_cost': None, 'provider_result': 'unknown'})
+        if started_count > task.input_refs['call_limit']:
+            raise reject('PROVIDER_BUDGET_EVIDENCE_INVALID')
+        if task.status in ('accepted', 'queued', 'running', 'cancel_requested'):
+            measured += _valid_amount(task.input_refs['per_call_reserved_cost'],
+                'PROVIDER_RESERVATION_INVALID', reject) * (task.input_refs['call_limit'] - started_count)
+        return measured
+
     measured = Decimal('0')
     needs_reservation = task.status in INFLIGHT and not task_attempts
     for attempt in task_attempts:

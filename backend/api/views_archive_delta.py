@@ -44,7 +44,7 @@ def archive_delta_read(request, delta_id):
     if request.query_params:
         raise ApiError('ARCHIVE_DELTA_QUERY_INVALID', 422)
     actor, epoch = family_identity(request)
-    return Response(read_delta(request, actor, epoch, DeltaSummary.objects.select_for_update().get(id=delta_id, owner_id=actor.id)))
+    return Response(read_delta(request, actor, epoch, DeltaSummary.objects.get(id=delta_id, owner_id=actor.id)))
 
 
 @api_view(['GET'])
@@ -55,7 +55,7 @@ def archive_delta_task(request, task_id):
     if request.query_params:
         raise ApiError('ARCHIVE_DELTA_QUERY_INVALID', 422)
     task = Task.objects.get(id=task_id, actor=actor, schema_version='archive-delta-1')
-    result = DeltaSummary.objects.select_for_update().get(task_id=task.id, owner_id=actor.id, patient_id=task.patient_id)
+    result = DeltaSummary.objects.get(task_id=task.id, owner_id=actor.id, patient_id=task.patient_id)
     view = read_delta(request, actor, epoch, result)
     task.refresh_from_db()
     return Response(checked_delta('Task', {'task_id': str(task.id), 'patient_id': str(task.patient_id), 'status': view['status'],
@@ -76,7 +76,7 @@ def archive_document_version_source(request, version_id):
     document = ArchiveDocument.objects.get(id=version.document_id, patient_id=version.patient_id)
     patient = get_patient(version.patient_id)
     authorize_document(request, actor, patient, document, version, 'read_raw')
-    if document.current_version != version.version:
+    if (document.current_version != version.version or document.retired_at is not None):
         authorize_document(request, actor, patient, document, version, 'read_history')
     scope = document_scope(actor, patient, document, version)
     if scope is None:
@@ -92,4 +92,4 @@ def archive_document_version_source(request, version_id):
     return Response(checked_search('Item', {'document': document_read(document=document, patient=patient, version=version),
         'pages': pages, 'episodes': scope['episodes'], 'snippet': None, 'matched_fields': [],
         'verification_status': verification_status(scope['fields'], patient),
-        'limitations': ['DOCUMENT_HISTORICAL_VERSION'] if document.current_version != version.version else []}))
+        'limitations': ['DOCUMENT_HISTORICAL_VERSION'] if (document.current_version != version.version or document.retired_at is not None) else []}))

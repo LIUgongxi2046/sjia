@@ -106,9 +106,9 @@ export function validateRecordFactReferences(record: RecordView): void {
   }
 }
 
-const labels: Record<string, string> = { temp: '体温', rash: '皮疹观察', joint_discomfort: '关节不适观察', observation_note: '观察说明', medication_name: '原药名', therapy_status: '使用状态', therapy_note: '治疗说明', therapy_start: '开始时间', therapy_end: '结束时间', therapy_source: '来源说明' };
+const labels: Record<string, string> = { temp: '体温', rash: '皮疹观察', joint_discomfort: '关节不适观察', observation_note: '观察说明', medication_name: '原药名', therapy_status: '使用状态', therapy_note: '治疗说明', therapy_start: '开始时间', therapy_end: '结束时间', therapy_source: '来源说明', dose: '单次剂量', dose_unit: '剂量单位', concentration_text: '制剂浓度', route_text: '给药途径', frequency_text: '原文频次', interval_value: '间隔数值', interval_unit: '间隔单位' };
 export const originLabels: Record<string, string> = { self_report: '监护人自报', report_transcription: '报告转录', authorized_clinical: '获准临床资料' };
-export function fieldLabel(field: RecordFieldView) { return field.original_name || labels[field.field_code] || field.field_code; }
+export function fieldLabel(field: RecordFieldView) { return field.original_name || labels[field.field_code] || `其他字段（${field.field_code}）`; }
 export function fieldValue(field: RecordFieldView): string {
   if (field.value_state === 'unknown') return '无法确定';
   if (field.raw_numeric !== null) return `${({ eq: '=', lt: '<', le: '≤', gt: '>', ge: '≥' } as Record<string, string>)[field.qualifier ?? ''] ?? ''}${field.raw_numeric}${field.raw_unit ? ` ${field.raw_unit}` : '（单位待补充）'}`;

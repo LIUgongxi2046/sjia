@@ -1,0 +1,562 @@
+{
+  "$defs": {
+    "ContentManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "family_request_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Family Request Id"
+        },
+        "schema_version": {
+          "const": "content-disposition-manifest-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "patient_id": {
+          "format": "uuid",
+          "title": "Patient Id",
+          "type": "string"
+        },
+        "policy_id": {
+          "format": "uuid",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "policy_version": {
+          "minimum": 1,
+          "title": "Policy Version",
+          "type": "integer"
+        },
+        "policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Sha256",
+          "type": "string"
+        },
+        "registry_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Registry Sha256",
+          "type": "string"
+        },
+        "preservation_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Preservation Sha256",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "retain",
+            "revoke_access",
+            "erase_selected_content"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "environment": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Environment",
+          "type": "string"
+        },
+        "hold_id": {
+          "format": "uuid",
+          "title": "Hold Id",
+          "type": "string"
+        },
+        "hold_version": {
+          "minimum": 1,
+          "title": "Hold Version",
+          "type": "integer"
+        },
+        "roots": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "database": "#/$defs/DatabaseTarget",
+                "local_object": "#/$defs/LocalObjectTarget"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/DatabaseTarget"
+              },
+              {
+                "$ref": "#/$defs/LocalObjectTarget"
+              }
+            ]
+          },
+          "maxItems": 5000,
+          "minItems": 1,
+          "title": "Roots",
+          "type": "array"
+        },
+        "items": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "database": "#/$defs/DatabaseProof",
+                "local_object": "#/$defs/LocalObjectProof"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/DatabaseProof"
+              },
+              {
+                "$ref": "#/$defs/LocalObjectProof"
+              }
+            ]
+          },
+          "maxItems": 5000,
+          "minItems": 1,
+          "title": "Items",
+          "type": "array"
+        },
+        "obligations": {
+          "items": {
+            "enum": [
+              "physical_database_storage",
+              "external_provider_copies",
+              "backup_copies"
+            ],
+            "type": "string"
+          },
+          "title": "Obligations",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "patient_id",
+        "policy_id",
+        "policy_version",
+        "policy_sha256",
+        "registry_sha256",
+        "preservation_sha256",
+        "mode",
+        "environment",
+        "hold_id",
+        "hold_version",
+        "roots",
+        "items",
+        "obligations",
+        "created_at"
+      ],
+      "title": "ContentManifest",
+      "type": "object"
+    },
+    "DatabaseProof": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "database",
+          "title": "Kind",
+          "type": "string"
+        },
+        "adapter": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Adapter",
+          "type": "string"
+        },
+        "object_id": {
+          "format": "uuid",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        },
+        "row_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Row Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "adapter",
+        "object_id",
+        "version",
+        "row_sha256"
+      ],
+      "title": "DatabaseProof",
+      "type": "object"
+    },
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "database",
+          "title": "Kind",
+          "type": "string"
+        },
+        "adapter": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Adapter",
+          "type": "string"
+        },
+        "object_id": {
+          "format": "uuid",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "adapter",
+        "object_id",
+        "version"
+      ],
+      "title": "DatabaseTarget",
+      "type": "object"
+    },
+    "ErasedReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-receipt-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Manifest Sha256",
+          "type": "string"
+        },
+        "journal_sequence": {
+          "minimum": 1,
+          "title": "Journal Sequence",
+          "type": "integer"
+        },
+        "logical_payload_erased": {
+          "const": true,
+          "title": "Logical Payload Erased",
+          "type": "boolean"
+        },
+        "all_copies_erased": {
+          "const": false,
+          "title": "All Copies Erased",
+          "type": "boolean"
+        },
+        "unverified_copy_obligations": {
+          "items": {
+            "enum": [
+              "physical_database_storage",
+              "external_provider_copies",
+              "backup_copies"
+            ],
+            "type": "string"
+          },
+          "title": "Unverified Copy Obligations",
+          "type": "array"
+        },
+        "proof_scope": {
+          "const": "current_database_payload_and_controlled_local_path_absence",
+          "title": "Proof Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "manifest_sha256",
+        "journal_sequence",
+        "logical_payload_erased",
+        "all_copies_erased",
+        "unverified_copy_obligations",
+        "proof_scope"
+      ],
+      "title": "ErasedReceipt",
+      "type": "object"
+    },
+    "LocalObjectProof": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "local_object",
+          "title": "Kind",
+          "type": "string"
+        },
+        "file_id": {
+          "format": "uuid",
+          "title": "File Id",
+          "type": "string"
+        },
+        "object_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Object Version",
+          "type": "string"
+        },
+        "object_key": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Object Key",
+          "type": "string"
+        },
+        "checksum": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Checksum",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "operation_id": {
+          "format": "uuid",
+          "title": "Operation Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "file_id",
+        "object_version",
+        "object_key",
+        "checksum",
+        "size_bytes",
+        "operation_id"
+      ],
+      "title": "LocalObjectProof",
+      "type": "object"
+    },
+    "LocalObjectTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "local_object",
+          "title": "Kind",
+          "type": "string"
+        },
+        "file_id": {
+          "format": "uuid",
+          "title": "File Id",
+          "type": "string"
+        },
+        "object_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Object Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "file_id",
+        "object_version"
+      ],
+      "title": "LocalObjectTarget",
+      "type": "object"
+    },
+    "RetainedReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-receipt-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "logical_payload_erased": {
+          "const": false,
+          "title": "Logical Payload Erased",
+          "type": "boolean"
+        },
+        "all_copies_erased": {
+          "const": false,
+          "title": "All Copies Erased",
+          "type": "boolean"
+        },
+        "retained_until": {
+          "format": "date-time",
+          "title": "Retained Until",
+          "type": "string"
+        },
+        "recheck_at": {
+          "format": "date-time",
+          "title": "Recheck At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "logical_payload_erased",
+        "all_copies_erased",
+        "retained_until",
+        "recheck_at"
+      ],
+      "title": "RetainedReceipt",
+      "type": "object"
+    },
+    "RevokedReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-receipt-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "logical_payload_erased": {
+          "const": false,
+          "title": "Logical Payload Erased",
+          "type": "boolean"
+        },
+        "all_copies_erased": {
+          "const": false,
+          "title": "All Copies Erased",
+          "type": "boolean"
+        },
+        "access_revoked": {
+          "const": true,
+          "title": "Access Revoked",
+          "type": "boolean"
+        },
+        "journal_sequence": {
+          "minimum": 1,
+          "title": "Journal Sequence",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "logical_payload_erased",
+        "all_copies_erased",
+        "access_revoked",
+        "journal_sequence"
+      ],
+      "title": "RevokedReceipt",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-plan-view-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "plan_id": {
+      "format": "uuid",
+      "title": "Plan Id",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "preview",
+        "approved",
+        "retained",
+        "access_revoked",
+        "erasing",
+        "logical_erasure_complete"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "manifest": {
+      "$ref": "#/$defs/ContentManifest"
+    },
+    "manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Manifest Sha256",
+      "type": "string"
+    },
+    "approved_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Approved At"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Completed At"
+    },
+    "receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RetainedReceipt"
+        },
+        {
+          "$ref": "#/$defs/RevokedReceipt"
+        },
+        {
+          "$ref": "#/$defs/ErasedReceipt"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Receipt"
+    },
+    "runtime_execution_enabled": {
+      "title": "Runtime Execution Enabled",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "patient_id",
+    "status",
+    "manifest",
+    "manifest_sha256",
+    "approved_at",
+    "completed_at",
+    "receipt",
+    "runtime_execution_enabled"
+  ],
+  "title": "ContentPlanView",
+  "type": "object"
+}

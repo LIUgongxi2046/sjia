@@ -1,6 +1,7 @@
-"""T23 通知许可、真实渠道与回执逻辑验证。
+"""T23 retired API refusal and historical storage/state checks, synthetic only.
 
-真实渠道与获准接收人由 T29/T30 依据 D05/D06/D09 验证；本文件验证许可与回执状态流转。
+Native signed permit, acceptance and delivered-receipt positives are NOT_RUN here.
+Protocol injection isolates refusal branches only; no clinical or provider approval is implied.
 运行：backend/.venv/bin/python backend/manage.py test tests.test_T23 --keepdb
 """
 import uuid
@@ -51,69 +52,88 @@ class NotificationServiceTest(TestCase):
         relation = Relation.objects.create(patient=self.patient, guardian=self.principal, application=application, status="active", version=1, checked_by=self.principal, checked_at=now, valid_from=now)
         self.recipient = AlertRecipient.objects.create(patient_id=self.patient.id, alert_id=event.id, relation_id=relation.id, channel="phone", delivery_status="not_sent")
 
-    def _authorize(self):
-        return authorize_attempt(
-            patient_id=self.recipient.patient_id, recipient_id=self.recipient.id, provider_idempotency_key="key-1",
-            permit_expires_at=_now() + timedelta(minutes=5),
-        )
+    def _historical_attempt(self, status='authorized'):
+        # Deliberately a historical, non-native row. No send permit is issued.
+        return NotificationAttempt.objects.create(patient_id=self.patient.id, recipient_id=self.recipient.id,
+            attempt_number=1, send_permit_id=uuid.uuid4(), provider_idempotency_key='synthetic-historical-key',
+            authorized_at=_now(), permit_expires_at=_now() + timedelta(minutes=5), status=status)
 
-    def test_authorize_creates_attempt(self):
-        attempt = self._authorize()
-        self.assertEqual(attempt.status, "authorized")
-        self.assertEqual(attempt.attempt_number, 1)
+    def test_unconfigured_authorization_stays_fail_closed(self):
+        with self.assertRaisesMessage(NotificationRejected, 'NOTIFICATION_PROVIDER_UNAVAILABLE'):
+            authorize_attempt(patient_id=self.patient.id, recipient_id=self.recipient.id,
+                provider_idempotency_key='synthetic-test', permit_expires_at=_now() + timedelta(minutes=5))
+        self.assertFalse(NotificationAttempt.objects.exists())
 
-    def test_start_attempt(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
+    def test_retired_authorize_requires_native_permit(self):
+        from unittest.mock import patch
+        # UNIT: isolate the retired API refusal after protocol admission only.
+        with patch('notifications.service.require_notification_protocol'), self.assertRaisesMessage(
+                NotificationRejected, 'NOTIFICATION_NATIVE_PERMIT_REQUIRED'):
+            authorize_attempt(patient_id=self.patient.id, recipient_id=self.recipient.id,
+                provider_idempotency_key='synthetic-test', permit_expires_at=_now() + timedelta(minutes=5))
+        self.assertFalse(NotificationAttempt.objects.exists())
+
+    def test_start_rejects_mismatched_request_identity(self):
+        from unittest.mock import patch
+        attempt = self._historical_attempt()
+        with patch('notifications.service.require_notification_protocol'), patch(
+                'notifications.native.submit_native') as submit, self.assertRaisesMessage(
+                NotificationRejected, 'NOTIFICATION_PROVIDER_REQUEST_MISMATCH'):
+            start_attempt(attempt=attempt, provider_request_id='different-request')
+        submit.assert_not_called()
         attempt.refresh_from_db()
-        self.assertEqual(attempt.status, "started")
-        self.assertEqual(attempt.provider_request_id, "req-1")
+        self.assertEqual(attempt.status, 'authorized')
 
-    def test_accepted_receipt(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
-        record_receipt(attempt=attempt, provider="sms", provider_event_id="e1", status="accepted", evidence_sha256="a" * 64)
+    def _unsigned_receipt_rejected(self, status):
+        from unittest.mock import patch
+        attempt = self._historical_attempt('started')
+        with patch('notifications.service.require_notification_protocol'), self.assertRaisesMessage(
+                NotificationRejected, 'NOTIFICATION_SIGNED_RECEIPT_REQUIRED'):
+            record_receipt(attempt=attempt, provider='synthetic', provider_event_id='synthetic-event',
+                status=status, evidence_sha256='a' * 64)
         attempt.refresh_from_db()
-        self.assertEqual(attempt.status, "accepted")
-        self.assertEqual(NotificationReceipt.objects.count(), 1)
+        self.assertEqual(attempt.status, 'started')
+        self.assertFalse(NotificationReceipt.objects.exists())
 
-    def test_delivered_not_accepted_as_delivered(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
-        record_receipt(attempt=attempt, provider="sms", provider_event_id="e1", status="accepted", evidence_sha256="a" * 64)
-        record_receipt(attempt=attempt, provider="sms", provider_event_id="e2", status="delivered", evidence_sha256="b" * 64)
-        attempt.refresh_from_db()
-        # attempt 状态仍为 accepted，不记为 delivered；送达只存在于回执。
-        self.assertEqual(attempt.status, "accepted")
-        self.assertEqual(NotificationReceipt.objects.filter(status="delivered").count(), 1)
+    def test_unsigned_accepted_receipt_rejected(self):
+        self._unsigned_receipt_rejected('accepted')
 
-    def test_failed_receipt(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
-        record_receipt(attempt=attempt, provider="sms", provider_event_id="e1", status="failed", evidence_sha256="a" * 64)
-        attempt.refresh_from_db()
-        self.assertEqual(attempt.status, "failed")
+    def test_unsigned_delivered_receipt_rejected(self):
+        self._unsigned_receipt_rejected('delivered')
 
-    def test_mark_uncertain(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
+    def test_unsigned_failed_receipt_rejected(self):
+        self._unsigned_receipt_rejected('failed')
+
+    def test_historical_mark_uncertain_is_idempotent(self):
+        attempt = self._historical_attempt('started')
+        mark_uncertain(attempt=attempt)
         mark_uncertain(attempt=attempt)
         attempt.refresh_from_db()
-        self.assertEqual(attempt.status, "uncertain")
+        self.assertEqual(attempt.status, 'uncertain')
 
-    def test_cancel_prevents_send(self):
-        attempt = self._authorize()
+    def test_historical_cancel_is_terminal_for_cancel_operation(self):
+        attempt = self._historical_attempt()
         cancel_attempt(attempt=attempt)
         attempt.refresh_from_db()
-        self.assertEqual(attempt.status, "cancelled")
+        finished = attempt.finished_at
+        cancel_attempt(attempt=attempt)
+        attempt.refresh_from_db()
+        self.assertEqual(attempt.status, 'cancelled')
+        self.assertEqual(attempt.finished_at, finished)
+        self.assertIsNotNone(finished)
         with self.assertRaises(NotificationRejected):
-            start_attempt(attempt=attempt, provider_request_id="req-1")
+            start_attempt(attempt=attempt, provider_request_id='synthetic-historical-key')
+        attempt.refresh_from_db()
+        self.assertEqual(attempt.status, 'cancelled')
 
-    def test_receipt_dedup_by_provider_event(self):
-        attempt = self._authorize()
-        start_attempt(attempt=attempt, provider_request_id="req-1")
-        record_receipt(attempt=attempt, provider="sms", provider_event_id="e1", status="accepted", evidence_sha256="a" * 64)
-        from django.db import IntegrityError
-
-        with self.assertRaises(IntegrityError):
-            record_receipt(attempt=attempt, provider="sms", provider_event_id="e1", status="accepted", evidence_sha256="a" * 64)
+    def test_historical_receipt_provider_event_is_unique_in_storage(self):
+        from django.db import IntegrityError, transaction
+        attempt = self._historical_attempt('accepted')
+        values = {'attempt': attempt, 'provider': 'synthetic', 'provider_event_id': 'synthetic-event',
+            'status': 'accepted', 'occurred_at': _now(), 'received_at': _now(), 'evidence_sha256': 'a' * 64}
+        NotificationReceipt.objects.create(**values)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            NotificationReceipt.objects.create(**values)
+        self.assertEqual(NotificationReceipt.objects.count(), 1)
+        attempt.refresh_from_db()
+        self.assertEqual(attempt.status, 'accepted')

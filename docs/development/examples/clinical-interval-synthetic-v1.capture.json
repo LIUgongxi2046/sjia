@@ -1,0 +1,339 @@
+{
+  "schema_version": "clinical-result-capture-2",
+  "data_mode": "synthetic",
+  "mode": "replay",
+  "dataset_version_id": "bae28c06-51ec-5981-87d5-7b43100f42f6",
+  "dataset_checksum": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "implementation_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "configuration_checksums": {
+    "78869935-1cb2-5cc0-8519-8a91a370aaa0": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "899312a4-270d-555d-9864-00809503a1a8": "1111111111111111111111111111111111111111111111111111111111111111",
+    "0fab9d58-38d7-5d35-b44a-5f88a1f0b929": "2222222222222222222222222222222222222222222222222222222222222222",
+    "007575fa-159d-5745-a9e2-af329775fca5": "3333333333333333333333333333333333333333333333333333333333333333",
+    "6c78a3d2-2e10-517e-a89d-05580bbcedee": "4444444444444444444444444444444444444444444444444444444444444444",
+    "4c92c0e1-4560-5a8b-a083-e97fbe74ebc6": "5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "measurement_plan_ref": "urn:sjia:source-revision:edc78b9b-5b09-5e2c-962f-0724a19a2984",
+  "captured_at": "2026-01-04T00:00:00Z",
+  "patients": [
+    {
+      "patient_id": "cdc2a087-bd15-55aa-8544-b6b3e2e17e13",
+      "partition": "development"
+    },
+    {
+      "patient_id": "316c6232-1762-5cfe-afd6-645d8cb1fcd6",
+      "partition": "development"
+    }
+  ],
+  "periods": [
+    {
+      "id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "patient_id": "cdc2a087-bd15-55aa-8544-b6b3e2e17e13",
+      "label_id": "72322cfd-3ae9-53e2-89d2-630b6feef13b",
+      "label_state": "positive",
+      "reference_answer_ref": "urn:sjia:source-revision:26058c31-76d4-5d06-9145-707c735805a5",
+      "start": "2026-01-01T00:00:00Z",
+      "end": "2026-01-01T02:00:00Z",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "assessment_at": "2026-01-01T00:50:00Z",
+          "known_at": "2026-01-01T00:50:00Z",
+          "corpus_sha256": "3f2b3e6888e6d3552eb7bcdd9af5549fe01c64b2db02f3390b6b7a00c273989a",
+          "facts": [
+            {
+              "fact_ref": "68142d4c-64c6-5317-a732-108646f3e640",
+              "source_ref": "urn:sjia:source-revision:a488e3d3-0eae-59e6-bf7d-4e172cb8d8d7",
+              "available_at": "2026-01-01T00:00:00Z",
+              "verified_at": "2026-01-01T00:00:00Z",
+              "field_id": "0f43b85f-9dd4-5bd2-8c44-348737776767",
+              "record_version_id": "9919346a-dad9-5a96-961a-f834d2e92180",
+              "verification_id": "49e6abde-8c0e-5d45-bfea-0034fb45a68e",
+              "reference_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          ],
+          "static": {
+            "execution_ref": "synthetic:static-execution-0-0",
+            "task_id": "7f315b79-6acf-540e-8038-d5bcd43b67d4",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          },
+          "dynamic": {
+            "execution_ref": "synthetic:dynamic-execution-0-0",
+            "task_id": "34b67d7f-f402-58f2-b1a4-e65965295f0f",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [
+              {
+                "id": "prompt-1",
+                "at": "2026-01-01T00:50:00Z",
+                "outcome": "positive",
+                "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+                "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+                "occurrence": "first"
+              }
+            ],
+            "execution_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          }
+        },
+        {
+          "id": "step-1",
+          "assessment_at": "2026-01-01T01:05:00Z",
+          "known_at": "2026-01-01T01:05:00Z",
+          "corpus_sha256": "db7fa75c6964578bcfa480cbdcad1dc4493f79f2fa7f85c1efed8edbde9d8bba",
+          "facts": [
+            {
+              "fact_ref": "68142d4c-64c6-5317-a732-108646f3e640",
+              "source_ref": "urn:sjia:source-revision:a488e3d3-0eae-59e6-bf7d-4e172cb8d8d7",
+              "available_at": "2026-01-01T00:00:00Z",
+              "verified_at": "2026-01-01T00:00:00Z",
+              "field_id": "0f43b85f-9dd4-5bd2-8c44-348737776767",
+              "record_version_id": "9919346a-dad9-5a96-961a-f834d2e92180",
+              "verification_id": "49e6abde-8c0e-5d45-bfea-0034fb45a68e",
+              "reference_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          ],
+          "static": {
+            "execution_ref": "synthetic:static-execution-0-1",
+            "task_id": "51be5f5b-9ff5-55f1-9ee0-3ac3cef65902",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          },
+          "dynamic": {
+            "execution_ref": "synthetic:dynamic-execution-0-1",
+            "task_id": "d51c58f8-22e3-5332-b86f-2fdfca2b18ab",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [
+              {
+                "id": "prompt-2",
+                "at": "2026-01-01T01:05:00Z",
+                "outcome": "positive",
+                "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+                "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+                "occurrence": "repeat"
+              }
+            ],
+            "execution_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          }
+        },
+        {
+          "id": "step-2",
+          "assessment_at": "2026-01-01T01:10:00Z",
+          "known_at": "2026-01-01T01:10:00Z",
+          "corpus_sha256": "94acd1461f27ce4ab63e2e029b50184a555bdaaaa95668357c8188757094e0cb",
+          "facts": [
+            {
+              "fact_ref": "68142d4c-64c6-5317-a732-108646f3e640",
+              "source_ref": "urn:sjia:source-revision:a488e3d3-0eae-59e6-bf7d-4e172cb8d8d7",
+              "available_at": "2026-01-01T00:00:00Z",
+              "verified_at": "2026-01-01T00:00:00Z",
+              "field_id": "0f43b85f-9dd4-5bd2-8c44-348737776767",
+              "record_version_id": "9919346a-dad9-5a96-961a-f834d2e92180",
+              "verification_id": "49e6abde-8c0e-5d45-bfea-0034fb45a68e",
+              "reference_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          ],
+          "static": {
+            "execution_ref": "synthetic:static-execution-0-2",
+            "task_id": "1dc269ea-9f8d-5235-b2b3-bfb62f004da0",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [
+              {
+                "id": "prompt-1",
+                "at": "2026-01-01T01:10:00Z",
+                "outcome": "positive",
+                "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+                "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+                "occurrence": "first"
+              }
+            ],
+            "execution_input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          },
+          "dynamic": {
+            "execution_ref": "synthetic:dynamic-execution-0-2",
+            "task_id": "7672181d-76ac-53a4-94cc-d4723c3e6274",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68142d4c-64c6-5317-a732-108646f3e640"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "043d2d90-ca5b-5a58-b3f2-4924026b32e6",
+      "patient_id": "cdc2a087-bd15-55aa-8544-b6b3e2e17e13",
+      "label_id": "2903315a-82ec-59d7-9777-4396ca243c73",
+      "label_state": "negative",
+      "reference_answer_ref": "urn:sjia:source-revision:7cdfd25c-589a-5347-9a6a-52664079d995",
+      "start": "2026-01-02T00:00:00Z",
+      "end": "2026-01-02T02:00:00Z",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "assessment_at": "2026-01-02T01:00:00Z",
+          "known_at": "2026-01-02T01:00:00Z",
+          "corpus_sha256": "5971f3a0d45855576c3b9605ae1d31a44226cb392f043b499d5b5fdbcbe56097",
+          "facts": [
+            {
+              "fact_ref": "360d0955-1d87-5ba5-a65c-1c3ec9236177",
+              "source_ref": "urn:sjia:source-revision:a488e3d3-0eae-59e6-bf7d-4e172cb8d8d7",
+              "available_at": "2026-01-02T00:00:00Z",
+              "verified_at": "2026-01-02T00:00:00Z",
+              "field_id": "c7a13265-26fc-54a6-9861-4d0139c31bc6",
+              "record_version_id": "70ce2080-a498-5ccb-a8e7-7a2a51b6773b",
+              "verification_id": "fa4b3ea5-3737-5f96-b4fa-f480b36b8c86",
+              "reference_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          ],
+          "static": {
+            "execution_ref": "synthetic:static-execution-1-0",
+            "task_id": "9de2bfc2-40c1-542b-afbb-f411483bc8e6",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [
+              {
+                "id": "negative-prompt",
+                "at": "2026-01-02T01:00:00Z",
+                "outcome": "negative",
+                "outcome_ref": "urn:sjia:source-revision:9238745c-9e97-574b-99e4-dcd3929d8ab1",
+                "matched_event_id": null,
+                "occurrence": "first"
+              }
+            ],
+            "execution_input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "360d0955-1d87-5ba5-a65c-1c3ec9236177"
+            ]
+          },
+          "dynamic": {
+            "execution_ref": "synthetic:dynamic-execution-1-0",
+            "task_id": "7267e957-67ba-5179-9811-cbf9e5e105f9",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "360d0955-1d87-5ba5-a65c-1c3ec9236177"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "f0edacff-3e6a-5a26-a088-fba1b3f8650c",
+      "patient_id": "316c6232-1762-5cfe-afd6-645d8cb1fcd6",
+      "label_id": "ec847e36-a96e-5879-bb66-327d980140a9",
+      "label_state": "unknown",
+      "reference_answer_ref": null,
+      "start": "2026-01-03T00:00:00Z",
+      "end": "2026-01-03T02:00:00Z",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "assessment_at": "2026-01-03T01:00:00Z",
+          "known_at": "2026-01-03T01:00:00Z",
+          "corpus_sha256": "85b3e77ca434907183c24cef841e4a54f41d2e966bb26b86ec892dd70e136b33",
+          "facts": [
+            {
+              "fact_ref": "68bf4bb9-837c-5dea-b79d-6d072ad29025",
+              "source_ref": "urn:sjia:source-revision:a488e3d3-0eae-59e6-bf7d-4e172cb8d8d7",
+              "available_at": "2026-01-03T00:00:00Z",
+              "verified_at": "2026-01-03T00:00:00Z",
+              "field_id": "57f0ad3c-6708-5bf3-bf12-06d70460ec84",
+              "record_version_id": "27739977-dee3-5d78-b7b7-3258823dab11",
+              "verification_id": "5cb7e34e-714d-5311-bddb-ee129da7fd99",
+              "reference_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          ],
+          "static": {
+            "execution_ref": "synthetic:static-execution-2-0",
+            "task_id": "673187cc-2c6e-59bd-b607-d227ceac0f52",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68bf4bb9-837c-5dea-b79d-6d072ad29025"
+            ]
+          },
+          "dynamic": {
+            "execution_ref": "synthetic:dynamic-execution-2-0",
+            "task_id": "5d036d76-852b-5109-932a-e992597f4bc8",
+            "rule_config_id": "78869935-1cb2-5cc0-8519-8a91a370aaa0",
+            "status": "completed",
+            "prompts": [],
+            "execution_input_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "result_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "used_fact_refs": [
+              "68bf4bb9-837c-5dea-b79d-6d072ad29025"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "9e683690-2764-5167-8fd7-4adedea74390",
+      "patient_id": "cdc2a087-bd15-55aa-8544-b6b3e2e17e13",
+      "period_id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "label_state": "positive",
+      "reference_answer_ref": "urn:sjia:source-revision:ebcd421c-2909-5822-98df-07490d7b8e6b",
+      "reference_at": "2026-01-01T01:00:00Z",
+      "valid_alert_start": "2026-01-01T00:00:00Z",
+      "valid_alert_end": "2026-01-01T01:59:59Z"
+    }
+  ]
+}

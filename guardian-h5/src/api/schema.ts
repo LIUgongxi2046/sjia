@@ -18,6 +18,7 @@ import observationPeriod from '../../../backend-design/observation-period.schema
 import archiveExtraction from '../../../alert-design/v2-recognition.schema.json';
 import voiceInput from '../../../backend-design/voice-input.schema.json';
 import familyRecord from '../../../backend/records/search.schema.json';
+import fileValidation from '../../../backend-design/file-validation.schema.json';
 
 const validator = new Ajv2020({ strict: true, strictTypes: false, strictRequired: false,
   allowUnionTypes: true, coerceTypes: false, useDefaults: false, removeAdditional: false });
@@ -42,6 +43,7 @@ validator.addSchema(observationPeriod, 'observation-period.schema.json');
 validator.addSchema(archiveExtraction, 'alert-design/v2-recognition.schema.json');
 validator.addSchema(voiceInput, 'voice-input.schema.json');
 validator.addSchema(familyRecord, 'family-record.schema.json');
+validator.addSchema(fileValidation, 'file-validation.schema.json');
 
 export function checkPurposeSchemas(): string[] {
   const names = ['SupportLoginInput', 'SupportSessionView', 'PurposeCopyInput', 'PurposeCopyOptionsView', 'PurposeReviewInput', 'PurposeRevokeInput', 'PurposeCopyView', 'PurposeCopyEvidenceView', 'WriteReceipt', 'TaskView', 'RequestView',

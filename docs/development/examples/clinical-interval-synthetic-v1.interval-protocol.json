@@ -1,0 +1,54 @@
+{
+  "schema_version": "clinical-interval-protocol-1",
+  "protocol_ref": "urn:sjia:source-revision:ba4e93f9-9d5d-5514-9334-c3f1cbe22f9a",
+  "measurement_plan_ref": "urn:sjia:source-revision:edc78b9b-5b09-5e2c-962f-0724a19a2984",
+  "method": "patient_cluster_percentile_v1",
+  "algorithm_version": "1",
+  "confidence_level": 0.5,
+  "alternative": "two_sided",
+  "quantile_method": "linear",
+  "cluster_key": "patient_id",
+  "sampling": "whole_cluster_with_replacement",
+  "cluster_frame": "all_frozen_patients_in_selected_partition",
+  "partition_policy": "separate_only",
+  "n_resamples": 200,
+  "rng_algorithm": "PCG64",
+  "seed": 17,
+  "patient_order": "patient_id_lexicographic",
+  "numpy_version": "2.5.3",
+  "implementation_sha256": "8c812471f6371e7d4c8a6f8214b6a6ecab1dccbca21722db888f467db85339f8",
+  "invalid_resample_policy": "fail_interval",
+  "degenerate_policy": "not_computed",
+  "minimum_clusters": 2,
+  "minimum_contributing_clusters": 2,
+  "coverage": "pointwise",
+  "multiplicity_adjustment": "none",
+  "metric_specs": [
+    {
+      "spec_id": "alerts_per_observation_person_hour-static",
+      "metric_id": "alerts_per_observation_person_hour",
+      "mode": "static",
+      "scope": {
+        "partition": "development",
+        "subgroup": null
+      },
+      "aggregation": "ratio_of_sums",
+      "unit": "prompts_per_person_hour",
+      "denominator_policy": "completed_period_hours_including_unknown_labels",
+      "required": true
+    },
+    {
+      "spec_id": "alerts_per_observation_person_hour-dynamic",
+      "metric_id": "alerts_per_observation_person_hour",
+      "mode": "dynamic",
+      "scope": {
+        "partition": "development",
+        "subgroup": null
+      },
+      "aggregation": "ratio_of_sums",
+      "unit": "prompts_per_person_hour",
+      "denominator_policy": "completed_period_hours_including_unknown_labels",
+      "required": true
+    }
+  ]
+}

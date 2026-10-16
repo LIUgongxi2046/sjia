@@ -47,6 +47,13 @@ def publication_reason(inputs, gate):
     components = {}
     for item in ReleaseComponent.objects.filter(release=release):
         components.setdefault(item.component_kind, set()).add(item.config_id)
+    from family_content.publication_groups import publication_groups, matching_group, group_components
+    if publication_groups(release):
+        group = matching_group(release, inputs.policy.id)
+        if group is None:
+            return None, 'DYNAMIC_RELEASE_REFERENCE_MISMATCH'
+        rows = group_components(list(ReleaseComponent.objects.filter(release=release)), group)
+        components = {row.component_kind: {row.config_id} for row in rows}
     publishing = inputs.policy.payload['publication']
     required = {'rule': inputs.policy.id, 'window': inputs.window.id,
         'verification': UUID(inputs.context['verification_policy_id'])}

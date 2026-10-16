@@ -1,0 +1,112 @@
+{
+  "schema_version": "clinical-explicit-pairings-2",
+  "measurement_plan_ref": "urn:sjia:source-revision:381cdf32-657d-50e0-afaf-cf489026d482",
+  "events": [
+    {
+      "id": "9e683690-2764-5167-8fd7-4adedea74390",
+      "patient_id": "cdc2a087-bd15-55aa-8544-b6b3e2e17e13",
+      "period_id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "label_state": "positive",
+      "reference_answer_ref": "urn:sjia:source-revision:ebcd421c-2909-5822-98df-07490d7b8e6b",
+      "reference_at": "2026-01-01T01:00:00Z",
+      "valid_alert_start": "2026-01-01T00:00:00Z",
+      "valid_alert_end": "2026-01-01T01:59:59Z"
+    }
+  ],
+  "periods": [
+    {
+      "id": "a9a4d162-7643-56cb-88d6-f41181741759",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "static": [],
+          "dynamic": [
+            {
+              "id": "prompt-1",
+              "at": "2026-01-01T00:50:00Z",
+              "outcome": "positive",
+              "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+              "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+              "occurrence": "first"
+            }
+          ]
+        },
+        {
+          "id": "step-1",
+          "static": [],
+          "dynamic": [
+            {
+              "id": "prompt-2",
+              "at": "2026-01-01T01:05:00Z",
+              "outcome": "positive",
+              "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+              "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+              "occurrence": "repeat"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "static": [
+            {
+              "id": "prompt-1",
+              "at": "2026-01-01T01:10:00Z",
+              "outcome": "positive",
+              "outcome_ref": "urn:sjia:source-revision:e63c879d-29e5-5926-9d8c-3cf7dc0f0b0e",
+              "matched_event_id": "9e683690-2764-5167-8fd7-4adedea74390",
+              "occurrence": "first"
+            }
+          ],
+          "dynamic": []
+        }
+      ]
+    },
+    {
+      "id": "043d2d90-ca5b-5a58-b3f2-4924026b32e6",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "static": [
+            {
+              "id": "negative-prompt",
+              "at": "2026-01-02T01:00:00Z",
+              "outcome": "negative",
+              "outcome_ref": "urn:sjia:source-revision:9238745c-9e97-574b-99e4-dcd3929d8ab1",
+              "matched_event_id": null,
+              "occurrence": "first"
+            }
+          ],
+          "dynamic": []
+        }
+      ]
+    },
+    {
+      "id": "f0edacff-3e6a-5a26-a088-fba1b3f8650c",
+      "subgroups": {
+        "treatment": null,
+        "age": "not-clinical",
+        "infection": null,
+        "completeness": "synthetic"
+      },
+      "steps": [
+        {
+          "id": "step-0",
+          "static": [],
+          "dynamic": []
+        }
+      ]
+    }
+  ]
+}

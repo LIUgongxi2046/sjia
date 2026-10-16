@@ -1,0 +1,134 @@
+/* Original S02/S07–S15 page patterns, extended to current PRD2 content. */
+.list-row{gap:12px;min-height:76px;padding:16px;text-align:left;color:var(--ink)}
+.card>.list-row{border-radius:18px;background:linear-gradient(150deg,#fffffffa,#f3f7fc);box-shadow:inset 0 1px #ffffff8c}
+.list-row+.list-row{border-top:1px solid #d1d1d666}
+.row-icon{border:1px solid color-mix(in srgb,var(--line) 45%,white);width:37px;height:37px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.list-row .row-text{min-width:0;flex:1}.list-row .row-text strong{font-size:16px;font-weight:600;line-height:1.5}.list-row .row-text small{font-size:12px;color:var(--muted);line-height:1.5;margin-top:4px}
+.list-row>.three-d-icon{color:var(--muted);flex-shrink:0}
+.feature-grid{gap:12px}.feature-grid>button{padding:17px;border-radius:20px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;background:linear-gradient(155deg,#fff,#eff5fb);border:1px solid #e8e9ed;box-shadow:var(--dim-tile-shadow);color:var(--ink)}
+.feature-grid strong{font-size:14px;font-weight:600}.feature-grid small{font-size:12px;color:var(--muted)}
+.rich-record-group{display:flex;flex-direction:column;gap:12px}.rich-record-group>.section-heading{margin:0}
+.device[data-page=UI2-05] .rich-record-group>.section-heading h2{font-size:12px;font-weight:400;line-height:1.5;color:var(--muted)}
+.rich-record-card{background:#fff;border-radius:18px;padding:16px 13px;min-width:0}
+.rich-record-link{display:flex;align-items:flex-start;gap:10px;color:var(--ink);min-width:0;outline-offset:4px;border-radius:12px}
+.rich-record-symbol{height:34px;width:34px;flex-shrink:0;border-radius:11px;background:var(--tint);display:grid;place-items:center}
+.rich-record-copy{flex:1;min-width:0}.rich-record-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px}.rich-record-top>strong{font-size:13px;font-weight:600}.rich-record-time{font-size:10px;color:var(--muted);line-height:1.5}
+.rich-record-value{font-size:25px;line-height:1.3;font-weight:600;letter-spacing:-.03em;margin:7px 0 4px;overflow-wrap:anywhere}
+.device[data-page=UI2-05] .rich-record-value .rich-record-unit{font-size:11px;font-weight:400;letter-spacing:0;color:var(--muted)}
+.page-content .rich-record-copy p{font-size:11px;line-height:1.7;color:var(--muted);margin:7px 0 4px}
+.rich-record-tags{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px;font-size:10px;color:var(--muted)}
+.rich-record-link>.three-d-icon{margin-top:7px}
+.rich-record-hero{background:linear-gradient(130deg,#fff,#e9f2ff);border-radius:23px;padding:22px;min-width:0}
+.rich-record-hero h2{font-size:18px;margin-top:16px;color:var(--ink)}.rich-record-hero .rich-record-value{font-size:37px;line-height:1.5;margin:9px 0}
+.page-content .rich-record-hero p{font-size:12px;color:var(--muted);line-height:1.7}
+.rich-profile{display:flex;align-items:center;gap:12px;padding:24px 18px;border-radius:24px;background:linear-gradient(153deg,#fff,#eff5fb);border:1px solid #e8e9ed;box-shadow:var(--dim-shadow);text-align:left;width:100%;margin-bottom:9px;color:var(--ink)}
+.rich-profile .account-avatar{border:1px solid color-mix(in srgb,var(--line) 45%,white);width:60px;height:60px;border-radius:20px;flex-shrink:0}.rich-profile-copy{flex:1;min-width:0}.rich-profile h2,.rich-profile-name{font-size:18px;font-weight:600;line-height:1.4}.page-content .rich-profile p,.rich-profile-description{display:block;font-size:11px;color:var(--muted);margin-top:6px;line-height:1.7}
+.rich-profile .badge{flex-shrink:0;max-width:32%}
+.brand-footer.rich-brand-footer{justify-content:flex-start;gap:14px;min-height:88px;padding:13px 16px;border-radius:22px;background:linear-gradient(150deg,#fff,#eff5fb);border:1px solid #e8e9ed;box-shadow:var(--dim-shadow)}
+.rich-brand-footer img{width:58px;height:58px;padding:3px;border-radius:18px;background:#fff;box-shadow:0 5px 12px #123c6430,inset 0 1px #fff}.rich-brand-footer>span{font-size:17px;font-weight:650;color:var(--ink);line-height:1.35}.rich-brand-footer small{font-size:12px;color:var(--muted);letter-spacing:0;line-height:1.5;margin-top:4px}
+.device[data-page=UI2-15] .page-content{gap:18px}
+.summary-intro{padding:25px;border-radius:24px;background:linear-gradient(130deg,#fff,#e9f2ff);border:0;box-shadow:none;color:var(--link)}.summary-intro h2{font-size:23px;color:var(--ink);font-weight:600;letter-spacing:-.03em;margin-top:17px}.page-content .summary-intro p{font-size:14px;line-height:1.7;color:var(--muted);margin-top:10px}
+.device[data-page=UI2-13] .field-grid{grid-template-columns:1fr;gap:17px}
+.checkbox-row{font-size:13px;min-height:44px;line-height:1.7;color:var(--ink)}.checkbox-row input{width:18px;height:18px;accent-color:#0865d8;flex-shrink:0}
+.rich-privacy-intro{display:flex;align-items:center;flex-direction:column;text-align:center;gap:12px;padding:17px 10px;background:none;border:0;box-shadow:none}
+.rich-privacy-intro h2{font-size:20px;line-height:1.5;font-weight:600;letter-spacing:-.03em;color:var(--ink);margin:0}.page-content .rich-privacy-intro p{font-size:12px;line-height:1.7;color:var(--muted);margin:0}
+.rich-disclosures{padding:0;gap:0}.rich-disclosures>details{padding:0 16px;border:0;border-radius:14px;background:#fff}.rich-disclosures>details+details{border-top:1px solid #d1d1d666}
+.rich-disclosures summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:10px 0;font-size:13px;color:var(--ink)}.rich-disclosures summary::-webkit-details-marker{display:none}.rich-disclosures summary .three-d-icon{flex-shrink:0}.rich-disclosures details[open]>summary .three-d-icon{transform:rotate(45deg)}
+.rich-disclosures details p{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 12px}
+/* Alerts retain service-driven content and neutral/invalid states; styles never infer severity. */
+.device[data-page=UI2-11] .home-alert,.device[data-page=UI2-12] .home-alert{padding:16px 16px 10px;border-radius:20px;border-left-width:5px}
+.device[data-page=UI2-11] .home-alert h2,.device[data-page=UI2-12] .home-alert h2{font-size:22px;line-height:1.4;margin-top:12px}
+.device[data-page=UI2-11] .home-alert p,.device[data-page=UI2-12] .home-alert p{font-size:13px;line-height:1.75;margin-top:7px}
+.summary-paper{background:linear-gradient(153deg,#fff,#eff5fb);border:1px solid #e8e9ed;border-radius:24px;box-shadow:var(--dim-shadow);padding:24px 20px;color:var(--ink)}.summary-paper h2{font-size:24px;line-height:1.4}.summary-section{border-color:#d1d1d666}.summary-section h3{font-size:16px;color:var(--ink)}
+.record-heading{border-radius:23px}.metric-grid>div,.batch-card,.document-card,.delta-card{border-radius:20px;background:linear-gradient(153deg,#fff,#eff5fb);box-shadow:var(--dim-shadow)}
+@media(max-width:359px){.rich-profile{padding:20px 14px;gap:10px}.rich-profile .badge{max-width:28%}.rich-record-card{padding:14px 11px}.rich-profile h2,.rich-profile-name{font-size:17px}.rich-record-hero .rich-record-value{font-size:32px}}
+/* Original ST01/ST05/ST16 state-card pattern. Clinical alert cards are separate. */
+.rich-read-state.status-panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:24px 20px;background:linear-gradient(153deg,#fff,#eff5fb);border:1px solid #e8e9ed;border-radius:24px;color:var(--ink);box-shadow:var(--dim-shadow)}
+.rich-read-state .status-top{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:10px}.rich-read-state .status-top>.three-d-icon{width:36px;height:36px;box-sizing:content-box;padding:14px;border-radius:22px;background:#e9f2ff;box-shadow:var(--dim-tile-shadow)}
+.rich-read-state.permission .status-top>.three-d-icon,.rich-read-state.error .status-top>.three-d-icon{background:#fff0ee}
+.rich-read-state h2{margin:0;font-size:22px;line-height:1.5}.page-content .rich-read-state p{margin:0;font-size:14px;line-height:1.8;color:var(--muted)}
+.phone-scroll .rich-read-state .text-action{width:100%;min-height:52px;gap:8px;padding:12px 15px;border:1px solid #0758bc;border-radius:18px;background:linear-gradient(165deg,#0961cb,#0865d8 56%,#075abc);color:#fff;font-size:16px;font-weight:600;box-shadow:0 5px 12px #164e9538,inset 0 1px #ffffff75,inset 0 -2px #092f6654}
+
+/* S07/S08 identity stays light; real long names wrap rather than disappear. */
+.patient.rich-record-patient{padding:0;min-height:44px;border:0;border-radius:0;background:none;box-shadow:none;gap:10px}
+.rich-record-patient .patient-icon{width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#e9f2ff;box-shadow:none}
+.rich-record-patient>span:nth-child(2){min-width:0;overflow-wrap:anywhere}.rich-record-patient>.three-d-icon{flex-shrink:0}
+.rich-record-patient strong{line-height:1.5}.rich-record-patient small{margin-top:0;line-height:1.5}
+.rich-field-primary>span{color:var(--ink)}.rich-field-primary>strong{font-size:16px;font-weight:600;color:var(--ink)}
+.rich-record-hero p{overflow-wrap:anywhere}
+.rich-record-hero .rich-record-value .rich-record-unit{font-size:16px;font-weight:500;letter-spacing:0;line-height:1.5}
+.rich-record-fields.form-card{gap:0}
+.rich-record-fields>.rich-record-field{min-width:0;padding:16px 0;overflow-wrap:anywhere}
+.rich-record-fields>.rich-record-field:first-child{padding-top:0}
+.rich-record-fields>.rich-record-field:last-child{padding-bottom:0}
+.rich-record-fields>.rich-record-field+.rich-record-field{border-top:1px solid var(--line)}
+.rich-record-fields .rich-field-primary{border:0;min-width:0}
+.rich-record-fields .rich-field-primary>strong{min-width:0;overflow-wrap:anywhere}
+.rich-record-fields .rich-record-field>details{margin-top:8px}
+.rich-record-fields .rich-record-field>details>summary{min-height:44px;display:list-item;padding-block:10px;font-size:12px;line-height:1.5;color:var(--muted);cursor:pointer}
+.rich-record-fields .rich-record-field>details>summary:focus-visible{outline:3px solid var(--link);outline-offset:2px}
+
+/* S02 identities and association status; real names/actions remain service driven. */
+.rich-relation-group{display:flex;flex-direction:column;gap:18px;min-width:0}
+.rich-child-identity{display:flex;align-items:center;gap:20px;padding:26px 22px;border-radius:24px;background:#fff;min-width:0;min-height:194px}
+.rich-child-identity figure{margin:0;width:100px;flex-shrink:0;text-align:center}.rich-child-identity img{display:block;width:100%;height:135px;object-fit:contain}.rich-child-identity figcaption{font-size:9px;color:var(--muted);margin-top:4px}
+.rich-child-identity>div{min-width:0;flex:1}.rich-child-identity h2{font-size:23px;line-height:1.4;margin:13px 0 10px;overflow-wrap:anywhere}.page-content .rich-child-identity p{font-size:13px;line-height:1.7;color:var(--muted);margin:0}
+.rich-relation-status{display:flex;flex-direction:column;align-items:center;gap:12px;padding:25px 20px;text-align:center;border-radius:24px;background:#edf1f5;color:var(--muted)}.rich-relation-status.active{background:#e9f2ff;color:var(--link)}.rich-relation-status h2{font-size:24px;line-height:1.4;margin:0}.page-content .rich-relation-status p{font-size:13px;line-height:1.6;color:inherit;margin:0}
+.rich-relation-permissions{gap:0}.rich-relation-permissions .pair{align-items:center;min-height:52px}.rich-relation-permissions .pair>span{color:var(--ink)}.rich-relation-permissions .pair>.badge{font-size:11px;color:var(--muted);background:#edf1f5}.rich-relation-permissions .pair>.badge[data-granted=true]{color:var(--link);background:#e9f2ff}
+@media(max-width:359px){.rich-child-identity{gap:12px;padding:22px 16px}.rich-child-identity figure{width:85px}.rich-child-identity h2{font-size:21px}}
+
+/* S12-B: fixed-snapshot summary cover and independently readable source sections. */
+.rich-summary-cover{background:linear-gradient(125deg,#1c517e,#296891);color:#fff;border-radius:23px;padding:23px;min-width:0}
+.rich-summary-cover>.badge{background:#ffffff20;color:#fff;border:0}
+.rich-summary-cover h2{font-size:24px;line-height:1.4;margin:15px 0 8px;color:#fff;overflow-wrap:anywhere}
+.page-content .rich-summary-cover p{font-size:12px;line-height:1.7;color:#e0edfb;margin:0}
+.rich-summary-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:22px;margin-top:20px;border-top:1px solid #ffffff30}
+.rich-summary-counts>span{font-size:10px;color:#e0edfb;min-width:0}
+.rich-summary-counts strong{display:block;font-size:20px;margin-top:5px;color:#fff;overflow-wrap:anywhere}
+.rich-summary-block{display:flex;flex-direction:column;gap:12px;min-width:0}
+.rich-summary-block>h3{font-size:15px;font-weight:650;color:var(--ink);margin:0}
+.rich-summary-field{min-width:0;padding:16px 0;border-top:1px solid #d1d1d655}
+.rich-summary-field:first-child{padding-top:0;border-top:0}
+.rich-summary-field:last-child{padding-bottom:0}
+.rich-summary-field.compact{padding:12px 20px 18px}
+.rich-summary-value{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rich-summary-value h4{font-size:14px;font-weight:600;margin:0}.rich-summary-value strong{font-size:16px;overflow-wrap:anywhere}
+.page-content .rich-summary-time{font-size:12px;line-height:1.7;color:var(--muted);margin:7px 0 0}
+.rich-summary-field details{margin-top:7px;font-size:12px}.rich-summary-field summary{cursor:pointer;min-height:32px;line-height:1.7;color:var(--muted)}
+.rich-summary-records>div+div{border-top:1px solid #d1d1d655}
+.page-content .rich-summary-empty{font-size:13px;line-height:1.7;color:var(--muted);padding:0 20px 18px}
+.rich-summary-trend{margin-bottom:16px;min-width:0}.rich-summary-trend h4{font-size:14px;font-weight:600;margin:0 0 10px}
+.rich-summary-trend svg{display:block;width:100%;height:auto;overflow:visible}.summary-axis{stroke:#d1d1d6;stroke-width:1}.summary-line{stroke:#287fdc;stroke-width:3;fill:none}.summary-point{fill:#287fdc}
+.rich-summary-trend details{font-size:12px;margin-top:8px}.rich-summary-trend summary{min-height:32px;line-height:1.7;color:var(--muted);cursor:pointer}
+.rich-summary-trend-row{padding:10px 0;border-top:1px solid #d1d1d655;overflow-wrap:anywhere}.page-content .rich-summary-trend-row p{font-size:12px;line-height:1.7;color:var(--muted);margin-top:5px}
+.rich-summary-trend svg text{font-size:11px;fill:var(--muted)}
+/* Original S02-B uses an explicit square acknowledgement, never an on/off switch. */
+.switch-row.application-acknowledgement{justify-content:flex-start;gap:12px;margin-top:0;border-top:0;padding:0 4px;min-height:44px;font-size:13px;line-height:1.7}
+.switch-row.application-acknowledgement input{appearance:auto;width:18px;height:18px;border-radius:2px;min-width:18px;accent-color:#0865d8;box-shadow:none;background:initial;flex-shrink:0}
+.switch-row.application-acknowledgement input:before{display:none}
+.rich-summary-trend-dates{display:flex;justify-content:space-between;gap:12px;font-size:11px;line-height:1.6;color:var(--muted);margin-top:4px}.rich-summary-trend-dates>span{min-width:0;flex:1;overflow-wrap:anywhere}.rich-summary-trend-dates>span:last-child{text-align:right}
+/* S12-B hierarchy: a readable overview, then complete immutable records on demand. */
+.rich-summary-block .rich-summary-observations{margin:0;padding:0;border:0;border-top:1px solid var(--line);border-radius:0}
+.rich-summary-observations>summary{min-height:44px;padding-block:12px;font-size:13px;line-height:1.5;color:var(--link);cursor:pointer}
+.rich-summary-records>.rich-summary-kind{margin:0;padding:0;border:0;border-radius:18px;min-width:0}
+.rich-summary-records>.rich-summary-kind+.rich-summary-kind{border-top:1px solid var(--line)}
+.rich-summary-kind>summary.list-row{display:flex;list-style:none;min-height:76px;color:var(--ink)}
+.rich-summary-kind>summary::-webkit-details-marker,.rich-summary-record>summary::-webkit-details-marker{display:none}
+.rich-summary-kind[open]>summary>.three-d-icon,.rich-summary-record[open]>summary .rich-summary-record-heading>.three-d-icon{transform:rotate(90deg)}
+.rich-summary-record-groups{min-width:0}
+.rich-summary-record-groups.compact{padding:0 20px 12px}
+.rich-summary-record-groups>.rich-summary-record{margin:0;padding:0;border:0;border-radius:0;min-width:0}
+.rich-summary-record-groups>.rich-summary-record+.rich-summary-record{border-top:1px solid var(--line)}
+.rich-summary-record>summary{display:flex;flex-direction:column;gap:5px;list-style:none;min-height:44px;padding:12px 0;cursor:pointer;overflow-wrap:anywhere}
+.rich-summary-record-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ink);font-size:13px;line-height:1.5}
+.rich-summary-record-heading>strong{min-width:0}.rich-summary-record-heading>.three-d-icon{flex:0 0 15px}
+.rich-summary-record-preview{font-size:14px;line-height:1.6;color:var(--ink)}
+.rich-summary-record-time{font-size:12px;line-height:1.6;color:var(--muted)}
+.rich-summary-record>.rich-summary-field{padding:12px 0;border-top:1px solid var(--line)}
+.rich-summary-record>summary:focus-visible,.rich-summary-kind>summary:focus-visible,.rich-summary-observations>summary:focus-visible{outline:3px solid var(--link);outline-offset:2px}
+/* S15 original recovery hierarchy, with actions bound to actual available context. */
+.rich-status-detail{padding:28px 22px;border-radius:24px;background:#fff;text-align:center;display:flex;align-items:center;flex-direction:column;gap:18px;min-width:0}
+.rich-status-detail h2{font-size:22px;line-height:1.4;font-weight:650;margin:0;color:var(--ink)}
+.page-content .rich-status-detail p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}
+.rich-status-detail>.button{width:100%;min-height:52px}
+.rich-status-links{display:flex;flex-direction:column;gap:12px;min-width:0}.rich-status-links>h3{font-size:16px;font-weight:650;margin:0;color:var(--ink)}

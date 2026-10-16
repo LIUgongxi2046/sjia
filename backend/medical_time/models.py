@@ -1,11 +1,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import LocalTimestampField
 
 
-class MedicalTime(models.Model):
+class MedicalTime(ErasureModel, models.Model):
     class Precision(models.TextChoices):
         UNKNOWN = "unknown", "unknown"
         YEAR = "year", "year"
@@ -26,7 +27,7 @@ class MedicalTime(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     raw_text = models.TextField(null=True)
-    precision = models.CharField(max_length=16, choices=Precision.choices)
+    precision = models.CharField(max_length=16, choices=Precision.choices, null=True)
     local_year = models.IntegerField(null=True)
     local_month = models.SmallIntegerField(null=True)
     end_year = models.IntegerField(null=True)
@@ -37,7 +38,7 @@ class MedicalTime(models.Model):
     timezone_name = models.TextField(null=True)
     utc_offset_minutes = models.SmallIntegerField(null=True)
     instant = models.DateTimeField(null=True)
-    resolution_status = models.CharField(max_length=16, choices=ResolutionStatus.choices)
+    resolution_status = models.CharField(max_length=16, choices=ResolutionStatus.choices, null=True)
 
     class Meta:
         db_table = 'sjia"."medical_time'

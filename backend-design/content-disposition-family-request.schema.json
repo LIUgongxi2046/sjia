@@ -1,0 +1,62 @@
+{
+  "$defs": {
+    "ContentFamilyTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "record_version_id": {
+          "format": "uuid",
+          "title": "Record Version Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "record_version_id",
+        "version"
+      ],
+      "title": "ContentFamilyTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-family-request-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "request_id": {
+      "format": "uuid",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "policy_id": {
+      "format": "uuid",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/ContentFamilyTarget"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Targets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "policy_id",
+    "targets"
+  ],
+  "title": "ContentFamilyRequestInput",
+  "type": "object"
+}

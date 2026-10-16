@@ -15,6 +15,9 @@ export function PublicationEditor({ operation, directories, config, contact, rel
 }) {
   const [error, setError] = useState<string | null>(null);
   const [schemaIndex, setSchemaIndex] = useState('');
+  const [grouped, setGrouped] = useState(false);
+  const [groupCount, setGroupCount] = useState(2);
+  const groupKinds = ['rule', 'window', 'verification', 'mapping', 'content', 'validation'] as const;
   const configs = directories.config?.items ?? [], contacts = directories.contact?.items ?? [], sources = directories.source?.items ?? [];
   const schemas = directories.config?.schemas ?? [];
   const original = config?.resource.config;
@@ -42,8 +45,14 @@ export function PublicationEditor({ operation, directories, config, contact, rel
           payload: JSON.parse(value('payload')) as Record<string, unknown>, source_revision_id: value('source_revision_id') || null };
       } else if (operation === 'release_create') {
         const directory = directories.config; if (!directory) throw new Error('当前发布环境尚未读取。');
-        payload = { environment: directory.environment, components: kinds.map(kind => ({ kind, config_id: value(kind) })),
-          validation_config_id: value('validation_config_id'), contact_version_id: value('contact_version_id') };
+        const groups = grouped ? Array.from({ length: groupCount }, (_, index) => ({ rule_id: value(`group_${index}_rule`),
+          window_id: value(`group_${index}_window`), verification_id: value(`group_${index}_verification`), mapping_id: value(`group_${index}_mapping`),
+          content_id: value(`group_${index}_content`), validation_id: value(`group_${index}_validation`) })) : null;
+        const components = groups ? [...new Map(groups.flatMap(group => groupKinds.filter(kind => kind !== 'validation').map(kind => ({ kind,
+          config_id: group[`${kind}_id`] }))).map(row => [`${row.kind}:${row.config_id}`, row])).values(),
+          ...(['visibility', 'notification'] as const).map(kind => ({ kind, config_id: value(kind) }))] : kinds.map(kind => ({ kind, config_id: value(kind) }));
+        payload = { environment: directory.environment, components, validation_config_id: value('validation_config_id'),
+          contact_version_id: value('contact_version_id'), ...(groups ? { publication_groups: groups } : {}) };
       } else if (operation === 'contact_create') {
         payload = { contact_id: value('contact_id'), contact_name: value('contact_name'), purpose: value('purpose'), channel: value('channel'),
           channel_value: value('channel_value'), source_revision_id: value('source_revision_id'), approval_config_id: value('approval_config_id'), valid_until: value('valid_until') };
@@ -74,8 +83,15 @@ export function PublicationEditor({ operation, directories, config, contact, rel
         <option value="">选择已登记格式</option>{schemas.map((schema, index) => <option key={`${schema.kind}:${schema.schema_version}`} value={index}>{schema.kind} · {schema.schema_version}</option>)}
       </select></label><label className="field"><span>完整配置正文</span><textarea name="payload" required disabled={busy} defaultValue={initialPayload} placeholder="提供当前格式要求的完整 JSON 正文" /></label>
       {select('source_revision_id', '配置来源', sources, true)}</>}
-    {operation === 'release_create' && <>{kinds.map(kind => <div key={kind}>{select(kind, names[kind], configs.filter(row => row.kind === kind))}</div>)}
-      {select('validation_config_id', '独立验证版本', configs.filter(row => row.kind === 'validation'))}{select('contact_version_id', '联系信息版本', contacts)}</>}
+    {operation === 'release_create' && <><label className="switch-row"><span>按规则分别绑定多个发布组</span><input type="checkbox" checked={grouped} disabled={busy} onChange={event => setGrouped(event.target.checked)} /></label>
+      {grouped ? <><p>每组都需独立验证；所有规则必须在已批准配置中显式声明相同的优先级方向。未配置时不能启用。</p>
+        {Array.from({ length: groupCount }, (_, index) => <fieldset key={index}><legend>发布组 {index + 1}</legend>{groupKinds.map(kind => <div key={kind}>
+          {select(`group_${index}_${kind}`, kind === 'validation' ? '本规则独立验证版本' : names[kind], configs.filter(row => row.kind === kind))}</div>)}</fieldset>)}
+        <button className="text-action" type="button" disabled={busy} onClick={() => setGroupCount(value => value + 1)}>增加发布组</button>
+        {groupCount > 2 && <button className="text-action" type="button" disabled={busy} onClick={() => setGroupCount(value => value - 1)}>移除末尾发布组</button>}
+        {(['visibility', 'notification'] as const).map(kind => <div key={kind}>{select(kind, `所有组共同引用的${names[kind]}`, configs.filter(row => row.kind === kind))}</div>)}
+      </> : kinds.map(kind => <div key={kind}>{select(kind, names[kind], configs.filter(row => row.kind === kind))}</div>)}
+      {select('validation_config_id', grouped ? '主登记验证版本（必须属于上述一组）' : '独立验证版本', configs.filter(row => row.kind === 'validation'))}{select('contact_version_id', '共同联系信息版本', contacts)}</>}
     {operation === 'contact_create' && <>{input('contact_id', '联系主体标识', contact?.contact.contact_id)}
       {input('contact_name', '联系名称', contact?.contact.contact_name)}{input('purpose', '联系用途', contact?.contact.purpose)}
       {input('channel', '联系渠道', contact?.contact.channel)}{input('channel_value', '准确联系地址', contact?.contact.channel_value)}

@@ -30,6 +30,8 @@ def original_use_view(file, group, patient):
 
 
 def original_source_view(version, field_codes):
+    from retention.content_fences import assert_content_available
+    assert_content_available('records.recordversion', version.id)
     patient = version.patient
     fields = list(RecordField.objects.filter(patient=patient, record_version_id=version.id,
         field_code__in=field_codes).order_by('ordinal'))

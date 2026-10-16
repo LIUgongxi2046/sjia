@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { CalendarDays, UsersRound } from '../../components/ThreeDIcon';
+import { ArrowDown as ChevronDown, ChevronRight } from '../../components/ThreeDIcon';
+import { CalendarDays, LockKeyhole, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
@@ -39,12 +39,13 @@ function dateInput(value: string, zone: string): MedicalTimeInput {
 
 export function UI2ObservationPeriodPage() {
   const access = useAccess();
-  return <PeriodContent key={`${access.principalId}:${access.patientId}`} />;
+  return <PeriodContent key={`${access.principalId}:${access.patientId}:${access.scopeVersion}`} />;
 }
 
 function PeriodContent() {
   const access = useAccess(), navigate = useNavigate(), [params, setParams] = useSearchParams();
-  const canRead = !!access.principalId && !!access.patientId && !access.loading && !access.error;
+  const canRead = !!access.principalId && !!access.patientId && !access.loading && !access.error
+    && access.hasCurrentAccess(access.principalId, access.patientId, access.scopeVersion);
   const relation = access.relations.find(item => item.patient_id === access.patientId);
   const [visible, setVisible] = useState(document.visibilityState === 'visible');
   const [value, setValue] = useState<ObservationPeriodView | null>(null), [error, setError] = useState<Error | null>(null);
@@ -54,22 +55,29 @@ function PeriodContent() {
   const [zone, setZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone), [episode, setEpisode] = useState('');
   const [reason, setReason] = useState('本人设置观察范围');
   const pending = useRef<AbortController | null>(null), mounted = useRef(true), composing = useRef(false), settled = useRef('');
+  const revalidating = useRef(false);
+  const permissionError = error instanceof ApiError && [401, 403].includes(error.status) ? error : null;
+  function current(signal?: AbortSignal) {
+    return mounted.current && !signal?.aborted && document.visibilityState === 'visible'
+      && access.hasCurrentAccess(access.principalId, access.patientId, access.scopeVersion);
+  }
   const requestId = params.get('request'), clientId = params.get('client_request'), versionId = params.get('period_version');
   const marker = requestId ?? clientId ?? versionId ?? 'current';
 
   function adopt(saved: ObservationPeriodView) {
     setValue(saved); setStart(saved.start?.local_date ?? ''); setEnd(saved.end?.local_date ?? '');
     setLabel(saved.label ?? ''); setEpisode(saved.episode_id ?? '');
-    if (saved.timezone) setZone(saved.timezone);
+    setZone(saved.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone); setReason('本人设置观察范围');
   }
   function clearRead() {
-    setValue(null); setStart(''); setEnd(''); setLabel(''); setEpisode(''); setReason('本人设置观察范围');
+    setValue(null); setStart(''); setEnd(''); setLabel(''); setEpisode(''); setZone(''); setReason('');
   }
+  function clearPrivateState() { clearRead(); setIdentity(null); setRequest(null); setIntent(null); }
   useEffect(() => {
     mounted.current = true;
     const change = () => { const shown = document.visibilityState === 'visible'; setVisible(shown);
-      if (!shown) { pending.current?.abort(); clearRead(); setRequest(null); setIntent(null); settled.current = ''; } };
-    const freeze = () => { pending.current?.abort(); clearRead(); setRequest(null); setIntent(null); setVisible(false); settled.current = ''; };
+      if (!shown) { pending.current?.abort(); clearPrivateState(); settled.current = ''; } };
+    const freeze = () => { pending.current?.abort(); clearPrivateState(); setVisible(false); settled.current = ''; };
     const resume = () => { setVisible(document.visibilityState === 'visible'); settled.current = ''; setReload(current => current + 1); void access.refresh(); };
     document.addEventListener('visibilitychange', change);
     document.addEventListener('freeze', freeze); document.addEventListener('resume', resume);
@@ -77,18 +85,22 @@ function PeriodContent() {
       document.removeEventListener('freeze', freeze); document.removeEventListener('resume', resume); };
   }, []);
   useEffect(() => {
-    if (!canRead || !visible) { clearRead(); setRequest(null); setIntent(null); settled.current = ''; return; }
-    if (pending.current || settled.current === `${marker}:${reload}`) return;
+    if (!canRead || !visible) { pending.current?.abort(); clearPrivateState(); setLoading(false); settled.current = ''; return; }
+    // A backend denial remains closed until the user explicitly revalidates.
+    // Refreshing access here would toggle canRead and recursively repeat this read.
+    if (permissionError || revalidating.current || pending.current || settled.current === `${marker}:${reload}`) return;
     const controller = new AbortController(); let active = true;
     queueMicrotask(() => {
-      if (!active || !access.patientId) return;
+      if (!active || !current(controller.signal) || !access.patientId) return;
       setLoading(true); setError(null); settled.current = `${marker}:${reload}`;
       void (async () => {
         if (requestId || clientId) {
           const original = await readPeriodRequest(requestId ?? clientId!, controller.signal, requestId ? undefined : {
             request_id: clientId!, target_key: `/patients/${access.patientId}/observation-period/versions`,
           });
-          if (controller.signal.aborted) return;
+          if (!current(controller.signal)) return;
+          if (original.target_key !== `/patients/${access.patientId}/observation-period/versions`)
+            throw new Error('观察时段原请求不属于当前患儿。');
           setRequest(original); setIdentity({ operation_id: original.operation_id, target_key: original.target_key,
             request_id: original.request_id, schema_version: '2.0.0', payload: original.period_input });
           setIntent({ intent_id: original.intent_id, request_id: original.request_id, generation: original.generation,
@@ -96,7 +108,7 @@ function PeriodContent() {
             status: original.state === 'committed' ? 'committed' : original.state === 'failed' ? 'failed' : 'prepared' });
           const saved = await readObservationPeriod(access.patientId!, controller.signal, original.receipt?.resource_id);
           if (original.receipt && saved.version !== original.receipt.version) throw new Error('观察时段版本与原请求回执不一致。');
-          if (!controller.signal.aborted) {
+          if (current(controller.signal)) {
             adopt(saved);
             if (!original.receipt) {
               setStart(original.period_input.start.local_date ?? ''); setEnd(original.period_input.end.local_date ?? '');
@@ -106,32 +118,33 @@ function PeriodContent() {
           }
         } else {
           const saved = await readObservationPeriod(access.patientId!, controller.signal, versionId ?? undefined);
-          if (!controller.signal.aborted) adopt(saved);
+          if (current(controller.signal)) adopt(saved);
         }
       })().then(undefined, failure => {
         if (!(failure instanceof Error)) throw failure;
-        if (!controller.signal.aborted) { setError(failure); clearRead();
-          if (failure instanceof ApiError && [401, 403].includes(failure.status)) { setIdentity(null); setRequest(null); setIntent(null); void access.refresh(); }
+        if (current(controller.signal)) { setError(failure); clearRead();
+          if (failure instanceof ApiError && [401, 403].includes(failure.status)) clearPrivateState();
         }
-      }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+      }).finally(() => { if (current(controller.signal)) setLoading(false); });
     });
     return () => { active = false; controller.abort(); };
-  }, [canRead, visible, access.patientId, marker, reload]);
+  }, [canRead, visible, access.principalId, access.patientId, access.scopeVersion, marker, reload, permissionError]);
 
   function run(operation: (signal: AbortSignal) => Promise<void>) {
-    if (!canRead || !visible || pending.current) return;
+    if (!canRead || !visible || permissionError || revalidating.current || pending.current || !current()) return;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(null);
-    void operation(controller.signal).then(undefined, failure => {
+    void Promise.resolve().then(() => current(controller.signal) ? operation(controller.signal) : undefined).then(undefined, failure => {
       if (!(failure instanceof Error)) throw failure;
-      if (!controller.signal.aborted && mounted.current) {
+      if (current(controller.signal)) {
         setError(failure);
-        if (failure instanceof ApiError && [401, 403].includes(failure.status)) { clearRead(); setIdentity(null); setIntent(null); setRequest(null); void access.refresh(); }
+        if (failure instanceof ApiError && [401, 403].includes(failure.status)) clearPrivateState();
       }
     }).finally(() => { if (pending.current === controller) { pending.current = null;
       if (mounted.current) { setBusy(false); if (controller.signal.aborted) { settled.current = ''; setReload(current => current + 1); } }
     } });
   }
   function submit() {
+    if (!allowed) return;
     run(async signal => {
       if (!access.patientId || !value || !start || !end || !zone || !reason.trim()) throw new Error('观察范围、时区及说明需要完整填写。');
       const original: PeriodIdentity = identity ?? { operation_id: 'observation_period_change', request_id: crypto.randomUUID(),
@@ -141,24 +154,35 @@ function PeriodContent() {
       setIdentity(original); settled.current = `${original.request_id}:${reload}`;
       setParams({ client_request: original.request_id }, { replace: true });
       const prepared = intent ?? await preparePeriod(original, signal);
-      if (signal.aborted) return;
+      if (!current(signal)) return;
       setIntent(prepared); settled.current = `${prepared.intent_id}:${reload}`;
       setParams({ client_request: original.request_id, request: prepared.intent_id }, { replace: true });
       const receipt = await submitPeriod(original, prepared, signal);
+      if (!current(signal)) return;
       const saved = await readObservationPeriod(access.patientId, signal, receipt.resource_id);
       if (saved.version !== receipt.version || saved.owner_id !== access.principalId || saved.label !== original.payload.label)
         throw new Error('观察时段回读与保存正文或版本不一致。');
-      if (!signal.aborted) { adopt(saved); setRequest({ intent_id: prepared.intent_id, request_id: original.request_id,
+      if (current(signal)) { adopt(saved); setRequest({ intent_id: prepared.intent_id, request_id: original.request_id,
         operation_id: original.operation_id, target_key: original.target_key, state: 'committed', may_retry: false,
         generation: prepared.generation, expires_at: prepared.expires_at, payload_sha256: prepared.payload_sha256,
         receipt, error_code: null, period_input: original.payload }); }
     });
   }
-  function inspect() { settled.current = ''; setReload(current => current + 1); }
+  function inspect() { if (!current() || permissionError || pending.current) return; settled.current = ''; setReload(current => current + 1); }
+  async function revalidate() {
+    if (revalidating.current || pending.current || !mounted.current) return;
+    revalidating.current = true; clearPrivateState();
+    try {
+      await access.refresh();
+      // A changed account, patient or grant mounts its own clean page.
+      if (!current()) return;
+      setError(null); settled.current = ''; setReload(value => value + 1);
+    } finally { revalidating.current = false; }
+  }
   function retry() { run(async signal => {
     if (!request) throw new Error('尚未取得原请求。');
     const prepared = await retryPeriod(request, signal);
-    if (!signal.aborted) { setIntent(prepared); setRequest({ ...request, state: 'pending', may_retry: false,
+    if (current(signal)) { setIntent(prepared); setRequest({ ...request, state: 'pending', may_retry: false,
       generation: prepared.generation, expires_at: prepared.expires_at }); }
   }); }
   function editCurrent() {
@@ -166,18 +190,26 @@ function PeriodContent() {
     setIdentity(null); setIntent(null); setRequest(null); setError(null); settled.current = `${marker}:${reload + 1}`;
     setParams({}, { replace: true }); setReload(current => current + 1);
   }
-  const data = canRead && visible ? value : null;
+  const data = canRead && visible && !permissionError ? value : null;
   const editable = !!data && data.is_current && !loading && !busy && !identity && data.allowed_actions.includes('observation_period_change');
   const inScope = data?.samplings.filter(item => ['inside', 'overlap', 'unknown', 'not_selected'].includes(item.range_state)) ?? [];
   const known = inScope.filter(item => item.fact.medical_time !== null && item.range_state !== 'unknown');
   const latest = known.at(-1)?.fact.medical_time;
   const lastInterval = data?.intervals.at(-1);
-  const allowed = editable || !!identity && request?.state === 'pending' && !request.may_retry && !busy && !loading;
+  const allowed = !!data && !permissionError && !revalidating.current
+    && (editable || !!identity && request?.state === 'pending' && !request.may_retry && !busy && !loading);
 
-  return <UI2FamilyFrame title="观察时段" screenId="UI2-31" note="观察范围和真实采样时间分别保存，时段标签属于本人自报。" backTo="/records">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span>
+  return <UI2FamilyFrame title="观察时段" screenId="UI2-31" note="观察范围和原始采样时间分别保存，时段标签属于本人自报。" backTo="/records">
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span>
       <span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-    <UI2ReadState loading={loading || busy || access.loading} error={error} onRetry={inspect} />
+    {permissionError ? <section className="status-panel permission rich-read-state" role="alert">
+      <div className="status-top"><LockKeyhole size={22} /><span>页面状态</span></div>
+      <h2>{permissionError.status === 401 ? '登录状态需要重新核验' : '当前权限不能读取此观察时段'}</h2>
+      <p>本页资料和未保存输入已清除。核验成功后会重新读取资料或原请求结果。</p>
+      <p>{permissionError.message}</p><details><summary>查看错误详情</summary><p>HTTP {permissionError.status} · {permissionError.code}</p></details>
+      <button className="text-action" disabled={access.loading || busy} onClick={() => void revalidate()}>重新核验并读取<ChevronRight size={16} /></button>
+      <button className="text-action" onClick={() => navigate(permissionError.status === 401 ? '/login' : '/associations')}>{permissionError.status === 401 ? '重新登录' : '查看患儿关联'}<ChevronRight size={16} /></button>
+    </section> : <UI2ReadState loading={loading || busy || access.loading} error={error} onRetry={inspect} />}
     <form style={{ overflowWrap: 'anywhere' }} onSubmit={event => { event.preventDefault(); if (!composing.current) submit(); }}
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
       onKeyDown={event => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || composing.current)) event.preventDefault(); }}>

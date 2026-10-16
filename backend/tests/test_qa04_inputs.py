@@ -1,5 +1,6 @@
 from io import BytesIO
 import wave
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -16,6 +17,18 @@ class SpeechInputTests(TestCase):
         call_command('seed_demo', verbosity=0)
         self.actor = Principal.objects.first()
         self.patient = Patient.objects.get(display_id='demo-child')
+        from tests.synthetic_fixtures import qualify_demo
+        from sources.models import DataUseAuthorization
+        qualify_demo(self, self.actor, self.patient)
+        authorization = DataUseAuthorization.objects.get(patient=self.patient)
+        self.client.defaults['HTTP_X_USE_AUTHORIZATION'] = str(authorization.id)
+        identity = patch('recognition.local_transcription._model_identity', return_value={
+            'model_name': 'synthetic-identity-only', 'implementation_version': 'test', 'artifact_sha256': 'a' * 64})
+        identity.start()
+        self.addCleanup(identity.stop)
+        model = patch('recognition.speech.speech_model', side_effect=AssertionError('Audio validation must not invoke a model'))
+        model.start()
+        self.addCleanup(model.stop)
         self.path = f'/api/patients/{self.patient.id}/voice-transcription'
         session = self.client.session
         session['_sjia_principal_id'] = str(self.actor.id)
@@ -33,6 +46,12 @@ class SpeechInputTests(TestCase):
         response = self.client.post(self.path, b'invalid audio', content_type='audio/webm;codecs=opus')
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.json()['code'], 'AUDIO_INVALID')
+
+    def test_requires_explicit_source_authorization_before_decoding(self):
+        del self.client.defaults['HTTP_X_USE_AUTHORIZATION']
+        response = self.client.post(self.path, b'invalid audio', content_type='audio/wav')
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()['code'], 'TRANSCRIPTION_AUTHORIZATION_REQUIRED')
 
     def test_requires_session(self):
         self.client.cookies.clear()

@@ -41,19 +41,23 @@ def compute_digest(operation_id, target_key, schema_version, payload) -> str:
 
 
 def validate_target_key(target_key: str) -> None:
-    if not target_key.startswith("/") or target_key.startswith("/api/v1"):
+    if not isinstance(target_key, str) or not target_key.startswith("/") or target_key.startswith("/api/v1"):
         raise IntentRejected("TARGET_KEY_INVALID")
     if "?" in target_key or "#" in target_key or "://" in target_key:
         raise IntentRejected("TARGET_KEY_INVALID")
 
 
 def _lookup(actor_id, operation_id, target_key, request_id):
-    return WriteIntent.objects.filter(
+    row = WriteIntent.all_objects.filter(
         actor_id=actor_id,
         operation_id=operation_id,
         target_key=target_key,
         request_id=request_id,
     ).first()
+    if row is not None:
+        from retention.content_fences import assert_content_available
+        assert_content_available('requests.writeintent', row.id)
+    return row
 
 
 @transaction.atomic
@@ -76,7 +80,7 @@ def prepare_intent(
     digest = compute_digest(operation_id, target_key, schema_version, payload)
     existing = _lookup(actor.id, operation_id, target_key, request_id)
     if existing is not None:
-        if existing.payload_sha256 != digest or existing.authorization_context != authorization_context or existing.recovery_payload != recovery_payload:
+        if existing.patient_id != (patient.id if patient else None) or existing.payload_sha256 != digest or existing.authorization_context != authorization_context or existing.recovery_payload != recovery_payload:
             raise IdempotencyConflict()
         return existing
     now = datetime.now(timezone.utc)
@@ -104,6 +108,10 @@ def query_intent(actor_id, operation_id, target_key, request_id):
 
 @transaction.atomic
 def commit_intent(*, intent, action, resource_type, resource_id, expected_version=None) -> WriteRequest:
+    supplied = intent
+    intent = WriteIntent.objects.select_for_update().get(id=intent.id)
+    if supplied.generation != intent.generation:
+        raise IntentRejected("GENERATION_MISMATCH")
     if intent.status != WriteIntent.Status.PREPARED:
         raise IntentRejected("INTENT_NOT_PREPARED")
     now = datetime.now(timezone.utc)
@@ -126,11 +134,16 @@ def commit_intent(*, intent, action, resource_type, resource_id, expected_versio
     intent.status = WriteIntent.Status.COMMITTED
     intent.completed_at = now
     intent.save(update_fields=["write_request", "status", "completed_at"])
+    supplied.refresh_from_db()
     return write_request
 
 
 @transaction.atomic
 def fail_intent(*, intent, error_code) -> WriteIntent:
+    supplied = intent
+    intent = WriteIntent.objects.select_for_update().get(id=intent.id)
+    if supplied.generation != intent.generation:
+        raise IntentRejected("GENERATION_MISMATCH")
     if intent.status != WriteIntent.Status.PREPARED:
         raise IntentRejected("INTENT_NOT_PREPARED")
     intent.status = WriteIntent.Status.FAILED
@@ -142,6 +155,11 @@ def fail_intent(*, intent, error_code) -> WriteIntent:
 
 @transaction.atomic
 def retry_intent(*, intent, expected_generation, ttl_seconds=300) -> WriteIntent:
+    supplied = intent
+    intent = WriteIntent.objects.select_for_update().get(id=intent.id)
+    if intent.write_request_id is not None or WriteRequest.objects.filter(actor_id=intent.actor_id,
+            action=intent.operation_id, target_key=intent.target_key, request_id=intent.request_id).exists():
+        raise IntentRejected("INTENT_RECEIPT_RECONCILIATION_REQUIRED")
     if intent.status != WriteIntent.Status.FAILED:
         raise IntentRejected("INTENT_NOT_FAILED")
     if intent.generation != expected_generation:
@@ -153,6 +171,7 @@ def retry_intent(*, intent, expected_generation, ttl_seconds=300) -> WriteIntent
     intent.prepared_at = datetime.now(timezone.utc)
     intent.expires_at = intent.prepared_at + timedelta(seconds=ttl_seconds)
     intent.save(update_fields=["generation", "status", "error_code", "completed_at", "prepared_at", "expires_at"])
+    supplied.refresh_from_db()
     return intent
 
 

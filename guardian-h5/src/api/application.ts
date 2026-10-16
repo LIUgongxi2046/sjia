@@ -1,8 +1,13 @@
 import { fetchJson } from './client';
 import type { ApplicationView } from './endpoints';
-import type { ApplicationInput, ApplicationAction, RequestView } from '../../../frontend-design/types';
+import type { ApplicationDeclaration, ApplicationInput, ApplicationAction, RequestView } from '../../../frontend-design/types';
 
-export type { ApplicationInput, ApplicationAction };
+export type { ApplicationDeclaration, ApplicationInput, ApplicationAction };
+export function sameApplicationDeclaration(expected: ApplicationDeclaration | null | undefined, actual: ApplicationDeclaration | null | undefined) {
+  if (!expected || !actual) return !expected && !actual;
+  return expected.schema_version === actual.schema_version && expected.declared_patient_name === actual.declared_patient_name
+    && expected.declared_relationship === actual.declared_relationship && expected.guardian_scope_acknowledged === actual.guardian_scope_acknowledged;
+}
 export interface ApplicationReceipt { resource_type: 'relation_application'; resource_id: string; version: string; saved_at: string; request_id: string }
 export interface ApplicationIntent { intent_id: string; request_id: string; generation: string; status: 'prepared' | 'committed' | 'failed'; expires_at: string; payload_sha256: string }
 export interface ApplicationRequest extends RequestView {

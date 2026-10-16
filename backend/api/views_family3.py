@@ -79,10 +79,15 @@ def file_upload(request, group_id, upload_id):
     principal, _, _ = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    group = FileGroup.objects.select_for_update().filter(id=group_id, owner=principal).first()
+    group = FileGroup.objects.filter(id=group_id, owner=principal).first()
     if group is None:
         raise ApiError("GROUP_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     authorize_case(request, principal, group.patient, "write_record", author_id=group.owner_id, whole_resource=True)
+    from identity.models import Patient
+    patient = Patient.objects.select_for_update().get(id=group.patient_id)
+    if patient.status != 'active':
+        raise ApiError('PATIENT_UNAVAILABLE', 409)
+    group = FileGroup.objects.select_for_update().get(id=group.id, owner=principal, patient=patient)
     limits = batch_runtime().payload['limits']
     revision = group.source_revision
     policies = list(RetentionPolicy.objects.select_for_update().filter(
@@ -132,21 +137,13 @@ def file_upload(request, group_id, upload_id):
 @handle
 @transaction.atomic
 def file_group_complete(request, group_id):
-    principal, _, _ = current_principal(request)
+    principal, epoch, audience = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    group = FileGroup.objects.filter(id=group_id).first()
-    if group is None:
-        raise ApiError("GROUP_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    authorize_case(request, principal, group.patient, "write_record", author_id=group.owner_id, whole_resource=True)
-    if group.owner_id != principal.id:
-        raise ApiError('UPLOAD_OWNER_DENIED', 403)
-    select_upload_authorization(group.patient, UploadGroupInput(authorization_id=group.use_authorization_id))
-    for original in FileObject.objects.filter(file_group_id=group.id, patient=group.patient, purpose='original'):
-        checked_bytes(original)
-        lock_use_authorization(group.use_authorization_id, original, 'family_observation', settings.SJIA_ENVIRONMENT)
-    group = complete_file_group(file_group=group)
-    return Response({"group_id": str(group.id), "status": group.status})
+    from files.validation import submit_validation
+    result = submit_validation(actor=principal, auth_epoch=epoch, audience=audience,
+        target=request.path, payload=request.data, headers=request.headers)
+    return Response(result, status=202)
 
 
 @api_view(["GET"])
@@ -179,10 +176,15 @@ def file_group_revise(request, group_id):
     principal, _, _ = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    group = FileGroup.objects.select_for_update().filter(id=group_id).first()
+    group = FileGroup.objects.filter(id=group_id).first()
     if group is None:
         raise ApiError("GROUP_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     authorize_case(request, principal, group.patient, "write_record")
+    from identity.models import Patient
+    patient = Patient.objects.select_for_update().get(id=group.patient_id)
+    if patient.status != 'active':
+        raise ApiError('PATIENT_UNAVAILABLE', 409)
+    group = FileGroup.objects.select_for_update().get(id=group.id, patient=patient)
     data = request.data or {}
     new_group = create_file_group(
         patient=group.patient, owner=principal, source_revision=group.source_revision,
@@ -283,13 +285,12 @@ def image_candidates(request, recognizer):
         raise ApiError('FILE_NOT_AVAILABLE', status.HTTP_409_CONFLICT)
     if not FileGroup.objects.filter(id=file_object.file_group_id, patient=patient, status=FileGroup.Status.AVAILABLE).exists():
         raise ApiError('FILE_GROUP_NOT_AVAILABLE', status.HTTP_409_CONFLICT)
-    from files.model_input import model_copy_input, model_copy_ref
+    from recognition.sync_images import synchronous_image_candidates
 
     _, epoch, _ = current_principal(request)
-    reference = model_copy_ref(original_file_id=file_object.id, actor=principal, auth_epoch=epoch,
-        target=settings.ARK_BASE_URL.rstrip('/'))
-    with model_copy_input(original_file_id=file_object.id, actor=principal, auth_epoch=epoch, reference=reference) as (data, media_type):
-        result = recognizer(data, media_type)
+    kind = 'report' if recognizer is recognize_report_image else 'therapy'
+    result = synchronous_image_candidates(file_object=file_object, actor=principal,
+        auth_epoch=epoch, kind=kind)
     return Response({"candidates": result})
 
 
@@ -304,16 +305,20 @@ def file_content(request, file_id):
         raise ApiError("FILE_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     if file_object.purpose == FileObject.Purpose.DEIDENTIFIED:
         raise ApiError('PURPOSE_COPY_ENDPOINT_REQUIRED', status.HTTP_403_FORBIDDEN)
-    from identity.models import Patient
-
-    patient = Patient.objects.filter(id=file_object.patient_id).first()
-    authorize_case(request, principal, patient, "read_file")
+    group = FileGroup.objects.filter(id=file_object.file_group_id, patient_id=file_object.patient_id).first()
+    if group is None:
+        raise ApiError('GROUP_NOT_FOUND', status.HTTP_404_NOT_FOUND)
+    # Neither a field nor a page-scoped grant authorizes the complete stored file,
+    # including when the client requests only a byte range of that original.
+    authorize_case(request, principal, group.patient, "read_file", author_id=group.owner_id, whole_resource=True)
     if file_object.status != FileObject.Status.AVAILABLE:
         raise ApiError('FILE_NOT_AVAILABLE', status.HTTP_409_CONFLICT)
     from django.http import HttpResponse
 
     from files.service import object_store
 
+    from retention.content_fences import assert_content_available
+    assert_content_available('files.fileobject', file_object.id)
     data = object_store.get(file_object.object_key)
     range_header = request.headers.get("Range")
     if range_header is None:
@@ -361,34 +366,37 @@ def dictionary_search(request):
 @api_view(["POST"])
 @handle
 def correction_request_create(request, record_id):
-    principal, _, _ = current_principal(request)
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    record = Record.objects.filter(id=record_id).first()
-    if record is None:
-        raise ApiError("RECORD_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    authorize_case(request, principal, record.patient, "request_correction")
-    data = request.data or {}
-    from records.models import RecordVersion
+        raise ApiError('AUTH_REQUIRED', 401)
+    if audience != 'family':
+        raise ApiError('FAMILY_AUDIENCE_REQUIRED', 403)
+    from verification.correction_requests import submit_correction
 
-    version = RecordVersion.objects.filter(record_id=record.id, patient=record.patient, version=record.current_version).first()
-    correction = CorrectionRequest.objects.create(patient_id=record.patient.id, record_version_id=version.id, requested_by=principal, field_ids=data.get("field_ids", []), reason=data.get("reason", ""), proposed_text=data.get("proposed_text"), status="pending", version=1, created_at=datetime.now(timezone.utc))
-    return Response({"correction_request_id": str(correction.id), "status": correction.status}, status=201)
+    result = submit_correction(operation='correction_request_create', target=request.path, payload=request.data,
+        actor=principal, epoch=epoch, audience=audience, environment=settings.SJIA_ENVIRONMENT,
+        headers={'intent_id': request.headers.get('X-Write-Intent'), 'request_id': request.headers.get('Idempotency-Key'),
+            'generation': request.headers.get('X-Intent-Generation')})
+    return Response(result, status=201)
 
 
 @api_view(["GET"])
 @handle
 def correction_request_read(request, correction_request_id):
-    principal, _, _ = current_principal(request)
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    correction = CorrectionRequest.objects.filter(id=correction_request_id).first()
-    if correction is None:
-        raise ApiError("CORRECTION_REQUEST_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    authorize_case(request, principal, get_patient(correction.patient_id), 'request_correction')
-    if correction.requested_by_id != principal.id:
-        raise ApiError('CORRECTION_REQUEST_NOT_FOUND', status.HTTP_404_NOT_FOUND)
-    return Response({"correction_request_id": str(correction.id), "status": correction.status, "reason": correction.reason})
+        raise ApiError('AUTH_REQUIRED', 401)
+    if audience == 'support':
+        from verification.correction_review import read_review
+        return Response(read_review(correction_request_id, actor=principal, epoch=epoch,
+            audience=audience, environment=settings.SJIA_ENVIRONMENT)['correction'])
+    if audience != 'family':
+        raise ApiError('FAMILY_AUDIENCE_REQUIRED', 403)
+    from verification.corrections import read_correction_request, request_view
+
+    row = read_correction_request(request_id=correction_request_id, actor=principal, epoch=epoch,
+        environment=settings.SJIA_ENVIRONMENT)
+    return Response(request_view(row))
 
 
 @api_view(["POST"])

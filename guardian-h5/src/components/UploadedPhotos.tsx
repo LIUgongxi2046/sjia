@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { completeFileGroup, createFileGroup, uploadFile } from '../api/endpoints';
 import { useAccess } from '../state/access';
-import { ApiError } from '../api/client';
+import { ApiError, checkRequestGuard, type RequestGuard } from '../api/client';
 import { PhotoReview } from './PhotoReview';
-import { Camera, Images } from './ThreeDIcon';
+import { Camera, Images, ScanLine } from './ThreeDIcon';
 import { FileText, X } from 'lucide-react';
 import { UI2Sheet } from './UI2Frame';
 import { PrivateSourceGallery } from './PrivateSourceGallery';
-import { readUploadOptions } from '../api/archiveUploads';
+import { readUploadGroup, readUploadOptions } from '../api/archiveUploads';
 import type { ArchiveUploadOptions } from '../../../frontend-design/v2-types';
 
 export interface UploadedPhoto { file_id: string; name: string; recognized_count?: number; recognition_error?: string }
@@ -15,43 +15,90 @@ export interface UploadedPhoto { file_id: string; name: string; recognized_count
 export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onBusyChange, ui2 = false, therapy = false }: {
   photos: UploadedPhoto[];
   onChange: (photos: UploadedPhoto[]) => void;
-  onUploaded?: (photo: UploadedPhoto) => Promise<number>;
+  onUploaded?: (photo: UploadedPhoto, operation: RequestGuard) => Promise<number>;
   busy?: boolean;
   onBusyChange?: (busy: boolean) => void;
   ui2?: boolean;
   therapy?: boolean;
 }) {
-  const { patientId, csrfToken, principalId } = useAccess();
+  const access = useAccess();
+  const { patientId, csrfToken, principalId, scopeVersion } = access;
+  const relation = access.relations.find(value => value.patient_id === patientId);
+  const canUpload = Boolean(principalId && patientId && csrfToken && !access.loading && !access.error
+    && relation?.actions.includes('write_record') && relation.actions.includes('read_file')
+    && access.hasCurrentAccess(principalId, patientId, scopeVersion));
+  const scopeKey = `${principalId}:${patientId}:${scopeVersion}`;
+  const hasAccess = () => canUpload && access.hasCurrentAccess(principalId, patientId, scopeVersion);
   const [uploadOptions, setUploadOptions] = useState<ArchiveUploadOptions | null>(null), [authorizationId, setAuthorizationId] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recognizingId, setRecognizingId] = useState<string | null>(null);
   const [recognitionErrors, setRecognitionErrors] = useState<Record<string, string>>({});
   const [manage, setManage] = useState(false);
+  const [captureGuide, setCaptureGuide] = useState(false);
   const camera = useRef<HTMLInputElement>(null);
   const album = useRef<HTMLInputElement>(null);
   const replacement = useRef<string | null>(null);
   const currentPhotos = useRef(photos);
   currentPhotos.current = photos;
-  const locked = busy || uploading || recognizingId !== null;
+  const validation = useRef<AbortController | null>(null);
+  const pendingUploads = useRef<Array<{ groupId: string; photo: UploadedPhoto; replaceId: string | null; authorizationId: string }>>([]);
+  const previousScope = useRef(scopeKey);
+  if (previousScope.current !== scopeKey) { previousScope.current = scopeKey; pendingUploads.current = []; }
+  const locked = !canUpload || busy || uploading || recognizingId !== null;
   useEffect(() => {
-    const controller = new AbortController(); setUploadOptions(null); setAuthorizationId('');
-    if (patientId && principalId) void readUploadOptions(patientId, controller.signal).then(value => {
-      if (!controller.signal.aborted) { setUploadOptions(value); if (value.authorizations.length === 1) setAuthorizationId(value.authorizations[0].authorization_id); }
-    }).then(undefined, failure => { if (!(failure instanceof Error)) throw failure; if (!controller.signal.aborted) setError(failure.message); });
-    return () => controller.abort();
-  }, [patientId, principalId]);
+    if (!canUpload) {
+      if (validation.current) setError('访问核验已暂停；已发送请求的结果尚未确认，请重新核验后读取原件状态。');
+      validation.current?.abort(); validation.current = null;
+      replacement.current = null; setUploading(false); setRecognizingId(null); onBusyChange?.(false);
+    }
+    return () => { validation.current?.abort(); };
+  }, [scopeKey, canUpload]);
 
-  async function recognize(photo: UploadedPhoto) {
+  useEffect(() => {
+    const controller = new AbortController();
+    const isCurrent = () => !controller.signal.aborted && hasAccess();
+    setUploadOptions(null); setAuthorizationId('');
+    if (patientId && isCurrent()) void readUploadOptions(patientId, controller.signal, isCurrent).then(value => {
+      if (isCurrent()) { setUploadOptions(value); if (value.authorizations.length === 1) setAuthorizationId(value.authorizations[0].authorization_id); }
+    }).then(undefined, failure => { if (!isCurrent()) return; if (!(failure instanceof Error)) throw failure; setError(failure.message); });
+    // A resumed authorization may only re-read a known upload group. It must
+    // never replay a possibly completed upload, validation or provider request.
+    if (patientId && isCurrent()) for (const pending of pendingUploads.current) {
+      void readUploadGroup(pending.groupId, controller.signal, isCurrent).then(group => {
+        if (!isCurrent()) return;
+        if (group.patient_id !== patientId || group.authorization_id !== pending.authorizationId
+          || !group.files.some(file => file.file_id === pending.photo.file_id)) throw new Error('原件恢复结果与本次上传不一致。');
+        if (group.status !== 'available') { setError('原件校验结果尚未确认，请从原件资料中重新读取处理状态。'); return; }
+        const next = pending.replaceId
+          ? currentPhotos.current.map(photo => photo.file_id === pending.replaceId ? pending.photo : photo)
+          : currentPhotos.current.some(photo => photo.file_id === pending.photo.file_id) ? currentPhotos.current : [...currentPhotos.current, pending.photo];
+        currentPhotos.current = next; onChange(next);
+        pendingUploads.current = pendingUploads.current.filter(value => value !== pending);
+        setError('原件已重新核验；尚未重新请求识别，请本人决定是否识别。');
+      }).catch(failure => { if (isCurrent()) setError(failure instanceof Error ? failure.message : '原件状态暂时无法核验。'); });
+    }
+    return () => controller.abort();
+  }, [scopeKey, canUpload]);
+
+  function beginOperation() {
+    const controller = new AbortController(); validation.current?.abort(); validation.current = controller;
+    return { signal: controller.signal, isCurrent: () => validation.current === controller && hasAccess() && !controller.signal.aborted };
+  }
+
+  async function recognize(photo: UploadedPhoto, operation: RequestGuard) {
     if (!onUploaded) return;
+    checkRequestGuard(operation);
     setRecognizingId(photo.file_id);
     setRecognitionErrors(current => ({ ...current, [photo.file_id]: '' }));
     onBusyChange?.(true);
-    await onUploaded(photo).then(count => {
+    await onUploaded(photo, operation).then(count => {
+      checkRequestGuard(operation);
       const next = currentPhotos.current.map(value => value.file_id === photo.file_id ? { ...value, recognized_count: count, recognition_error: undefined } : value);
       currentPhotos.current = next;
       onChange(next);
     }, failure => {
+      if (!operation.isCurrent?.()) return;
       if (!(failure instanceof Error)) throw failure;
       const reason = failure instanceof ApiError ? failure.message : failure.name === 'TimeoutError' ? '识别服务等待超时，请稍后重新识别' : failure.message;
       const message = `识别未完成：${reason}。原图与已有内容已经保留。`;
@@ -59,12 +106,15 @@ export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onB
       const next = currentPhotos.current.map(value => value.file_id === photo.file_id ? { ...value, recognition_error: message } : value);
       currentPhotos.current = next;
       onChange(next);
-    }).finally(() => { setRecognizingId(null); });
+    }).finally(() => { if (operation.isCurrent?.()) setRecognizingId(null); });
   }
 
   async function retry(photo: UploadedPhoto) {
-    if (locked) return;
-    await recognize(photo).finally(() => onBusyChange?.(false));
+    if (locked || !hasAccess()) return;
+    const operation = beginOperation();
+    try { await recognize(photo, operation); }
+    catch (failure) { if (operation.isCurrent?.()) setError(failure instanceof Error ? failure.message : '识别结果尚未确认。'); }
+    finally { if (operation.isCurrent?.()) { validation.current = null; onBusyChange?.(false); } }
   }
 
   useEffect(() => {
@@ -75,7 +125,8 @@ export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onB
   }, [onBusyChange]);
 
   async function upload(files: File[]) {
-    if (!patientId || !files.length || locked) return;
+    if (!patientId || !files.length || locked || !hasAccess()) return;
+    const operationGuard = beginOperation();
     const replaceId = replacement.current;
     replacement.current = null;
     setUploading(true);
@@ -86,32 +137,42 @@ export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onB
       if ((replaceId ? photos.length - 1 : photos.length) + files.length > 10) throw new Error('每份资料最多10张照片');
       for (const file of files) {
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size <= 0 || file.size > 20 * 1024 * 1024) throw new Error('照片需使用 JPEG、PNG 或 WebP 格式，每张不超过20MB');
+        checkRequestGuard(operationGuard);
         const bitmap = await createImageBitmap(file);
         const pixels = bitmap.width * bitmap.height;
         bitmap.close();
+        checkRequestGuard(operationGuard);
         if (pixels > 40_000_000) throw new Error('照片解码后不能超过4000万像素');
       }
       for (const file of files) {
-        const group = await createFileGroup(patientId!, csrfToken ?? undefined, authorizationId);
-        const result = await uploadFile(group.group_id, crypto.randomUUID(), await file.arrayBuffer(), file.type);
-        await completeFileGroup(group.group_id, csrfToken ?? undefined);
+        checkRequestGuard(operationGuard);
+        const bytes = await file.arrayBuffer();
+        checkRequestGuard(operationGuard);
+        const group = await createFileGroup(patientId!, csrfToken ?? undefined, authorizationId, undefined, operationGuard);
+        checkRequestGuard(operationGuard);
+        const result = await uploadFile(group.group_id, crypto.randomUUID(), bytes, file.type, operationGuard);
+        checkRequestGuard(operationGuard);
         const photo = { file_id: result.file_id, name: file.name };
+        pendingUploads.current.push({ groupId: group.group_id, photo, replaceId, authorizationId });
+        await completeFileGroup(group.group_id, csrfToken ?? undefined, operationGuard.signal, patientId!, operationGuard.isCurrent);
+        checkRequestGuard(operationGuard);
+        pendingUploads.current = pendingUploads.current.filter(value => value.groupId !== group.group_id);
         const next = replaceId
           ? currentPhotos.current.map(value => value.file_id === replaceId ? photo : value)
           : [...currentPhotos.current, photo];
         currentPhotos.current = next;
         onChange(next);
-        await recognize(photo);
+        await recognize(photo, operationGuard);
+        checkRequestGuard(operationGuard);
       }
     };
-    await operation().then(undefined, failure => { setError(failure.message); }).finally(() => {
-      setUploading(false);
-      onBusyChange?.(false);
+    await operation().catch(failure => { if (operationGuard.isCurrent?.()) setError(failure instanceof Error ? failure.message : '上传结果尚未确认。'); }).finally(() => {
+      if (operationGuard.isCurrent?.()) { validation.current = null; setUploading(false); onBusyChange?.(false); }
     });
   }
 
   function select(id: string | null, source: 'camera' | 'album') {
-    if (locked || !patientId) return;
+    if (locked || !patientId || !hasAccess()) return;
     replacement.current = id;
     onBusyChange?.(true);
     const input = source === 'camera' ? camera.current : album.current;
@@ -119,7 +180,7 @@ export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onB
   }
 
   function move(id: string, direction: -1 | 1) {
-    if (locked) return;
+    if (locked || !hasAccess()) return;
     const next = [...photos];
     const index = next.findIndex(photo => photo.file_id === id);
     if (index < 0 || index + direction < 0 || index + direction >= next.length) throw new Error('照片页序无效');
@@ -139,9 +200,21 @@ export function UploadedPhotos({ photos, onChange, onUploaded, busy = false, onB
   </>;
 
   if (ui2) return <>
-    <section className="card photo-intro"><span className="large-icon"><Camera size={54} /></span><h2>{therapy ? '添加处方或治疗资料' : '把报告原件保留下来'}</h2><p>文字清晰、页面完整，按文书顺序选择。</p>
-      <button className="button" disabled={locked || !patientId || photos.length >= 10} onClick={() => select(null, 'album')}>{uploading ? '正在保存原件' : '拍照或选择照片'}</button>{inputs}
-      <small>{patientId ? '选择后保存原件并请求识别，候选内容需要本人确认。' : '登录并核验权限后才能保存原件与识别内容。'}</small></section>
+    {inputs}
+    {captureGuide ? <>
+      <ol className="registration-steps" aria-label="资料登记进度"><li aria-current="step"><span>1</span>添加照片</li><li><span>2</span>核对原图</li><li><span>3</span>确认内容</li></ol>
+      <section className="card registration-capture-guide"><ScanLine size={40} /><h2>{therapy ? '拍清治疗资料' : '拍清整张报告'}</h2>
+        <ol><li>展平纸张，保留四角和全部文字。</li><li>保持光线均匀，确认图片没有反光和模糊。</li><li>{therapy ? '药品包装需包含药名与规格；处方保留使用说明。' : '保留患儿信息、采样时间、单位与参考范围。'}</li><li>多页资料可以连续添加，之后核对顺序。</li></ol>
+        <button className="button" disabled={locked || !patientId || photos.length >= 10} onClick={() => select(null, 'camera')}><Camera size={24} />{uploading ? '正在保存原件' : '打开系统相机'}</button>
+        <button className="button secondary" disabled={locked || !patientId || photos.length >= 10} onClick={() => select(null, 'album')}>从相册选择</button>
+        <p>相机无法打开时，可在系统设置中检查权限，或使用相册中的照片。</p>
+        <button className="text-action" disabled={locked} onClick={() => setCaptureGuide(false)}>返回当前资料</button>
+      </section>
+    </> : <>
+      <div className="registration-photo-actions"><button className="button" disabled={locked || !patientId || photos.length >= 10} onClick={() => setCaptureGuide(true)}><Camera size={24} />拍照添加</button><button className="button secondary" disabled={locked || !patientId || photos.length >= 10} onClick={() => select(null, 'album')}><Images size={24} />{uploading ? '正在保存原件' : '从相册选择'}</button></div>
+      <p className="registration-photo-note">{therapy ? '拍摄治疗清单、处方或药品包装，保留名称与使用说明。' : '拍摄完整报告单，保留项目、数值、单位和参考范围。'}</p>
+      <p className="registration-help">{patientId ? '选择后保存原件并请求识别，候选内容需要本人确认。' : '登录并核验权限后才能保存原件与识别内容。'}</p>
+    </>}
     {photos.length > 0 && <section className="card form-card"><div className="section-heading"><h2>已选择的文件</h2></div>
       {photos.map(photo => <div className="selected-file" key={photo.file_id}><FileText size={18} /><span>{photo.name}</span><button aria-label={`移除 ${photo.name}`} disabled={locked} onClick={() => onChange(photos.filter(value => value.file_id !== photo.file_id))}><X size={17} /></button></div>)}
       <p className="note">已保存 {photos.length} 份原件；{therapy ? '治疗' : '报告'}内容需要核对后确认保存。</p>

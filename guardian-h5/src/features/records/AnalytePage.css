@@ -1,0 +1,18 @@
+/* S09: compact native disclosures; exact values and source times remain readable. */
+.rich-analyte-results.form-card{gap:0}
+.rich-analyte-results>h2{margin-bottom:8px}
+.rich-analyte-results>.rich-analyte-result{min-width:0;padding:0;border-color:var(--line)}
+.rich-analyte-result>summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 15px;align-items:start;gap:5px 10px;min-height:54px;padding:15px 0;list-style:none;cursor:pointer}
+.rich-analyte-result>summary::-webkit-details-marker{display:none}
+.rich-analyte-result>summary>span,.rich-analyte-result>summary>strong{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.6}
+.rich-analyte-result-time{font-size:12px;color:var(--muted)}
+.rich-analyte-result-value{font-size:14px;font-weight:600;color:var(--ink);text-align:right}
+.rich-analyte-result>summary>.three-d-icon{grid-column:3;grid-row:1;margin-top:3px}
+.rich-analyte-result[open]>summary>.three-d-icon{transform:rotate(90deg)}
+.rich-analyte-result-state,.rich-analyte-result-comparison{grid-column:1 / -1;font-size:12px;color:var(--muted)}
+.rich-analyte-result>summary:focus-visible{outline:3px solid var(--link);outline-offset:2px;border-radius:4px}
+@media(max-width:370px){
+ .rich-analyte-result>summary{grid-template-columns:minmax(0,1fr) 15px}
+ .rich-analyte-result-time,.rich-analyte-result-value{grid-column:1;text-align:left}
+ .rich-analyte-result>summary>.three-d-icon{grid-column:2}
+}

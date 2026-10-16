@@ -80,7 +80,7 @@ def checked_range(patient, payload):
 def episode_scope(actor, patient, episode):
     version = RecordVersion.objects.get(id=episode.record_version_id, patient=patient)
     field = RecordField.objects.get(id=episode.source_field_id, record_version_id=version.id, patient=patient)
-    original = RecordVersion.objects.get(record_id=version.record_id, patient=patient, version=1)
+    original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient=patient, version=1)
     scope = {'record_id': version.record_id, 'author_id': original.author_id, 'field_codes': [field.field_code]}
     if not grants_for(actor, patient, 'read_raw', **scope):
         return None
@@ -176,7 +176,7 @@ def sampling_materials(actor, patient, visibility, runtime, artifact):
         record = Record.objects.get(id=source.record_id, patient=patient)
         if record.status != 'active' or record.current_version != source.version:
             continue
-        initial = RecordVersion.objects.get(record_id=record.id, patient=patient, version=1)
+        initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=patient, version=1)
         scope = {'record_id': record.id, 'author_id': initial.author_id, 'field_codes': [field.field_code]}
         if not grants_for(actor, patient, 'read_raw', **scope):
             continue

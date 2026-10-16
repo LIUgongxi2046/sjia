@@ -1,9 +1,126 @@
+from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import AwareDatetime, Field, model_validator
 
-from assessment.policies import ContextVariable, Evidence, PolicyModel, StaticVariable, Text
+from assessment.policies import (
+    BinaryValue, Context, ContextVariable, DECIMAL_UNITS, Evidence, MS_VARIABLES,
+    PolicyModel, StaticVariable, Text,
+)
+
+
+# These are serialization constraints, never clinical parameters. Every weight,
+# threshold, evidence reference and human-readable preset name is supplied by an
+# independently approved configuration; this module provides no clinical preset.
+DecimalText = Annotated[str, Field(pattern=r'^(0\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\.[0-9]+)?)$')]
+FractionText = Annotated[str, Field(pattern=r'^(0\.[0-9]*[1-9][0-9]*|1(\.0+)?)$')]
+
+
+class WeightedSignal(PolicyModel):
+    signal_ref: Text
+    classification: Literal['core', 'general']
+    weight: DecimalText
+
+    @model_validator(mode='after')
+    def positive_weight(self):
+        if Decimal(self.weight) <= 0:
+            raise ValueError('指标权重必须明确且大于零')
+        return self
+
+
+class WeightedCoreGate(PolicyModel):
+    operator: Literal['all', 'at_least']
+    minimum_met: Annotated[int, Field(ge=1)] | None
+
+    @model_validator(mode='after')
+    def explicit_core_gate(self):
+        if (self.operator == 'all') != (self.minimum_met is None):
+            raise ValueError('核心组合必须明确全部满足或至少满足的数量')
+        return self
+
+
+class WeightedCombination(PolicyModel):
+    """Versioned, fixed-denominator three-valued aggregation contract.
+
+    All declared conditions participate exactly once. Unknown conditions remain
+    in the denominator and contribute only to the possible upper bound. Core
+    membership adds the explicitly configured core gate; it assigns no weight.
+    """
+
+    schema_version: Literal['weighted-combination-1']
+    operator: Literal['weighted']
+    members: Annotated[list[WeightedSignal], Field(min_length=1)]
+    denominator: Literal['all_configured_weights']
+    core_gate: WeightedCoreGate
+    threshold_fraction: FractionText
+    minimum_known_fraction: FractionText
+    unknown_policy: Literal['bounded_no_imputation']
+    evidence_refs: Evidence
+
+    @model_validator(mode='after')
+    def complete_weighted_contract(self):
+        references = [item.signal_ref for item in self.members]
+        if len(set(references)) != len(references):
+            raise ValueError('加权指标不能重复')
+        core_count = sum(item.classification == 'core' for item in self.members)
+        if not core_count:
+            raise ValueError('加权方案必须明确至少一个核心指标')
+        if self.core_gate.minimum_met is not None and self.core_gate.minimum_met > core_count:
+            raise ValueError('核心指标要求不能超过已配置核心指标数量')
+        if any(not 0 < Decimal(value) <= 1 for value in
+                (self.threshold_fraction, self.minimum_known_fraction)):
+            raise ValueError('加权阈值和已知权重比例必须大于零且不超过一')
+        return self
+
+
+class SensitivityPreset(PolicyModel):
+    """A name for one immutable approved rule, not a numerical override."""
+
+    schema_version: Literal['dynamic-sensitivity-preset-1']
+    preset_key: Text
+    display_name: Text
+    description: Text
+
+
+def weighted_trigger_reason(payload):
+    """Semantic validation after the complete alert-trigger-2 JSON schema."""
+    combination = WeightedCombination.model_validate(payload['combination'])
+    SensitivityPreset.model_validate(payload['sensitivity_preset'])
+    codes = [item['signal_id'] for item in payload['conditions']]
+    if len(codes) != len(set(codes)):
+        return 'CONFIG_SIGNAL_DUPLICATE'
+    if {item.signal_ref for item in combination.members} != set(codes):
+        return 'CONFIG_WEIGHTED_SIGNAL_SCOPE_INVALID'
+    return None
+
+
+class DynamicNumericVariable(PolicyModel):
+    """Explicit numeric input identity, never inferred from available report fields.
+
+    An accepted definition is only a contract. Qualification still requires the
+    referenced mapping's current approval, implementation validation and exact
+    concept/source/unit/method match. New codes have no units or clinical defaults.
+    Existing fixed-rule codes retain their established units and meanings.
+    """
+
+    variable_code: Text
+    concept_code: Text
+    value_type: Literal['decimal']
+    normalized_unit: Text
+    mapping_config_id: UUID
+    categorical_values: Annotated[list[BinaryValue], Field(max_length=0)]
+    accepted_context_types: Annotated[list[Context], Field(min_length=1)]
+
+    @model_validator(mode='after')
+    def explicit_numeric_shape(self):
+        if len(set(self.accepted_context_types)) != len(self.accepted_context_types):
+            raise ValueError('事实语境不能重复')
+        if self.variable_code in (MS_VARIABLES - DECIMAL_UNITS.keys()) | {'sjia', 'fever'}:
+            raise ValueError('动态数值变量不能改变固定专业变量的含义')
+        if self.variable_code in DECIMAL_UNITS and self.normalized_unit != DECIMAL_UNITS[self.variable_code]:
+            raise ValueError('既有固定数值变量必须保留 PRD 单位')
+        return self
 
 
 class MethodPair(PolicyModel):
@@ -29,7 +146,7 @@ class DynamicComparison(PolicyModel):
 class DynamicInputPolicy(PolicyModel):
     schema_version: Literal['dynamic-input-policy-2']
     purpose: Text
-    variables: list[StaticVariable | ContextVariable]
+    variables: list[DynamicNumericVariable | StaticVariable | ContextVariable]
     comparisons: list[DynamicComparison]
     max_combination_depth: Annotated[int, Field(ge=1)]
     max_combination_operands: Annotated[int, Field(ge=1)]
@@ -60,10 +177,19 @@ class LifecyclePolicy(PolicyModel):
 
 
 class ScheduledAssessment(PolicyModel):
-    kind: Literal['classification', 'ms']
+    kind: Literal['classification', 'ms', 'hlh']
     rule_id: UUID
     window_policy_id: UUID
     verification_policy_id: UUID
+    input_rule_id: UUID | None = None
+
+    @model_validator(mode='after')
+    def hlh_input_rule_required(self):
+        if self.kind == 'hlh' and self.input_rule_id is None:
+            raise ValueError('HLH 计划需要明确批准的输入规则')
+        if self.kind != 'hlh' and 'input_rule_id' in self.model_fields_set:
+            raise ValueError('既有静态计划不能附带未使用的输入规则')
+        return self
 
 
 class DynamicSchedulePolicy(PolicyModel):
@@ -101,6 +227,7 @@ class DynamicSchedulePolicy(PolicyModel):
             raise ValueError('独立静态路径不能重复')
         required.update(value for item in self.static_assessments
             for value in (item.rule_id, item.window_policy_id, item.verification_policy_id))
+        required.update(item.input_rule_id for item in self.static_assessments if item.input_rule_id is not None)
         if 'configuration.changed' in self.event_types and not required <= set(self.watch_config_ids):
             raise ValueError('配置变化范围必须包含全部直接评估配置')
         return self

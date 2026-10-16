@@ -5,16 +5,17 @@ import uuid
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 
-class Verification(models.Model):
+class Verification(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     record_version_id = models.UUIDField()
     verifier = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, db_column="verifier_id", related_name="+")
     policy = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, db_column="policy_id", related_name="+")
     purpose = models.TextField()
-    evidence_ref = models.TextField()
+    evidence_ref = models.TextField(null=True)
     evidence_source = models.ForeignKey("sources.SourceRevision", on_delete=models.RESTRICT, db_column="evidence_source_id", related_name="+")
     verified_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True)
@@ -28,7 +29,7 @@ class Verification(models.Model):
         ]
 
 
-class VerificationField(models.Model):
+class VerificationField(ErasureModel, models.Model):
     class Result(models.TextChoices):
         CONSISTENT = "consistent", "consistent"
         NEEDS_CORRECTION = "needs_correction", "needs_correction"
@@ -39,7 +40,7 @@ class VerificationField(models.Model):
     record_version_id = models.UUIDField()
     patient_id = models.UUIDField()
     field_id = models.UUIDField()
-    result = models.CharField(max_length=16, choices=Result.choices)
+    result = models.CharField(max_length=16, choices=Result.choices, null=True)
     reason = models.TextField(null=True)
 
     class Meta:
@@ -52,7 +53,7 @@ class VerificationField(models.Model):
         ]
 
 
-class VerificationRequest(models.Model):
+class VerificationRequest(ErasureModel, models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "pending"
         IN_REVIEW = "in_review", "in_review"
@@ -77,7 +78,7 @@ class VerificationRequest(models.Model):
         ]
 
 
-class FieldVerificationState(models.Model):
+class FieldVerificationState(ErasureModel, models.Model):
     class Status(models.TextChoices):
         UNVERIFIED = "unverified", "unverified"
         PENDING = "pending", "pending"
@@ -102,7 +103,7 @@ class FieldVerificationState(models.Model):
         ]
 
 
-class CorrectionRequest(models.Model):
+class CorrectionRequest(ErasureModel, models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "pending"
         IN_REVIEW = "in_review", "in_review"
@@ -116,7 +117,7 @@ class CorrectionRequest(models.Model):
     record_version_id = models.UUIDField()
     requested_by = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, db_column="requested_by", related_name="+")
     field_ids = ArrayField(models.UUIDField())
-    reason = models.TextField()
+    reason = models.TextField(null=True)
     proposed_text = models.TextField(null=True)
     status = models.CharField(max_length=16, choices=Status.choices)
     version = models.PositiveBigIntegerField()

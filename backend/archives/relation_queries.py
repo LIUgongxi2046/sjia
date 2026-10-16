@@ -18,7 +18,7 @@ from api.base import ApiError
 def source_granted(actor, patient, audience, kind, value):
     if kind == 'fact':
         field, version = fact_source(value, patient)
-        original = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
+        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
         action = 'read_raw' if audience == 'family' else 'read_case'
         scope = {'field_codes': [field.field_code], 'record_id': version.record_id, 'author_id': original.author_id}
     else:

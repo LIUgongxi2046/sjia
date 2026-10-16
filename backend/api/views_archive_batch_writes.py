@@ -31,7 +31,8 @@ def archive_batch_create(request, patient_id):
         intent, patient, pages, quota = submitted_batch_intent(request, actor, epoch)
         if intent.status == 'committed':
             return Response(batch_receipt(intent), status=201)
-        batch = save_received_batch(actor=actor, patient=patient, request_id=intent.request_id, pages=pages, quota=quota)
+        batch = save_received_batch(actor=actor, patient=patient, request_id=intent.request_id,
+            pages=pages, quota=quota, intake_mode=intent.recovery_payload.get('intake_mode', 'ocr'))
         saved = commit_intent(intent=intent, action='archive_batch_create', resource_type='archive_batch',
             resource_id=batch.id, expected_version=1)
         write_audit(actor=actor, patient=patient, action='archive_batch_create', object_type='archive_batch',

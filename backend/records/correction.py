@@ -37,6 +37,14 @@ def medical_time_for_correction(patient, previous_field, field):
     previous_time = medical_time_view(previous_field.medical_time_id, patient)
     if field.get('medical_time') == previous_time:
         return MedicalTime.objects.get(id=previous_field.medical_time_id, patient=patient) if previous_field.medical_time_id else None
+    # Only an unchanged server projection may retain a resolved instant. New
+    # time content must use the input contract and be resolved by the server.
+    from records.input_validation import validate_medical_input
+    from records.service import RecordRejected
+    try:
+        validate_medical_input(field.get('medical_time'))
+    except RecordRejected as exc:
+        raise CorrectionRejected(exc.reason_code) from exc
     return _create_medical_time(patient, field.get('medical_time'))
 
 
@@ -54,6 +62,8 @@ def correct_record(
     source_revision=None,
     origin_type=None,
 ) -> dict:
+    if type(expected_version) is not int or not 1 <= expected_version < 9223372036854775807:
+        raise CorrectionRejected('VERSION_INVALID')
     Patient.objects.select_for_update().get(id=record.patient_id)
     record = Record.objects.select_for_update().get(id=record.id, patient=record.patient)
     if record.current_version != expected_version:

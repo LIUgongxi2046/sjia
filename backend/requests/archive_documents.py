@@ -60,6 +60,17 @@ def family_identity(request):
 
 
 def target_scope(request, actor, epoch, operation, target, payload, *, check_version=True, receipt_document_id=None):
+    # An internal caller may supply the exact actor and current auth epoch
+    # without fabricating or persisting a browser session. Both routes use the
+    # same authorization policy and all following locked material checks.
+    def authorize(action, **scope):
+        if request is not None:
+            return authorize_case(request, actor, patient, action, **scope)
+        from authorization.policy import evaluate
+        return evaluate(principal=actor, patient=patient, action=action,
+            purpose='family_observation', environment=settings.SJIA_ENVIRONMENT,
+            session_auth_epoch=epoch, **scope)
+
     document_input(OPERATIONS[operation], payload)
     if not target.startswith('/') or '?' in target or '#' in target or '://' in target:
         raise ApiError('TARGET_KEY_INVALID', 422)
@@ -79,19 +90,19 @@ def target_scope(request, actor, epoch, operation, target, payload, *, check_ver
     scope_version = None if document is None else ArchiveDocumentVersion.objects.get(document_id=document.id,
         patient_id=patient.id, version=document.current_version)
     record_id = None if document is None else document_record_scope(document, patient, scope_version)
-    decision = authorize_case(request, actor, patient, 'write_record', record_id=record_id, author_id=author,
+    decision = authorize('write_record', record_id=record_id, author_id=author,
         require_relation=True, whole_resource=True)
     patient = Patient.objects.select_for_update().get(id=patient.id)
     if document is not None:
         document = ArchiveDocument.objects.select_for_update().get(id=document.id, patient_id=patient.id)
     proofs = [decision]
-    proofs.append(authorize_case(request, actor, patient, 'read_raw', record_id=record_id,
+    proofs.append(authorize('read_raw', record_id=record_id,
         author_id=author, require_relation=True, whole_resource=True))
     group_ids = FileObject.objects.filter(patient_id=patient.id,
         id__in=ArchivePage.objects.filter(id__in=payload['page_ids'], patient_id=patient.id,
             batch_id=payload['batch_id']).values('file_id')).values('file_group_id')
     for group in FileGroup.objects.filter(id__in=group_ids, patient_id=patient.id).order_by('id'):
-        proofs.append(authorize_case(request, actor, patient, 'read_file', record_id=record_id, author_id=group.owner_id,
+        proofs.append(authorize('read_file', record_id=record_id, author_id=group.owner_id,
             require_relation=True, whole_resource=True))
     batch, pages, files, groups, episodes, facts, previous = document_materials(
         patient, payload, document, check_version=check_version, ignore_document_id=receipt_document_id,
@@ -105,11 +116,11 @@ def target_scope(request, actor, epoch, operation, target, payload, *, check_ver
         source_fields[field.id] = field
     for field in source_fields.values():
         version = RecordVersion.objects.get(id=field.record_version_id, patient_id=patient.id)
-        initial = RecordVersion.objects.get(record_id=version.record_id, patient_id=patient.id, version=1)
-        proofs.append(authorize_case(request, actor, patient, 'read_raw', field_codes=[field.field_code],
+        initial = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
+        proofs.append(authorize('read_raw', field_codes=[field.field_code],
             record_id=version.record_id, author_id=initial.author_id, require_relation=True))
         if field.record_version_id in fact_record_ids:
-            proofs.append(authorize_case(request, actor, patient, 'write_record', field_codes=[field.field_code],
+            proofs.append(authorize('write_record', field_codes=[field.field_code],
                 record_id=version.record_id, author_id=initial.author_id, require_relation=True))
     relation_versions = {str(row.id): str(row.version) for row in Relation.objects.select_for_update().filter(
         id__in=[proof.grant.relation_id for proof in proofs], patient_id=patient.id, guardian_id=actor.id)}
@@ -170,6 +181,34 @@ def checked_payload(intent):
 
 def authorized_intent(request, actor, epoch, intent):
     payload = checked_payload(intent)
+    if intent.status == 'committed':
+        # A later split/merge may retire this identity or assign its old pages
+        # elsewhere. Receipt recovery authorizes the exact saved historical
+        # version instead of replaying current write/page-uniqueness checks.
+        from api.views_archive_documents import authorize_document
+        from archives.documents import document_sources
+        document_receipt(intent)
+        saved = intent.write_request
+        document = ArchiveDocument.objects.get(id=saved.resource_id, patient_id=intent.patient_id)
+        patient = get_patient(intent.patient_id)
+        route = resolve('/api/v2' + intent.target_key)
+        if (route.url_name != intent.operation_id or reverse(intent.operation_id, kwargs=route.kwargs) != '/api/v2' + intent.target_key
+                or intent.operation_id == 'archive_document_create' and route.kwargs['patient_id'] != patient.id
+                or intent.operation_id == 'archive_document_group' and route.kwargs['document_id'] != document.id):
+            raise ApiError('DOCUMENT_INTENT_SCOPE_MISMATCH', 409)
+        version = ArchiveDocumentVersion.objects.get(document_id=document.id, patient_id=patient.id,
+            version=saved.expected_version)
+        actions = ('read_raw', 'read_history') if document.retired_at is not None or version.version != document.current_version else ('read_raw',)
+        for action in actions:
+            authorize_document(request, actor, patient, document, version, action)
+        batch, pages, files, groups, _, _ = document_sources(document=document, patient=patient, version=version)
+        if (str(batch.id) != payload['batch_id'] or [str(page.id) for page in pages] != payload['page_ids']
+                or files[0].retention_policy_id != intent.retention_policy_id):
+            raise ApiError('DOCUMENT_INTENT_SCOPE_MISMATCH', 409)
+        for file in files:
+            group = next(value for value in groups if value.id == file.file_group_id)
+            lock_use_authorization(group.use_authorization_id, file, 'family_observation', settings.SJIA_ENVIRONMENT)
+        return patient, document, None
     patient, document, retention, context = target_scope(request, actor, epoch, intent.operation_id,
         intent.target_key, payload, check_version=intent.status != 'committed',
         receipt_document_id=intent.write_request.resource_id if intent.status == 'committed' and intent.write_request_id else None)

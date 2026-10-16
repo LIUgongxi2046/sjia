@@ -80,7 +80,12 @@ def handle(view):
                 rejection = CsrfViewMiddleware(lambda request: None).process_view(request._request, lambda request: None, (), {})
                 if rejection is not None:
                     raise ApiError('CSRF_FAILED', status.HTTP_403_FORBIDDEN, '请求校验失败，请刷新页面后重试。')
-            response = view(*args, **kwargs)
+            if view.__name__.startswith('content_disposition_'):
+                response = view(*args, **kwargs)
+            else:
+                from retention.content_fences import content_reader
+                with content_reader():
+                    response = view(*args, **kwargs)
             response['Cache-Control'] = 'no-store, private'
             return response
         except ApiError as exc:
@@ -88,6 +93,11 @@ def handle(view):
         except Exception as exc:  # noqa: BLE001
             import logging
 
+            from retention.erasure_models import ContentDisposed
+            if isinstance(exc, ContentDisposed):
+                return Response({'code': 'CONTENT_DISPOSED', 'message': '这份资料的内容已按批准范围处置。',
+                    'retryable': False, 'recovery': 'none', 'field_errors': []}, status=410,
+                    headers={'Cache-Control': 'no-store, private'})
             if isinstance(exc, (ObjectDoesNotExist, Http404)):
                 return Response({'code': 'RESOURCE_NOT_FOUND', 'message': '资料不存在或当前无法读取。',
                     'retryable': False, 'recovery': 'none', 'field_errors': []}, status=404,
@@ -123,6 +133,10 @@ def handle(view):
                     'retryable': False, 'recovery': 'review_input', 'field_errors': [],
                 }, status=400, headers={'Cache-Control': 'no-store, private'})
             if isinstance(exc, PydanticValidationError):
+                if exc.title.startswith('Content') or exc.title in ('PlanRequest', 'ApprovalRequest', 'ExecuteRequest'):
+                    return Response({'code': 'CONTENT_INPUT_INVALID', 'message': '处置范围或证明格式无效，请检查准确版本和必填信息。',
+                        'retryable': False, 'recovery': 'review_input', 'field_errors': []}, status=422,
+                        headers={'Cache-Control': 'no-store, private'})
                 if exc.title.startswith('Verification'):
                     return Response({'code': 'VERIFICATION_INPUT_INVALID', 'message': '核对范围或提交标识无效，请检查内容。',
                         'retryable': False, 'recovery': 'review_input',
@@ -201,11 +215,29 @@ def handle(view):
                 }, status=422 if request_error else 502, headers={'Cache-Control': 'no-store, private'})
             if isinstance(exc, BadSignature):
                 return Response({'code': 'CURSOR_INVALID', 'message': '分页标识无效，请重新查询。', 'retryable': False, 'recovery': 'reload', 'field_errors': []}, status=422, headers={'Cache-Control': 'no-store, private'})
+            from django.db import IntegrityError
+            if isinstance(exc, IntegrityError) and getattr(getattr(exc.__cause__, 'diag', None), 'message_primary', None) == 'CONTENT_DISPOSED':
+                return Response({'code': 'CONTENT_DISPOSED', 'message': '这份资料已处置，旧操作不能恢复内容。',
+                    'retryable': False, 'recovery': 'none', 'field_errors': []}, status=410,
+                    headers={'Cache-Control': 'no-store, private'})
             reason = getattr(exc, 'reason_code', None)
             if reason:
-                code = 409 if reason in ('VERSION_CONFLICT', 'DRAFT_NOT_EDITING', 'DRAFT_EXPIRED', 'CURSOR_STALE', 'FILE_GROUP_NOT_AVAILABLE', 'FILE_NOT_AVAILABLE', 'FILE_GROUP_INCOMPLETE') else 422
-                if reason.endswith('_DENIED') or reason in ('ACCOUNT_NOT_ACTIVE', 'AUTH_EPOCH_MISMATCH', 'PURPOSE_AUTHORIZATION_UNAVAILABLE'):
+                code = 409 if reason in ('VERSION_CONFLICT', 'DRAFT_NOT_EDITING', 'DRAFT_EXPIRED', 'CURSOR_STALE', 'FILE_GROUP_NOT_AVAILABLE', 'FILE_NOT_AVAILABLE', 'FILE_GROUP_INCOMPLETE', 'UPLOAD_REQUEST_MISMATCH') else 422
+                if reason == 'CONTENT_EXECUTION_DISABLED':
+                    code = 503
+                elif reason == 'CONTENT_ACCESS_REVOKED':
+                    code = 410
+                elif reason.endswith('_DENIED') or reason in ('ACCOUNT_NOT_ACTIVE', 'AUTH_EPOCH_MISMATCH', 'PURPOSE_AUTHORIZATION_UNAVAILABLE'):
                     code = 403
+                elif reason == 'REQUEST_RETENTION_UNAVAILABLE':
+                    code = 503
+                elif reason == 'REQUEST_RETENTION_CHANGED':
+                    code = 409
+                elif reason == 'FILE_VALIDATION_POLICY_REQUIRED':
+                    code = 503
+                elif reason.startswith('FILE_VALIDATION_') and reason.endswith((
+                        '_MISMATCH', '_CHANGED', '_INTENT_EXPIRED', '_RETRY_UNAVAILABLE', '_RECEIPT_UNCERTAIN')):
+                    code = 409
                 elif reason in ('DATASET_RUNTIME_UNAVAILABLE', 'DATASET_RUN_RUNTIME_UNAVAILABLE',
                         'ASSESSMENT_RUNTIME_UNAVAILABLE', 'ASSESSMENT_CONFIGURATION_UNAVAILABLE'):
                     code = 503
@@ -282,6 +314,8 @@ def handle(view):
                         'DOCUMENT_COPY_CONFIRMATION_REQUIRED', 'DOCUMENT_FACT_PAGE_REQUIRED', 'DOCUMENT_FACT_EPISODE_REQUIRED'):
                     code = 409
                 return Response({'code': reason, 'message': reason, 'retryable': False, 'recovery': 'none', 'field_errors': []}, status=code, headers={'Cache-Control': 'no-store, private'})
-            logging.getLogger("sjia.api").exception("api error")
+            logging.getLogger("sjia.api").error("api error", extra={'error_type': type(exc).__name__})
             return Response({"code": "INTERNAL_ERROR", "message": "服务内部错误", "retryable": False, "recovery": "none", "field_errors": []}, status=status.HTTP_500_INTERNAL_SERVER_ERROR, headers={'Cache-Control': 'no-store, private'})
-    return wrapper
+    from audit.api import audited_operation
+
+    return audited_operation(view, wrapper)

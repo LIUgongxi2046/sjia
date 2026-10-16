@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "HLHBinaryEncoding": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Value",
+          "type": "string"
+        },
+        "encoded": {
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Encoded",
+          "type": "integer"
+        },
+        "assertion_state": {
+          "enum": [
+            "present",
+            "absent"
+          ],
+          "title": "Assertion State",
+          "type": "string"
+        },
+        "specimen_site": {
+          "anyOf": [
+            {
+              "enum": [
+                "bone_marrow",
+                "spleen",
+                "lymph_node",
+                "other",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Specimen Site"
+        }
+      },
+      "required": [
+        "value",
+        "encoded",
+        "assertion_state",
+        "specimen_site"
+      ],
+      "title": "HLHBinaryEncoding",
+      "type": "object"
+    },
+    "HLHMetadataBindings": {
+      "additionalProperties": false,
+      "properties": {
+        "age_sample_binding": {
+          "const": "same_record_version_and_exact_medical_interval",
+          "title": "Age Sample Binding",
+          "type": "string"
+        },
+        "fasting_sample_binding": {
+          "const": "same_report_and_exact_sample_interval",
+          "title": "Fasting Sample Binding",
+          "type": "string"
+        },
+        "nk_laboratory_reference": {
+          "const": "verified_record_field_reference_interval",
+          "title": "Nk Laboratory Reference",
+          "type": "string"
+        },
+        "hemophagocytosis_specimen": {
+          "const": "approved_categorical_value_mapping",
+          "title": "Hemophagocytosis Specimen",
+          "type": "string"
+        },
+        "molecular_assertion": {
+          "const": "qualified_concept_not_raw_variant_or_family_history",
+          "title": "Molecular Assertion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "age_sample_binding",
+        "fasting_sample_binding",
+        "nk_laboratory_reference",
+        "hemophagocytosis_specimen",
+        "molecular_assertion"
+      ],
+      "title": "HLHMetadataBindings",
+      "type": "object"
+    },
+    "HLHVariable": {
+      "additionalProperties": false,
+      "properties": {
+        "variable_code": {
+          "enum": [
+            "applicability",
+            "molecular",
+            "fever",
+            "splenomegaly",
+            "hemoglobin",
+            "platelet_count",
+            "neutrophil_count",
+            "triglycerides",
+            "triglycerides_fasting",
+            "fibrinogen",
+            "hemophagocytosis",
+            "no_malignancy_evidence",
+            "nk_activity",
+            "ferritin",
+            "soluble_cd25",
+            "age_at_hemoglobin"
+          ],
+          "title": "Variable Code",
+          "type": "string"
+        },
+        "concept_code": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Concept Code",
+          "type": "string"
+        },
+        "value_type": {
+          "enum": [
+            "decimal",
+            "categorical"
+          ],
+          "title": "Value Type",
+          "type": "string"
+        },
+        "normalized_unit": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": ".*\\S.*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Normalized Unit"
+        },
+        "mapping_config_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mapping Config Id"
+        },
+        "categorical_values": {
+          "items": {
+            "$ref": "#/$defs/HLHBinaryEncoding"
+          },
+          "title": "Categorical Values",
+          "type": "array"
+        },
+        "accepted_context_types": {
+          "items": {
+            "enum": [
+              "history",
+              "current",
+              "discharge",
+              "actual"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Accepted Context Types",
+          "type": "array"
+        },
+        "accepted_methods": {
+          "items": {
+            "anyOf": [
+              {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Accepted Methods",
+          "type": "array"
+        }
+      },
+      "required": [
+        "variable_code",
+        "concept_code",
+        "value_type",
+        "normalized_unit",
+        "mapping_config_id",
+        "categorical_values",
+        "accepted_context_types",
+        "accepted_methods"
+      ],
+      "title": "HLHVariable",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "hlh-input-policy-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "purpose": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Purpose",
+      "type": "string"
+    },
+    "variables": {
+      "items": {
+        "$ref": "#/$defs/HLHVariable"
+      },
+      "maxItems": 16,
+      "minItems": 16,
+      "title": "Variables",
+      "type": "array"
+    },
+    "metadata_bindings": {
+      "$ref": "#/$defs/HLHMetadataBindings"
+    },
+    "evidence_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "purpose",
+    "variables",
+    "metadata_bindings",
+    "evidence_refs"
+  ],
+  "title": "HLHInputPolicy",
+  "type": "object"
+}

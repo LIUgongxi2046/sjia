@@ -1,3 +1,4 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useRef, useState } from 'react';
 import { useBlocker, useNavigate, useSearchParams } from 'react-router';
 import { ArrowRight, LockKeyhole } from 'lucide-react';
@@ -254,7 +255,7 @@ export function VerificationPage({ session, accessState, accessError, onRefresh 
           if (!record && event.target.value) throw new Error('所选记录已不属于当前获准目录。');
           setVersionInput(record?.record_version_id ?? ''); setPurposeInput(record?.purpose ?? ''); setCreation(null); setCreationFields([]); setAssigned(''); }}>
           <option value="">请选择记录</option>{directory?.patients.find(item => item.patient_id === creationPatient)?.records.map(item =>
-            <option key={item.record_version_id} value={item.record_version_id}>{recordNames[item.kind]} · {item.source_organization ?? '来源医院未知'} · 版本 {item.version} · {new Date(item.recorded_at).toLocaleString('zh-CN')}</option>)}</select></label>
+            <option key={item.record_version_id} value={item.record_version_id}>{recordNames[item.kind]} · {item.source_organization ?? '来源医院未知'} · 版本 {item.version} · {eventTimeLabel(item.recorded_at)}</option>)}</select></label>
         <div className="pair"><span>准确资料用途</span><strong>{purposeInput || '尚未选择'}</strong></div>
         {directoryLoading && <p role="status">正在读取当前获准目录。</p>}
         {directory && !directory.patients.length && <p role="status">当前没有获准核对的资料。</p>}
@@ -281,7 +282,11 @@ export function VerificationPage({ session, accessState, accessError, onRefresh 
       </> : <><label className="field"><span>撤销原因</span><textarea required value={reason} onChange={event => setReason(event.target.value)} /></label>
         <button className="button" disabled={!reason.trim() || phase === 'pending'} onClick={() => submit(true)}>确认撤销</button></>}
     </UI2Sheet>}>
+    {session?.capabilities.some(item => item.capability_id === 'write_professional' && item.state === 'available') && <button className="text-action" onClick={() => navigate('/support/professional-records')}>登记或更正专业记录</button>}
+    {available && <button className="text-action" onClick={() => navigate('/support/corrections')}>查看获准更正申请</button>}
     <div className="support-banner"><LockKeyhole size={16} />受控支持 · 需独立岗位授权</div>
+    <SupportReadStatus state={readState} error={accessState !== 'default' ? accessError : error}
+      onRefresh={accessState !== 'default' || !available || readState === 'permission' ? onRefresh : () => setRefresh(value => value + 1)} />
     <section className="card form-card"><div className="eyebrow">指定范围内操作</div><h2>专业核对</h2>
       <p className="muted">只对获准资料的指定字段与版本执行。</p><div className="pair"><span>当前资料范围</span><strong>{displayed?.patient_id ?? '尚未授权选择'}</strong></div></section>
     <section className="card form-card" onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}>
@@ -289,7 +294,7 @@ export function VerificationPage({ session, accessState, accessError, onRefresh 
         <option value="">请选择核对结论</option>{Object.entries(results).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <label className="field"><span>原始依据</span><textarea disabled={!canSubmit} placeholder="关联指定文书、页码与字段版本" value={evidence} onChange={event => setEvidence(event.target.value)} /></label>
       <div className="pair"><span>记录版本</span><strong>{displayed?.record_version_id ?? '尚未选择'}</strong></div>
-      <div className="pair"><span>核对资格</span><strong>{policy ? '已选择准确政策版本' : '待确认'}</strong></div>
+      <div className="pair"><span>核对资格</span><strong>{readState === 'permission' ? '未获准读取' : readState === 'loading' ? '正在读取' : readState !== 'default' ? '读取未完成' : policy ? '已选择准确政策版本' : '待确认'}</strong></div>
       {canSubmit && <button className="text-action" onClick={() => setSheet('policy')}>选择获准政策与依据</button>}
       {displayed?.fields.map(field => <label className="switch-row" key={field.field_id}>
         <span>{field.original_name ?? field.field_code}<small>{field.qualifier && field.qualifier !== 'eq' ? `${field.qualifier} ` : ''}
@@ -306,8 +311,6 @@ export function VerificationPage({ session, accessState, accessError, onRefresh 
       <button className="button" disabled={!canCreate && (!canSubmit || !conclusion || !selected.length || !policy || !evidence)}
         onClick={() => { if (canCreate) void loadDirectory(); else submit(); }}>提交核对</button></div>
     <button className="text-action center" onClick={() => navigate('/support/assessment')}>查看评估依据<ArrowRight size={15} /></button>
-    <SupportReadStatus state={readState} error={accessState !== 'default' ? accessError : error}
-      onRefresh={accessState !== 'default' || !available || readState === 'permission' ? onRefresh : () => setRefresh(value => value + 1)} />
     {visible && displayed?.resource_type === 'verification' && <section className="card form-card">
       <h3>{displayed.revoked_at ? '核对证明已撤销' : '核对结果已保存'}</h3>
       {displayed.results!.map(item => <div className="pair" key={item.field_id}><span>{item.field_id}</span><strong>{results[item.result]}</strong></div>)}

@@ -44,9 +44,9 @@ def batch_write_identity(actor, epoch, patient_id):
     gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
     if not gate.enabled:
         raise ApiError('ENVIRONMENT_DISABLED', 403)
-    patient = Patient.objects.select_for_update().get(id=patient_id)
     actor = Principal.objects.select_for_update().get(id=actor.id)
     check_principal_session(actor, epoch)
+    patient = Patient.objects.select_for_update().get(id=patient_id)
     if patient.status != 'active':
         raise ApiError('PATIENT_NOT_AVAILABLE', 403)
     return actor, patient, gate
@@ -191,19 +191,34 @@ def prepare_sources(actor, epoch, patient_id, payload):
     sources, pages, context = received_sources(actor, patient, gate, payload, receive=True)
     if ArchivePage.objects.filter(patient_id=patient.id, file_page_id__in=[page.id for page in pages]).exists():
         raise ApiError('ARCHIVE_SOURCE_ALREADY_RECEIVED', 409)
-    quota, runtime, qualification = receiving_quota(gate, sources, pages)
+    if payload.get('intake_mode', 'ocr') == 'manual':
+        # Receiving intact originals is independent of model execution. These
+        # limits are the already qualified local runtime's upload limits, not
+        # an invented OCR quota or reservation.
+        runtime = batch_runtime()
+        if (len(pages) > runtime.payload['limits']['max_pages']
+                or sum(source.size_bytes for source in sources) > runtime.payload['limits']['max_upload_bytes']):
+            raise ApiError('ARCHIVE_BATCH_LIMIT_EXCEEDED', 422)
+        quota = None
+        qualification = {'intake_mode': 'manual', 'quota_id': None,
+            'runtime_id': str(runtime.id), 'runtime_checksum': runtime.checksum}
+    else:
+        quota, runtime, qualification = receiving_quota(gate, sources, pages)
     context['configuration'] = qualification
     return actor, patient, sources, pages, quota, runtime, context
 
 
-def save_received_batch(*, actor, patient, request_id, pages, quota):
+def save_received_batch(*, actor, patient, request_id, pages, quota, intake_mode='ocr'):
+    if intake_mode not in ('ocr', 'manual') or (intake_mode == 'manual') != (quota is None):
+        raise ApiError('ARCHIVE_INTAKE_MODE_INVALID', 422)
     if ArchiveBatch.objects.filter(logical_request_id=request_id).exists():
         raise ApiError('ARCHIVE_BATCH_RESULT_UNKNOWN', 409)
     now = timezone.now()
     archive, _ = Archive.objects.get_or_create(patient_id=patient.id, defaults={'created_at': now})
     batch = ArchiveBatch.objects.create(patient_id=patient.id, archive_id=archive.id, submitted_by=actor.id,
-        logical_request_id=request_id, version=1, received_at=now, quota_policy_id=quota.id,
-        budget_status='available', status='receiving')
+        logical_request_id=request_id, version=1, received_at=now,
+        quota_policy_id=quota.id if quota is not None else None, intake_mode=intake_mode,
+        budget_status='unknown' if intake_mode == 'manual' else 'available', status='receiving')
     for ordinal, file_page in enumerate(pages, 1):
         source = FileObject.objects.get(id=file_page.file_id, patient=patient)
         ArchivePage.objects.create(patient_id=patient.id, batch_id=batch.id, ordinal=ordinal,

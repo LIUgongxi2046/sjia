@@ -4,11 +4,12 @@ import uuid
 from recognition.voice_models import TranscriptionReceipt, VoiceInput
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import FiniteDecimalField
 
 
-class CandidateSet(models.Model):
+class CandidateSet(ErasureModel, models.Model):
     class Status(models.TextChoices):
         PENDING_CONFIRMATION = "pending_confirmation", "pending_confirmation"
         CONFIRMED = "confirmed", "confirmed"
@@ -35,7 +36,7 @@ class CandidateSet(models.Model):
         ]
 
 
-class SourceAnchor(models.Model):
+class SourceAnchor(ErasureModel, models.Model):
     class AnchorKind(models.TextChoices):
         PAGE = "page", "page"
         BBOX = "bbox", "bbox"
@@ -46,15 +47,15 @@ class SourceAnchor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     page_id = models.UUIDField()
-    anchor_kind = models.CharField(max_length=16, choices=AnchorKind.choices)
-    coordinate_system = models.CharField(max_length=16, choices=CoordinateSystem.choices)
+    anchor_kind = models.CharField(max_length=16, choices=AnchorKind.choices, null=True)
+    coordinate_system = models.CharField(max_length=16, choices=CoordinateSystem.choices, null=True)
     x = FiniteDecimalField(null=True)
     y = FiniteDecimalField(null=True)
     width = FiniteDecimalField(null=True)
     height = FiniteDecimalField(null=True)
     row_label = models.TextField(null=True)
     column_label = models.TextField(null=True)
-    original_text = models.TextField()
+    original_text = models.TextField(null=True)
 
     class Meta:
         db_table = 'sjia"."source_anchor'
@@ -63,7 +64,7 @@ class SourceAnchor(models.Model):
         ]
 
 
-class CandidateField(models.Model):
+class CandidateField(ErasureModel, models.Model):
     class RecognitionStatus(models.TextChoices):
         RECOGNIZED = "recognized", "recognized"
         UNCERTAIN = "uncertain", "uncertain"
@@ -73,12 +74,12 @@ class CandidateField(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     candidate_set_id = models.UUIDField()
-    field_path = models.TextField()
+    field_path = models.TextField(null=True)
     raw_text = models.TextField(null=True)
     field_config_version = models.ForeignKey("configurations.ConfigVersion", on_delete=models.RESTRICT, db_column="field_config_version", related_name="+")
     proposed_field = models.JSONField(null=True)
     anchor_id = models.UUIDField(null=True)
-    recognition_status = models.CharField(max_length=16, choices=RecognitionStatus.choices)
+    recognition_status = models.CharField(max_length=16, choices=RecognitionStatus.choices, null=True)
     confidence = FiniteDecimalField(null=True)
 
     class Meta:
@@ -89,7 +90,7 @@ class CandidateField(models.Model):
         ]
 
 
-class CandidateConfirmation(models.Model):
+class CandidateConfirmation(ErasureModel, models.Model):
     class Decision(models.TextChoices):
         ACCEPTED = "accepted", "accepted"
         MODIFIED = "modified", "modified"
@@ -101,7 +102,7 @@ class CandidateConfirmation(models.Model):
     candidate_field_id = models.UUIDField()
     confirmed_by = models.ForeignKey("identity.Principal", on_delete=models.RESTRICT, db_column="confirmed_by", related_name="+")
     confirmed_text = models.TextField(null=True)
-    decision = models.CharField(max_length=16, choices=Decision.choices)
+    decision = models.CharField(max_length=16, choices=Decision.choices, null=True)
     confirmed_at = models.DateTimeField()
 
     class Meta:

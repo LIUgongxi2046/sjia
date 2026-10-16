@@ -8,6 +8,7 @@
     "ArchiveSearchInput": {
       "type": "object", "additionalProperties": false,
       "properties": {
+        "time_basis": {"enum": ["document", "episode"]},
         "cursor": {"type": "string", "minLength": 1, "maxLength": 65536},
         "limit": {"type": "integer", "minimum": 1, "maximum": 100},
         "query": {"$ref": "#/$defs/QueryText"},

@@ -1,0 +1,114 @@
+/* Application adaptation of the approved ui-delivery UI 3.0 visual system.
+   Keeps UI2 controls, data and permission states; does not import design scenarios. */
+:host { color-scheme:light; }
+.device {
+  --ink:#1c1c1e; --muted:#636366; --blue:#0865d8; --link:#0060ce;
+  --page:#f2f2f7; --card:#fff; --tint:#e9f2ff; --line:#d1d1d6;
+  --radius:24px; --canvas:#eef5fb;
+  --dim-surface-top:#fff; --dim-surface-bottom:#eff5fb; --dim-edge:#fff;
+  --dim-shadow:0 2px 2px #153a5d0a,0 11px 24px #173d651b,inset 0 1px #fff;
+  --dim-tile-shadow:0 5px 11px #193f661c,inset 0 1px #fff;
+  color:var(--ink); font-size:16px; line-height:1.5; color-scheme:light;
+  /* Original artwork permits synthetic weights on platforms without a CJK bold face.
+     The legacy app root disables synthesis; explicitly restore it inside this system. */
+  font-synthesis:weight style;
+  background:linear-gradient(160deg,#e6f0fa,#f4f8fb 34%,#e9f1fa);
+}
+.solo .canvas{background:#eef5fb}
+.phone-scroll{background:radial-gradient(circle at 12% 9%,#ffffff7a,transparent 32%),radial-gradient(circle at 95% 60%,#bddaf34a,transparent 35%)}
+.solo .app-header,.solo .app-header.root-header {
+  padding:20px 20px 28px;position:relative;isolation:isolate;
+  background:radial-gradient(circle at 81% -50%,#78c5e677,transparent 49%),linear-gradient(145deg,#173f70 2%,#245f91 51%,#0f345e 100%);
+  box-shadow:inset 0 1px #ffffff3b,inset 0 -3px 7px #09294a57,0 7px 18px #153d6740;
+}
+.app-header:after{content:"";position:absolute;inset:0 0 auto;height:46%;border-radius:0 0 52% 52%;background:linear-gradient(#ffffff1c,transparent);pointer-events:none;z-index:-1}
+.header-kicker{font-size:11px;letter-spacing:0;line-height:13px;color:#d4e7fa;margin:0 0 21px}
+.app-title-row{gap:8px}
+.app-header h1,.app-header.root-header h1{font-size:25px;font-weight:650;line-height:1.4;letter-spacing:-.035em}
+.header-subtitle{color:#d4e7fa;font-size:12px;margin-top:5px;line-height:1.5}
+.header-icon{width:44px;height:44px;min-width:44px;border-radius:13px;background:linear-gradient(145deg,#ffffff40,#ffffff0e);border:1px solid #ffffff4d;box-shadow:0 4px 9px #0b284c3b,inset 0 1px #ffffff7a}
+.header-help{position:absolute;top:9px;right:12px;width:44px;height:44px;display:grid;place-items:center;color:#d4e7fa;border-radius:12px}
+.solo .page-content{padding:18px 20px 24px;gap:17px}
+.page-end{font-size:10px;color:var(--muted);padding:10px 20px 24px}
+.card,.photo-intro,.privacy-intro,.summary-intro,.reminder-main,.account-card,.association-child,.delta-hero{
+ background:linear-gradient(153deg,var(--dim-surface-top),var(--dim-surface-bottom));border:1px solid color-mix(in srgb,var(--line) 45%,#fff);box-shadow:var(--dim-shadow);border-radius:24px;
+}
+.form-card{padding:20px;gap:17px}.form-card h3{font-size:16px}.section-heading h2{font-size:18px;color:var(--ink);font-weight:600}
+.button{min-height:52px;font-size:16px;border-radius:18px;background:linear-gradient(165deg,color-mix(in srgb,var(--blue) 92%,#0b2549),var(--blue) 56%,color-mix(in srgb,var(--blue) 84%,#0b2549));border:1px solid color-mix(in srgb,var(--blue) 83%,#0b2549);box-shadow:0 5px 12px #164e9538,inset 0 1px #ffffff75,inset 0 -2px #092f6654}
+.button.secondary{background:linear-gradient(155deg,color-mix(in srgb,var(--tint) 55%,white),var(--tint));color:var(--link);border:1px solid color-mix(in srgb,var(--link) 22%,transparent);box-shadow:var(--dim-tile-shadow)}
+.button:disabled{background:var(--page);color:var(--muted);border:1px solid var(--line);box-shadow:none;opacity:1}
+.field{gap:9px}.field>span{font-size:13px;font-weight:500;color:var(--ink)}
+.field input,.field select,.field textarea,.search-field{font-size:15px;min-height:48px;border-radius:11px;background:color-mix(in srgb,var(--card) 86%,var(--page));border:1px solid color-mix(in srgb,var(--line) 78%,var(--link));color:var(--ink);box-shadow:inset 0 2px 5px #1b456512,0 1px #ffffff9c}
+.field input,.field select,.field textarea{padding:12px}.field textarea{line-height:1.7}
+.pair{font-size:13px;line-height:1.7;padding:10px 0;border-color:color-mix(in srgb,var(--line) 40%,transparent)}
+.pair>span,.muted,.footnote{color:var(--muted)}.pair>strong{color:var(--ink);font-size:13px;font-weight:500}
+.text-action{font-size:12px;color:var(--link)}.note{background:#e9f2ff;color:#0060ce;font-size:12px}.note p{font-size:12px}
+.badge{border-radius:7px;font-size:10px;color:#0060ce;background:#e9f2ff}
+.segments{background:linear-gradient(155deg,color-mix(in srgb,var(--line) 48%,var(--page)),var(--page));box-shadow:inset 0 2px 5px #123a5d1a;border-radius:12px}
+.segments .selected,.segments [aria-selected=true]{background:linear-gradient(155deg,#fff,#eff5fb);box-shadow:var(--dim-tile-shadow)}
+.row-icon,.patient-icon,.empty-icon,.account-avatar{background:linear-gradient(145deg,#fff,color-mix(in srgb,var(--tint) 72%,#8dbce7));box-shadow:var(--dim-tile-shadow)}
+.row-text strong{font-size:16px;color:var(--ink)}.row-text small{font-size:12px;color:var(--muted)}
+.patient strong{font-size:13px;color:var(--ink)}.patient small{font-size:11px;color:var(--muted)}
+.bottom-nav{min-height:72px;padding:7px 16px max(9px,env(safe-area-inset-bottom));background:linear-gradient(180deg,#ffffffed,#f9f9fceb);border-top:1px solid #ffffffa0;box-shadow:0 -7px 24px #183f6920,inset 0 1px #ffffffdb;gap:5px}
+.bottom-nav button{min-height:53px;border:1px solid transparent;border-radius:16px;gap:3px;color:#636366;font-weight:550;font-size:12px}
+.bottom-nav button[aria-current=page]{background:linear-gradient(155deg,#e9f5ff,#c9e5fb);border:1px solid #fff;box-shadow:0 4px 9px #1b527f22,inset 0 1px #fff;color:var(--link)}
+.bottom-nav .three-d-icon{filter:drop-shadow(0 2px 2px #15385c48);width:24px;height:24px}
+.sheet{background:linear-gradient(160deg,#fff,#eff5fb);border:1px solid #fff;box-shadow:0 22px 70px #10294478,inset 0 1px #ffffffb8}.sheet p{color:var(--muted)}
+.status-panel{border-radius:20px;box-shadow:var(--dim-shadow)}.status-panel p{font-size:13px}.status-panel h2{font-size:21px}
+.login-brand{display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:left;padding:13px 16px;min-height:88px;border-radius:22px;margin-top:5px;background:linear-gradient(150deg,#fff,#eff5fb);border:1px solid #e8e9ed;box-shadow:var(--dim-shadow)}
+.login-brand img{grid-row:1/3;width:58px;height:58px;object-fit:contain;padding:3px;border-radius:18px;background:#fff;box-shadow:0 5px 12px #123c6430,inset 0 1px #fff}
+.login-brand h2{font-size:17px;font-weight:650;line-height:1.35;letter-spacing:-.02em;color:var(--ink);margin:0;align-self:end}
+.login-brand p{font-size:12px;line-height:1.5;color:var(--muted);margin:4px 0 0;align-self:start}
+.login-ready{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:30px 22px;background:#fff;border-radius:24px}
+.login-ready .login-success-icon{width:64px;height:64px;border-radius:22px;background:#e5f3f0;display:grid;place-items:center}
+.login-ready h2{font-size:22px}.login-ready p{font-size:14px;color:var(--muted)}
+/* Home mother page: exact reference geometry at 390px, content-driven height. */
+.device[data-primary=home] .app-header{padding:12px 20px 14px}
+.device[data-primary=home] .header-kicker{margin-bottom:9px;line-height:16px}
+.device[data-primary=home] .app-header h1{font-size:23px}
+.device[data-primary=home] .page-content{padding-top:10px;padding-bottom:14px;gap:10px}
+.home-alert{padding:12px 14px 8px;border-radius:18px;border:1px solid #8194aa;border-left-width:4px;background:linear-gradient(155deg,#f0f4f9,#eaf0f7);color:#34495f;box-shadow:0 3px 3px #19395b0c,0 13px 25px #19395b20,inset 0 1px #ffffffbb}
+.home-alert .eyebrow{color:inherit;font-size:10px;gap:6px}.home-alert h2{font-size:18px;line-height:1.45;margin-top:8px;color:inherit}.page-content .home-alert p{font-size:13px;line-height:1.6;color:inherit;margin:5px 0 0}.home-alert .home-alert-title{display:block}
+.home-alert .alert-link{width:100%;margin:7px 0 0;min-height:36px;padding:3px 0 0;background:none;border-top:1px solid #8194aa66;font-size:11px;color:inherit}
+.home-twin{padding:12px;border-radius:24px;background:linear-gradient(153deg,#fff,#eff5fb);border:1px solid #e8e9ed;box-shadow:var(--dim-shadow)}
+.home-twin-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}.home-twin-heading>button{font-size:11px;min-height:44px;color:var(--link);display:flex;align-items:center;gap:5px}
+.home-patient{min-width:0;max-width:67%;padding:0;border:0}.home-patient summary{padding:0 6px;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px;list-style:none}.home-patient summary::-webkit-details-marker{display:none}.home-patient strong{font-size:16px;color:var(--ink);overflow-wrap:anywhere}.home-patient summary .three-d-icon{flex-shrink:0}
+.home-patient .field{padding:8px 0}.home-patient select{width:100%;max-width:100%;font-size:13px}.home-patient[open]{max-width:100%}
+.home-child-stage{height:164px;display:flex;justify-content:center;position:relative;margin-top:3px;background:radial-gradient(ellipse at 50% 70%,#b2d8ebaf,transparent 68%)}
+.home-child-stage:before{content:"";position:absolute;left:19%;right:19%;bottom:1px;height:19px;border-radius:50%;background:radial-gradient(ellipse,#94b9d35c,transparent 72%);filter:blur(3px)}
+.home-child-view{width:135px;height:164px;position:relative;z-index:1;filter:drop-shadow(0 9px 7px #315c843b)}
+.home-child-view>img{display:block;width:100%;height:100%;object-fit:contain}
+.symptom-pin{position:absolute;width:44px;height:44px;display:grid;place-items:center;z-index:2}.symptom-pin span{display:grid;place-items:center;width:23px;height:23px;border:2px solid #fff5dc;border-radius:50%;background:linear-gradient(145deg,#c27a35,#955021);color:#fff;font-size:11px;box-shadow:0 4px 8px #6132164d,inset 0 1px #ffffffa5}.symptom-pin.fever{top:9%;left:62%}.symptom-pin.rash{top:45%;left:1%}.symptom-pin.joint{top:72%;left:57%}
+.symptom-compact{padding-top:8px}.symptom-compact>img{display:block;width:calc(100% - 16px);height:96px;object-fit:cover;margin-inline:auto;border-radius:14px}
+.symptom-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.symptom-columns>button{min-height:58px;padding:8px 3px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;border-radius:12px;border:1px solid #e8e9ed;background:linear-gradient(155deg,#fff,#eff5fb);box-shadow:var(--dim-tile-shadow)}
+.symptom-columns strong{font-size:12px;color:var(--ink)}.symptom-columns strong>span{color:#97501b;margin-right:4px}.symptom-columns small{font-size:10px;line-height:1.5;font-weight:500;color:var(--link)}
+/* Home observation metadata stays in full, but identical scope is shown once. */
+.home-twin .symptom-columns>button{min-width:0;overflow-wrap:anywhere}
+.home-twin .symptom-columns>button>strong,.home-twin .symptom-columns>button>small{max-width:100%}
+.home-twin .symptom-columns .home-observation-value{font-size:12px;font-weight:600}
+.home-twin .symptom-columns :is(.home-observation-context,.home-observation-card-time){color:var(--muted)}
+.home-twin .home-observation-time{display:grid;gap:2px;margin-top:8px;padding-inline:3px;color:var(--muted);font-size:10px;line-height:1.5;overflow-wrap:anywhere}
+.home-twin .home-observation-time>span:first-child{color:var(--ink)}
+.home-twin .home-observation-notices{margin-top:8px;padding:0;border:0;border-top:1px solid var(--line);border-radius:0}
+.home-twin .home-observation-notices>summary{min-height:44px;padding:5px 3px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;list-style:none;font-size:11px;line-height:1.5;color:var(--link)}
+.home-twin .home-observation-notices>summary::-webkit-details-marker{display:none}
+.home-twin .home-observation-notices>summary>span{min-width:0;overflow-wrap:anywhere}
+.home-twin .home-observation-notice-scope{display:block;font-size:10px;color:var(--muted)}
+.home-twin .home-observation-notices>summary>.three-d-icon{flex:0 0 14px}
+.home-twin .home-observation-notices[open]>summary>.three-d-icon{transform:rotate(90deg)}
+.home-twin .home-observation-notices dl{display:grid;gap:6px;margin:0;padding:0 3px 8px;font-size:11px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
+.home-twin .home-observation-notices dl>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px}
+.home-twin .home-observation-notices dt{color:var(--ink)}.home-twin .home-observation-notices dd{margin:0}
+.home-twin .home-observation-notices>summary:focus-visible{outline:3px solid var(--link);outline-offset:2px;border-radius:5px}
+.home-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.home-entry-grid>button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 4px;min-height:74px;border-radius:17px;border:1px solid #e8e9ed;background:linear-gradient(155deg,#fff,#eff5fb);box-shadow:var(--dim-tile-shadow);color:var(--ink)}.home-entry-grid strong{font-size:12px;font-weight:500}.home-entry-grid>button:first-child{background:linear-gradient(150deg,#2665ae,#195a9f 67%,#124883);border-color:#1e5796;box-shadow:0 7px 14px #1e559a45,inset 0 1px #ffffff8a;color:#fff}
+.home-secondary-tools{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center}.home-secondary-tools button{display:flex;align-items:center;gap:5px;min-height:44px;color:var(--link);font-size:12px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:359px){.solo .page-content{padding-inline:16px}.solo .app-header,.solo .app-header.root-header{padding-inline:16px}.app-header h1,.app-header.root-header h1{font-size:22px}.device[data-primary=home] .app-header h1{font-size:21px}.home-patient strong{font-size:14px}.form-card{padding:16px}.symptom-columns strong{font-size:11px}.symptom-columns small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.home-patient summary>span{color:var(--muted);font-size:10px;white-space:normal;overflow-wrap:anywhere;max-width:100%}.home-patient summary{flex-wrap:wrap}.home-patient strong{min-width:0;max-width:100%}
+/* Rendered-reference corrections: preserve the 390px home geometry. */
+.home-patient summary{flex-wrap:nowrap}.home-patient-copy{display:flex;flex:1;min-width:0;align-items:center;gap:5px;flex-wrap:wrap}.home-patient-copy>span{color:var(--muted);font-size:10px;white-space:normal;overflow-wrap:anywhere}.home-patient summary>.home-patient-copy{max-width:none}.home-patient summary>.three-d-icon{flex:0 0 14px}
+.symptom-columns{grid-template-columns:repeat(auto-fit,minmax(min(100%,5.75em),1fr))}
+.sheet-close{border-radius:50%;background:linear-gradient(145deg,#fff,#eff5fb);border:1px solid #fff;box-shadow:0 4px 9px #0b284c3b,inset 0 1px #fff}
+.device .sheet-close:focus-visible{outline:3px solid var(--link);outline-offset:3px;border-radius:50%}
+@media(max-height:500px) and (orientation:landscape){.symptom-columns{grid-template-columns:minmax(0,1fr)}}

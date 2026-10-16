@@ -1,0 +1,528 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "disposition-coverage.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "disposition-coverage-1"
+    },
+    "patient_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "mode": {
+      "const": "read_only_inventory"
+    },
+    "whole_data_disposal_supported": {
+      "const": false
+    },
+    "execution_authorized": {
+      "const": false
+    },
+    "scope_expansion_authorized": {
+      "const": false
+    },
+    "snapshot_consistency": {
+      "const": "bounded_live_metadata_observation"
+    },
+    "inventory_truncated": {
+      "type": "boolean"
+    },
+    "catalog": {
+      "$ref": "#/$defs/Catalog"
+    },
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "patient_scope_field": {
+            "type": "string"
+          },
+          "total_objects": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "included_objects": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "patient_scope_field",
+          "total_objects",
+          "included_objects",
+          "truncated"
+        ]
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Object"
+      }
+    },
+    "policies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Policy"
+      }
+    },
+    "dependencies": {
+      "$ref": "#/$defs/Dependencies"
+    },
+    "unresolved_coverage": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unresolved_policy_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patient_id",
+    "observed_at",
+    "purpose",
+    "mode",
+    "whole_data_disposal_supported",
+    "execution_authorized",
+    "scope_expansion_authorized",
+    "snapshot_consistency",
+    "inventory_truncated",
+    "catalog",
+    "inventory",
+    "objects",
+    "policies",
+    "dependencies",
+    "unresolved_coverage",
+    "unresolved_policy_ids",
+    "manifest_sha256"
+  ],
+  "$defs": {
+    "Object": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "versions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "current_version": {
+              "type": "string"
+            },
+            "status_version": {
+              "type": "string"
+            },
+            "generation": {
+              "type": "string"
+            },
+            "lease_generation": {
+              "type": "string"
+            },
+            "object_version": {
+              "type": "string"
+            },
+            "recorded_at": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "generated_at": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "version_binding": {
+          "enum": [
+            "stored_metadata",
+            "row_identity_only"
+          ]
+        },
+        "retention_policy_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "model": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "field",
+              "model",
+              "id"
+            ]
+          }
+        }
+      },
+      "required": [
+        "model",
+        "id",
+        "versions",
+        "version_binding",
+        "retention_policy_id",
+        "references"
+      ]
+    },
+    "Policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "string"
+        },
+        "approval_metadata_current": {
+          "type": "boolean"
+        },
+        "evidence_source_revision_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_qualification": {
+          "const": "not_checked"
+        },
+        "configured_disposition": {
+          "enum": [
+            "delete",
+            "retain",
+            null
+          ]
+        },
+        "configured_retention_days": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "registered_local_target_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "file_object",
+              "purpose_copy",
+              "provider_copy"
+            ]
+          }
+        },
+        "retention_clock": {
+          "const": "unresolved_per_object"
+        },
+        "legal_clinical_hold": {
+          "const": "not_evaluated"
+        },
+        "eligible_for_execution": {
+          "const": false
+        },
+        "unresolved_policy_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "policy_id",
+        "version",
+        "approval_metadata_current",
+        "evidence_source_revision_id",
+        "evidence_qualification",
+        "configured_disposition",
+        "configured_retention_days",
+        "registered_local_target_types",
+        "retention_clock",
+        "legal_clinical_hold",
+        "eligible_for_execution",
+        "unresolved_policy_inputs"
+      ]
+    },
+    "Catalog": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "registered_target_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "file_object",
+              "purpose_copy",
+              "provider_copy"
+            ]
+          }
+        },
+        "executors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "target_type": {
+                "enum": [
+                  "file_object",
+                  "purpose_copy",
+                  "provider_copy"
+                ]
+              },
+              "availability": {
+                "enum": [
+                  "local_bytes_executor",
+                  "simulation_only"
+                ]
+              },
+              "coverage": {
+                "type": "string"
+              },
+              "environment_supported": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "target_type",
+              "availability",
+              "coverage"
+            ]
+          }
+        },
+        "unsupported_categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "executor_registered": {
+                "const": false
+              },
+              "required_contract": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "category",
+              "executor_registered",
+              "required_contract"
+            ]
+          }
+        },
+        "execution_prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "registered_target_types",
+        "executors",
+        "unsupported_categories",
+        "execution_prerequisites"
+      ]
+    },
+    "Dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "coverage": {
+          "const": "registered_edges_only"
+        },
+        "total_patient_nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "cross_patient_edge_rejected": {
+          "type": "boolean"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "resource_type": {
+                "type": "string"
+              },
+              "resource_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "resource_version": {
+                "type": "string"
+              },
+              "validity": {
+                "enum": [
+                  "valid",
+                  "invalid"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "resource_type",
+              "resource_id",
+              "resource_version",
+              "validity"
+            ]
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "dependent_node_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "prerequisite_node_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "edge_type": {
+                "enum": [
+                  "source",
+                  "verification",
+                  "mapping",
+                  "policy",
+                  "input",
+                  "publication",
+                  "contact"
+                ]
+              },
+              "prerequisite": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "resource_type": {
+                    "type": "string"
+                  },
+                  "resource_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "resource_version": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "enum": [
+                      "shared",
+                      "patient"
+                    ]
+                  }
+                },
+                "required": [
+                  "resource_type",
+                  "resource_id",
+                  "resource_version",
+                  "scope"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "dependent_node_id",
+              "prerequisite_node_id",
+              "edge_type",
+              "prerequisite"
+            ]
+          }
+        }
+      },
+      "required": [
+        "coverage",
+        "total_patient_nodes",
+        "truncated",
+        "cross_patient_edge_rejected",
+        "nodes",
+        "edges"
+      ]
+    }
+  }
+}

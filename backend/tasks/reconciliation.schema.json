@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reconciliation.schema.json",
+  "$defs": {
+    "ReconcileInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_status_version": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 19
+        },
+        "expected_lease_generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 19
+        }
+      },
+      "required": [
+        "expected_status_version",
+        "expected_lease_generation"
+      ]
+    },
+    "TaskSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "patient_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "status_version": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 19
+        },
+        "lease_generation": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 19
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "request_row_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "task_id",
+        "patient_id",
+        "actor_id",
+        "task_type",
+        "schema_version",
+        "status",
+        "status_version",
+        "lease_generation",
+        "input_sha256",
+        "request_row_id"
+      ]
+    },
+    "ReconciliationReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/TaskSnapshot"
+        },
+        "outcome": {
+          "enum": [
+            "domain_review_required",
+            "terminal_state_observed",
+            "local_summary_lease_expired"
+          ]
+        },
+        "changed": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "target_after": {
+          "$ref": "#/$defs/TaskSnapshot"
+        },
+        "attempts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "attempt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "lease_generation": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$",
+                "maxLength": 19
+              },
+              "status": {
+                "type": "string"
+              },
+              "provider_request_present": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "attempt_id",
+              "number",
+              "lease_generation",
+              "status",
+              "provider_request_present"
+            ]
+          },
+          "maxItems": 100
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "event_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "event_type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "event_id",
+              "event_type"
+            ]
+          },
+          "maxItems": 100
+        },
+        "receipts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "receipt_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "event_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "consumer": {
+                "type": "string"
+              },
+              "effect_resource_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "receipt_id",
+              "event_id",
+              "consumer",
+              "effect_resource_id"
+            ]
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "target",
+        "outcome",
+        "changed",
+        "attempts",
+        "events",
+        "receipts"
+      ]
+    },
+    "ReconciliationTaskView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "reconcile"
+        },
+        "status": {
+          "type": "string"
+        },
+        "status_version": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 19
+        },
+        "target_task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "poll_after_ms": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "report": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReconciliationReport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "task_id",
+        "task_type",
+        "status",
+        "status_version",
+        "target_task_id",
+        "poll_after_ms",
+        "error_code",
+        "report"
+      ]
+    },
+    "ReconciliationRequestView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_id": {
+          "const": "task_reconcile"
+        },
+        "target_key": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "committed",
+            "failed"
+          ]
+        },
+        "generation": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 19
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "task": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReconciliationTaskView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "intent_id",
+        "request_id",
+        "operation_id",
+        "target_key",
+        "status",
+        "generation",
+        "expires_at",
+        "task"
+      ]
+    }
+  }
+}

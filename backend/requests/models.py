@@ -1,11 +1,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import Sha256HexField
 
 
-class WriteRequest(models.Model):
+class WriteRequest(ErasureModel, models.Model):
     class Status(models.TextChoices):
         PROCESSING = "processing", "processing"
         COMMITTED = "committed", "committed"
@@ -36,7 +37,7 @@ class WriteRequest(models.Model):
         ]
 
 
-class WriteIntent(models.Model):
+class WriteIntent(ErasureModel, models.Model):
     class Status(models.TextChoices):
         PREPARED = "prepared", "prepared"
         COMMITTED = "committed", "committed"

@@ -109,12 +109,14 @@ CREATE TABLE config_approval (
     revocation_reason text,
     CHECK (revoked_at IS NULL OR revocation_reason IS NOT NULL)
 );
+-- applicant_declaration is an unverified applicant statement, never a patient resolver.
 CREATE TABLE relation_application (
     id uuid PRIMARY KEY,
     version bigint NOT NULL CHECK (version > 0),
     applicant_id uuid NOT NULL REFERENCES principal(id),
     patient_id uuid REFERENCES patient(id),
     evidence_ref text NOT NULL,
+    applicant_declaration jsonb,
     status text NOT NULL CHECK (status IN ('pending','approved','rejected','withdrawn')),
     checked_by uuid REFERENCES principal(id),
     checked_at timestamptz,
@@ -578,7 +580,7 @@ CREATE TABLE normalized_measurement (
 CREATE TABLE assessment (
     id uuid PRIMARY KEY,
     patient_id uuid NOT NULL REFERENCES patient(id),
-    kind text NOT NULL CHECK (kind IN ('classification','ms')),
+    kind text NOT NULL CHECK (kind IN ('classification','ms','hlh')),
     assessment_at timestamptz,
     rule_id uuid REFERENCES config_version(id),
     window_policy_id uuid REFERENCES config_version(id),
@@ -616,6 +618,9 @@ CREATE TABLE assessment_output (
     ms_contributions jsonb CHECK (jsonb_typeof(ms_contributions) = 'object'),
     ms_total finite_decimal,
     ms_threshold_result boolean,
+    hlh_result jsonb CHECK (hlh_result IS NULL OR jsonb_typeof(hlh_result) = 'object'),
+    CHECK (hlh_result IS NULL OR (classification_conditions IS NULL AND classification_result IS NULL
+        AND ms_contributions IS NULL AND ms_total IS NULL AND ms_threshold_result IS NULL)),
     CHECK ((ms_total IS NULL) = (ms_threshold_result IS NULL)),
     CHECK (ms_total IS NULL OR ms_contributions IS NOT NULL)
 );
@@ -913,6 +918,7 @@ CREATE TABLE outbox_event (
     correlation_id uuid NOT NULL,
     task_id uuid REFERENCES task(id),
     resource_refs jsonb NOT NULL CHECK (jsonb_typeof(resource_refs) = 'object'),
+    traceparent varchar(55) NOT NULL DEFAULT '', -- transport-only W3C context; never Task input
     available_at timestamptz NOT NULL,
     lease_generation bigint NOT NULL DEFAULT 0,
     lease_owner text,

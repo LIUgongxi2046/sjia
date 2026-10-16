@@ -54,6 +54,7 @@ class RecordServiceTest(TestCase):
 
     def test_create_and_read_preserves_values(self):
         result = self._create()
+        self.assertEqual(result["patient_id"], str(self.patient.id))
         read = read_record(result["record_id"], self.patient)
         self.assertEqual(read["kind"], "observation")
         self.assertEqual(read["version"], 1)

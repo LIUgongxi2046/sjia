@@ -70,8 +70,8 @@ function checkedVoice(value: unknown, patientId: string, voiceId?: string): Voic
   return result;
 }
 
-export async function readVoiceInputOptions(patientId: string, signal?: AbortSignal): Promise<VoiceInputOptions> {
-  const value = await fetchJson<unknown>(`/api/v2/patients/${patientId}/voice-input-options`, { signal });
+export async function readVoiceInputOptions(patientId: string, signal?: AbortSignal, isCurrent?: () => boolean): Promise<VoiceInputOptions> {
+  const value = await fetchJson<unknown>(`/api/v2/patients/${patientId}/voice-input-options`, { signal, isCurrent });
   const result = validateApiValue<VoiceInputOptions>('voice-input.schema.json#/$defs/OptionsView', value);
   if (result.patient_id !== patientId) throw new Error('语音配置与当前患儿不一致。');
   return result;

@@ -5,10 +5,291 @@
   "description": "格式通过只证明结构完整；全部临床参数、引用和批准在服务端继续核验。没有默认临床参数。",
   "oneOf": [
     {"$ref": "#/$defs/WindowPolicy"},
-    {"$ref": "#/$defs/TriggerPolicy"}
+    {"$ref": "#/$defs/TriggerPolicy"},
+    {"$ref": "#/$defs/TriggerPolicyV2"}
   ],
   "$defs": {
+    "WeightedCoreGate": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "all",
+            "at_least"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "minimum_met": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Minimum Met"
+        }
+      },
+      "required": [
+        "operator",
+        "minimum_met"
+      ],
+      "title": "WeightedCoreGate",
+      "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "all"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "minimum_met": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "minimum_met": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WeightedSignal": {
+      "additionalProperties": false,
+      "properties": {
+        "signal_ref": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Signal Ref",
+          "type": "string"
+        },
+        "classification": {
+          "enum": [
+            "core",
+            "general"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "weight": {
+          "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+          "title": "Weight",
+          "type": "string"
+        }
+      },
+      "required": [
+        "signal_ref",
+        "classification",
+        "weight"
+      ],
+      "title": "WeightedSignal",
+      "type": "object"
+    },
+    "WeightedCombination": {
+      "additionalProperties": false,
+      "description": "Versioned, fixed-denominator three-valued aggregation contract.\n\nAll declared conditions participate exactly once. Unknown conditions remain\nin the denominator and contribute only to the possible upper bound. Core\nmembership adds the explicitly configured core gate; it assigns no weight.",
+      "properties": {
+        "schema_version": {
+          "const": "weighted-combination-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "operator": {
+          "const": "weighted",
+          "title": "Operator",
+          "type": "string"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/$defs/WeightedSignal"
+          },
+          "minItems": 1,
+          "title": "Members",
+          "type": "array",
+          "contains": {
+            "type": "object",
+            "properties": {
+              "classification": {
+                "const": "core"
+              }
+            },
+            "required": [
+              "classification"
+            ]
+          }
+        },
+        "denominator": {
+          "const": "all_configured_weights",
+          "title": "Denominator",
+          "type": "string"
+        },
+        "core_gate": {
+          "$ref": "#/$defs/WeightedCoreGate"
+        },
+        "threshold_fraction": {
+          "pattern": "^(0\\.[0-9]*[1-9][0-9]*|1(\\.0+)?)$",
+          "title": "Threshold Fraction",
+          "type": "string"
+        },
+        "minimum_known_fraction": {
+          "pattern": "^(0\\.[0-9]*[1-9][0-9]*|1(\\.0+)?)$",
+          "title": "Minimum Known Fraction",
+          "type": "string"
+        },
+        "unknown_policy": {
+          "const": "bounded_no_imputation",
+          "title": "Unknown Policy",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "operator",
+        "members",
+        "denominator",
+        "core_gate",
+        "threshold_fraction",
+        "minimum_known_fraction",
+        "unknown_policy",
+        "evidence_refs"
+      ],
+      "title": "WeightedCombination",
+      "type": "object"
+    },
+    "SensitivityPreset": {
+      "additionalProperties": false,
+      "description": "A name for one immutable approved rule, not a numerical override.",
+      "properties": {
+        "schema_version": {
+          "const": "dynamic-sensitivity-preset-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "preset_key": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Preset Key",
+          "type": "string"
+        },
+        "display_name": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Display Name",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "preset_key",
+        "display_name",
+        "description"
+      ],
+      "title": "SensitivityPreset",
+      "type": "object"
+    },
+    "TriggerPolicyV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "rule_key",
+        "scope",
+        "window_policy_id",
+        "conditions",
+        "combination",
+        "publication",
+        "episode",
+        "unknown_policy",
+        "replay_policy",
+        "evidence_refs",
+        "sensitivity_preset"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "alert-trigger-2"
+        },
+        "rule_key": {
+          "$ref": "#/$defs/Text"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "window_policy_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/AssessmentCondition"
+              },
+              {
+                "$ref": "#/$defs/TrendCondition"
+              },
+              {
+                "$ref": "#/$defs/FindingCondition"
+              }
+            ]
+          }
+        },
+        "combination": {
+          "$ref": "#/$defs/WeightedCombination"
+        },
+        "publication": {
+          "$ref": "#/$defs/Publication"
+        },
+        "episode": {
+          "$ref": "#/$defs/EpisodePolicy"
+        },
+        "unknown_policy": {
+          "const": "no_event_from_unknown"
+        },
+        "replay_policy": {
+          "const": "no_publication"
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "sensitivity_preset": {
+          "$ref": "#/$defs/SensitivityPreset"
+        }
+      }
+    },
     "Text": {"type": "string", "minLength": 1},
+    "DynamicVariableCode": {
+      "type": "string", "minLength": 1, "pattern": ".*\\S.*",
+      "description": "Explicit variable_code in an approved dynamic-input-policy-2 numeric definition. A report field alone is not an enabled dynamic variable; concept, normalized unit, approved mapping, comparison and window are verified server-side."
+    },
     "Uuid": {"type": "string", "format": "uuid"},
     "Decimal": {"type": "string", "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"},
     "Evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/Text"}},
@@ -58,7 +339,7 @@
       "required": ["signal_id", "kind", "assessment_rule_id", "evidence_refs"],
       "properties": {
         "signal_id": {"$ref": "#/$defs/Text"},
-        "kind": {"enum": ["classification_met", "ms_threshold_met"]},
+        "kind": {"enum": ["classification_met", "ms_threshold_met", "hlh_reference_met"]},
         "assessment_rule_id": {"$ref": "#/$defs/Uuid"},
         "evidence_refs": {"$ref": "#/$defs/Evidence"}
       }
@@ -69,7 +350,7 @@
       "properties": {
         "signal_id": {"$ref": "#/$defs/Text"},
         "kind": {"const": "trend"},
-        "variable_code": {"enum": ["ferritin", "platelet_count", "ast", "fibrinogen", "triglycerides", "ldh"]},
+        "variable_code": {"$ref": "#/$defs/DynamicVariableCode"},
         "metric": {"enum": ["absolute_delta", "relative_delta"]},
         "operator": {"enum": ["gt", "gte", "lt", "lte"]},
         "threshold": {"$ref": "#/$defs/Decimal"},
@@ -119,6 +400,7 @@
       "properties": {
         "level": {"enum": ["attention", "warning", "urgent"]},
         "priority": {"type": "integer", "minimum": 1},
+        "priority_order": {"enum": ["unconfigured", "higher_first", "lower_first"], "description": "Missing is unconfigured. Multi-rule publication requires every approved rule to agree on an explicit direction."},
         "content_config_id": {"$ref": "#/$defs/Uuid"},
         "visibility_config_id": {"$ref": "#/$defs/Uuid"},
         "contact_version_id": {"$ref": "#/$defs/Uuid"},

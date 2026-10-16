@@ -1,9 +1,13 @@
 // 家庭端后端接口：会话、自建登录、首页、预警、字段配置、记录与摘要。
-import { fetchJson, getSessionCsrfToken } from './client';
+import { checkRequestGuard, fetchJson, getSessionCsrfToken, type RequestGuard } from './client';
+import { validateBootstrap, validateSession, validateFieldConfig, validateLegacyResponse } from './legacyResponseSchema';
 import type { RecordSearchPage } from './records';
-import type { HomeView as FormalHomeView } from '../../../frontend-design/types';
+import type { UploadGroupReceipt } from '../../../frontend-design/v2-types';
+import type { ApplicationDeclarationRead, HomeView as FormalHomeView } from '../../../frontend-design/types';
 
 export interface SessionView {
+  /** Opaque read-only continuity marker; never a credential or permission. */
+  session_binding?: string | null;
   principal_id: string;
   account_status: string;
   expires_at: string;
@@ -70,6 +74,10 @@ export interface FieldConfigView {
 }
 
 export interface RelationItem {
+  /** Read-only revision marker; never grants access or authorizes a write. */
+  authorization_scope_fingerprint?: string | null;
+  /** Next known permission time boundary; crossing it requires a fresh read. */
+  authorization_scope_valid_until?: string | null;
   relation_id: string;
   patient_id: string;
   display_id: string;
@@ -81,7 +89,7 @@ export interface RelationItem {
 }
 
 export interface RelationView extends RelationItem { auth_epoch: string }
-export interface ApplicationItem {
+export interface ApplicationItem extends ApplicationDeclarationRead {
   application_id: string;
   version: string;
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
@@ -92,31 +100,31 @@ export interface ApplicationItem {
 }
 export interface ApplicationView extends ApplicationItem { evidence_ref: string; created_at: string }
 
-export function bootstrap(): Promise<AuthBootstrap> {
-  return fetchJson<AuthBootstrap>('/api/auth/bootstrap');
+export async function bootstrap(): Promise<AuthBootstrap> {
+  return validateBootstrap(await fetchJson<unknown>('/api/auth/bootstrap'));
 }
 
-export function readSession(): Promise<SessionView> {
-  return fetchJson<SessionView>('/api/session');
+export async function readSession(): Promise<SessionView> {
+  return validateSession(await fetchJson<unknown>('/api/session'));
 }
 
 export async function savePatientSelection(patientId: string): Promise<void> {
-  const saved = await fetchJson<{ selected_patient_id: string }>('/api/patient-selection', {
+  const saved = validateLegacyResponse<{ selected_patient_id: string }>('PatientSelection', await fetchJson<unknown>('/api/patient-selection', {
     method: 'POST', body: { patient_id: patientId },
-  });
+  }));
   if (saved.selected_patient_id !== patientId) throw new Error('保存的患儿选择与当前操作不一致。');
 }
 
-export function login(username: string, password: string, csrfToken?: string): Promise<SessionView> {
-  return fetchJson<SessionView>('/api/auth/login', { method: 'POST', body: { username, password }, csrfToken });
+export async function login(username: string, password: string, csrfToken?: string): Promise<SessionView> {
+  return validateSession(await fetchJson<unknown>('/api/auth/login', { method: 'POST', body: { username, password }, csrfToken }), 'family');
 }
 
-export function register(username: string, password: string, csrfToken?: string): Promise<SessionView> {
-  return fetchJson<SessionView>('/api/auth/register', { method: 'POST', body: { username, password }, csrfToken });
+export async function register(username: string, password: string, csrfToken?: string): Promise<SessionView> {
+  return validateSession(await fetchJson<unknown>('/api/auth/register', { method: 'POST', body: { username, password }, csrfToken }), 'family');
 }
 
-export function logout(csrfToken?: string): Promise<Record<string, never>> {
-  return fetchJson<Record<string, never>>('/api/session/logout', { method: 'POST', body: {}, csrfToken });
+export async function logout(csrfToken?: string): Promise<Record<string, never>> {
+  return validateLegacyResponse('Empty', await fetchJson<unknown>('/api/session/logout', { method: 'POST', body: {}, csrfToken }));
 }
 
 export async function listRelations(signal?: AbortSignal): Promise<{ relations: RelationItem[] }> {
@@ -149,26 +157,11 @@ export async function markAlertRead(alertId: string, csrfToken?: string, signal?
   return validateFamilyRead('AlertReadReceipt', value);
 }
 
-export function readFieldConfig(patientId: string, kind: string): Promise<FieldConfigView> {
-  return fetchJson<FieldConfigView>(`/api/patients/${patientId}/field-config?kind=${encodeURIComponent(kind)}`);
+export async function readFieldConfig(patientId: string, kind: string): Promise<FieldConfigView> {
+  return validateFieldConfig(await fetchJson<unknown>(`/api/patients/${patientId}/field-config?kind=${encodeURIComponent(kind)}`), patientId, kind);
 }
 
-const pendingRecordRequests = new Map<string, string>();
-export async function createRecord(patientId: string, payload: Record<string, unknown>, csrfToken?: string): Promise<Record<string, unknown>> {
-  const target = `/api/patients/${patientId}/records`;
-  const key = `${target}:${JSON.stringify(payload)}`;
-  let requestId = pendingRecordRequests.get(key);
-  if (!requestId) {
-    requestId = crypto.randomUUID();
-    pendingRecordRequests.set(key, requestId);
-  }
-  const intent = await fetchJson<{ intent_id: string; generation: string }>('/api/write-intents', { method: 'POST', body: { operation_id: 'record_create', target_key: target, request_id: requestId, payload, schema_version: 'back-json-1' }, csrfToken });
-  const result = await fetchJson<Record<string, unknown>>(target, { method: 'POST', body: payload, csrfToken, writeIntent: intent.intent_id, intentGeneration: intent.generation, idempotencyKey: requestId });
-  pendingRecordRequests.delete(key);
-  return result;
-}
-
-export function clearPendingRecordRequests() { pendingRecordRequests.clear(); }
+export { createRecordSubmission, clearPendingRecordRequests } from './recordSubmission';
 
 export async function readRecord(recordId: string, signal?: AbortSignal): Promise<import('./records').RecordView> {
   const value = await fetchJson<unknown>(`/api/records/${recordId}`, { signal });
@@ -200,15 +193,13 @@ export async function correctRecord(patientId: string, recordId: string, reason:
   const { validateCorrectionValue } = await import('./recordSearchSchema');
   const body = { reason, fields, expected_version: expectedVersion, ...(draft.draft_id === undefined ? {} : { draft_id: draft.draft_id }), ...(draft.draft_version === undefined ? {} : { draft_version: draft.draft_version }), ...(familyConfirmation === true ? { family_confirmation: true } : {}) };
   validateCorrectionValue('RecordCorrectionInput', body);
-  const target = `/api/records/${encodeURIComponent(recordId)}/corrections`;
-  const requestId = crypto.randomUUID();
-  const intent = familyConfirmation === true ? await fetchJson<{ intent_id: string; generation: string }>('/api/write-intents', {
-    method: 'POST', body: { operation_id: 'record_correct', target_key: target, request_id: requestId, payload: body, schema_version: 'back-json-1' }, csrfToken, signal }) : null;
-  const value = await fetchJson<unknown>(target, { method: 'POST', body, csrfToken, signal,
-    ...(intent ? { writeIntent: intent.intent_id, intentGeneration: intent.generation, idempotencyKey: requestId } : {}) });
-  const result = validateCorrectionValue<RecordCorrectionReceipt>('RecordCorrectionReceipt', value);
-  if (result.patient_id !== patientId || result.record_id !== recordId || result.version !== expectedVersion + 1) throw new Error('更正回执与本次患儿、记录或原版本不一致。');
-  return result;
+  const { createCorrectionSubmission } = await import('./recordSubmission');
+  const submission = createCorrectionSubmission(patientId, recordId, body);
+  const abort = () => submission.cancel();
+  if (signal?.aborted) abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  try { return await submission.submit(csrfToken) as unknown as RecordCorrectionReceipt; }
+  finally { signal?.removeEventListener('abort', abort); }
 }
 
 export interface VoiceCandidates {
@@ -223,6 +214,15 @@ export function structureVoice(text: string, csrfToken?: string, signal?: AbortS
   return fetchJson<{ candidates: VoiceCandidates }>('/api/recognition/voice-structure', { method: 'POST', body: { text }, csrfToken, signal });
 }
 
+export type ReportTimeCandidate = Required<import('../../../frontend-design/types').MedicalTimeInput>;
+export interface ReportRecognitionCandidates {
+  schema_version?: 'report-recognition-3';
+  source_text?: string;
+  sample_time?: ReportTimeCandidate | null;
+  result_time?: ReportTimeCandidate | null;
+  items: ReportCandidate[];
+}
+
 export interface ReportCandidate {
   name: string;
   value: string | null;
@@ -231,28 +231,33 @@ export interface ReportCandidate {
   reference: string | null;
   method: string | null;
   source_text: string;
+  sample_time?: ReportTimeCandidate | null;
 }
 
-export async function recognizeReport(fileId: string, csrfToken?: string): Promise<{ candidates: { items: ReportCandidate[] } }> {
-  const result = await fetchJson<unknown>('/api/recognition/report-ocr', { method: 'POST', body: { file_id: fileId }, csrfToken, signal: AbortSignal.timeout(130000) });
+export async function recognizeReport(fileId: string, csrfToken?: string, guard: RequestGuard = {}): Promise<{ candidates: ReportRecognitionCandidates }> {
+  const result = await fetchJson<unknown>('/api/recognition/report-ocr', { method: 'POST', body: { file_id: fileId }, csrfToken, ...guard, signal: guard.signal ? AbortSignal.any([guard.signal, AbortSignal.timeout(130000)]) : AbortSignal.timeout(130000) });
   const { validateApiValue } = await import('./schema');
+  checkRequestGuard(guard);
   return validateApiValue('report-recognition.schema.json', result);
 }
 
 export interface TherapyCandidate { name: string; source_text: string }
-export async function recognizeTherapy(fileId: string, csrfToken?: string): Promise<{ candidates: { items: TherapyCandidate[] } }> {
-  const result = await fetchJson<unknown>('/api/recognition/therapy-ocr', { method: 'POST', body: { file_id: fileId }, csrfToken, signal: AbortSignal.timeout(130000) });
+export async function recognizeTherapy(fileId: string, csrfToken?: string, guard: RequestGuard = {}): Promise<{ candidates: { items: TherapyCandidate[] } }> {
+  const result = await fetchJson<unknown>('/api/recognition/therapy-ocr', { method: 'POST', body: { file_id: fileId }, csrfToken, ...guard, signal: guard.signal ? AbortSignal.any([guard.signal, AbortSignal.timeout(130000)]) : AbortSignal.timeout(130000) });
   const { validateApiValue } = await import('./schema');
+  checkRequestGuard(guard);
   return validateApiValue('therapy-recognition.schema.json', result);
 }
 
-export function createFileGroup(patientId: string, csrfToken?: string, authorizationId?: string, clientGroupId?: string): Promise<{ group_id: string; version: string; status: string }> {
-  return fetchJson<{ group_id: string; version: string; status: string }>(`/api/patients/${patientId}/uploads`, { method: 'POST', body: {
-    ...(authorizationId ? { authorization_id: authorizationId } : {}), ...(clientGroupId ? { client_group_id: clientGroupId } : {}) }, csrfToken });
+export function createFileGroup(patientId: string, csrfToken?: string, authorizationId?: string, clientGroupId?: string, guard: RequestGuard = {}): Promise<UploadGroupReceipt> {
+  return fetchJson<UploadGroupReceipt>(`/api/patients/${patientId}/uploads`, { method: 'POST', body: {
+    ...(authorizationId ? { authorization_id: authorizationId } : {}), ...(clientGroupId ? { client_group_id: clientGroupId } : {}) }, csrfToken, ...guard });
 }
 
-export function completeFileGroup(groupId: string, csrfToken?: string): Promise<{ group_id: string; status: string }> {
-  return fetchJson(`/api/uploads/${groupId}/complete`, { method: 'POST', body: {}, csrfToken });
+export async function completeFileGroup(groupId: string, csrfToken?: string, signal?: AbortSignal, expectedPatientId?: string, isCurrent?: () => boolean): Promise<{ group_id: string; status: string }> {
+  const { completeValidatedFileGroup } = await import('./fileValidation');
+  checkRequestGuard({ signal, isCurrent });
+  return completeValidatedFileGroup(groupId, csrfToken, signal, expectedPatientId, isCurrent);
 }
 
 async function sha256Hex(data: ArrayBuffer): Promise<string> {
@@ -260,15 +265,19 @@ async function sha256Hex(data: ArrayBuffer): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-export async function uploadFile(groupId: string, uploadId: string, data: ArrayBuffer, mediaType: string): Promise<{ file_id: string; checksum: string; size_bytes: number }> {
+export async function uploadFile(groupId: string, uploadId: string, data: ArrayBuffer, mediaType: string, guard: RequestGuard = {}): Promise<{ file_id: string; checksum: string; size_bytes: number }> {
+  checkRequestGuard(guard);
   const checksum = await sha256Hex(data);
+  checkRequestGuard(guard);
   const url = `/api/uploads/${groupId}/files/${uploadId}?checksum=${checksum}&size=${data.byteLength}&media_type=${encodeURIComponent(mediaType)}`;
   const response = await fetch(url, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/octet-stream', 'X-CSRFToken': getSessionCsrfToken() ?? '' },
     body: data,
+    signal: guard.signal,
     credentials: 'same-origin',
   });
+  checkRequestGuard(guard);
   if (!response.ok) {
     let message = `上传失败（${response.status}）`;
     try {
@@ -279,20 +288,34 @@ export async function uploadFile(groupId: string, uploadId: string, data: ArrayB
     }
     throw new Error(message);
   }
-  return (await response.json()) as { file_id: string; checksum: string; size_bytes: number };
+  const value = (await response.json()) as { file_id: string; checksum: string; size_bytes: number };
+  checkRequestGuard(guard);
+  return value;
 }
 
 export async function searchRecords(patientId: string, payload: Record<string, unknown>, options: { signal?: AbortSignal; csrfToken?: string } = {}): Promise<RecordSearchPage> {
   const { validateRecordSearchInput, validateRecordSearchPage } = await import('./recordSearchSchema');
   validateRecordSearchInput(payload);
   const value = await fetchJson<unknown>(`/api/patients/${patientId}/records/search`, { method: 'POST', body: payload, ...options });
-  return validateRecordSearchPage(value);
+  const result = validateRecordSearchPage(value);
+  if (result.records.some(item => item.detail.patient_id !== patientId || item.record_id !== item.detail.record_id
+      || item.kind !== item.detail.kind || item.current_version !== item.detail.version
+      || typeof payload.kind === 'string' && item.kind !== payload.kind)) throw new Error('记录查询结果与当前患儿、类别或记录版本不一致。');
+  return result;
+}
+
+export interface AnalyteComparison {
+  kind: 'raw' | 'approved_mapping'; previous_field_id: string;
+  previous_value: string; current_value: string; unit: string; method: string;
+  config_id: string | null; config_checksum: string | null;
+  previous_mapping_id: string | null; current_mapping_id: string | null;
+  previous_source_revision_id: string | null; current_source_revision_id: string | null;
 }
 
 export interface AnalyteTrend {
   patient_id: string;
   concept_code: string;
-  trend: Array<{ field_id: string; record_version_id: string; original_name: string | null; value_state: 'known' | 'unknown' | 'invalid'; raw_numeric: string | null; raw_text: string | null; qualifier: 'eq' | 'lt' | 'le' | 'gt' | 'ge' | null; raw_unit: string | null; method: string | null; direction: 'up' | 'down' | 'same' | null; not_comparable_reason: 'unit_or_method_or_precision_mismatch' | null; comparison_reasons: string[]; origin_type: import('./records').RecordView['origin_type']; source_organization: string | null; verification_states: import('./records').RecordFieldView['verification_states']; medical_time_id: string | null; medical_time: import('./records').MedicalTimeView | null }>;
+  trend: Array<{ field_id: string; record_version_id: string; original_name: string | null; value_state: 'known' | 'unknown' | 'invalid'; raw_numeric: string | null; raw_text: string | null; qualifier: 'eq' | 'lt' | 'le' | 'gt' | 'ge' | null; raw_unit: string | null; method: string | null; direction: 'up' | 'down' | 'same' | null; comparison?: AnalyteComparison | null; not_comparable_reason: 'unit_or_method_or_precision_mismatch' | null; comparison_reasons: string[]; origin_type: import('./records').RecordView['origin_type']; source_organization: string | null; verification_states: import('./records').RecordFieldView['verification_states']; medical_time_id: string | null; medical_time: import('./records').MedicalTimeView | null }>;
 }
 
 export async function searchAnalyte(patientId: string, conceptCode: string, options: { signal?: AbortSignal } = {}): Promise<AnalyteTrend> {
@@ -313,20 +336,30 @@ export interface DraftView {
   patient_id: string;
 }
 
-export function readDraft(draftId: string, signal?: AbortSignal): Promise<DraftView> {
-  return fetchJson<DraftView>(`/api/drafts/${draftId}`, { signal });
+export async function readDraft(draftId: string, signal?: AbortSignal, guard: RequestGuard = {}): Promise<DraftView> {
+  const { validateFamilyRead } = await import('./familyReadSchema');
+  const value = validateFamilyRead<DraftView>('DraftView', await fetchJson<unknown>(`/api/drafts/${draftId}`, { ...guard, signal }));
+  if (value.draft_id !== draftId) throw new Error('返回草稿与本次对象不一致。');
+  return value;
 }
 
 export function listDrafts(patientId: string): Promise<{ drafts: DraftView[] }> {
   return fetchJson<{ drafts: DraftView[] }>(`/api/patients/${patientId}/drafts`);
 }
 
-export function createDraft(patientId: string, formType: string, payload: Record<string, unknown>, csrfToken?: string): Promise<DraftView> {
-  return fetchJson<DraftView>(`/api/patients/${patientId}/drafts`, { method: 'POST', body: { form_type: formType, payload }, csrfToken });
+export async function createDraft(patientId: string, formType: string, payload: Record<string, unknown>, csrfToken?: string, guard: RequestGuard = {}): Promise<DraftView> {
+  const { validateFamilyRead } = await import('./familyReadSchema');
+  const value = validateFamilyRead<DraftView>('DraftView', await fetchJson<unknown>(`/api/patients/${patientId}/drafts`, { ...guard, method: 'POST', body: { form_type: formType, payload }, csrfToken }));
+  if (value.patient_id !== patientId || value.form_type !== formType || value.version !== '1' || value.status !== 'editing') throw new Error('草稿保存回执与本次患儿、表单或版本不一致。');
+  return value;
 }
 
-export function updateDraft(draftId: string, expectedVersion: string, payload: Record<string, unknown>, csrfToken?: string): Promise<DraftView> {
-  return fetchJson<DraftView>(`/api/drafts/${draftId}`, { method: 'PUT', body: { expected_version: expectedVersion, payload }, csrfToken });
+export async function updateDraft(draftId: string, expectedVersion: string, payload: Record<string, unknown>, csrfToken?: string, scope?: { patientId: string; formType: string }, guard: RequestGuard = {}): Promise<DraftView> {
+  const { validateFamilyRead } = await import('./familyReadSchema');
+  const value = validateFamilyRead<DraftView>('DraftView', await fetchJson<unknown>(`/api/drafts/${draftId}`, { ...guard, method: 'PUT', body: { expected_version: expectedVersion, payload }, csrfToken }));
+  if (value.draft_id !== draftId || !/^[1-9][0-9]*$/.test(expectedVersion) || BigInt(value.version) !== BigInt(expectedVersion) + 1n || value.status !== 'editing'
+      || scope && (value.patient_id !== scope.patientId || value.form_type !== scope.formType)) throw new Error('草稿更新回执与本次对象或版本不一致。');
+  return value;
 }
 
 export async function abandonDraft(draftId: string, expectedVersion: string, csrfToken?: string, signal?: AbortSignal): Promise<DraftView> {

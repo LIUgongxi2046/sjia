@@ -4,6 +4,7 @@ import type { OriginalSourceView } from '../guardian-h5/src/api/originalSourceSc
 
 export interface ArchiveSearchInput {
   cursor?: string; limit?: number; query?: string; organization?: string;
+  time_basis?: 'document' | 'episode';
   document_type?: DocumentView['document_type']; category?: 'all' | 'inpatient' | 'outpatient' | 'pending';
   episode_id?: string; document_id?: string; from_date?: string; to_date?: string; from_time?: MedicalTimeInput; to_time?: MedicalTimeInput; confirmed_text?: string; project?: string;
   origin_type?: 'self_report' | 'report_transcription' | 'authorized_clinical';

@@ -62,7 +62,10 @@ def dataset_run_results(request, run_id):
     run, task, _, _ = lock_run_read(run_id=run_id, actor=actor, auth_epoch=epoch)
     if run.status not in ('completed', 'insufficient') or task.status != 'completed' or run.finished_at is None:
         raise ApiError('DATASET_RUN_RESULT_UNAVAILABLE', 409)
-    return Response({'schema_version': 'evaluation-results-1', 'run_id': str(run.id),
+    from tasks.models import TaskAttempt
+    attempt = TaskAttempt.objects.get(task=task, status='completed', lease_generation=task.lease_generation)
+    clinical = attempt.usage_evidence.get('clinical_adoption')
+    return Response({'clinical_report': clinical['report'] if clinical else None, 'schema_version': 'evaluation-results-1', 'run_id': str(run.id),
         'status': run.status, 'results': run.result_refs, 'rules': run.rules_refs, 'limitations': run.limitations,
         'implementation_sha256': run.implementation_sha256, 'input_sha256': task.input_sha256,
         'finished_at': run.finished_at.isoformat()})

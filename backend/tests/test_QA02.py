@@ -51,7 +51,7 @@ class MedicalPaginationTest(TestCase):
     def test_corrected_version_preserves_source_type(self):
         result = self._temp_record('38')
         record = Record.objects.get(id=result['record_id'])
-        correct_record(record=record, expected_version=1, actor=self.principal, reason='核对测量原文', fields=[{'field_code': 'temp', 'value_type': 'decimal', 'value_state': 'known', 'raw_numeric': '37', 'raw_unit': 'C'}], use_authorization_id=self.use_auth.id, retention_policy=self.retention)
+        correct_record(record=record, expected_version=1, actor=self.principal, reason='核对测量原文', fields=[{'field_code': 'temp', 'concept_code': 'temp', 'value_type': 'decimal', 'value_state': 'known', 'raw_numeric': '37', 'raw_unit': 'C'}], use_authorization_id=self.use_auth.id, retention_policy=self.retention)
         before = record_version_read(patient=self.patient, record_version_id=result['record_version_id'])
         after = RecordVersion.objects.get(record_id=record.id, version=2)
         self.assertEqual(before['fields'][0]['raw_numeric'], '38')
@@ -76,17 +76,38 @@ class AlertContentTest(TestCase):
     setUp = alert_tests.ReadReceiptTest.setUp
 
     def publish(self):
+        from tests.synthetic_fixtures import SyntheticEvidence, synthetic_publication
+        from alerting.models import AlertEpisode, AlertEvaluation
         event = AlertEvent.objects.get(id=self.recipient.alert_id)
-        EnvironmentGate.objects.create(environment='test', version=1, publication_epoch=0, enabled=True, active_release=event.release, updated_at=datetime.now(timezone.utc))
-        content = ConfigVersion.objects.create(config_key='QA02-content', kind='content', version=1, schema_version='content-1', payload={'approved_text': '模拟预警内容'}, checksum='a' * 64, status='enabled', created_by=self.principal, created_at=datetime.now(timezone.utc))
-        ReleaseComponent.objects.create(release=event.release, component_kind='content', config=content)
-        return event, content
+        event.release.status = 'disabled'
+        event.release.save(update_fields=['status'])
+        fixture = SyntheticEvidence(self, self.principal)
+        release, _, configs = synthetic_publication(fixture)
+        fixture.gate.refresh_from_db()
+        evaluation = AlertEvaluation.objects.get(id=event.evaluation_id)
+        evaluation.policy = configs['rule']
+        evaluation.window_policy = configs['window']
+        evaluation.publication_epoch = fixture.gate.publication_epoch
+        evaluation.save(update_fields=['policy', 'window_policy', 'publication_epoch'])
+        episode = AlertEpisode.objects.create(patient=self.patient, rule_family_key='synthetic-test',
+            status='open', opened_at=event.created_at, last_evaluation_id=evaluation.id,
+            last_event_id=event.id, state_version=1, last_assessment_at=evaluation.assessment_at,
+            last_context_sequence=evaluation.context_sequence)
+        event.release = release
+        event.trigger_policy = configs['rule']
+        event.input_snapshot = {'schema_version': 'dynamic-family-event-2',
+            'publication': configs['rule'].payload['publication'], 'episode_id': str(episode.id),
+            'evaluation_id': str(evaluation.id), 'input_digest': evaluation.input_digest,
+            **{key: str(getattr(evaluation, key)) for key in
+                ('context_sequence', 'data_epoch', 'verification_epoch', 'publication_epoch')}}
+        event.save(update_fields=['release', 'trigger_policy', 'input_snapshot'])
+        return event, configs['content']
 
     def test_current_content_and_contact(self):
         event, _ = self.publish()
         result = alert_content(event, ['temp'])
         self.assertEqual(result['content_state'], 'available')
-        self.assertEqual(result['content']['approved_text'], '模拟预警内容')
+        self.assertEqual(result['content']['approved_text'], 'SYNTHETIC TEST CONTENT; NO CLINICAL APPROVAL')
         self.assertEqual(result['content']['contact']['state'], 'available')
 
     def test_changed_data_blocks_content(self):
@@ -99,7 +120,7 @@ class AlertContentTest(TestCase):
         event, content = self.publish()
         content.status = 'disabled'
         content.save(update_fields=['status'])
-        self.assertEqual(alert_content(event, ['temp'])['content_state'], 'configuration_pending')
+        self.assertEqual(alert_content(event, ['temp'])['content_state'], 'unavailable')
         self.assertIsNone(alert_content(event, ['temp'])['content'])
 
 
@@ -117,7 +138,11 @@ class DraftTransactionTest(TestCase):
         return result.json()['draft_id']
 
     def correct(self, record_id, draft_id, draft_version=1):
-        return self.client.post(f'/api/records/{record_id}/corrections', {'expected_version': 1, 'reason': '模拟核对', 'fields': [{'field_code': 'temp', 'value_type': 'decimal', 'value_state': 'known', 'raw_numeric': '37', 'raw_unit': 'C'}], 'draft_id': draft_id, 'draft_version': draft_version}, content_type='application/json')
+        from tests.integration.helpers import correction_fields, post_intended
+        fields = correction_fields(self.patient, record_id, {"temp": {"raw_numeric": "37"}})
+        return post_intended(self.client, f'/api/records/{record_id}/corrections', 'record_correct',
+            {'expected_version': 1, 'reason': '模拟核对', 'fields': fields, 'draft_id': draft_id, 'draft_version': str(draft_version)},
+            schema_version='back-json-1')
 
     def test_stale_draft_correction_preserves_record_and_draft(self):
         record_id = self.record()
@@ -183,7 +208,7 @@ class TherapySummaryScopeTest(TestCase):
             {'field_code': 'therapy_end', 'value_type': 'time', 'value_state': 'known' if end else 'unknown', 'medical_time': {'precision': 'date', 'local_date': end, 'timezone_name': 'Asia/Shanghai', 'resolution_status': 'local_only'} if end else None},
         ]
         create_record(patient=self.patient, actor=self.principal, kind='therapy', capture_method='manual', origin_type='self_report', retention_policy=RetentionPolicy.objects.first(), use_authorization_id=DataUseAuthorization.objects.get(patient=self.patient).id, fields=fields)
-        activate_summary_configs(self.principal, ['medication_name', 'therapy_start', 'therapy_end', 'therapy_status'])
+        activate_summary_configs(self, ['medication_name', 'therapy_start', 'therapy_end', 'therapy_status'])
 
     def generate(self):
         return generate_summary(patient=self.patient, requested_by=self.principal, from_date=date(2026, 9, 1), to_date=date(2026, 9, 30), scope_timezone='Asia/Shanghai', include_unknown_time=False, field_codes=['medication_name', 'therapy_start', 'therapy_end', 'therapy_status'], environment='test')
@@ -192,7 +217,7 @@ class TherapySummaryScopeTest(TestCase):
         self.therapy('ended', '2026-10-01')
         summary = self.generate()
         content = read_summary(summary.id, self.patient)
-        medication = next(item['snapshot'] for item in content['items'] if item['snapshot']['field_code'] == 'medication_name')
+        medication = next(item['snapshot']['field'] for item in content['items'] if item['snapshot']['field']['field_code'] == 'medication_name')
         self.assertEqual(medication['raw_text'], '模拟药名')
         self.assertIsNone(medication['medical_time'])
 

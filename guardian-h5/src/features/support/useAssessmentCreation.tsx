@@ -20,7 +20,7 @@ const targetPatient = (identity: CreationIdentity) => identity.operation_id === 
 const planKey = (plan: AssessmentCreationPlan | DynamicCreationPlan) => plan.kind === 'dynamic' ? dynamicPlanKey(plan) : assessmentPlanKey(plan);
 
 export function useAssessmentCreation({ session, available, kind, onRefresh }: {
-  session: SupportSessionView | null; available: boolean; kind: 'classification' | 'ms' | 'dynamic' | null; onRefresh: () => void;
+  session: SupportSessionView | null; available: boolean; kind: 'classification' | 'ms' | 'hlh' | 'dynamic' | null; onRefresh: () => void;
 }) {
   const [parameters, setParameters] = useSearchParams();
   const canCreate = available && session?.capabilities.some(item => item.capability_id === 'execute_assessment' && item.state === 'available');
@@ -136,6 +136,9 @@ export function useAssessmentCreation({ session, available, kind, onRefresh }: {
     if (selected.kind === 'dynamic' && !selected.use_authorization_ids.includes(authorization)) {
       setError('需要选择当前准确用途授权。'); return;
     }
+    if (selected.kind === 'hlh' && !selected.input_rule) {
+      setError('HLH 参考规则缺少已批准的输入映射版本。'); return;
+    }
     const dynamicChoices = choices.filter((item): item is DynamicClinicalSelection => 'input_role' in item);
     const identity: CreationIdentity = selected.kind === 'dynamic'
       ? { operation_id: 'alert_evaluation_v2_create', target_key: `/support/patients/${patient}/alert-evaluations`,
@@ -146,6 +149,7 @@ export function useAssessmentCreation({ session, available, kind, onRefresh }: {
       : { operation_id: 'assessment_v2_create', target_key: `/support/patients/${patient}/assessments`,
       request_id: crypto.randomUUID(), schema_version: '2.0.0', payload: { kind: selected.kind, assessment_at: assessmentAt, known_at: knownAt,
         mode, rule_id: selected.rule.config_id, window_policy_id: selected.window.config_id,
+        ...(selected.kind === 'hlh' ? { input_rule_id: selected.input_rule!.config_id } : {}),
         verification_policy_id: selected.verification.config_id, observation_period_id: period || null,
         clinical_selections: choices.filter(item => !('input_role' in item)) } };
     try {
@@ -200,7 +204,8 @@ export function useAssessmentCreation({ session, available, kind, onRefresh }: {
     <p>未提交输入保留在当前页面，已发出请求需要按原身份查询结果。</p>
     <button className="button secondary" onClick={() => blocker.reset()}>继续评估</button>
     <button className="button" onClick={() => { controller.current?.abort(); blocker.proceed(); }}>确认离开</button>
-  </UI2Sheet> : canCreate && open && <UI2Sheet title={kind === 'dynamic' ? '创建动态评估' : kind === 'ms' ? '创建 MS 评分' : '创建静态分类'} onClose={() => setOpen(false)}>
+  </UI2Sheet> : canCreate && open && <UI2Sheet title={kind === 'dynamic' ? '创建动态评估' : kind === 'ms' ? '创建 MS 评分' : kind === 'hlh' ? '创建 HLH-2004 参考评估' : '创建静态分类'} onClose={() => setOpen(false)}>
+    {kind === 'hlh' && <p className="note">独立核对八项条件及分子依据。资料缺失保留未知；本结果不能替代诊断或治疗决定。</p>}
     <div onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}>
       <label className="field"><span>当前获准病例</span><select value={patient} disabled={loading || phase === 'pending' || phase === 'unknown'} onChange={event => {
         setPatient(event.target.value); setOptions(null); setChoices([]); setPlan(''); setPeriod(''); }}><option value="">请选择病例</option>
@@ -218,7 +223,7 @@ export function useAssessmentCreation({ session, available, kind, onRefresh }: {
       {options && <>
         <label className="field"><span>获准规则与窗口</span><select value={plan} disabled={phase === 'pending' || phase === 'unknown'} onChange={event => { setPlan(event.target.value); setChoices([]); }}>
           <option value="">请选择准确批准组合</option>{options.plans.filter(item => item.kind === kind).map(item => <option key={planKey(item)} value={planKey(item)}>
-            {item.rule.config_key} 版本 {item.rule.version}；{item.window.config_key} 版本 {item.window.version}；{item.verification.config_key} 版本 {item.verification.version}</option>)}</select></label>
+            {item.rule.config_key} 版本 {item.rule.version}；{item.kind === 'hlh' && item.input_rule ? `输入映射 ${item.input_rule.config_key} 版本 ${item.input_rule.version}；` : ''}{item.window.config_key} 版本 {item.window.version}；{item.verification.config_key} 版本 {item.verification.version}</option>)}</select></label>
         <label className="field"><span>保存的观察区间</span><select value={period} disabled={phase === 'pending' || phase === 'unknown'} onChange={event => setPeriod(event.target.value)}>
           <option value="">按批准窗口检查完整候选</option>{options.observation_periods.map(item => <option key={item.observation_period_id} value={item.observation_period_id}>
             {item.label ?? '观察区间'}：{timeLabel(item.start_time)} 至 {timeLabel(item.end_time)}（版本 {item.version}）</option>)}</select></label>

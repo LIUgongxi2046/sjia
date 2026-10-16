@@ -74,15 +74,13 @@ def case_import(request, patient_id):
 @api_view(["POST"])
 @handle
 def professional_record_create(request, patient_id):
-    principal, _, _ = current_principal(request)
+    from records.professional import submit_professional_record
+
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    patient = get_patient(patient_id)
-    retention = RetentionPolicy.objects.filter(status="active").first()
-    use_auth = DataUseAuthorization.objects.filter(patient=patient).first()
-    data = request.data or {}
-    result = create_record(patient=patient, actor=principal, kind=data.get("kind", "professional"), capture_method="authorized_import", origin_type="authorized_clinical", retention_policy=retention, use_authorization_id=use_auth.id, fields=data.get("fields", []))
+        raise ApiError('AUTH_REQUIRED', 401)
+    result = submit_professional_record(actor=principal, auth_epoch=epoch, audience=audience,
+        operation='professional_record_create', target=request.path, payload=request.data, headers=request.headers)
     return Response(result, status=201)
 
 
@@ -122,33 +120,43 @@ def task_retry(request, task_id):
 @api_view(["POST"])
 @handle
 def task_reconcile(request, task_id):
-    principal, _, _ = current_principal(request)
+    from tasks.reconciliation import submit_reconcile
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    task = Task.objects.filter(id=task_id).first()
-    if task is None:
-        raise ApiError("TASK_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    return Response({"task_id": str(task.id), "status": task.status})
+        raise ApiError("AUTH_REQUIRED", 401)
+    return Response(submit_reconcile(actor=principal, auth_epoch=epoch, audience=audience,
+        target=request.path, data=request.data, headers={
+            'intent_id': request.headers.get('X-Write-Intent'),
+            'request_id': request.headers.get('Idempotency-Key'),
+            'generation': request.headers.get('X-Intent-Generation')}), status=202)
+
+
+@api_view(["GET"])
+@handle
+def task_reconcile_read(request, task_id):
+    from tasks.reconciliation import read_reconcile
+    principal, epoch, audience = current_principal(request)
+    if principal is None:
+        raise ApiError("AUTH_REQUIRED", 401)
+    return Response(read_reconcile(actor=principal, auth_epoch=epoch, audience=audience, task_id=task_id))
 
 
 @api_view(["POST"])
 @handle
 def correction_request_resolve(request, correction_request_id):
-    principal, _, _ = current_principal(request)
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    from verification.models import CorrectionRequest
+        raise ApiError('AUTH_REQUIRED', 401)
+    if audience != 'support':
+        raise ApiError('SUPPORT_AUDIENCE_REQUIRED', 403)
+    from django.conf import settings
+    from verification.correction_requests import submit_correction
 
-    correction = CorrectionRequest.objects.filter(id=correction_request_id).first()
-    if correction is None:
-        raise ApiError("CORRECTION_REQUEST_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    correction.status = "resolved"
-    correction.resolved_by = principal
-    correction.resolved_at = datetime.now(timezone.utc)
-    correction.save(update_fields=["status", "resolved_by", "resolved_at"])
-    return Response({"correction_request_id": str(correction.id), "status": correction.status})
+    result = submit_correction(operation='correction_request_resolve', target=request.path, payload=request.data,
+        actor=principal, epoch=epoch, audience=audience, environment=settings.SJIA_ENVIRONMENT,
+        headers={'intent_id': request.headers.get('X-Write-Intent'), 'request_id': request.headers.get('Idempotency-Key'),
+            'generation': request.headers.get('X-Intent-Generation')})
+    return Response(result)
 
 
 @api_view(["POST"])
@@ -181,25 +189,13 @@ def case_search(request, patient_id):
 @api_view(["POST"])
 @handle
 def professional_record_correct(request, record_id):
-    principal, _, _ = current_principal(request)
+    from records.professional import submit_professional_record
+
+    principal, epoch, audience = current_principal(request)
     if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    record = Record.objects.filter(id=record_id).first()
-    if record is None:
-        raise ApiError("RECORD_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    retention = RetentionPolicy.objects.filter(status="active").first()
-    use_auth = DataUseAuthorization.objects.filter(patient=record.patient).first()
-    if retention is None or use_auth is None:
-        raise ApiError("CONFIGURATION_PENDING", status.HTTP_503_SERVICE_UNAVAILABLE)
-    data = request.data or {}
-    result = correct_record(
-        record=record, expected_version=int(data.get("expected_version", record.current_version)),
-        actor=principal, reason=data.get("reason", ""), fields=data.get("fields", []),
-        use_authorization_id=use_auth.id, retention_policy=retention,
-        capture_method="authorized_import", source_revision=SourceRevision.objects.first(),
-        origin_type=RecordVersion.OriginType.AUTHORIZED_CLINICAL,
-    )
+        raise ApiError('AUTH_REQUIRED', 401)
+    result = submit_professional_record(actor=principal, auth_epoch=epoch, audience=audience,
+        operation='professional_record_correct', target=request.path, payload=request.data, headers=request.headers)
     return Response(result, status=201)
 
 

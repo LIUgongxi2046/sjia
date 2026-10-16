@@ -12,10 +12,14 @@ import { useAssessmentCreation } from './useAssessmentCreation';
 import { readDynamic, readDynamicTask } from '../../api/dynamic';
 import { DynamicSources, dynamicSummary } from './DynamicSources';
 import { DynamicTriggerRecords } from './DynamicTriggerRecords';
+import { HlhReferenceResult } from './HlhReferenceResult';
 
-const tabs = ['静态分类', 'MS 评分', '动态变化'];
+const tabs = ['静态分类', 'MS 评分', 'HLH-2004', '动态变化'];
 const variableNames: Record<string, string> = { sjia: 'sJIA 状态', fever: '发热状态', ferritin: '铁蛋白',
   platelet_count: '血小板计数', ast: 'AST', triglycerides: '甘油三酯', fibrinogen: '纤维蛋白原', ldh: 'LDH',
+  applicability: 'HLH 适用依据', molecular: 'HLH 分子依据', splenomegaly: '脾大', hemoglobin: '血红蛋白',
+  neutrophil_count: '中性粒细胞', triglycerides_fasting: '空腹依据', hemophagocytosis: '噬血现象',
+  no_malignancy_evidence: '恶性肿瘤限定依据', nk_activity: 'NK 活性', soluble_cd25: '可溶性 CD25', age_at_hemoglobin: '采样年龄',
   cns: '中枢神经系统受累', hemorrhagic_manifestations: '出血表现', active_arthritis: '活动性关节炎' };
 const conditionNames: Record<string, string> = { met: '满足', not_met: '未满足', unknown: '未知', known: '已确认',
   insufficient: '资料不足', meets: '符合分类条件', not_meets: '未达到分类条件', not_applicable: '不适用' };
@@ -33,7 +37,7 @@ function summary(result: AssessmentView | null, tab: string): [string, string][]
     : tab === 'MS 评分' ? ['七项输入资格', '各项贡献', '完整总分', '阈值比较']
       : ['基准与当前采样', '独立连续采样', '三值组合结果', '持续提示周期'];
   if (!result || result.validity !== 'valid' || !result.output || tab === '动态变化'
-      || (tab === '静态分类') !== (result.kind === 'classification')) return labels.map(label => [label, '尚无有效评估']);
+      || (tab === '静态分类' ? result.kind !== 'classification' : result.kind !== 'ms')) return labels.map(label => [label, '尚无有效评估']);
   const output = result.output;
   if (result.kind === 'classification') {
     const values = output.classification_conditions!;
@@ -63,14 +67,15 @@ export function AssessmentPage({ session, accessState, accessError, onRefresh }:
   const patientId = parameters.get('patient_id');
   const available = accessState === 'default' && session !== null && session.capabilities.some(item =>
     item.capability_id === 'read_assessment' && ['available', 'read_only'].includes(item.state));
-  const [tab, setTab] = useState(dynamic ? tabs[2] : evaluationKind === 'ms' ? tabs[1] : tabs[0]);
+  const [tab, setTab] = useState(dynamic ? tabs[3] : evaluationKind === 'hlh' ? tabs[2] : evaluationKind === 'ms' ? tabs[1] : tabs[0]);
   useEffect(() => {
-    if (evaluationKind === 'dynamic' || evaluationId) setTab(tabs[2]);
+    if (evaluationKind === 'dynamic' || evaluationId) setTab(tabs[3]);
+    else if (evaluationKind === 'hlh') setTab(tabs[2]);
     else if (evaluationKind === 'ms') setTab(tabs[1]);
     else if (evaluationKind === 'classification') setTab(tabs[0]);
   }, [evaluationKind, evaluationId, taskId, assessmentId]);
   const creation = useAssessmentCreation({ session, available: accessState === 'default',
-    kind: tab === '静态分类' ? 'classification' : tab === 'MS 评分' ? 'ms' : 'dynamic', onRefresh });
+    kind: tab === '静态分类' ? 'classification' : tab === 'MS 评分' ? 'ms' : tab === 'HLH-2004' ? 'hlh' : 'dynamic', onRefresh });
   const [result, setResult] = useState<AssessmentView | null>(null);
   const [dynamicResult, setDynamicResult] = useState<DynamicView | null>(null);
   const [task, setTask] = useState<TaskView | null>(null);
@@ -139,11 +144,12 @@ export function AssessmentPage({ session, accessState, accessError, onRefresh }:
     };
   }, [available, assessmentId, evaluationId, dynamic, taskId, patientId, session?.principal_id, refresh, onRefresh]);
   const visible = available && state === 'default';
-  const displayed = visible ? result : null;
+  const matchingKind = tab === '静态分类' ? 'classification' : tab === 'MS 评分' ? 'ms' : tab === 'HLH-2004' ? 'hlh' : null;
+  const displayed = visible && result?.kind === matchingKind ? result : null;
   const displayedDynamic = visible && tab === '动态变化' ? dynamicResult : null;
   const selectedResult = tab === '动态变化' ? displayedDynamic : displayed;
   const readState = accessState !== 'default' ? accessState : !available ? 'permission' : state;
-  return <UI2Frame title="评估依据" screenId="UI2-35" note="静态、MS 与动态路径分别保存结果。" onBack={() => navigate('/support/verification')}
+  return <UI2Frame title="评估依据" screenId="UI2-35" note="静态分类、MS、HLH-2004 与动态路径分别保存结果。" onBack={() => navigate('/support/verification')}
     overlay={creation.overlay || displayedDynamic?.validity === 'valid' && sources && <UI2Sheet title="观察时段与来源" onClose={() => setSources(false)}>
       <DynamicSources result={displayedDynamic} />
       {session && <DynamicTriggerRecords patientId={displayedDynamic.patient_id} principalId={session.principal_id} onPermissionLost={onRefresh} />}
@@ -166,18 +172,24 @@ export function AssessmentPage({ session, accessState, accessError, onRefresh }:
         <div className="pair"><span>实际保存时间</span><strong>{item.saved_at}</strong></div>
         {item.prior_task_id && <div className="pair"><span>原选择任务</span><strong>{item.prior_task_id}</strong></div>}
       </section>)}
-      {creation.canCreate && <button className="button" onClick={() => { setSources(false); void creation.openCreation(); }}>创建当前{tab === 'MS 评分' ? 'MS 评分' : '静态分类'}</button>}
+      {creation.canCreate && <button className="button" onClick={() => { setSources(false); void creation.openCreation(); }}>创建当前{tab === 'MS 评分' ? 'MS 评分' : tab === 'HLH-2004' ? 'HLH-2004 参考评估' : '静态分类'}</button>}
       <button className="button secondary" onClick={() => setSources(false)}>继续查看</button>
     </UI2Sheet>}>
     <div className="support-banner"><LockKeyhole size={16} />受控支持 · 需独立岗位授权</div>
+    <SupportReadStatus state={readState} error={accessState !== 'default' ? accessError : error}
+      onRefresh={accessState !== 'default' || !available || readState === 'permission' ? onRefresh : () => setRefresh(value => value + 1)} />
     <section className="card form-card"><div className="eyebrow">指定范围内操作</div><h2>评估依据</h2>
-      <p className="muted">静态、MS 与动态路径分别保存结果。</p>
+      <p className="muted">静态分类、MS、HLH-2004 与动态路径分别保存结果。</p>
       <div className="pair"><span>当前资料范围</span><strong>{selectedResult ? selectedResult.patient_id : '尚未授权选择'}</strong></div>
     </section>
     <div className="segments" role="tablist" aria-label="评估方式">{tabs.map(value => <button key={value} role="tab"
       aria-selected={tab === value} className={tab === value ? 'selected' : ''} onClick={() => { setSources(false); setTab(value); }}>{value}</button>)}</div>
-    <section className="card form-card">{(tab === '动态变化' ? dynamicSummary(displayedDynamic) : summary(displayed, tab)).map(([label, value]) =>
-      <div className="pair" key={label}><span>{label}</span><strong>{value}</strong></div>)}</section>
+    {visible && selectedResult?.validity === 'valid' && (tab === 'HLH-2004' ? <HlhReferenceResult result={displayed?.validity === 'valid' ? displayed.output?.hlh_result ?? null : null} />
+      : <section className="card form-card">{(tab === '动态变化' ? dynamicSummary(displayedDynamic) : summary(displayed, tab)).map(([label, value]) =>
+        <div className="pair" key={label}><span>{label}</span><strong>{value}</strong></div>)}</section>)}
+    {visible && !selectedResult && <section className="card form-card"><p>{!assessmentId && !evaluationId && !taskId
+      ? '请选择获准的评估结果，或按授权范围创建评估。' : task && !['completed', 'failed', 'cancelled', 'superseded'].includes(task.status)
+        ? '评估任务尚未完成，当前还没有可显示的结果。' : '当前选择尚未取得可显示的评估结果，请核对结果类型与任务状态。'}</p></section>}
     {creation.content}
     <section className="card">
       <button className="list-row" onClick={() => {
@@ -189,8 +201,6 @@ export function AssessmentPage({ session, accessState, accessError, onRefresh }:
         <span className="row-icon"><FileText size={30} /></span><span className="row-text"><strong>内容发布条件</strong></span><ChevronRight size={17} />
       </button>
     </section>
-    <SupportReadStatus state={readState} error={accessState !== 'default' ? accessError : error}
-      onRefresh={accessState !== 'default' || !available || readState === 'permission' ? onRefresh : () => setRefresh(value => value + 1)} />
     {visible && task && ['failed', 'cancelled', 'superseded'].includes(task.status) && <section className="status-panel error" role="status">
       <h2>当前评估任务没有可采用结果</h2><p>{task.error_code ?? '任务已终止。'}</p>
       <button className="text-action" onClick={() => setRefresh(value => value + 1)}>重新读取评估任务</button>

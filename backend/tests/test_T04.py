@@ -5,6 +5,9 @@
 """
 from datetime import datetime, timezone
 from decimal import Decimal
+from uuid import uuid4
+
+from tests.synthetic_fixtures import SyntheticEvidence
 
 from django.test import TestCase
 
@@ -31,10 +34,15 @@ class ConfigServiceTest(TestCase):
         self.env = EnvironmentGate.objects.create(environment="test", version=1, enabled=True, updated_at=now)
         self.source = register_source(source_key="cfg", owner="o", location="l", purpose="p", sensitivity="s", update_frequency="d")
         self.revision = register_revision(source=self.source, version="v1", checksum="c" * 64, license="l", allowed_use=["use1"])
+        self.synthetic = SyntheticEvidence(self, self.principal)
+
+    def payload(self, codes=('temp',)):
+        return {'schema_version': 'summary-1', 'environment': 'test', 'purpose': 'software_test',
+            'field_codes': list(codes), 'evidence_refs': [self.synthetic.reference]}
 
     def test_register_config_immutable_creates_new_version(self):
-        c1 = register_config(kind="rule", config_key="r1", schema_version="rule-1", payload={"x": 1}, created_by=self.principal)
-        c2 = register_config(kind="rule", config_key="r1", schema_version="rule-1", payload={"x": 2}, created_by=self.principal)
+        c1 = register_config(kind="summary", config_key="r1", schema_version="summary-1", payload=self.payload(), created_by=self.principal)
+        c2 = register_config(kind="summary", config_key="r1", schema_version="summary-1", payload=self.payload(("rash",)), created_by=self.principal)
         self.assertEqual(c1.version, 1)
         self.assertEqual(c2.version, 2)
         self.assertEqual(c1.status, "draft")
@@ -52,16 +60,27 @@ class ConfigServiceTest(TestCase):
         self.assertEqual(compute_checksum({"b": 1, "a": 2}), compute_checksum({"a": 2, "b": 1}))
 
     def test_enable_requires_approval_and_validation(self):
-        config = register_config(kind="rule", config_key="r2", schema_version="rule-1", payload={"x": 1}, created_by=self.principal)
+        config = register_config(kind="summary", config_key="r2", schema_version="summary-1",
+            payload=self.payload(), created_by=self.principal)
+        def enable():
+            self.env.refresh_from_db()
+            return enable_config(config=config, environment=self.env, actor=self.principal,
+                expected_gate_version=self.env.version, reason='synthetic lifecycle check',
+                expected_checksum=config.checksum)
         with self.assertRaises(ConfigRejected):
-            enable_config(config=config, environment=self.env)
-        approve_config(config=config, approved_by=self.principal, approval_role="clinical", evidence_ref="e", effective_scope={})
+            enable()
+        self.synthetic.qualify(config)
+        validation = config.validations.get()
+        validation.delete()
+        config.status = 'approved'
+        config.save(update_fields=['status'])
         with self.assertRaises(ConfigRejected):
-            enable_config(config=config, environment=self.env)
-        validate_config(config=config, environment=self.env, artifact_sha256="a" * 64, dataset_revision=self.revision, evidence_ref="e", evidence_sha256="b" * 64, outcome="pass", executed_by=self.principal)
+            enable()
+        validation.save(force_insert=True)
         old_version = self.env.version
-        enable_config(config=config, environment=self.env)
+        enable()
         self.env.refresh_from_db()
+        config.refresh_from_db()
         self.assertEqual(self.env.version, old_version + 1)
         self.assertEqual(config.status, "enabled")
 
@@ -76,7 +95,10 @@ class SourceServiceTest(TestCase):
         source = register_source(source_key="s1", owner="o", location="l", purpose="p", sensitivity="s", update_frequency="d")
         revision = register_revision(source=source, version="v1", checksum="c" * 64, license="l", allowed_use=["use1"])
         self.assertEqual(revision.status, "pending")
-        approve_revision(revision=revision, evidence_ref="evidence")
+        synthetic = SyntheticEvidence(self, self.principal)
+        revision.retention_policy = synthetic.retention
+        revision.save(update_fields=['retention_policy'])
+        approve_revision(revision=revision, evidence_ref=synthetic.reference)
         revision.refresh_from_db()
         self.assertEqual(revision.status, "approved")
 
@@ -99,22 +121,23 @@ class UnitConversionTest(TestCase):
     def setUp(self):
         now = _now()
         self.principal = Principal.objects.create(account_status="active", created_at=now, updated_at=now)
-        self.config = register_config(kind="mapping", config_key="m1", schema_version="mapping-1", payload={}, created_by=self.principal)
-        self.source = register_source(source_key="u1", owner="o", location="l", purpose="p", sensitivity="s", update_frequency="d")
-        self.revision = register_revision(source=self.source, version="v1", checksum="c" * 64, license="l", allowed_use=["use1"])
+        self.synthetic = SyntheticEvidence(self, self.principal)
+        self.revision = self.synthetic.source
+        self.config = self.synthetic.configuration('mapping', {'schema_version': 'mapping-1',
+            'mappings': [{'mapping_id': str(uuid4()), 'concept_code': 'temp',
+                'source_revision_id': str(self.revision.id), 'raw_unit': 'F', 'normalized_unit': 'C',
+                'method_scope': 'all', 'multiplier': '0.5555555555555556',
+                'additive': '-17.77777777777778', 'exact_values_only': False}],
+            'evidence_refs': [self.synthetic.reference]})
 
     def test_convert_known_mapping(self):
-        UnitMapping.objects.create(
-            config=self.config, concept_code="temp", source_revision=self.revision, raw_unit="F",
-            normalized_unit="C", method_scope="all", multiplier=Decimal("0.5555555555555556"), additive=Decimal("-17.77777777777778"), exact_values_only=False,
-        )
         value, unit = convert_measurement(raw_numeric=Decimal("100.4"), raw_unit="F", concept_code="temp", config=self.config, source_revision=self.revision, method_scope="all")
         self.assertEqual(unit, "C")
         self.assertTrue(abs(value - Decimal("38.0")) < Decimal("0.001"))
 
     def test_unknown_mapping_not_converted(self):
         with self.assertRaises(MappingNotFound):
-            convert_measurement(raw_numeric=Decimal("38"), raw_unit="F", concept_code="temp", config=self.config, source_revision=self.revision, method_scope="all")
+            convert_measurement(raw_numeric=Decimal("38"), raw_unit="unknown-unit", concept_code="temp", config=self.config, source_revision=self.revision, method_scope="all")
 
 
 class FieldConfigReadTest(TestCase):
@@ -141,8 +164,8 @@ class FieldConfigReadTest(TestCase):
 
     def test_available_with_enabled_config(self):
         config = register_config(kind="content", config_key="fc1", schema_version="field-config-1", payload=self._payload(), created_by=self.principal)
-        config.status = "enabled"
-        config.save(update_fields=["status"])
+        synthetic = SyntheticEvidence(self, self.principal)
+        synthetic.qualify(config)
         view = read_field_config(self.patient, "observation")
         self.assertEqual(view["state"], "available")
         self.assertEqual([f["field_code"] for f in view["fields"]], ["temp", "rash"])

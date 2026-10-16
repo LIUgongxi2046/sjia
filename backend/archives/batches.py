@@ -186,7 +186,7 @@ def page_read(page, patient, principal=None):
         raise ApiError('ARCHIVE_PAGE_CANDIDATE_INVALID', 409)
     actions = []
     batch = ArchiveBatch.objects.get(id=page.batch_id)
-    if principal is not None and source_grants(principal, patient, 'write_record', author_id=batch.submitted_by):
+    if batch.intake_mode != 'manual' and principal is not None and source_grants(principal, patient, 'write_record', author_id=batch.submitted_by):
         if page.status in ('uploaded', 'queued', 'processing'):
             actions.append('archive_page_cancel')
         if page.status == 'failed':
@@ -228,8 +228,9 @@ def batch_read(batch, patient, pages, principal=None):
     counts = {state: statuses[state] for state in PAGE_STATES}
     counts.update(originals=len({page.file_id for page in pages}), pages=len(pages), facts=facts)
     return {'batch_id': str(batch.id), 'patient_id': str(patient.id), 'version': str(batch.version),
+        'intake_mode': batch.intake_mode,
         'status': batch_status(pages), 'counts': counts, 'received_at': batch.received_at.isoformat(),
         'budget_status': batch.budget_status, 'pages': [page_read(page, patient, principal) for page in pages],
-        'allowed_actions': ['archive_batch_process'] if principal is not None
+        'allowed_actions': ['archive_batch_process'] if batch.intake_mode != 'manual' and principal is not None
             and any(page.status == 'uploaded' for page in pages)
             and source_grants(principal, patient, 'write_record', author_id=batch.submitted_by) else []}

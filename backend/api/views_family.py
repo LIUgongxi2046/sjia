@@ -18,12 +18,13 @@ from authorization.policy import matching_case_grants
 from drafts.models import Draft
 from drafts.service import abandon_draft, create_draft, update_draft
 from identity.service import IdentityRejected, authenticate_account, register_account
-from identity.session import bootstrap_csrf, clear_session, establish_session
+from identity.session import bootstrap_csrf, clear_session, establish_session, session_read_metadata
 from identity.support_session import support_capabilities
 from records.correction import correct_record
 from records.models import Record, RecordField, RecordVersion
 from records.queries import record_version_read, record_history_read, source_resolve
 from records.service import create_record, read_record
+from records.snapshot import authorize_record_snapshot, record_read_snapshot
 from relations.models import Relation, RelationApplication
 from relations.application_requests import submit_application
 from relations.queries import relation_list_read, relation_view, application_list_read, application_view
@@ -51,7 +52,8 @@ def auth_complete(request):
 def _session_payload(request, principal, audience='family'):
     return {
         "principal_id": str(principal.id), "account_status": principal.account_status,
-        "expires_at": request.session.get_expiry_date().isoformat(), "audience": audience,
+        **session_read_metadata(request, principal_id=principal.id, auth_epoch=principal.auth_epoch, audience=audience),
+        "audience": audience,
         "capabilities": support_capabilities(principal) if audience == 'support' else [], "csrf_token": bootstrap_csrf(request),
         "selected_patient_id": current_selected_patient(request, principal) if audience == 'family' else None,
     }
@@ -178,11 +180,17 @@ def record_create(request, patient_id):
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     patient = get_patient(patient_id)
-    data = request.data
+    from records.input_validation import validate_family_record_input
+
+    data = validate_family_record_input(request.data)
     fields = data.get('fields', [])
     if not isinstance(fields, list) or not fields or any(not isinstance(field, dict) or not field.get('field_code') for field in fields):
         raise ApiError('RECORD_FIELDS_REQUIRED', status.HTTP_422_UNPROCESSABLE_ENTITY)
     authorize_case(request, principal, patient, "write_record", author_id=principal.id, field_codes=[field['field_code'] for field in fields])
+    from identity.models import Patient
+    patient = Patient.objects.select_for_update().get(id=patient.id)
+    if patient.status != 'active':
+        raise ApiError('PATIENT_UNAVAILABLE', 409)
     if data.get('kind') not in ('observation', 'report', 'therapy') or data.get('capture_method') not in ('manual', 'ocr_confirmed', 'voice_confirmed'):
         raise ApiError('RECORD_TYPE_INVALID', status.HTTP_422_UNPROCESSABLE_ENTITY)
     if data['kind'] == 'therapy':
@@ -198,13 +206,9 @@ def record_create(request, patient_id):
     from django.conf import settings
     from django.db.models import Q
 
-    retention = RetentionPolicy.objects.filter(status='active', data_class=data['kind']).order_by('-approved_at', '-version').first()
-    use_auth = DataUseAuthorization.objects.select_related('source_revision').filter(patient=patient,
-        purpose='family_observation', environment=settings.SJIA_ENVIRONMENT, revoked_at__isnull=True,
-        approved_at__lte=timezone.now(), source_revision__status='approved', source_revision__source__status='approved').filter(
-            Q(valid_until__isnull=True) | Q(valid_until__gt=timezone.now())).order_by('-approved_at', '-id').first()
-    if retention is None or use_auth is None:
-        raise ApiError("CONFIGURATION_PENDING", status.HTTP_503_SERVICE_UNAVAILABLE)
+    from records.admission import family_record_admission
+
+    retention, use_auth = family_record_admission(patient, data['kind'])
     intent_id = request.headers.get('X-Write-Intent')
     if not intent_id:
         raise ApiError('WRITE_INTENT_REQUIRED', status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -214,8 +218,11 @@ def record_create(request, patient_id):
     if request.headers.get('X-Intent-Generation') != str(intent.generation) or request.headers.get('Idempotency-Key') != str(intent.request_id):
         raise ApiError('WRITE_INTENT_MISMATCH', status.HTTP_409_CONFLICT)
     if intent.status == 'committed':
-        original = read_record(intent.write_request.resource_id, patient)
-        return Response({'record_id': original['record_id'], 'record_version_id': original['record_version_id'], 'version': original['version']})
+        from requests.record_intents import _receipt
+
+        if intent.patient_id != patient.id:
+            raise ApiError('WRITE_INTENT_PATIENT_MISMATCH', 409)
+        return Response(_receipt(intent))
     if intent.status != 'prepared' or intent.expires_at <= timezone.now():
         raise ApiError('WRITE_INTENT_EXPIRED', status.HTTP_409_CONFLICT)
     from configurations.field_config import validate_record_configuration
@@ -266,9 +273,19 @@ def record_create(request, patient_id):
     return Response(result, status=201)
 
 
+def _readable_record_history_versions(principal, patient, *, record_id, author_id):
+    from records.access import permitted_field_codes
+
+    codes = permitted_field_codes(principal, patient, 'read_history', record_id=record_id, author_id=author_id)
+    versions = RecordVersion.objects.filter(record_id=record_id, patient=patient)
+    return {str(version_id) for version_id in RecordField.objects.filter(
+        patient=patient, record_version_id__in=versions.values('id'), field_code__in=codes
+    ).values_list('record_version_id', flat=True).distinct()}
+
+
 @api_view(["GET"])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def record_read(request, record_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -276,8 +293,8 @@ def record_read(request, record_id):
     record = Record.objects.filter(id=record_id).first()
     if record is None:
         raise ApiError("RECORD_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    author = RecordVersion.objects.get(record_id=record.id, patient=record.patient, version=1).author_id
-    decision = authorize_case(request, principal, record.patient, "read_raw", record_id=record.id, author_id=author)
+    author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=record.patient, version=1).author_id
+    decision = authorize_record_snapshot(request, principal, record.patient, "read_raw", record_id=record.id, author_id=author)
     result = read_record(record.id, record.patient)
     from authorization.policy import matching_case_grants
 
@@ -290,8 +307,13 @@ def record_read(request, record_id):
 
     visible_codes = permitted_field_codes(principal, record.patient, 'read_raw', record_id=record.id, author_id=author)
     result['fields'] = [field for field in result['fields'] if field['field_code'] in visible_codes]
+    if not result['fields']:
+        raise ApiError('CASE_ACTION_DENIED', status.HTTP_403_FORBIDDEN)
     visible = {field['field_id'] for field in result['fields']}
     result['fact_refs'] = [reference for reference in result['fact_refs'] if reference['field_id'] in visible]
+    if 'read_history' in result['allowed_actions'] and not _readable_record_history_versions(
+            principal, record.patient, record_id=record.id, author_id=author):
+        result['allowed_actions'].remove('read_history')
     if result['kind'] == 'therapy':
         from api.therapy_view import therapy_events_view, therapy_confirmation_view
 
@@ -302,6 +324,7 @@ def record_read(request, record_id):
 
 @api_view(["GET"])
 @handle
+@record_read_snapshot
 def record_history(request, record_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -309,9 +332,19 @@ def record_history(request, record_id):
     record = Record.objects.filter(id=record_id).first()
     if record is None:
         raise ApiError("RECORD_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    author = RecordVersion.objects.get(record_id=record.id, patient=record.patient, version=1).author_id
-    authorize_case(request, principal, record.patient, "read_history", record_id=record.id, author_id=author)
-    return Response(record_history_read(patient=record.patient, record_id=record.id))
+    author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=record.patient, version=1).author_id
+    authorize_record_snapshot(request, principal, record.patient, "read_history", record_id=record.id, author_id=author)
+    visible_versions = _readable_record_history_versions(
+        principal, record.patient, record_id=record.id, author_id=author)
+    if not visible_versions:
+        raise ApiError('CASE_ACTION_DENIED', status.HTTP_403_FORBIDDEN)
+    result = record_history_read(patient=record.patient, record_id=record.id)
+    result['versions'] = [version for version in result['versions']
+        if version['record_version_id'] in visible_versions]
+    # Keep the real current number as authorized record-header metadata. An
+    # older visible version must not be mislabeled current, and hidden version
+    # entries/UUIDs do not become readable through this directory.
+    return Response(result)
 
 
 @api_view(["POST"])
@@ -332,11 +365,18 @@ def record_correct(request, record_id):
     from records.correction import validate_correction_request
 
     validate_correction_request(data)
-    first_author = RecordVersion.objects.get(record_id=record.id, patient=record.patient, version=1).author_id
+    first_author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record.id, patient=record.patient, version=1).author_id
     fields = data.get('fields', [])
     if not fields or any(not isinstance(field, dict) or not field.get('field_code') for field in fields):
         raise ApiError('RECORD_FIELDS_REQUIRED', status.HTTP_422_UNPROCESSABLE_ENTITY)
     authorize_case(request, principal, record.patient, "correct_record", field_codes=[field['field_code'] for field in fields], record_id=record.id, author_id=first_author)
+    from identity.models import Patient
+    patient = Patient.objects.select_for_update().get(id=record.patient_id)
+    if patient.status != 'active':
+        raise ApiError('PATIENT_UNAVAILABLE', 409)
+    record = Record.objects.select_for_update().get(id=record.id, patient=patient)
+    if record.status != 'active':
+        raise ApiError('RECORD_UNAVAILABLE', 409)
     from retention.models import RetentionPolicy
     from sources.models import DataUseAuthorization, SourceRevision
 
@@ -344,33 +384,27 @@ def record_correct(request, record_id):
     from django.db.models import Q
 
     previous_version = RecordVersion.objects.get(record_id=record.id, patient=record.patient, version=record.current_version)
-    retention = RetentionPolicy.objects.filter(status='active', data_class=record.kind).order_by('-approved_at', '-version').first()
-    use_auth = DataUseAuthorization.objects.filter(patient=record.patient, purpose='family_observation',
-        source_revision_id=previous_version.source_revision_id,
-        environment=settings.SJIA_ENVIRONMENT, revoked_at__isnull=True, approved_at__lte=timezone.now(),
-        source_revision__status='approved', source_revision__source__status='approved').filter(
-            Q(valid_until__isnull=True) | Q(valid_until__gt=timezone.now())).order_by('-approved_at', '-id').first()
-    if retention is None or use_auth is None:
-        raise ApiError("CONFIGURATION_PENDING", status.HTTP_503_SERVICE_UNAVAILABLE)
-    intent = None
+    from records.admission import family_record_admission
+
+    retention, use_auth = family_record_admission(record.patient, record.kind,
+        source_revision_id=previous_version.source_revision_id)
+    intent_id = request.headers.get('X-Write-Intent')
+    if not intent_id:
+        raise ApiError('WRITE_INTENT_REQUIRED', 422)
+    intent = WriteIntent.objects.select_for_update().filter(id=intent_id, actor=principal,
+        operation_id='record_correct', target_key=request.path).first()
+    if (intent is None or intent.payload_sha256 != compute_digest('record_correct', request.path, 'back-json-1', data)
+            or request.headers.get('X-Intent-Generation') != str(intent.generation)
+            or request.headers.get('Idempotency-Key') != str(intent.request_id)):
+        raise ApiError('WRITE_INTENT_MISMATCH', 409)
+    if intent.patient_id != record.patient_id:
+        raise ApiError('WRITE_INTENT_PATIENT_MISMATCH', 409)
+    if intent.status == 'committed':
+        from requests.record_intents import _receipt
+        return Response(_receipt(intent))
+    if intent.status != 'prepared' or intent.expires_at <= timezone.now():
+        raise ApiError('WRITE_INTENT_EXPIRED', 409)
     if record.kind == 'therapy':
-        intent_id = request.headers.get('X-Write-Intent')
-        if not intent_id:
-            raise ApiError('WRITE_INTENT_REQUIRED', 422)
-        intent = WriteIntent.objects.select_for_update().filter(id=intent_id, actor=principal,
-            operation_id='record_correct', target_key=request.path).first()
-        if (intent is None or intent.payload_sha256 != compute_digest('record_correct', request.path, 'back-json-1', data)
-                or request.headers.get('X-Intent-Generation') != str(intent.generation)
-                or request.headers.get('Idempotency-Key') != str(intent.request_id)):
-            raise ApiError('WRITE_INTENT_MISMATCH', 409)
-        if intent.patient_id is not None and intent.patient_id != record.patient_id:
-            raise ApiError('WRITE_INTENT_PATIENT_MISMATCH', 409)
-        if intent.status == 'committed':
-            original = RecordVersion.objects.get(id=intent.write_request.resource_id, patient=record.patient, record_id=record.id)
-            return Response({'patient_id': str(record.patient_id), 'record_id': str(record.id),
-                'record_version_id': str(original.id), 'version': original.version})
-        if intent.status != 'prepared' or intent.expires_at <= timezone.now():
-            raise ApiError('WRITE_INTENT_EXPIRED', 409)
         config = read_field_config(record.patient, 'therapy')
         if config['state'] != 'available':
             raise ApiError('FIELD_CONFIGURATION_PENDING', 503)
@@ -388,12 +422,10 @@ def record_correct(request, record_id):
         use_authorization_id=use_auth.id, retention_policy=retention, source_revision=source_revision,
         origin_type=previous_version.origin_type,
     )
-    submitted_request = None
-    if intent is not None:
+    submitted_request = commit_intent(intent=intent, action='record_correct', resource_type='record_version',
+        resource_id=result['record_version_id'], expected_version=str(data['expected_version']))
+    if record.kind == 'therapy':
         from api.therapy_view import save_therapy_confirmation
-
-        submitted_request = commit_intent(intent=intent, action='record_correct', resource_type='record_version',
-            resource_id=result['record_version_id'], expected_version=str(data['expected_version']))
         save_therapy_confirmation(result=result, actor=principal, patient=record.patient, intent=intent, retention=retention)
     if data.get('draft_id'):
         from drafts.service import submit_draft
@@ -406,6 +438,7 @@ def record_correct(request, record_id):
 
 @api_view(["POST"])
 @handle
+@record_read_snapshot
 def record_search(request, patient_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -425,7 +458,7 @@ def record_search(request, patient_id):
     data = RecordSearchInput.model_validate(request.data).model_dump()
     result = search(patient=patient, principal=principal, permission_scopes=scopes, **data)
     for record in result['records']:
-        author = RecordVersion.objects.get(record_id=record['record_id'], patient=patient, version=1).author_id
+        author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record['record_id'], patient=patient, version=1).author_id
         codes = permitted_field_codes(principal, patient, 'read_raw', record_id=record['record_id'], author_id=author)
         record['detail']['fields'] = [field for field in record['detail']['fields'] if field['field_code'] in codes]
         visible = {field['field_id'] for field in record['detail']['fields']}
@@ -436,23 +469,25 @@ def record_search(request, patient_id):
 
 @api_view(["GET"])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def record_version_read_view(request, record_version_id):
     principal, _, _ = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     from records.models import RecordVersion
 
-    version = RecordVersion.objects.filter(id=record_version_id).first()
+    version = RecordVersion.all_objects.filter(id=record_version_id).first()
     if version is None:
         raise ApiError("VERSION_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    author = RecordVersion.objects.get(record_id=version.record_id, patient=version.patient, version=1).author_id
-    authorize_case(request, principal, version.patient, "read_history", record_id=version.record_id, author_id=author)
+    author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient=version.patient, version=1).author_id
+    authorize_record_snapshot(request, principal, version.patient, "read_history", record_id=version.record_id, author_id=author)
     result = record_version_read(patient=version.patient, record_version_id=record_version_id)
     from records.access import permitted_field_codes
 
     codes = permitted_field_codes(principal, version.patient, 'read_history', record_id=version.record_id, author_id=author)
     result['fields'] = [field for field in result['fields'] if field['field_code'] in codes]
+    if not result['fields']:
+        raise ApiError('CASE_ACTION_DENIED', status.HTTP_403_FORBIDDEN)
     visible = {field['field_id'] for field in result['fields']}
     result['fact_refs'] = [reference for reference in result['fact_refs'] if reference['field_id'] in visible]
     if result['kind'] == 'therapy':
@@ -465,20 +500,25 @@ def record_version_read_view(request, record_version_id):
 
 @api_view(["GET"])
 @handle
+@record_read_snapshot
 def source_resolve_view(request, record_version_id, field_id):
     principal, _, _ = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     from records.models import RecordVersion
 
-    version = RecordVersion.objects.filter(id=record_version_id).first()
+    version = RecordVersion.all_objects.filter(id=record_version_id).first()
     if version is None:
         raise ApiError("VERSION_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    field = RecordField.objects.filter(id=field_id, record_version_id=version.id, patient=version.patient).first()
+    field = RecordField.all_objects.filter(id=field_id, record_version_id=version.id, patient=version.patient).first()
     if field is None:
         raise ApiError("FIELD_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    authorize_case(request, principal, version.patient, "read_raw", record_id=version.record_id,
-                   author_id=version.author_id, field_codes=[field.field_code])
+    first_author = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient=version.patient, version=1).author_id
+    authorize_record_snapshot(request, principal, version.patient, "read_raw", record_id=version.record_id,
+                   author_id=first_author, field_codes=[field.field_code] if field.content_erased_at is None else None)
+    from retention.content_fences import assert_content_available
+    assert_content_available('records.recordversion', version.id)
+    assert_content_available('records.recordfield', field.id)
     return Response(source_resolve(patient=version.patient, record_version_id=record_version_id, field_id=field_id))
 
 
@@ -605,6 +645,10 @@ def task_read(request, task_id):
         row = VoiceInput.objects.get(task=task, actor=principal)
         row, *_ = locked_voice(request, task.patient_id, row.id)
         return Response(voice_task_view(row))
+    if task.task_type == Task.TaskType.FILE_VALIDATION:
+        from files.validation import read_validation_task
+        _, epoch, audience = current_principal(request)
+        return Response(read_validation_task(task=task, actor=principal, auth_epoch=epoch, audience=audience))
     if task.task_type == Task.TaskType.SUMMARY:
         from summaries.submission import summary_permission, summary_task_view
 
@@ -631,6 +675,17 @@ def task_cancel(request, task_id):
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     seed = Task.objects.filter(id=task_id, actor=principal).first()
+    if seed is not None and seed.task_type == Task.TaskType.FILE_VALIDATION:
+        from files.validation import cancel_validation
+        _, epoch, audience = current_principal(request)
+        cancel_validation(task=seed, actor=principal, auth_epoch=epoch, audience=audience)
+        return Response({})
+    if seed is not None and seed.task_type == Task.TaskType.SUMMARY:
+        from summaries.jobs import cancel_summary
+
+        _, epoch, audience = current_principal(request)
+        cancel_summary(task_id=seed.id, actor=principal, auth_epoch=epoch, audience=audience)
+        return Response({})
     if seed is not None and seed.schema_version == 'voice-input-1':
         from recognition.models import VoiceInput
         from recognition.voice_input_service import cancel_voice_input

@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "ContentReviewAttestation": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "content-disposition-review-1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "plan_id": {
+          "format": "uuid",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Manifest Sha256",
+          "type": "string"
+        },
+        "policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Policy Sha256",
+          "type": "string"
+        },
+        "review_version": {
+          "minimum": 1,
+          "title": "Review Version",
+          "type": "integer"
+        },
+        "reviewed_by": {
+          "format": "uuid",
+          "title": "Reviewed By",
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "next_recheck_at": {
+          "format": "date-time",
+          "title": "Next Recheck At",
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "approved_retention_continues",
+            "copy_obligations_unresolved",
+            "hold_requires_review",
+            "metadata_retry_window_unproven"
+          ],
+          "title": "Reason Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "plan_id",
+        "manifest_sha256",
+        "policy_sha256",
+        "review_version",
+        "reviewed_by",
+        "reviewed_at",
+        "next_recheck_at",
+        "reason_code"
+      ],
+      "title": "ContentReviewAttestation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "source_revision_id": {
+      "format": "uuid",
+      "title": "Source Revision Id",
+      "type": "string"
+    },
+    "attestation": {
+      "$ref": "#/$defs/ContentReviewAttestation"
+    }
+  },
+  "required": [
+    "source_revision_id",
+    "attestation"
+  ],
+  "title": "ContentReviewRequest",
+  "type": "object"
+}

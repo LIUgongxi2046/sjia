@@ -6,6 +6,11 @@ from pathlib import Path
 
 import django
 
+acceptance_username = os.environ.get('SJIA_ACCEPTANCE_USERNAME')
+revocation_password = os.environ.get('SJIA_QA_REVOCATION_PASSWORD')
+if not acceptance_username or not revocation_password:
+    raise RuntimeError('SJIA_ACCEPTANCE_USERNAME and SJIA_QA_REVOCATION_PASSWORD are required')
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.qa'
 django.setup()
 
@@ -28,7 +33,7 @@ from tasks.service import cancel_task, input_digest
 if settings.DATABASES['default']['NAME'] != 'sjia_qa03':
     raise RuntimeError('测试仅允许使用独立 sjia_qa03 数据库')
 root = Path(__file__).resolve().parents[2] / '.qa-work/QA03'
-actor = PrincipalCredential.objects.get(username='acceptance-family').principal
+actor = PrincipalCredential.objects.get(username=acceptance_username).principal
 patient = Patient.objects.get(display_id='模拟患儿A')
 authorization = DataUseAuthorization.objects.get(patient=patient)
 image = (root.parent / 'simulated-report.png').read_bytes()
@@ -94,7 +99,7 @@ result = wait_finished(task)
 assert result['task_status'] == 'failed' and result['error_code'] == 'ARK_HTTP_ERROR', result
 results.append({'id': 'actual-provider-rejects-unavailable-model', 'status': 'PASS', **result})
 
-owner = register_account(username=f'qa03-revocation-{uuid.uuid4()}', password='QA03-Revocation-2026')
+owner = register_account(username=f'qa03-revocation-{uuid.uuid4()}', password=revocation_password)
 for action in ('write_record', 'read_file'):
     AccessGrant.objects.create(patient=patient, principal=owner, action=action, field_codes=['report_item'],
         record_scope='all', purpose='family_observation', granted_by=actor, evidence_ref='用户授权独立测试账号', valid_from=timezone.now())

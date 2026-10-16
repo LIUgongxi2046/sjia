@@ -1,0 +1,21 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "expected_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Expected Manifest Sha256",
+      "type": "string"
+    },
+    "source_revision_id": {
+      "format": "uuid",
+      "title": "Source Revision Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "expected_manifest_sha256",
+    "source_revision_id"
+  ],
+  "title": "ApprovalRequest",
+  "type": "object"
+}

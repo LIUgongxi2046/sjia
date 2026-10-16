@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>sJIA 开发视觉预览</title>
+<style>body{margin:0;background:#dce5ef;color:#243b55;font:13px/1.5 system-ui,sans-serif}header{position:sticky;top:0;z-index:100;background:#dce5ef;box-shadow:0 1px 8px #173f6520;padding:12px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}header label{display:flex;gap:6px;align-items:center}select{min-height:32px;font:inherit}a{color:#0060ce}main{width:max-content;margin:0 auto 24px}iframe{display:block;width:390px;height:844px;border:0;background:#eef5fb;box-shadow:0 4px 24px #173d6530}p{margin:0}#unavailable{padding:24px}.context{flex-basis:100%}</style></head>
+<body><p id="unavailable">开发预览仅在本地开发服务中开放。</p><script type="module">
+if(import.meta.env.DEV){
+ const params=new URL(location.href).searchParams;
+ const requested=params.get('path')||'/login';
+ const safe=requested.startsWith('/')&&!requested.startsWith('//')&&!requested.startsWith('/dev-preview')?requested:'/login';
+ const target=new URL(safe,location.origin);
+ if(target.origin!==location.origin)throw new Error('预览仅允许当前来源');
+ document.getElementById('unavailable').remove();
+ const header=document.createElement('header');
+ const label=document.createElement('strong');
+ const specimen=safe.startsWith('/dev-specimen');
+ const longCopy=specimen&&target.searchParams.get('long')==='1';
+ label.textContent=longCopy?'长文压力合成样本 · 非原稿同状态/真实病例/临床批准':specimen?'合成界面样本，非真实业务结果 · 原设计外观比较':'开发视觉预览 · 真实应用';header.append(label);
+ const presets={'320':[320,844],'360':[360,844],'390':[390,844],'430':[430,932],'desktop':[1280,900]};
+ let size=Object.hasOwn(presets,params.get('viewport'))?params.get('viewport'):'390';
+ let enlarged=params.get('text')==='200';
+ function selector(caption,choices,value){const label=document.createElement('label');label.append(caption);const select=document.createElement('select');for(const [key,text] of choices){const option=document.createElement('option');option.value=key;option.textContent=text;select.append(option)}select.value=value;label.append(select);header.append(label);return select}
+ const viewport=selector('视口',[['320','320 × 844'],['360','360 × 844'],['390','390 × 844'],['430','430 × 932'],['desktop','桌面 1280 × 900']],size);
+ const textSize=selector('文字压力测试',[['100','100% 原始文字'],['200','200% 模拟文字放大']],enlarged?'200':'100');
+ for(const [path,text] of [['/login','登录'],['/home','首页'],['/records','记录'],['/account','我的'],['/dev-specimen.html?long=1','长文压力样本']]){const a=document.createElement('a');a.href='/dev-preview.html?path='+encodeURIComponent(path);a.textContent=text;header.append(a)}
+ const context=document.createElement('p');context.className='context';header.append(context);
+ const main=document.createElement('main');const frame=document.createElement('iframe');if(specimen)frame.setAttribute('data-specimen-labelled','true');frame.src=target.href;main.append(frame);document.body.append(header,main);
+ let originals=new Map(),observers=[],scheduled=false;
+ function restore(){for(const [element,values] of originals){for(const [property,value,priority] of values){if(value)element.style.setProperty(property,value,priority);else element.style.removeProperty(property)}}originals.clear()}
+ function stop(){observers.forEach(observer=>observer.disconnect());observers=[];restore()}
+ function scaleText(){
+  if(!enlarged)return;
+  restore();
+  const doc=frame.contentDocument,win=frame.contentWindow;if(!doc||!win)return;
+  const roots=[doc],elements=[];
+  for(let i=0;i<roots.length;i++)for(const element of roots[i].querySelectorAll('*')){if(element.shadowRoot)roots.push(element.shadowRoot);if(element instanceof win.HTMLElement&&!['SCRIPT','STYLE','LINK','META'].includes(element.tagName))elements.push(element)}
+  // Measure every original size before applying any override, avoiding inherited doubling.
+  const measured=elements.map(element=>{const style=win.getComputedStyle(element);return [element,parseFloat(style.fontSize),style.lineHeight]});
+  for(const [element,size,lineHeight] of measured){if(!Number.isFinite(size))continue;originals.set(element,['font-size','line-height'].map(property=>[property,element.style.getPropertyValue(property),element.style.getPropertyPriority(property)]));element.style.setProperty('font-size',size*2+'px','important');if(lineHeight.endsWith('px'))element.style.setProperty('line-height',parseFloat(lineHeight)*2+'px','important')}
+  observers.forEach(observer=>observer.disconnect());observers=[];
+  for(const root of roots){const observer=new win.MutationObserver(()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;scaleText()})}});observer.observe(root,{childList:true,subtree:true});observers.push(observer)}
+  doc.documentElement.dataset.devTextStress='200-percent-simulated-not-browser-zoom';
+ }
+ function update(){const [width,height]=presets[size];frame.style.width=width+'px';frame.style.height=height+'px';frame.title=`sJIA 应用，${width} × ${height} CSS px`;context.textContent=`${width} × ${height} CSS px。${enlarged?'200% 为开发页模拟文字放大，非浏览器缩放或真实设备设置；内容会重新排版。':'原始文字；按真实 CSS 视口呈现，未缩放截图。'}${specimen?' 此样本只用于设计比较。':''}`;const url=new URL(location.href);url.searchParams.set('viewport',size);url.searchParams.set('text',enlarged?'200':'100');history.replaceState(null,'',url);stop();if(frame.contentDocument)delete frame.contentDocument.documentElement.dataset.devTextStress;if(enlarged)scaleText()}
+ viewport.addEventListener('change',()=>{size=viewport.value;update()});textSize.addEventListener('change',()=>{enlarged=textSize.value==='200';update()});frame.addEventListener('load',update);update();
+}
+</script></body></html>

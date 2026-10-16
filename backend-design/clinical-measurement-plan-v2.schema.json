@@ -1,0 +1,302 @@
+{
+  "$defs": {
+    "DynamicPolicyBindings": {
+      "additionalProperties": false,
+      "properties": {
+        "runtime_config_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Runtime Config Id",
+          "type": "string"
+        },
+        "window_policy_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Window Policy Id",
+          "type": "string"
+        },
+        "verification_policy_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Verification Policy Id",
+          "type": "string"
+        },
+        "input_rule_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Input Rule Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime_config_id",
+        "window_policy_id",
+        "verification_policy_id",
+        "input_rule_id"
+      ],
+      "title": "DynamicPolicyBindings",
+      "type": "object"
+    },
+    "IntervalEvidenceBinding": {
+      "additionalProperties": false,
+      "description": "Immutable CI/approval identities contained in the pre-frozen plan bytes.",
+      "properties": {
+        "protocol_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Protocol Sha256",
+          "type": "string"
+        },
+        "approval_evidence_ref": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Approval Evidence Ref",
+          "type": "string"
+        },
+        "approval_evidence_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Approval Evidence Sha256",
+          "type": "string"
+        },
+        "approval_audit_id": {
+          "format": "uuid",
+          "title": "Approval Audit Id",
+          "type": "string"
+        },
+        "purpose": {
+          "const": "clinical_evaluation",
+          "title": "Purpose",
+          "type": "string"
+        }
+      },
+      "required": [
+        "protocol_sha256",
+        "approval_evidence_ref",
+        "approval_evidence_sha256",
+        "approval_audit_id",
+        "purpose"
+      ],
+      "title": "IntervalEvidenceBinding",
+      "type": "object"
+    },
+    "ScheduledPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "period_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Period Id",
+          "type": "string"
+        },
+        "step_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Step Id",
+          "type": "string"
+        },
+        "assessment_at": {
+          "format": "date-time",
+          "title": "Assessment At",
+          "type": "string"
+        },
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "corpus_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Corpus Sha256",
+          "type": "string"
+        },
+        "static_rule_config_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Static Rule Config Id",
+          "type": "string"
+        },
+        "dynamic_rule_config_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Dynamic Rule Config Id",
+          "type": "string"
+        },
+        "static_policies": {
+          "$ref": "#/$defs/StaticPolicyBindings"
+        },
+        "dynamic_policies": {
+          "$ref": "#/$defs/DynamicPolicyBindings"
+        }
+      },
+      "required": [
+        "period_id",
+        "step_id",
+        "assessment_at",
+        "known_at",
+        "corpus_sha256",
+        "static_rule_config_id",
+        "dynamic_rule_config_id",
+        "static_policies",
+        "dynamic_policies"
+      ],
+      "title": "ScheduledPoint",
+      "type": "object"
+    },
+    "StaticPolicyBindings": {
+      "additionalProperties": false,
+      "properties": {
+        "runtime_config_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Runtime Config Id",
+          "type": "string"
+        },
+        "window_policy_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Window Policy Id",
+          "type": "string"
+        },
+        "verification_policy_id": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Verification Policy Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime_config_id",
+        "window_policy_id",
+        "verification_policy_id"
+      ],
+      "title": "StaticPolicyBindings",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "clinical-measurement-plan-2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "plan_ref": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Plan Ref",
+      "type": "string"
+    },
+    "matching_policy_ref": {
+      "minLength": 1,
+      "pattern": "\\S",
+      "title": "Matching Policy Ref",
+      "type": "string"
+    },
+    "matching_mode": {
+      "const": "independent_explicit_pairings",
+      "title": "Matching Mode",
+      "type": "string"
+    },
+    "confidence_interval_protocol_ref": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Confidence Interval Protocol Ref"
+    },
+    "confidence_interval_binding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/IntervalEvidenceBinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "subgroup_dimensions": {
+      "items": {
+        "minLength": 1,
+        "pattern": "\\S",
+        "type": "string"
+      },
+      "title": "Subgroup Dimensions",
+      "type": "array"
+    },
+    "fixed_before": {
+      "format": "date-time",
+      "title": "Fixed Before",
+      "type": "string"
+    },
+    "criteria_refs": {
+      "items": {
+        "minLength": 1,
+        "pattern": "\\S",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Criteria Refs",
+      "type": "array"
+    },
+    "static_criterion": {
+      "enum": [
+        "classification_meets",
+        "ms_threshold_true"
+      ],
+      "title": "Static Criterion",
+      "type": "string"
+    },
+    "dynamic_criterion": {
+      "const": "decision_met",
+      "title": "Dynamic Criterion",
+      "type": "string"
+    },
+    "assessability": {
+      "const": "all_scheduled_steps_completed",
+      "title": "Assessability",
+      "type": "string"
+    },
+    "occurrence_policy": {
+      "const": "first_positive_then_repeat",
+      "title": "Occurrence Policy",
+      "type": "string"
+    },
+    "reset_policy": {
+      "const": "period_boundary_only",
+      "title": "Reset Policy",
+      "type": "string"
+    },
+    "schedule": {
+      "items": {
+        "$ref": "#/$defs/ScheduledPoint"
+      },
+      "minItems": 1,
+      "title": "Schedule",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_ref",
+    "matching_policy_ref",
+    "matching_mode",
+    "confidence_interval_protocol_ref",
+    "subgroup_dimensions",
+    "fixed_before",
+    "criteria_refs",
+    "static_criterion",
+    "dynamic_criterion",
+    "assessability",
+    "occurrence_policy",
+    "reset_policy",
+    "schedule"
+  ],
+  "title": "MeasurementPlanV2",
+  "type": "object"
+}

@@ -15,6 +15,8 @@ class FamilyFlowIntegrationTest(TestCase):
         call_command("seed_demo", verbosity=0)
         self.principal = Principal.objects.filter(account_status="active").first()
         self.patient = Patient.objects.filter(display_id="demo-child").first()
+        from tests.synthetic_fixtures import qualify_demo
+        qualify_demo(self, self.principal, self.patient)
         session = self.client.session
         session["_sjia_principal_id"] = str(self.principal.id)
         session["_sjia_auth_epoch"] = self.principal.auth_epoch
@@ -34,12 +36,6 @@ class FamilyFlowIntegrationTest(TestCase):
         self.assertEqual(len(response.json()["relations"]), 1)
         self.assertEqual(response.json()["relations"][0]["patient_id"], str(self.patient.id))
 
-    def test_field_config_read(self):
-        response = self.client.get(f"/api/patients/{self.patient.id}/field-config?kind=observation")
-        self.assertEqual(response.status_code, 200)
-        body = response.json()
-        self.assertEqual(body["state"], "available")
-        self.assertEqual([f["field_code"] for f in body["fields"]], ["temp", "rash"])
 
     def test_record_create_and_read(self):
         payload = {

@@ -1,0 +1,70 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-hold-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "hold_id": {
+      "format": "uuid",
+      "title": "Hold Id",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "hold_version": {
+      "minimum": 1,
+      "title": "Hold Version",
+      "type": "integer"
+    },
+    "environment": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Environment",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "clear",
+        "held",
+        "unresolved"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "reviewed_by": {
+      "format": "uuid",
+      "title": "Reviewed By",
+      "type": "string"
+    },
+    "reviewed_at": {
+      "format": "date-time",
+      "title": "Reviewed At",
+      "type": "string"
+    },
+    "valid_until": {
+      "format": "date-time",
+      "title": "Valid Until",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "hold_id",
+    "patient_id",
+    "hold_version",
+    "environment",
+    "state",
+    "reviewed_by",
+    "reviewed_at",
+    "valid_until"
+  ],
+  "title": "ContentHoldAttestation",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

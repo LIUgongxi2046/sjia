@@ -5,9 +5,12 @@
 """
 from config.celery import app
 from tasks.outbox import claim_events, mark_published
+from tasks.registry import require_worker_event
+from observability.tracing import outbox_span, trace_headers
 
 
 def publish_task(event) -> str:
+    require_worker_event(event.event_type)
     # 消息只含投递标识，不含病例正文；Worker 从数据库读取准确输入。
     message = {
         "event_id": str(event.id),
@@ -20,7 +23,9 @@ def publish_task(event) -> str:
             'alert_evaluation.trigger_requested', 'alert_evaluation.static_finished')
         else 'notification' if event.event_type in ('alert.event_created', 'notification.native_requested',
             'notification.material_requested') else 'default')
-    result = app.send_task("tasks.worker.consume", kwargs={"event_id": str(event.id)}, queue=queue)
+    with outbox_span(event):
+        result = app.send_task("tasks.worker.consume", kwargs={"event_id": str(event.id)},
+            queue=queue, headers=trace_headers())
     return result.id
 
 

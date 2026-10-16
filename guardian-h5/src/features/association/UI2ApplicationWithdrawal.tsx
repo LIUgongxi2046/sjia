@@ -1,3 +1,4 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useAccess } from '../../state/access';
@@ -154,7 +155,7 @@ export function UI2ApplicationWithdrawal({ application, onCurrent }: {
         {busy ? '正在核验撤回保存结果' : attempt ? '继续提交原撤回请求' : '确认撤回申请'}</button>
       {!frozen && <button className="button secondary" type="button" onClick={() => { setOpened(false); setReason(''); }}>保留申请</button>}
     </form>}
-    {error && <section className="status-panel error" role="alert"><h3>撤回结果需要核验</h3><p>{error.message}</p><p>没有确认回执与当前保存状态时，不将申请标记为已经撤回。</p></section>}
+    {error && <section className="status-panel error" role="alert"><h3>撤回结果需要核验</h3><p>{error.message}</p><p>撤回状态尚未确认，请先查询处理结果。</p></section>}
     {canWrite && (attempt || selectedIntentId) && !receipt && <button className="text-action" disabled={busy} onClick={verify}>核验原撤回结果</button>}
     {request && !receipt && <section className="card form-card"><h3>本人撤回请求</h3>
       <div className="pair"><span>当前结果</span><strong>{({ pending: '保存待核验', committed: '已保存', failed: '未完成' } as const)[request.state]}</strong></div>
@@ -165,14 +166,14 @@ export function UI2ApplicationWithdrawal({ application, onCurrent }: {
       {request.error_code && <p role="status">{request.error_code}</p>}
     </section>}
     {receipt && <section className="status-panel success" role="status"><h3>申请撤回已经保存</h3>
-      <div className="pair"><span>保存回执版本</span><strong>{receipt.version}</strong></div>
-      <div className="pair"><span>保存时间</span><strong>{new Date(receipt.saved_at).toLocaleString()}</strong></div>
-      <p>服务已经重新读取本人申请，状态、版本和撤回说明与原请求一致。</p>
+      <div className="pair"><span>本次保存版本</span><strong>{receipt.version}</strong></div>
+      <div className="pair"><span>保存时间</span><strong>{eventTimeLabel(receipt.saved_at)}</strong></div>
+      <p>已核对撤回状态、保存版本与撤回说明。</p>
     </section>}
     {canWrite && records && records.length > 0 && <details className="card form-card"><summary>本人撤回保存请求</summary>
       {records.map(value => <button className="list-row" disabled={busy} key={value.intent_id} onClick={() => inspect(value.intent_id)}>
         <span className="row-text"><strong>{({ pending: '保存待核验', committed: '已保存', failed: '未完成' } as const)[value.state]}</strong>
-          <small>{new Date(value.prepared_at).toLocaleString()}</small></span><ChevronRight size={17} />
+          <small>{eventTimeLabel(value.prepared_at)}</small></span><ChevronRight size={17} />
       </button>)}
     </details>}
     {hasUnconfirmed && !opened && <p role="status">已有尚未确认的撤回请求，请查询原请求后继续处理。</p>}

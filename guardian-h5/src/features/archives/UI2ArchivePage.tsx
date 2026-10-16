@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, ChevronDown, ChevronRight, Search, ShieldCheck } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { ChevronRight as ArrowRight, ArrowDown as ChevronDown, ChevronRight, ShieldCheck } from '../../components/ThreeDIcon';
 import { CalendarDays, FileClock, FileText, Layers, UsersRound } from '../../components/ThreeDIcon';
 import type { ArchiveSearchInput, ArchiveSearchItem } from '../../../../frontend-design/archive-search-types';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
@@ -17,6 +18,7 @@ const verificationLabels = { all: '全部状态', self: '本人确认', pending:
 
 function queryFor(filters: ArchiveFilters): ArchiveSearchInput {
   const values: ArchiveSearchInput = { limit: 20, category: filters.category };
+  if (filters.timeBasis === 'episode') values.time_basis = 'episode';
   if (filters.query.trim()) values.query = filters.query.trim();
   if (filters.organization.trim()) values.organization = filters.organization.trim();
   if (filters.project.trim()) values.project = filters.project.trim();
@@ -70,12 +72,14 @@ function ArchiveContent({ owner, navigate }: { owner: string | null; navigate: R
   const data = ready ? resource.data : null;
   const filtered = Object.entries(queryFor(applied)).some(([key, value]) => key !== 'limit' && !(key === 'category' && value === 'all'));
   return <UI2FamilyFrame title="长期档案" screenId="UI2-25" note="按医院、就诊和文书查找，随时回到原文。" backTo="/records">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
     <div className="feature-grid"><button onClick={() => navigate('/archives/batches')}><Layers size={34} /><strong>添加一批资料</strong><small>原始资料直接整理</small></button><button onClick={() => navigate('/summaries')}><FileText size={34} /><strong>就医摘要</strong><small>准备本次沟通资料</small></button></div>
     <div className="section-heading"><h2>按就诊查找</h2><button className="text-action" aria-expanded={filters.open} onClick={() => { apply(); change('open', !filters.open); }}>筛选</button></div>
     <label className="search-field"><Search size={18} /><input type="search" aria-label="查找文书" placeholder="医院、文书名称或已确认原文" autoComplete="off" maxLength={200} value={filters.query} onChange={event => change('query', event.target.value)} onBlur={() => apply()} onKeyDown={event => { if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); apply(); } }} /></label>
     <div className="segments" aria-label="就诊类别">{categories.map(([key, label]) => <button key={key} aria-pressed={filters.category === key} className={filters.category === key ? 'active' : ''} onClick={() => { const value = { ...filters, category: key }; setFilters(value); apply(value); }}>{label}</button>)}</div>
     {filters.open && <section className="card form-card" aria-label="筛选文书" onBlur={event => { if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) apply(); }} onKeyDown={event => { if (event.key === 'Enter' && !event.nativeEvent.isComposing && event.target instanceof HTMLInputElement) { event.preventDefault(); apply(); } }}>
+      <label className="field"><span>日期依据</span><select aria-label="日期依据" value={filters.timeBasis} onChange={event => change('timeBasis', event.target.value as ArchiveFilters['timeBasis'])}><option value="document">文书形成时间</option><option value="episode">就诊起止时间</option></select></label>
+      {filters.timeBasis === 'episode' && <p>按已关联就诊的起止范围查找；任一边界不明时保留未知，可选择包含时间未知资料。</p>}
       <div className="field-grid"><label className="field"><span>开始日期</span><input type="date" value={filters.start} onChange={event => change('start', event.target.value)} /></label><label className="field"><span>结束日期</span><input type="date" value={filters.end} aria-invalid={dateError} onChange={event => change('end', event.target.value)} /></label></div>
       {dateError && <p role="alert">结束日期不能早于开始日期。</p>}
       <label className="field"><span>来源医院</span><input placeholder="输入医院名称" list="archive-organizations" autoComplete="off" maxLength={200} value={filters.organization} onChange={event => change('organization', event.target.value)} /></label>

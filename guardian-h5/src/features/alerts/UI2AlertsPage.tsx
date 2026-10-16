@@ -1,6 +1,7 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronRight as ArrowRight, ArrowDown as ChevronDown, ChevronRight } from '../../components/ThreeDIcon';
 import { Bell, ShieldCheck, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
@@ -24,14 +25,14 @@ export function UI2AlertsPage() {
   const list = useFamilyResource<{ alerts: AlertItem[] }>(canRead ? `/api/patients/${access.patientId}/alerts` : null, 'AlertList');
   const text = home.data ? assessmentText(home.data) : null;
   const error = home.error ?? list.error, loading = home.loading || list.loading;
-  return <UI2FamilyFrame title="预警记录" screenId="UI2-11" note="明确当前有效性与查看状态。" backTo="/home">
+  return <UI2FamilyFrame title="预警" screenId="UI2-11" note="明确当前有效性与查看状态。" backTo="/home">
     <UI2ReadState loading={loading} error={error} onRetry={() => { home.reload(); list.reload(); }} />
     {canRead && !loading && !error && home.data && list.data && <><Patient />
       <section className="home-alert"><div className="eyebrow"><ShieldCheck size={24} />当前服务状态</div><h2>{text?.heading}</h2><p>{text?.body}</p>
         <button className="text-action" onClick={() => navigate(home.data?.current_alert_id ? `/alerts/${home.data.current_alert_id}` : '/home')}>查看当前状态与依据<ArrowRight size={16} /></button></section>
       <div className="section-heading"><h2>提示历史</h2></div>
       {!list.data.alerts.length ? <section className="card"><div className="empty"><span className="empty-icon"><Bell size={54} /></span><h3>尚无获准提示</h3><p>此状态不代表没有风险。</p><button className="text-action" onClick={() => navigate('/alerts/current')}>查看详情与依据<ArrowRight size={16} /></button></div></section>
-        : list.data.alerts.map(alert => <section className="card" key={alert.alert_id}><ContextLink className="list-row" to={`/alerts/${alert.alert_id}`}><span className="row-icon"><Bell size={30} /></span><span className="row-text"><strong>{alert.validity === 'valid' ? '提示详情' : '已失效提示'}</strong><small>{new Date(alert.created_at).toLocaleString('zh-CN')} · {alert.read_at ? '已读' : '未读'}</small></span><ChevronRight size={17} /></ContextLink></section>)}
+        : list.data.alerts.map(alert => <section className="card" key={alert.alert_id}><ContextLink className="list-row" to={`/alerts/${alert.alert_id}`}><span className="row-icon"><Bell size={30} /></span><span className="row-text"><strong>{alert.validity === 'valid' ? '提示详情' : '已失效提示'}</strong><small>{eventTimeLabel(alert.created_at)} · {alert.read_at ? '已读' : '未读'}</small></span><ChevronRight size={17} /></ContextLink></section>)}
     </>}
   </UI2FamilyFrame>;
 }
@@ -88,11 +89,11 @@ export function UI2AlertDetailPage() {
     return () => { controller.abort(); observer?.disconnect(); document.removeEventListener('visibilitychange', hidden); };
   }, [data, access.csrfToken, attempt]);
   const contactAvailable = contact?.state === 'available' && !!contact.valid_until && Date.parse(contact.valid_until) > Math.max(clock, Date.now());
-  return <UI2FamilyFrame title="提示详情" screenId="UI2-12" note="批准文字、依据、时效与联系入口。" backTo="/alerts">
+  return <UI2FamilyFrame title="预警详情" screenId="UI2-12" note="批准文字、依据、时效与联系入口。" backTo="/alerts">
     <UI2ReadState loading={resource.loading || home.loading} error={resource.error ?? home.error} onRetry={() => { home.reload(); resource.reload(); }} />
     {canRead && current && home.data && !home.data.current_alert_id && !home.loading && !home.error && <><Patient />
       <section className="home-alert"><div className="eyebrow"><ShieldCheck size={24} />当前服务状态</div><h2>{assessmentText(home.data).heading}</h2><p>{assessmentText(home.data).body}</p></section>
-      <div className="section-heading"><h2>提示依据</h2></div><section className="card form-card"><div className="pair"><span>评估时间</span><strong>{home.data.assessed_at ? new Date(home.data.assessed_at).toLocaleString('zh-CN') : '尚无有效评估'}</strong></div>
+      <div className="section-heading"><h2>提示依据</h2></div><section className="card form-card"><div className="pair"><span>评估时间</span><strong>{home.data.assessed_at ? eventTimeLabel(home.data.assessed_at) : '尚无有效评估'}</strong></div>
         <div className="pair"><span>资料来源</span><strong>当前没有获准提示依据</strong></div><div className="pair"><span>专业核对</span><strong>查看各项资料的当前核对状态</strong></div><div className="pair"><span>当前有效性</span><strong>尚无有效提示</strong></div></section>
       <section className="card"><button className="list-row" onClick={() => navigate('/records/period')}><span className="row-text"><strong>查看观察时段</strong></span><ChevronRight size={17} /></button>
         <button className="list-row" onClick={() => navigate('/archives/source')}><span className="row-text"><strong>查看原始资料</strong></span><ChevronRight size={17} /></button>
@@ -104,10 +105,10 @@ export function UI2AlertDetailPage() {
         <h2>{data.validity === 'invalid' ? '提示已失效' : data.content_state === 'configuration_pending' ? '内容尚未发布' : '获准提示内容'}</h2>
         <p>{data.validity === 'invalid' ? '资料、核对或发布版本已经变化，请查看首页当前提示。' : data.content?.approved_text ?? '提示正文需要有效发布配置，当前无法读取。'}</p>
       </section><div className="section-heading"><h2>提示依据</h2></div>
-      <section className="card form-card"><div className="pair"><span>提示时间</span><strong>{new Date(data.created_at).toLocaleString('zh-CN')}</strong></div>
-        <div className="pair"><span>评估时间</span><strong>{data.assessed_at ? new Date(data.assessed_at).toLocaleString('zh-CN') : '尚无当前获准评估时间'}</strong></div>
+      <section className="card form-card"><div className="pair"><span>提示时间</span><strong>{eventTimeLabel(data.created_at)}</strong></div>
+        <div className="pair"><span>评估时间</span><strong>{data.assessed_at ? eventTimeLabel(data.assessed_at) : '尚无当前获准评估时间'}</strong></div>
         <div className="pair"><span>专业核对</span><strong>核对状态见准确来源版本</strong></div>
-        <div className="pair"><span>当前有效性</span><strong>{data.validity === 'valid' ? '有效' : '已失效'}</strong></div><div className="pair"><span>本人阅读时间</span><strong>{readAt || data.read_at ? new Date((readAt || data.read_at)!).toLocaleString('zh-CN') : reading ? '正在保存' : '尚未记录'}</strong></div>
+        <div className="pair"><span>当前有效性</span><strong>{data.validity === 'valid' ? '有效' : '已失效'}</strong></div><div className="pair"><span>本人阅读时间</span><strong>{readAt || data.read_at ? eventTimeLabel((readAt || data.read_at)!) : reading ? '正在保存' : '尚未记录'}</strong></div>
         <p>阅读记录不表示已经完成诊疗。</p>{readError && <><p role="alert">{readError.message}</p><button className="text-action" onClick={() => setAttempt(value => value + 1)}>重新保存阅读状态<ArrowRight size={16} /></button></>}
         {notification.record && <div className="pair"><span>本人站内通知</span><strong>{notification.record.delivery_status === 'delivered' ? '已送达本人浏览器'
           : notification.record.delivery_status === 'accepted' ? '消息已受理，送达待确认' : notification.record.delivery_status === 'not_sent' ? '尚未发送' : '查看当前发送记录'}</strong></div>}

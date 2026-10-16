@@ -77,7 +77,9 @@ def batch_receipt(intent):
     pages = list(ArchivePage.objects.filter(batch_id=batch.id, patient_id=intent.patient_id).order_by('ordinal'))
     expected_pages = [page_id for group in intent.authorization_context['source_refs'] for page_id in group['page_ids']]
     if (batch.submitted_by != intent.actor_id or batch.logical_request_id != intent.request_id
-            or str(batch.quota_policy_id) != intent.authorization_context['configuration']['quota_id']
+            or (str(batch.quota_policy_id) if batch.quota_policy_id is not None else None)
+                != intent.authorization_context['configuration']['quota_id']
+            or batch.intake_mode != checked_payload(intent).get('intake_mode', 'ocr')
             or not pages or [page.ordinal for page in pages] != list(range(1, len(pages) + 1))
             or [str(page.file_page_id) for page in pages] != expected_pages
             or not AuditEvent.objects.filter(actor_id=intent.actor_id, patient_id=intent.patient_id,

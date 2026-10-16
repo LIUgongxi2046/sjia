@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { ArrowDown as ChevronDown, ShieldCheck } from '../../components/ThreeDIcon';
 import { Bell, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
@@ -235,7 +235,7 @@ function RemindersContent() {
   const display = data && (saved?.current ?? selected);
 
   return <UI2FamilyFrame title="资料补充提醒" screenId="UI2-32" note="本人自主启用，可暂停、延后和关闭。" backTo="/account">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
     <section className="card reminder-main"><Bell size={47} /><h2>按你的安排，<br />继续整理资料。</h2><p>只提醒已经产生的报告或本人设置的记录任务。</p>
       <label className="switch-row"><span>启用资料补充提醒</span><input type="checkbox" role="switch" aria-label="启用资料补充提醒" checked={data ? form.enabled : false} disabled={!edit}
         onChange={event => update({ ...form, enabled: event.target.checked })} /></label></section>
@@ -293,7 +293,7 @@ function RemindersContent() {
         && <button className="text-action" disabled={busy || !canWrite} onClick={cancelOriginal}>取消未提交的提醒请求</button>}
       {absent && <p>原提醒请求没有准备或提交。</p>}
       {(absent || request?.error_code === 'REMINDER_INTENT_CANCELLED') && <button className="text-action" disabled={busy} onClick={correctOriginal}>更正提醒输入</button>}</section>}
-    {data && saved && <section className="status-panel success" role="status"><h2>提醒设置已经保存</h2><p>保存回执版本：{saved.receipt.version}；保存时间：{saved.receipt.saved_at}</p>
+    {data && saved && <section className="status-panel success" role="status"><h2>提醒设置已经保存</h2><p>本次保存版本：{saved.receipt.version}；保存时间：{saved.receipt.saved_at}</p>
       <p>{saved.current.version === saved.receipt.version ? '保存内容与重新读取的准确版本一致。' : `原保存事实已核验，当前设置对应后续版本 ${saved.current.version}。`}</p>
       <button className="text-action" disabled={busy} onClick={() => chooseReminder(saved.receipt.resource_id)}>继续查看当前提醒</button></section>}
     {data && <section className="card form-card"><h2>本人已经保存的提醒</h2>{data.reminders.items.length ? data.reminders.items.map(item => <button key={item.reminder_id} className="list-row" disabled={busy || !!identity && !saved}

@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from archives.models import ArchiveFact, ArchiveFactVersion
 from assessment.medical_intervals import MedicalInterval, medical_interval, window_reason
+from assessment.hlh_contracts import HLHInputPolicy
 from assessment.policies import MappingPolicy, QualificationPolicy, StaticContextPolicy, StaticRulePolicy, static_variable
 from assessment.provenance import document_provenance, entity_reference
 from authorization.models import AccessGrant
@@ -22,7 +23,7 @@ from family_content.gate_locks import read_environment_gate_shared
 from identity.models import Patient, Principal
 from medical_time.models import MedicalTime
 from recognition.models import CandidateConfirmation, CandidateField, CandidateSet, SourceAnchor
-from records.models import NormalizedMeasurement, Record, RecordAttachment, RecordField, RecordVersion
+from records.models import NormalizedMeasurement, Record, RecordAttachment, RecordField, RecordVersion, Report
 from relations.models import Relation
 from sources.models import SourceRegistry, SourceRevision
 from verification.models import FieldVerificationState, Verification, VerificationField
@@ -77,6 +78,15 @@ def fact_chronology_reasons(fact, version, *, known_at, accepted_context_types):
     return reasons
 
 
+def configuration_evidence_refs(config):
+    refs = list(config.payload['evidence_refs'])
+    if config.schema_version == 'hlh-2004-rule-1':
+        refs.extend(config.payload['semantics_evidence_refs'])
+        refs.extend([config.payload['applicability_policy_ref'], config.payload['clinical_assertion_policy_ref'],
+            f"urn:sjia:source-revision:{config.payload['source_revision_id']}"])
+    return list(dict.fromkeys(refs))
+
+
 def qualified_configuration(config_id, *, kind, schema_version, environment, known_at, mode, lock=True):
     rows = ConfigVersion.objects.select_for_update() if lock else ConfigVersion.objects
     row = rows.filter(id=config_id, kind=kind, schema_version=schema_version).first()
@@ -89,7 +99,7 @@ def qualified_configuration(config_id, *, kind, schema_version, environment, kno
         reason = configuration_qualification_reason(row, environment, now=point, audience='support', allow_historical=mode == 'replay')
         if reason:
             raise QualificationRejected(reason)
-        for reference in row.payload['evidence_refs']:
+        for reference in configuration_evidence_refs(row):
             _, _, reason = inspect_approved_evidence(reference, purpose='clinical_policy', lock=lock, now=point)
             if reason:
                 raise QualificationRejected(reason)
@@ -228,11 +238,12 @@ def qualify_fact(*, fact_id, patient, actor, auth_epoch, rule_id, window_policy_
     if reason:
         raise QualificationRejected(reason)
     maximum_digits = runtime.payload['limits']['max_decimal_digits']
-    if input_role not in ('current', 'baseline', 'series', 'context') or rule_schema not in ('assessment-rule-2', 'dynamic-input-policy-2'):
+    if input_role not in ('current', 'baseline', 'series', 'context') or rule_schema not in ('assessment-rule-2', 'dynamic-input-policy-2', 'hlh-input-policy-1'):
         raise QualificationRejected('ASSESSMENT_INPUT_ROLE_INVALID')
     rule_config = qualified_configuration(rule_id, kind='rule', schema_version=rule_schema,
         environment=environment, known_at=known_at, mode=mode)
-    rule = (StaticRulePolicy if rule_schema == 'assessment-rule-2' else DynamicInputPolicy).model_validate_json(json.dumps(rule_config.payload))
+    rule = {'assessment-rule-2': StaticRulePolicy, 'dynamic-input-policy-2': DynamicInputPolicy,
+        'hlh-input-policy-1': HLHInputPolicy}[rule_schema].model_validate_json(json.dumps(rule_config.payload))
     window_config = qualified_configuration(window_policy_id, kind='window', schema_version='alert-window-1',
         environment=environment, known_at=known_at, mode=mode)
     if context_policy_id is None:
@@ -262,7 +273,7 @@ def qualify_fact(*, fact_id, patient, actor, auth_epoch, rule_id, window_policy_
     policy_config = qualified_configuration(verification_policy_id, kind='verification', schema_version='qualification-policy-2',
         environment=environment, known_at=known_at, mode=mode)
     policy = QualificationPolicy.model_validate_json(json.dumps(policy_config.payload))
-    if rule_schema == 'dynamic-input-policy-2' and rule.purpose != policy.purpose:
+    if rule_schema in ('dynamic-input-policy-2', 'hlh-input-policy-1') and rule.purpose != policy.purpose:
         raise QualificationRejected('ASSESSMENT_RULE_PURPOSE_MISMATCH')
     if context_policy_id is not None and context_policy.purpose != policy.purpose:
         raise QualificationRejected('ASSESSMENT_CONTEXT_PURPOSE_MISMATCH')
@@ -291,6 +302,8 @@ def qualify_fact(*, fact_id, patient, actor, auth_epoch, rule_id, window_policy_
         'access_grant_ids': [str(grant.id) for grant in grants],
         'available_at': fact.available_at.isoformat() if fact.available_at else None, 'availability_status': fact.availability_status}
     reasons = fact_chronology_reasons(fact, version, known_at=known_at, accepted_context_types=variable.accepted_context_types)
+    if rule_schema == 'hlh-input-policy-1' and context_policy_id is None and field.method not in variable.accepted_methods:
+        reasons.append('HLH_FIELD_METHOD_NOT_APPROVED')
     if record.status != 'active' or version.quality_status != 'valid' or version.origin_type not in policy.allowed_origin_types:
         reasons.append('FACT_RECORD_INELIGIBLE')
     if mode == 'current' and (logical.current_version != fact.version or record.current_version != version.version):
@@ -367,7 +380,8 @@ def qualify_fact(*, fact_id, patient, actor, auth_epoch, rule_id, window_policy_
     if fact.assertion_state != expected_assertion:
         return QualifiedFact(reference, interval, None, ('FACT_ASSERTION_VALUE_INCONSISTENT',))
     value, normalization, reason = normalized_input(field, variable, source_revision_id=version.source_revision_id, environment=environment,
-        known_at=known_at, mode=mode, maximum_digits=maximum_digits, exact_required=rule_schema == 'dynamic-input-policy-2' or rule.kind == 'ms')
+        known_at=known_at, mode=mode, maximum_digits=maximum_digits, exact_required=rule_schema == 'dynamic-input-policy-2' or rule_schema == 'assessment-rule-2' and rule.kind == 'ms'
+            or rule_schema == 'hlh-input-policy-1' and variable_code == 'age_at_hemoglobin')
     if reason:
         return QualifiedFact(reference, interval, None, (reason,))
     reference['normalization_id'] = str(normalization.id) if normalization else None
@@ -381,5 +395,32 @@ def qualify_fact(*, fact_id, patient, actor, auth_epoch, rule_id, window_policy_
     reference['medical_precision'] = medical.precision
     reference['value_sha256'] = compute_checksum({'value': str(value), 'unit': variable.normalized_unit,
         'qualifier': field.qualifier, 'assertion_state': fact.assertion_state})
+    if rule_schema == 'hlh-input-policy-1' and context_policy_id is None:
+        report = (Report.objects.select_for_update().filter(id=version.report_id, patient_id=patient.id).first()
+            if version.report_id is not None else None)
+        if report is not None:
+            reference['entity_refs'].append(entity_reference(report))
+        report_interval = None
+        if report is not None and report.sample_time_id is not None:
+            sample_time = MedicalTime.objects.select_for_update().get(id=report.sample_time_id, patient_id=patient.id)
+            reference['entity_refs'].append(entity_reference(sample_time))
+            from assessment.medical_intervals import MedicalIntervalRejected
+            try:
+                sample_interval = medical_interval(sample_time)
+                if sample_interval.lower == sample_interval.upper and sample_interval.upper_inclusive:
+                    report_interval = sample_interval.snapshot()
+            except MedicalIntervalRejected:
+                pass
+        encodings = [item for item in variable.categorical_values if item.value == field.categorical_value]
+        reference['hlh_metadata'] = {
+            'verified_by': str(verification.verifier_id), 'verified_at': verification.verified_at.isoformat(),
+            'verification_evidence_ref': verification.evidence_ref,
+            'reference_interval': field.reference_interval,
+            'specimen_site': encodings[0].specimen_site if len(encodings) == 1 else None,
+            'report_id': str(report.id) if report is not None else None,
+            'report_sample_time_id': str(report.sample_time_id) if report is not None and report.sample_time_id is not None else None,
+            'report_sample_interval': report_interval,
+            'report_source_matches': report is not None and report.source_revision_id == version.source_revision_id,
+        }
     reference['reference_sha256'] = compute_checksum(reference)
     return QualifiedFact(reference, interval, value, ())

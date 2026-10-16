@@ -19,6 +19,10 @@ class NotificationRevocationCompetitionTest(TransactionTestCase):
     databases = {"default"}
 
     def setUp(self):
+        from tests.isolated_rows import IsolatedSchemaRows
+
+        rows = IsolatedSchemaRows()
+        self.addCleanup(rows.cleanup)
         now = datetime.now(timezone.utc)
         guardian = Principal.objects.create(
             account_status=Principal.AccountStatus.ACTIVE,
@@ -136,7 +140,7 @@ class NotificationRevocationCompetitionTest(TransactionTestCase):
                     if not allow_scope_transaction_to_finish.wait(timeout=10):
                         raise AssertionError("notification scope transaction release timed out")
             finally:
-                close_old_connections()
+                connection.close()
 
         def revoke_after_scope_lock():
             close_old_connections()
@@ -156,7 +160,7 @@ class NotificationRevocationCompetitionTest(TransactionTestCase):
                         revoked_by=stale_relation.guardian,
                     )
             finally:
-                close_old_connections()
+                connection.close()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             scope_future = executor.submit(hold_notification_scope_lock)

@@ -1,3 +1,4 @@
+from recognition.invocation import contract_snapshot
 from decimal import Decimal, localcontext
 from zoneinfo import ZoneInfo
 
@@ -59,6 +60,8 @@ def action_scope(actor, epoch, operation, identifier, payload, *, mutating):
         proofs.extend(locked_grants(actor, patient, 'read_raw', author_id=batch.submitted_by, record_id=record_id))
         proofs.extend(locked_grants(actor, patient, 'read_file', author_id=group.owner_id, record_id=record_id))
         sources.append(source)
+    if batch.intake_mode == 'manual':
+        raise ApiError('ARCHIVE_MANUAL_BATCH_ACTION_UNSUPPORTED', 409)
     quota, runtime, qualification = receiving_quota(gate, sources, selected)
     if mutating:
         if operation == 'archive_batch_process' and str(batch.version) != payload['expected_version']:
@@ -147,7 +150,17 @@ def check_budget(quota, batch, pages):
 
 
 def save_action(*, actor, patient, batch, pages, quota, context, request_row, operation):
+    if batch.intake_mode == 'manual':
+        raise ApiError('ARCHIVE_MANUAL_BATCH_ACTION_UNSUPPORTED', 409)
     provider = ConfigVersion.objects.get(id=quota.payload['provider_config_id'])
+    provider_entry = None
+    if operation != 'archive_page_cancel':
+        runtime = ConfigVersion.objects.get(id=context['configuration']['runtime_id'])
+        entries = [entry for entry in runtime.payload['providers']
+            if entry['kind'] == 'ocr' and entry['enabled'] and entry['config_id'] == str(provider.id)]
+        if len(entries) != 1:
+            raise ApiError('ARCHIVE_PROVIDER_RUNTIME_UNAVAILABLE', 409)
+        provider_entry = entries[0]
     for page in pages:
         if operation == 'archive_page_cancel':
             page.status = 'cancel_requested' if page.status == 'processing' else 'cancelled'
@@ -164,6 +177,7 @@ def save_action(*, actor, patient, batch, pages, quota, context, request_row, op
                 'environment': settings.SJIA_ENVIRONMENT, 'auth_epoch': actor.auth_epoch,
                 'provider_config_id': str(provider.id), 'quota_id': str(quota.id),
                 'model_version': quota.payload['model_version'], 'reserved_cost': quota.payload['per_page_reservation'],
+                'invocation_contract': contract_snapshot('archive'), 'provider_entry': provider_entry,
                 'purpose_copy': context['purpose_copies'][str(page.id)], 'scope': context}
             task = register_task(actor=actor, patient=patient, request_row=request_row, task_type='ocr',
                 schema_version='archive-page-1', input_refs=refs, deadline_seconds=quota.payload['deadline_seconds'])

@@ -185,20 +185,23 @@ def create_record(
 
     validate_record_format(version)
     Patient.objects.filter(id=patient.id).update(data_epoch=F('data_epoch') + 1)
-    return {"record_id": str(record.id), "record_version_id": str(version.id), "version": 1}
+    return {"patient_id": str(patient.id), "record_id": str(record.id), "record_version_id": str(version.id), "version": 1}
 
 
 def read_record(record_id, patient) -> dict:
     record = Record.objects.filter(id=record_id, patient=patient).first()
     if record is None:
         raise RecordRejected("RECORD_NOT_FOUND")
-    version = RecordVersion.objects.filter(record_id=record.id, patient=patient, version=record.current_version).first()
+    version = RecordVersion.all_objects.filter(record_id=record.id, patient=patient, version=record.current_version).first()
     if version is None:
         raise RecordRejected("RECORD_VERSION_NOT_FOUND")
     return read_version(version, record)
 
 
 def read_version(version, record):
+    from retention.content_fences import assert_content_available
+    assert_content_available('records.recordversion', version.id)
+    version = RecordVersion.objects.get(id=version.id, patient_id=record.patient_id)
     from verification.models import FieldVerificationState
 
     patient = record.patient

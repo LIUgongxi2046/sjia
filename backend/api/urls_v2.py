@@ -8,6 +8,7 @@ from api import views_family_dispositions as family_dispositions
 from api import views_archive_facts as facts
 from api import views_fact_writes as fact_writes
 from api import views_archive_documents as documents
+from api import views_archive_regrouping as regrouping
 from api import views_archive_relations as archive_relations
 from api import views_archive_search as archive_search
 from api import views_archive_delta as archive_delta
@@ -33,7 +34,25 @@ from api import views_voice_inputs as voice_inputs
 from api.views_support_session import support_login, support_session_read
 
 
+from api import views_content_disposition as content_disposition
+from api import views_family_content_disposition as family_content_disposition
+
 urlpatterns = [
+    path('patients/<uuid:patient_id>/content-disposition/options', family_content_disposition.family_content_disposition_options),
+    path('patients/<uuid:patient_id>/content-disposition/requests', family_content_disposition.family_content_disposition_requests),
+    path('content-disposition/requests/<uuid:request_id>', family_content_disposition.family_content_disposition_read),
+    path('support/patients/<uuid:patient_id>/content-disposition/requests', content_disposition.content_disposition_family_requests),
+    path('support/content-disposition/patients', content_disposition.content_disposition_patients),
+    path('support/patients/<uuid:patient_id>/content-disposition/options', content_disposition.content_disposition_options),
+    path('support/patients/<uuid:patient_id>/content-disposition/history', content_disposition.content_disposition_history),
+    path('support/content-disposition/plans/<uuid:plan_id>/review', content_disposition.content_disposition_review),
+    path('support/content-disposition/catalog', content_disposition.content_disposition_catalog),
+    path('support/patients/<uuid:patient_id>/content-disposition/plans', content_disposition.content_disposition_preview),
+    path('support/content-disposition/plans/<uuid:plan_id>', content_disposition.content_disposition_read),
+    path('support/content-disposition/plans/<uuid:plan_id>/approve', content_disposition.content_disposition_approve),
+    path('support/content-disposition/plans/<uuid:plan_id>/execute', content_disposition.content_disposition_execute),
+    path('patients/<uuid:patient_id>/archive-document-regroupings', regrouping.archive_documents_regroup, name='archive_documents_regroup'),
+    path('archive-batches/<uuid:batch_id>/regroup-options', regrouping.archive_regroup_options, name='archive_regroup_options'),
     path('patients/<uuid:patient_id>/voice-inputs', voice_inputs.voice_inputs),
     path('patients/<uuid:patient_id>/voice-input-options', voice_inputs.voice_input_options),
     path('patients/<uuid:patient_id>/voice-inputs/<uuid:voice_id>', voice_inputs.voice_input_read),
@@ -153,6 +172,7 @@ urlpatterns = [
     path('support/purpose-copies/<uuid:copy_id>/review-content', purpose.purpose_review_content),
     path('support/purpose-copies/<uuid:copy_id>/evidence', purpose.purpose_copy_evidence),
     path('tasks/<uuid:task_id>', purpose.purpose_task_read),
+    path('support/patients/<uuid:patient_id>/disposition-coverage', disposition.support_disposition_coverage, name='disposition_coverage_read'),
     path('support/dispositions/<uuid:disposition_id>', disposition.support_disposition_read),
     path('patients/<uuid:patient_id>/disposition-options', family_dispositions.family_disposition_options),
     path('patients/<uuid:patient_id>/dispositions', family_dispositions.family_disposition_create, name='disposition_create'),

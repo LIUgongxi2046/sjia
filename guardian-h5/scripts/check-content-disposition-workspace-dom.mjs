@@ -1,0 +1,48 @@
+// Synthetic metadata only. No connected API or browser state is used.
+import './registration-test-loader.mjs';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+const dom=new JSDOM('<!doctype html><div id="root"></div>',{url:'http://localhost/'});
+for(const name of ['window','document','navigator','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLButtonElement','Event'])Object.defineProperty(globalThis,name,{value:dom.window[name],configurable:true});
+globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {createElement:h,act}=await import('react'),{createRoot}=await import('react-dom/client'),{Simulate}=await import('react-dom/test-utils');
+const {ContentDispositionPanel}=await import('../src/features/support/ContentDispositionPanel.tsx');
+const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,hash='a'.repeat(64),now='2026-10-11T00:00:00Z';
+const target=n=>({kind:'database',adapter:'records.recordversion',object_id:id(n),version:'1'});
+const plan={schema_version:'content-disposition-plan-view-1',plan_id:id(4),patient_id:id(1),status:'approved',manifest_sha256:hash,runtime_execution_enabled:true,approved_at:now,completed_at:null,receipt:null,
+ manifest:{schema_version:'content-disposition-manifest-1',patient_id:id(1),policy_id:id(2),policy_version:1,policy_sha256:hash,registry_sha256:hash,preservation_sha256:hash,mode:'erase_selected_content',environment:'synthetic-only',hold_id:id(5),hold_version:1,roots:[target(3)],items:[{...target(3),row_sha256:hash}],obligations:['backup_copies'],created_at:now}};
+const lifecycle={schema_version:'content-disposition-lifecycle-1',plan_id:id(4),retention_basis_source_revision_id:id(6),next_recheck_at:now,review_due:true,review_evidence_status:'not_reviewed',review_version:0,receipt_keep_until:now,metadata_keep_until:now,receipt_expiry_review_due:true,metadata_expiry_review_due:true,expiry_disposal_status:'blocked_pending_backup_and_retry_window_proof',unresolved_copy_obligations:[{kind:'backup_copies',reason_code:'NO_VERIFIED_COPY_ERASURE_PROTOCOL',review_due_at:now,all_copies_erased:false}],last_review:null};
+let reverse=false,denied=false,wait=false,resolveWait=null,permissions=0,calls=[];
+const patients={schema_version:'content-disposition-patients-1',patients:[{patient_id:id(1),display_id:'Synthetic A'},{patient_id:id(7),display_id:'Synthetic B'}]};
+function options(patient){return{schema_version:'content-disposition-options-1',patient_id:patient,display_id:patient===id(1)?'Synthetic A':'Synthetic B',policies:[{policy_id:id(2),version:1,mode:'erase_selected_content',execution_enabled:true,retention_seconds:0,clock:'recorded_at',access_purpose:'synthetic',recheck_at:now}],hold:{hold_id:id(5),version:1,state:'clear',valid_until:now,eligible:true,reason_code:null},targets:(reverse?[8,3]:[3,8]).map(n=>({target:target(n),label:'历史记录版本',record_id:id(9)})),default_policy:null};}
+globalThis.fetch=async(path,opts={})=>{calls.push({path,opts});if(denied)return Response.json({code:'CASE_ACTION_DENIED',message:'Synthetic denied'},{status:403});if(wait)return new Promise(resolve=>resolveWait=resolve);
+ if(path.endsWith('/patients'))return Response.json(patients);if(path.endsWith('/options'))return Response.json(options(path.includes(id(7))?id(7):id(1)));
+ if(path.endsWith('/requests'))return Response.json({schema_version:'content-disposition-family-requests-1',patient_id:id(1),requests:[{schema_version:'content-disposition-family-view-1',request_id:id(11),client_request_id:id(12),patient_id:id(1),policy_id:id(2),created_at:now,targets:[{record_version_id:id(3),version:'1'}],status:'requested',linked_plan_id:null,logical_payload_erased:false,all_copies_erased:false}]});
+ if(opts.method==='POST'&&path.endsWith('/plans'))return Response.json({...plan,status:'preview',manifest:{...plan.manifest,family_request_id:JSON.parse(opts.body).family_request_id}});
+ if(path.endsWith('/history'))return Response.json({schema_version:'content-disposition-history-1',patient_id:id(1),plans:[{plan_id:id(4),status:plan.status,created_at:now,mode:plan.manifest.mode,item_count:1,lifecycle}]});
+ if(path.endsWith('/review'))return Response.json(lifecycle);return Response.json(plan);};
+const root=createRoot(document.getElementById('root')),flush=()=>act(async()=>{await new Promise(r=>setTimeout(r,0));});
+const label=text=>[...document.querySelectorAll('label')].find(e=>e.querySelector('span')?.textContent===text);
+const change=async(text,value)=>act(async()=>Simulate.change(label(text).querySelector('input,select,textarea'),{target:{value}}));
+const click=async(text)=>{await act(async()=>{const b=[...document.querySelectorAll('button')].find(b=>b.textContent.includes(text));assert.ok(b,text);assert.equal(b.disabled,false,text);b.click();});await flush();};
+await act(async()=>root.render(h(ContentDispositionPanel,{active:true,onPermission:()=>{permissions++;}})));
+assert.equal(calls.length,0);
+await click('查询有权管理');assert.equal(label('选择患儿身份').querySelector('select').value,'');
+await change('选择患儿身份',id(1));await click('查询已批准政策');assert.equal(label('明确选择已批准政策').querySelector('select').value,'');
+await change('明确选择已批准政策',id(2));await act(async()=>Simulate.change(document.querySelector('input[type=checkbox]'),{target:{checked:true}}));
+await click('将已选范围载入');assert.equal(JSON.parse(label('准确目标数组（数据库 adapter、object_id、version，或本地 file_id、object_version）').querySelector('textarea').value)[0].object_id,id(3));
+await click('查询本人提交');await click('载入原申请范围');assert.ok(document.body.textContent.includes('关联本人申请 '+id(11)));
+await click('只生成处置清单');assert.equal(JSON.parse(calls.at(-1).opts.body).family_request_id,id(11));assert.ok(document.body.textContent.includes('本人申请：'+id(11)));
+reverse=true;await click('查询已批准政策');assert.equal([...document.querySelectorAll('input[type=checkbox]')].filter(x=>x.checked).length,0);
+assert.equal(label('准确目标数组（数据库 adapter、object_id、version，或本地 file_id、object_version）').querySelector('textarea').value,'');
+await change('恢复已有申请 UUID（刷新或提交结果不确定时使用）',id(4));await click('按标识恢复');assert.ok(document.body.textContent.includes('本次准确处置患儿：'+id(1)));assert.ok([...document.querySelectorAll('button')].some(b=>b.textContent.includes('执行已批准')));
+await click('查询已批准政策');assert.equal(calls.at(-1).opts.signal.aborted,false);assert.ok(document.body.textContent.includes('当前对象：Synthetic A'));
+await change('恢复已有申请 UUID（刷新或提交结果不确定时使用）',id(4));await click('按标识恢复');
+await change('选择患儿身份',id(7));assert.ok(!document.body.textContent.includes('本次准确处置患儿'));assert.ok(![...document.querySelectorAll('button')].some(b=>b.textContent.includes('执行已批准')));
+await change('选择患儿身份',id(1));await click('查询历史申请');assert.ok(document.body.textContent.includes('已到复查时间'));
+await click('打开申请');await click('查询保留依据');assert.ok(document.body.textContent.includes('不会自动清除防复活记录'));assert.ok(document.body.textContent.includes('尚无可验证的副本清除协议'));
+await change('选择患儿身份',id(7));wait=true;await click('查询已批准政策');const last=calls.at(-1);await act(async()=>window.dispatchEvent(new Event('pagehide')));assert.ok(last.opts.signal.aborted);
+await act(async()=>resolveWait(Response.json(options(id(7)))));await flush();assert.ok(!document.body.textContent.includes('当前对象：Synthetic B'));wait=false;
+await click('查询有权管理');await change('选择患儿身份',id(1));denied=true;await click('查询历史申请');assert.equal(permissions,1);assert.ok(!document.body.textContent.includes('Synthetic A'));
+await act(async()=>root.unmount());
+console.log(JSON.stringify({status:'PASS',mode:'SYNTHETIC_NONVISUAL_DOM',checks:['authorized identities and no implicit selections','metadata-only exact target selection','refresh drops prior target indices','patient change drops executable old plan','history and reload recovery','due review and unresolved copies visible','aborted late result and permission loss clear private state']},null,2));

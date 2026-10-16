@@ -43,7 +43,9 @@ def previous_selection(choice, patient, payload, known_at, input_role):
     original = task.input_refs['payload']
     keys = ('policy_id', 'input_rule_id', 'window_policy_id', 'verification_policy_id', 'use_authorization_id') if dynamic else (
         'kind', 'rule_id', 'window_policy_id', 'verification_policy_id')
-    if original['mode'] != 'current' or any(original[key] != payload[key] for key in keys):
+    if not dynamic and payload.get('kind') == 'hlh':
+        keys = (*keys, 'input_rule_id')
+    if original['mode'] != 'current' or any(original.get(key) != payload.get(key) for key in keys):
         raise QualificationRejected('ASSESSMENT_SELECTION_POLICY_MISMATCH')
     saved = WriteRequest.objects.select_for_update().get(id=task.request_row_id)
     intent = WriteIntent.objects.select_for_update().get(write_request_id=saved.id,

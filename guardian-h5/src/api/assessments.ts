@@ -1,15 +1,17 @@
 import type { IntentView } from '../../../frontend-design/types';
-import type { AssessmentCreationOptions, AssessmentIntentInput, AssessmentView, ClinicalDirectoryView, RequestView, TaskView, WriteReceipt } from '../../../frontend-design/v2-types';
+import type { AssessmentCreationOptions, AssessmentCreationOptionsWire, AssessmentCreationQuery, AssessmentIntentInput, AssessmentView, AssessmentViewWire, ClinicalDirectoryQuery, ClinicalDirectoryView, RequestView, TaskView, WriteReceipt } from '../../../frontend-design/v2-types';
 import { fetchJson } from './client';
 import { validateApiValue } from './schema';
+import { validateHlhReference } from './hlh';
+import { projectAssessmentCreationOptions } from './assessmentWire';
 
 const schema = 'v2-protocol.schema.json#/$defs/';
 const terminal = new Set<TaskView['status']>(['completed', 'failed', 'cancelled', 'superseded']);
 
 export async function readClinicalDirectory(action: ClinicalDirectoryView['action'], signal?: AbortSignal) {
-  validateApiValue(schema + 'ClinicalDirectoryQuery', { action });
+  validateApiValue(schema + 'ClinicalDirectoryQuery', { action } satisfies ClinicalDirectoryQuery);
   const value = validateApiValue<ClinicalDirectoryView>(schema + 'ClinicalDirectoryView',
-    await fetchJson<unknown>(`/api/v2/support/clinical-scopes?${new URLSearchParams({ action })}`, { signal }));
+    await fetchJson<unknown>(`/api/v2/support/clinical-scopes?${new URLSearchParams({ action } satisfies ClinicalDirectoryQuery)}`, { signal }));
   if (value.action !== action || new Set(value.patients.map(item => item.patient_id)).size !== value.patients.length
       || value.patients.some(item => new Set(item.records.map(record => record.record_version_id)).size !== item.records.length
         || item.records.some(record => !item.purposes.includes(record.purpose)))
@@ -19,14 +21,16 @@ export async function readClinicalDirectory(action: ClinicalDirectoryView['actio
 }
 
 export function assessmentPlanKey(plan: AssessmentCreationOptions['plans'][number]) {
-  return [plan.rule.config_id, plan.window.config_id, plan.verification.config_id].join(':');
+  return [plan.rule.config_id, plan.window.config_id, plan.verification.config_id,
+    ...(plan.kind === 'hlh' ? [plan.input_rule!.config_id] : [])].join(':');
 }
 
 export async function readAssessmentCreationOptions(patientId: string, knownAt: string, mode: 'current' | 'replay', signal?: AbortSignal) {
   validateApiValue(schema + 'Uuid', patientId);
-  const query = { known_at: knownAt, mode }; validateApiValue(schema + 'AssessmentCreationQuery', query);
-  const value = validateApiValue<AssessmentCreationOptions>(schema + 'AssessmentCreationOptions',
+  const query = { known_at: knownAt, mode } satisfies AssessmentCreationQuery; validateApiValue(schema + 'AssessmentCreationQuery', query);
+  const wire = validateApiValue<AssessmentCreationOptionsWire>(schema + 'AssessmentCreationOptions',
     await fetchJson<unknown>(`/api/v2/support/patients/${encodeURIComponent(patientId)}/assessment-options?${new URLSearchParams(query)}`, { signal }));
+  const value = projectAssessmentCreationOptions(wire);
   if (value.patient_id !== patientId || value.mode !== mode || Date.parse(value.known_at) !== Date.parse(knownAt)
       || new Set(value.plans.map(assessmentPlanKey)).size !== value.plans.length
       || new Set(value.observation_periods.map(item => item.observation_period_id)).size !== value.observation_periods.length
@@ -97,11 +101,14 @@ export async function readAssessmentTask(taskId: string, signal?: AbortSignal) {
 }
 
 export async function readAssessment(assessmentId: string, signal?: AbortSignal): Promise<AssessmentView> {
+  function hasSavedSelections(value: AssessmentViewWire): value is AssessmentView {
+    return Array.isArray(value.clinical_selections);
+  }
   validateApiValue(schema + 'Uuid', assessmentId);
-  const result = validateApiValue<AssessmentView>(schema + 'AssessmentView',
+  const result = validateApiValue<AssessmentViewWire>(schema + 'AssessmentView',
     await fetchJson<unknown>(`/api/v2/support/assessments/${encodeURIComponent(assessmentId)}`, { signal }));
   checkTask(result.task);
-  if (!Array.isArray(result.clinical_selections)) throw new Error('评估缺少保存的明确选择状态。');
+  if (!hasSavedSelections(result)) throw new Error('评估缺少保存的明确选择状态。');
   if (result.assessment_id !== assessmentId || result.task.result_ref !== assessmentId
       || result.task.status !== 'completed') throw new Error('静态评估结果与保存任务不一致。');
   if (result.validity === 'invalid') {
@@ -109,6 +116,8 @@ export async function readAssessment(assessmentId: string, signal?: AbortSignal)
       throw new Error('失效评估含有不能采用的内容。');
   } else {
     if (result.output === null || result.reason_code !== null) throw new Error('静态评估缺少当前有效输出。');
+    if (result.kind !== 'hlh' && result.output.hlh_result != null) throw new Error('HLH 参考结果不能混入其他评估路径。');
+    if (result.kind === 'hlh') validateHlhReference(result);
     if (result.kind === 'classification' && (result.output.classification_result === null
         || result.output.classification_conditions === null || result.output.ms_total !== null
         || result.output.ms_contributions !== null || result.output.ms_threshold_result !== null))

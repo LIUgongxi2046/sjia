@@ -5,7 +5,9 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
 from assessment.policies import MappingPolicy, QualificationPolicy, StaticContextPolicy, StaticRulePolicy
-from alerting.policies import DynamicInputPolicy, LifecyclePolicy, DynamicSchedulePolicy
+from alerting.policies import DynamicInputPolicy, LifecyclePolicy, DynamicSchedulePolicy, weighted_trigger_reason
+from alerting.preset_policies import PatientPresetAssignment
+from assessment.hlh_contracts import HLHRulePolicy, HLHInputPolicy
 from archives.quota import SCHEMA as ARCHIVE_QUOTA, quota_reason
 from archives.provider_policy import ArchiveProviderPolicy
 from configurations.service import ConfigRejected
@@ -34,6 +36,9 @@ SCHEMAS = {
     ('window', 'alert-window-1'): {**ALERT_POLICY, 'oneOf': [{'$ref': '#/$defs/WindowPolicy'}]},
     ('window', 'sampling-frequency-1'): SamplingFrequencyPolicy.model_json_schema(),
     ('rule', 'alert-trigger-1'): {**ALERT_POLICY, 'oneOf': [{'$ref': '#/$defs/TriggerPolicy'}]},
+    ('rule', 'hlh-2004-rule-1'): HLHRulePolicy.model_json_schema(),
+    ('rule', 'hlh-input-policy-1'): HLHInputPolicy.model_json_schema(),
+    ('rule', 'alert-trigger-2'): {**ALERT_POLICY, 'oneOf': [{'$ref': '#/$defs/TriggerPolicyV2'}]},
     ('rule', 'assessment-rule-2'): StaticRulePolicy.model_json_schema(),
     ('rule', 'assessment-context-policy-2'): StaticContextPolicy.model_json_schema(),
     ('verification', 'qualification-policy-2'): QualificationPolicy.model_json_schema(),
@@ -41,6 +46,7 @@ SCHEMAS = {
     ('rule', 'dynamic-input-policy-2'): DynamicInputPolicy.model_json_schema(),
     ('rule', 'alert-lifecycle-2'): LifecyclePolicy.model_json_schema(),
     ('provider', 'dynamic-schedule-2'): DynamicSchedulePolicy.model_json_schema(),
+    ('provider', 'patient-alert-presets-1'): PatientPresetAssignment.model_json_schema(),
     ('provider', 'notification-in-app-2'): NativeNotificationPolicy.model_json_schema(),
     ('notification', 'material-reminder-channel-2'): MaterialReminderChannelPolicy.model_json_schema(),
     ('content', 'content-1'): ContentPolicy.model_json_schema(),
@@ -122,11 +128,12 @@ def payload_reason(kind, schema_version, payload):
         return 'CONFIG_SCHEMA_UNAVAILABLE'
     if next(validator.iter_errors(payload), None) is not None:
         return 'CONFIG_PAYLOAD_INVALID'
-    models = {'assessment-rule-2': StaticRulePolicy, 'assessment-context-policy-2': StaticContextPolicy,
+    models = {'hlh-2004-rule-1': HLHRulePolicy, 'hlh-input-policy-1': HLHInputPolicy, 'assessment-rule-2': StaticRulePolicy, 'assessment-context-policy-2': StaticContextPolicy,
         'dictionary-1': DictionaryPolicy, 'mapping-1': MappingPolicyV1,
         'qualification-policy-2': QualificationPolicy, 'unit-mapping-2': MappingPolicy,
         'dynamic-input-policy-2': DynamicInputPolicy, 'alert-lifecycle-2': LifecyclePolicy,
-        'dynamic-schedule-2': DynamicSchedulePolicy, 'content-1': ContentPolicy, 'visibility-1': VisibilityPolicy,
+        'dynamic-schedule-2': DynamicSchedulePolicy, 'patient-alert-presets-1': PatientPresetAssignment,
+        'content-1': ContentPolicy, 'visibility-1': VisibilityPolicy,
         'notification-1': NotificationPolicy, 'validation-1': ValidationPolicy, 'summary-1': SummaryPolicy,
         'notification-in-app-2': NativeNotificationPolicy, 'material-reminder-channel-2': MaterialReminderChannelPolicy,
         'sampling-frequency-1': SamplingFrequencyPolicy, 'provider-1': ArchiveProviderPolicy}
@@ -142,6 +149,8 @@ def payload_reason(kind, schema_version, payload):
         codes = [item['variable_code'] for item in payload['variables']]
         if len(codes) != len(set(codes)):
             return 'CONFIG_VARIABLE_DUPLICATE'
+    if schema_version == 'alert-trigger-2':
+        return weighted_trigger_reason(payload)
     if schema_version == 'alert-trigger-1':
         codes = [item['signal_id'] for item in payload['conditions']]
         if len(codes) != len(set(codes)):

@@ -27,8 +27,30 @@ from files.purpose_schemas import PurposeCaseGrantInput, PurposeDispositionAppro
 from files.purpose_dependencies import invalidate_resource
 
 
+@api_view(["GET"])
+@handle
+@transaction.atomic
+def application_review(request, application_id):
+    principal, _, _ = current_principal(request)
+    if principal is None:
+        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
+    authorize_service(request, principal, "decide_relation")
+    application = RelationApplication.objects.select_for_update().filter(id=application_id).first()
+    if application is None:
+        raise ApiError("APPLICATION_NOT_FOUND", status.HTTP_404_NOT_FOUND)
+    from relations.queries import application_declaration_view
+    return Response({"application_id": str(application.id), "applicant_id": str(application.applicant_id),
+        "patient_id": str(application.patient_id) if application.patient_id else None,
+        "status": application.status, "version": str(application.version),
+        "evidence_ref": application.evidence_ref, "note": application.note,
+        "requested_access": application.requested_access, "created_at": application.created_at.isoformat(),
+        "checked_at": application.checked_at.isoformat() if application.checked_at else None, "reason": application.reason,
+        **application_declaration_view(application)})
+
+
 @api_view(["POST"])
 @handle
+@transaction.atomic
 def application_decide(request, application_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -38,13 +60,19 @@ def application_decide(request, application_id):
     if application is None:
         raise ApiError("APPLICATION_NOT_FOUND", status.HTTP_404_NOT_FOUND)
     data = request.data or {}
-    relation = decide_application(application=application, decision=data.get("decision", "approved"), checked_by=principal, expected_version=int(data.get("expected_version", application.version)), action=data.get("action", "read_raw"), field_codes=data.get("field_codes", []), purpose="family_observation")
+    from relations.inputs import ApplicationDecisionInput
+
+    data = ApplicationDecisionInput.model_validate(data)
+    relation = decide_application(application=application, decision=data.decision, checked_by=principal,
+        expected_version=int(data.expected_version), action=data.action, field_codes=data.field_codes, purpose="family_observation",
+        patient=get_patient(data.patient_id) if data.patient_id else None, reason=data.reason)
     application.refresh_from_db(fields=['status', 'version'])
-    return Response({"relation_id": str(relation.id) if relation else None, "status": application.status})
+    return Response({"relation_id": str(relation.id) if relation else None, "status": application.status, "version": str(application.version)})
 
 
 @api_view(["POST"])
 @handle
+@transaction.atomic
 def relation_revoke(request, relation_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -89,13 +117,12 @@ def source_revision_register(request, source_id):
 @api_view(["POST"])
 @handle
 def retention_policy_create(request):
-    principal, _, _ = current_principal(request)
-    if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    data = request.data or {}
-    policy = RetentionPolicy.objects.create(policy_key=data.get("policy_key", ""), version=1, data_class=data.get("data_class", ""), rules=data.get("rules", {}), schema_version=data.get("schema_version", "retention-1"), status="active")
-    return Response({"policy_id": str(policy.id), "status": policy.status}, status=201)
+    # Legacy import compatibility uses the same intent/evidence checks as the
+    # canonical views_sources route; registration must never imply activation.
+    from api.views_sources import source_write
+
+    with transaction.atomic():
+        return source_write(request, 'retention_policy_create', {})
 
 
 @api_view(["POST"])
@@ -377,15 +404,7 @@ def use_authorization_revoke(request, authorization_id):
 @api_view(["POST"])
 @handle
 def retention_policy_activate(request, policy_id):
-    principal, _, _ = current_principal(request)
-    if principal is None:
-        raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
-    authorize_service(request, principal, "manage_config")
-    policy = RetentionPolicy.objects.filter(id=policy_id).first()
-    if policy is None:
-        raise ApiError("POLICY_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    policy.status = RetentionPolicy.Status.ACTIVE
-    policy.approved_by = principal
-    policy.approved_at = datetime.now(timezone.utc)
-    policy.save(update_fields=["status", "approved_by", "approved_at"])
-    return Response({"policy_id": str(policy.id), "status": policy.status})
+    from api.views_sources import source_write
+
+    with transaction.atomic():
+        return source_write(request, 'retention_policy_activate', {'policy_id': policy_id})

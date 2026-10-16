@@ -1,5 +1,5 @@
 import type { IntentView } from '../../../frontend-design/types';
-import type { RequestView, VerificationCreationScopeView, VerificationIntentInput, VerificationOptionsView, VerificationResourceView, WriteReceipt } from '../../../frontend-design/v2-types';
+import type { RequestView, VerificationCreationQuery, VerificationCreationScopeView, VerificationIntentInput, VerificationOptionsView, VerificationRequestLookup, VerificationResourceView, WriteReceipt } from '../../../frontend-design/v2-types';
 import { fetchJson } from './client';
 import { validateApiValue } from './schema';
 import { validateOriginalSource } from './originalSourceSchema';
@@ -22,7 +22,7 @@ export async function readVerificationCreationScope(versionId: string, purpose: 
   validateApiValue(schema + 'Uuid', versionId);
   if (!purpose.trim()) throw new Error('需要填写准确资料用途。');
   const value = validateApiValue<VerificationCreationScopeView>(schema + 'VerificationCreationScopeView',
-    await fetchJson<unknown>(`/api/v2/support/record-versions/${encodeURIComponent(versionId)}/verification-scope?${new URLSearchParams({ purpose })}`, { signal }));
+    await fetchJson<unknown>(`/api/v2/support/record-versions/${encodeURIComponent(versionId)}/verification-scope?${new URLSearchParams({ purpose } satisfies VerificationCreationQuery)}`, { signal }));
   if (value.record_version_id !== versionId || value.purpose !== purpose
       || new Set(value.fields.map(field => field.field_id)).size !== value.fields.length
       || new Set(value.assignees.map(item => item.principal_id)).size !== value.assignees.length
@@ -114,7 +114,7 @@ export async function readVerificationRequest(intentId: string, signal?: AbortSi
 
 export async function findVerificationRequest(identity: Pick<VerificationIntentInput, 'request_id' | 'operation_id' | 'target_key'>, signal?: AbortSignal) {
   validateApiValue(schema + 'Uuid', identity.request_id);
-  const query = { lookup: 'request_id', operation_id: identity.operation_id, target_key: identity.target_key };
+  const query = { lookup: 'request_id', operation_id: identity.operation_id, target_key: identity.target_key } satisfies VerificationRequestLookup;
   validateApiValue(schema + 'VerificationRequestLookup', query);
   const request = checkedRequest(await fetchJson<unknown>(`/api/v2/requests/${encodeURIComponent(identity.request_id)}?${new URLSearchParams(query)}`, { signal }));
   if (request.request_id !== identity.request_id || request.operation_id !== identity.operation_id || request.target_key !== identity.target_key)

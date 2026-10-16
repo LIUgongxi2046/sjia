@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "HLHTemporalPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum_age_seconds": {
+          "additionalProperties": {
+            "maximum": 315537897599,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxProperties": 16,
+          "minProperties": 16,
+          "propertyNames": {
+            "enum": [
+              "applicability",
+              "molecular",
+              "fever",
+              "splenomegaly",
+              "hemoglobin",
+              "platelet_count",
+              "neutrophil_count",
+              "triglycerides",
+              "triglycerides_fasting",
+              "fibrinogen",
+              "hemophagocytosis",
+              "no_malignancy_evidence",
+              "nk_activity",
+              "ferritin",
+              "soluble_cd25",
+              "age_at_hemoglobin"
+            ]
+          },
+          "title": "Maximum Age Seconds",
+          "type": "object"
+        },
+        "maximum_cross_laboratory_span_seconds": {
+          "maximum": 315537897599,
+          "minimum": 0,
+          "title": "Maximum Cross Laboratory Span Seconds",
+          "type": "integer"
+        },
+        "require_available_and_verified_by_known_at": {
+          "const": true,
+          "title": "Require Available And Verified By Known At",
+          "type": "boolean"
+        },
+        "cross_laboratory_conflict": {
+          "const": "all_numeric_criteria_unknown",
+          "title": "Cross Laboratory Conflict",
+          "type": "string"
+        },
+        "interval_policy": {
+          "const": "whole_interval_within_inclusive_window",
+          "title": "Interval Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "maximum_age_seconds",
+        "maximum_cross_laboratory_span_seconds",
+        "require_available_and_verified_by_known_at",
+        "cross_laboratory_conflict",
+        "interval_policy"
+      ],
+      "title": "HLHTemporalPolicy",
+      "type": "object"
+    },
+    "HLHThreshold": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "lt",
+            "le",
+            "gt",
+            "ge"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 80,
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "title": "Value",
+          "type": "string"
+        },
+        "unit": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator",
+        "value",
+        "unit"
+      ],
+      "title": "HLHThreshold",
+      "type": "object"
+    },
+    "HLHThresholds": {
+      "additionalProperties": false,
+      "properties": {
+        "hemoglobin": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "lt"
+                },
+                "value": {
+                  "pattern": "^90(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "g/L"
+                }
+              }
+            }
+          ]
+        },
+        "infant_hemoglobin": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "lt"
+                },
+                "value": {
+                  "pattern": "^100(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "g/L"
+                }
+              }
+            }
+          ]
+        },
+        "platelet_count": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "lt"
+                },
+                "value": {
+                  "pattern": "^100(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "10^9/L"
+                }
+              }
+            }
+          ]
+        },
+        "neutrophil_count": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "lt"
+                },
+                "value": {
+                  "pattern": "^1(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "10^9/L"
+                }
+              }
+            }
+          ]
+        },
+        "triglycerides": {
+          "$ref": "#/$defs/HLHThreshold",
+          "oneOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "ge"
+                },
+                "value": {
+                  "pattern": "^3(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "mmol/L"
+                }
+              }
+            },
+            {
+              "properties": {
+                "operator": {
+                  "const": "ge"
+                },
+                "value": {
+                  "pattern": "^265(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "mg/dL"
+                }
+              }
+            }
+          ]
+        },
+        "fibrinogen": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "le"
+                },
+                "value": {
+                  "pattern": "^1\\.50*$"
+                },
+                "unit": {
+                  "const": "g/L"
+                }
+              }
+            }
+          ]
+        },
+        "ferritin": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "ge"
+                },
+                "value": {
+                  "pattern": "^500(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "ug/L"
+                }
+              }
+            }
+          ]
+        },
+        "soluble_cd25": {
+          "$ref": "#/$defs/HLHThreshold",
+          "allOf": [
+            {
+              "properties": {
+                "operator": {
+                  "const": "ge"
+                },
+                "value": {
+                  "pattern": "^2400(?:\\.0+)?$"
+                },
+                "unit": {
+                  "const": "U/mL"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "hemoglobin",
+        "infant_hemoglobin",
+        "platelet_count",
+        "neutrophil_count",
+        "triglycerides",
+        "fibrinogen",
+        "ferritin",
+        "soluble_cd25"
+      ],
+      "title": "HLHThresholds",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "hlh-2004-rule-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "kind": {
+      "const": "hlh_2004_reference",
+      "title": "Kind",
+      "type": "string"
+    },
+    "source_table": {
+      "enum": [
+        "histiocyte-society-2004-table-2",
+        "henter-2007-table-I"
+      ],
+      "title": "Source Table",
+      "type": "string"
+    },
+    "source_revision_id": {
+      "format": "uuid",
+      "title": "Source Revision Id",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "policy_revision_id": {
+      "format": "uuid",
+      "title": "Policy Revision Id",
+      "type": "string"
+    },
+    "semantics_version": {
+      "const": "hlh-2004-bounds-1",
+      "title": "Semantics Version",
+      "type": "string"
+    },
+    "count_bounds_policy": {
+      "const": "met_lower_met_plus_unknown_upper",
+      "title": "Count Bounds Policy",
+      "type": "string"
+    },
+    "unknown_logic": {
+      "const": "strong_kleene_compounds",
+      "title": "Unknown Logic",
+      "type": "string"
+    },
+    "applicability_precedence": {
+      "const": "not_applicable_then_unknown_then_paths",
+      "title": "Applicability Precedence",
+      "type": "string"
+    },
+    "semantics_evidence_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Semantics Evidence Refs",
+      "type": "array"
+    },
+    "applicability_policy_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Applicability Policy Ref",
+      "type": "string"
+    },
+    "clinical_assertion_policy_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Clinical Assertion Policy Ref",
+      "type": "string"
+    },
+    "infant_age_days_exclusive": {
+      "const": 28,
+      "title": "Infant Age Days Exclusive",
+      "type": "integer"
+    },
+    "cytopenia_lineages_required": {
+      "const": 2,
+      "title": "Cytopenia Lineages Required",
+      "type": "integer"
+    },
+    "criteria_required": {
+      "const": 5,
+      "title": "Criteria Required",
+      "type": "integer"
+    },
+    "criteria_total": {
+      "const": 8,
+      "title": "Criteria Total",
+      "type": "integer"
+    },
+    "molecular_path": {
+      "const": "professionally_confirmed_consistent_diagnosis",
+      "title": "Molecular Path",
+      "type": "string"
+    },
+    "fever_definition": {
+      "const": "professionally_confirmed_source_table_fever",
+      "title": "Fever Definition",
+      "type": "string"
+    },
+    "malignancy_qualifier": {
+      "const": "required_for_hemophagocytosis_only",
+      "title": "Malignancy Qualifier",
+      "type": "string"
+    },
+    "unit_policy": {
+      "const": "exact_native_unit_no_implicit_conversion",
+      "title": "Unit Policy",
+      "type": "string"
+    },
+    "thresholds": {
+      "$ref": "#/$defs/HLHThresholds"
+    },
+    "temporal_policy": {
+      "$ref": "#/$defs/HLHTemporalPolicy"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "source_table",
+    "source_revision_id",
+    "evidence_refs",
+    "policy_revision_id",
+    "semantics_version",
+    "count_bounds_policy",
+    "unknown_logic",
+    "applicability_precedence",
+    "semantics_evidence_refs",
+    "applicability_policy_ref",
+    "clinical_assertion_policy_ref",
+    "infant_age_days_exclusive",
+    "cytopenia_lineages_required",
+    "criteria_required",
+    "criteria_total",
+    "molecular_path",
+    "fever_definition",
+    "malignancy_qualifier",
+    "unit_policy",
+    "thresholds",
+    "temporal_policy"
+  ],
+  "title": "HLHRulePolicy",
+  "type": "object"
+}

@@ -12,7 +12,7 @@ from django.utils import timezone
 from identity.models import Patient, Principal
 from tasks.models import OutboxEvent, Task
 from tasks.outbox import claim_events, emit_event, mark_published, record_receipt
-from tasks.service import acquire_lease, cancel_task, complete_task, enqueue, fail_task, register_task
+from tasks.service import TaskRejected, acquire_lease, cancel_task, complete_task, enqueue, fail_task, register_task
 
 
 class TaskServiceTest(TestCase):
@@ -29,9 +29,9 @@ class TaskServiceTest(TestCase):
         self.assertEqual(task.status, "accepted")
         self.assertEqual(task.status_version, 1)
 
-    def test_file_validation_type_accepted(self):
-        task = self._task(task_type="file_validation")
-        self.assertEqual(task.task_type, "file_validation")
+    def test_file_validation_requires_frozen_qualified_policy(self):
+        with self.assertRaisesRegex(TaskRejected, 'FILE_VALIDATION_POLICY_REQUIRED'):
+            self._task(task_type="file_validation")
 
     def test_enqueue_only_affects_accepted(self):
         task = self._task()

@@ -12,13 +12,29 @@ from notifications.reminder_lifecycle import reconcile_reminder
 from notifications.reminder_schedule import next_permitted_time
 
 
-def due_candidates(*, limit, now):
+def _due_candidates(*, limit, now):
     if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
         raise NotificationRejected('REMINDER_QUERY_INVALID')
     notices = MaterialReminderNotice.objects.filter(reminder_id=OuterRef('id'),
         reminder_version=OuterRef('version'))
-    return list(MaterialReminder.objects.filter(status='enabled', schedule_at__lte=now)
-        .annotate(has_notice=Exists(notices)).filter(has_notice=False).order_by('schedule_at', 'id')[:limit])
+    rows = (MaterialReminder.objects.filter(status='enabled', schedule_at__lte=now)
+        .annotate(has_notice=Exists(notices)).filter(has_notice=False).order_by('schedule_at', 'id'))
+    # Limit deliverable reminders, not the unfiltered prefix. Stream the stable
+    # query snapshot in bounded chunks so quiet rows cannot starve later rows.
+    ready, scanned = [], 0
+    for reminder in rows.iterator(chunk_size=min(limit, 200)):
+        scanned += 1
+        due = next_permitted_time(reminder.schedule_at, reminder.timezone_name,
+            reminder.quiet_start, reminder.quiet_end, not_before=now)
+        if due <= now:
+            ready.append(reminder)
+            if len(ready) == limit:
+                break
+    return ready, scanned
+
+
+def due_candidates(*, limit, now):
+    return _due_candidates(limit=limit, now=now)[0]
 
 
 @transaction.atomic
@@ -41,11 +57,11 @@ def schedule_due():
         runtime, _, _, _, _, policy = configured
         maximum = min(policy.max_due_per_tick, runtime.payload['api']['max_page_size'])
         now = timezone.now()
-        rows = due_candidates(limit=maximum, now=now)
+        rows, scanned = _due_candidates(limit=maximum, now=now)
     results = []
     for reminder in rows:
         due = next_permitted_time(reminder.schedule_at, reminder.timezone_name, reminder.quiet_start, reminder.quiet_end)
         permitted = next_permitted_time(now, reminder.timezone_name, reminder.quiet_start, reminder.quiet_end)
         if due <= now and permitted <= now:
             results.append(enqueue_reminder(reminder.id))
-    return {'scanned': len(rows), 'processed': len(results), 'items': results}
+    return {'scanned': scanned, 'processed': len(results), 'items': results}

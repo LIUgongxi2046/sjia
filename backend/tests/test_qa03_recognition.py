@@ -1,10 +1,20 @@
+"""Synthetic recognition state-machine tests.
+
+UNIT scope: admission and purpose-copy selection are injected, while file state,
+authorization, task persistence, cancellation and idempotency execute for real.
+The unpatched admission negative is separate. These do not establish integrated
+positive governance or a real-provider result; all network access is blocked.
+"""
 import uuid
 from datetime import timedelta
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.conf import settings
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from configurations.models import ConfigVersion
@@ -21,13 +31,35 @@ from recognition.service import RecognitionRejected
 
 class RecognitionAdmissionTest(TestCase):
     def setUp(self):
+        temporary = TemporaryDirectory(prefix='sjia-recognition-unit-')
+        self.addCleanup(temporary.cleanup)
+        storage = override_settings(FILE_OBJECT_ROOT=Path(temporary.name))
+        storage.enable()
+        self.addCleanup(storage.disable)
+        network = patch('urllib.request.urlopen', side_effect=AssertionError('REAL_PROVIDER_FORBIDDEN'))
+        network.start()
+        self.addCleanup(network.stop)
+        self.provider = SimpleNamespace(id=uuid.uuid4(), checksum='a' * 64,
+            payload={'endpoint': 'https://synthetic.invalid/v1', 'model_version': 'synthetic-unit-model'})
+        self.admission = patch('recognition.jobs.admit_invocation', return_value=(self.provider,
+            {'environment': 'test', 'task_config': {'queue_wait_seconds': 60, 'execution_seconds': 60,
+                'lease_seconds': 30, 'heartbeat_seconds': 5}, 'provider_config_id': str(self.provider.id),
+                'provider_checksum': self.provider.checksum, 'synthetic_admission_injected': True}))
+        self.admission.start()
+        self.addCleanup(self.admission.stop)
+        reference = patch('recognition.jobs.model_copy_ref', return_value={'synthetic_unit_reference': True})
+        reference.start()
+        self.addCleanup(reference.stop)
         call_command('seed_demo', verbosity=0)
         self.actor = Principal.objects.first()
         self.patient = Patient.objects.get(display_id='demo-child')
+        from tests.synthetic_fixtures import qualify_demo
+        qualify_demo(self, self.actor, self.patient)
         authorization = DataUseAuthorization.objects.get(patient=self.patient)
         self.group = create_file_group(patient=self.patient, owner=self.actor,
             source_revision=authorization.source_revision, use_authorization_id=authorization.id)
-        image = (Path(settings.BASE_DIR).parent / 'docs/testing/evidence/QA02/simulated-report.png').read_bytes()
+        from tests.synthetic_fixtures import synthetic_png
+        image = synthetic_png()
         part = declare_upload_part(file_group=self.group, client_upload_id=uuid.uuid4(), ordinal=1,
             declared_checksum=digest_bytes(image), declared_size_bytes=len(image), declared_media_type='image/png')
         self.file = store_file_object(file_group=self.group, upload_part=part, data=image,
@@ -46,6 +78,14 @@ class RecognitionAdmissionTest(TestCase):
         return self.client.post('/api/recognition-jobs', {
             'file_group_id': str(self.group.id), 'file_group_version': str(self.group.version), **extra,
         }, content_type='application/json')
+
+    def test_unconfigured_real_admission_stays_fail_closed(self):
+        self.admission.stop()
+        with override_settings(ARK_API_KEY=''):
+            response = self.create()
+        self.assertEqual(response.json()['code'], 'ARK_NOT_CONFIGURED')
+        self.assertGreaterEqual(response.status_code, 400)
+        self.assertFalse(Task.objects.filter(task_type='ocr').exists())
 
     def test_registers_pending_task_and_durable_event(self):
         response = self.create()

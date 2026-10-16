@@ -1,0 +1,162 @@
+/* UI-G04: the original UI 3.0 dark palette and upper-left 3D materials.
+   Sources: ui-delivery/tokens.json, preview/dimension-theme.css, S03-dark.png.
+   Loaded last INSIDE UI2Frame's ShadowRoot. Existing light artwork stays intact.
+   Artwork and service-selected clinical alert colors are never recolored. */
+.device { --control:#767680; }
+.device .sheet { max-height:88dvh; }
+:host([data-theme=dark]) { color-scheme:dark; }
+:host([data-theme=dark]) .solo,
+:host([data-theme=dark]) .solo .canvas { background:#101b2a; }
+.device[data-theme=dark] {
+  --ink:#f2f2f7; --muted:#aeaeb2; --blue:#1b70e0; --link:#64adff;
+  --page:#000000; --card:#1c1c1e; --tint:#142941; --line:#48484a; --control:#98989f;
+  --error:#ff918b; --success:#77d7b0; --warning:#ffbe6a; --warning-surface:#352715;
+  --canvas:#101b2a; --nav:rgba(28,28,30,.94);
+  --dim-surface-top:#293b50; --dim-surface-bottom:#172637; --dim-edge:#4b5e70;
+  --dim-shadow:0 2px 2px #0713216b,0 12px 25px #07132183,inset 0 1px #677f9c38;
+  --dim-tile-shadow:0 5px 12px #0613218c,inset 0 1px #8297b43a;
+  color:var(--ink); color-scheme:dark;
+  background:linear-gradient(160deg,#17283b,#101b2a 55%,#172639);
+}
+.device[data-theme=dark] .phone-scroll {
+  background:radial-gradient(circle at 10% 8%,#29517458,transparent 34%),radial-gradient(circle at 95% 60%,#203c5854,transparent 40%);
+}
+.solo .device[data-theme=dark] .app-header {
+  background:radial-gradient(circle at 81% -50%,#6498c75c,transparent 49%),linear-gradient(145deg,#122b4b,#1e4871 53%,#0b223e);
+}
+/* Family, registration, archive and support pages use the same material surfaces. */
+.device[data-theme=dark] :is(.card,.voice-entry,.photo-intro,.privacy-intro,.summary-intro,.reminder-main,.account-card,.association-child,.delta-hero,.home-twin,.rich-profile,.brand-footer.rich-brand-footer,.login-brand,.summary-paper,.rich-record-hero,.metric-grid>div,.batch-card,.document-card,.delta-card,.rich-read-state.status-panel,.registration-recent .form-section) {
+  color:var(--ink); background:linear-gradient(153deg,var(--dim-surface-top),var(--dim-surface-bottom));
+  border-color:var(--dim-edge); box-shadow:var(--dim-shadow);
+}
+.device[data-theme=dark] :is(.rich-record-card,.rich-child-identity,.rich-status-detail,.login-ready,.rich-disclosures>details,.registration-disclosure,.registration-inner-disclosure>summary,.registration-symptom,.registration-candidate) {
+  color:var(--ink); background:var(--card); border-color:var(--line);
+}
+.device[data-theme=dark] .privacy-intro.rich-privacy-intro { background:none; box-shadow:none; border:0; }
+.device[data-theme=dark] :is(.card>.list-row,.feature-grid>button,.feature-grid>button:first-child,.quick-grid>button,.symptom-columns>button,.home-entry-grid>button,.observed-tags>button) {
+  color:var(--ink); background:linear-gradient(155deg,var(--dim-surface-top),var(--dim-surface-bottom));
+  border-color:var(--dim-edge); box-shadow:var(--dim-tile-shadow);
+}
+.device[data-theme=dark] .home-entry-grid>button:first-child {
+  background:linear-gradient(150deg,#2665ae,#195a9f 67%,#124883); border-color:#1e5796; color:#fff;
+  box-shadow:0 7px 14px #1e559a45,inset 0 1px #ffffff8a;
+}
+/* Home is not the archive twin-stage: retain the original brighter home halo in dark mode. */
+.device[data-theme=dark] .home-child-stage { background:radial-gradient(ellipse at 50% 70%,#b2d8ebaf,transparent 68%); }
+.device[data-theme=dark] .symptom-columns strong>span { color:#ffbe6a; }
+.device[data-theme=dark] :is(.row-icon,.patient-icon,.empty-icon,.account-avatar,.large-icon,.registration-voice-icon,.registration-voice .voice-icon) {
+  background:linear-gradient(145deg,var(--dim-surface-top),var(--tint)); border-color:var(--dim-edge); box-shadow:var(--dim-tile-shadow);
+}
+.device[data-theme=dark] :is(.patient,.blue-feature,.source-view,.report-item,.request-card,.archive-item) {
+  background:var(--card); color:var(--ink); border-color:var(--line);
+}
+.device[data-theme=dark] .patient.rich-record-patient { background:none; }
+.device[data-theme=dark] :is(.blue-feature h2,.delta-hero h2,.privacy-intro h2,.reminder-main h2,.account-card h2,.metric-grid strong,.quick-grid strong,.feature-grid strong,.process-list strong,.report-item strong) { color:var(--ink); }
+.device[data-theme=dark] :is(.field small,details p,.empty p,.photo-intro p,.photo-intro small,.voice-entry small,.blue-feature p,.delta-hero p,.privacy-intro p,.reminder-main p,.account-card p,.source-view p,.metric-grid span,.quick-grid small,.feature-grid small,.process-list small,.archive-shortcut small,.summary-section p,.summary-paper .eyebrow,.stage-status>span:last-child,.selected-file,.sheet-close) { color:var(--muted); }
+.device[data-theme=dark] :is(details,summary) { border-color:var(--line); }
+.device[data-theme=dark] summary { color:var(--muted); }
+.device[data-theme=dark] :is(.rich-disclosures summary,.registration-disclosure>summary,.registration-inner-disclosure>summary) { color:var(--ink); }
+.device[data-theme=dark] :is(.pair,.list-row+.list-row,.summary-section,.rich-summary-field,.rich-summary-records>div+div,.rich-summary-trend-row,.rich-disclosures>details+details,.registration-disclosure[open]>summary,.registration-medication-items) { border-color:var(--line); }
+/* Explicit controls keep their native color scheme, visible edges and readable placeholders. */
+.device[data-theme=dark] :is(.field input,.field select,.field textarea,.search-field) {
+  color:var(--ink); background:color-mix(in srgb,var(--card) 86%,var(--page)); border-color:var(--control);
+  box-shadow:inset 0 2px 6px #00000075,inset 0 -1px #ffffff18;
+}
+.device[data-theme=dark] .search-field input { color:var(--ink); background:transparent; }
+.device[data-theme=dark] :is(input,textarea)::placeholder { color:var(--muted); opacity:1; }
+.device[data-theme=dark] :is(input,select,textarea):disabled { color:var(--muted); opacity:1; }
+.device[data-theme=dark] input[type=checkbox] { accent-color:var(--blue); }
+.device[data-theme=dark] .registration-temperature .temperature-value input { background:transparent; color:var(--ink); }
+.device[data-theme=dark] .registration-temperature .temperature-value input::placeholder { color:var(--muted); }
+.device[data-theme=dark] .button.secondary {
+  background:linear-gradient(155deg,var(--dim-surface-top),var(--tint)); color:var(--link); border-color:var(--control); box-shadow:var(--dim-tile-shadow);
+}
+.device[data-theme=dark] .button:disabled { background:var(--card); color:var(--muted); border-color:var(--line); box-shadow:none; }
+.device[data-theme=dark] .segments button { color:var(--muted); }
+.device[data-theme=dark] .segments :is(.selected,[aria-selected=true]) {
+  color:var(--ink); background:linear-gradient(155deg,var(--dim-surface-top),var(--dim-surface-bottom)); box-shadow:var(--dim-tile-shadow);
+}
+.device[data-theme=dark] :is(.note,.badge,.badge.blue,.support-banner,.rich-relation-status.active,.registration-avatar,.process-list li>span) { background:var(--tint); color:var(--link); }
+.device[data-theme=dark] :is(.rich-read-state .status-top>.three-d-icon,.rich-record-patient .patient-icon) { background:var(--tint); color:var(--link); }
+.device[data-theme=dark] .note>svg { color:inherit; }
+.device[data-theme=dark] :is(.note.amber,.badge.amber,.status-panel.attention,.status-panel.partial,.status-panel.pending) { background:var(--warning-surface); color:var(--warning); }
+.device[data-theme=dark] :is(.status-panel.error,.status-panel.permission,.voice-error) { background:var(--card); color:var(--error); }
+.device[data-theme=dark] .status-panel.success { background:var(--card); color:var(--success); }
+.device[data-theme=dark] :is(.status-panel.loading,.status-panel.stale,.status-panel.offline) { background:var(--tint); color:var(--muted); }
+.device[data-theme=dark] :is(.rich-relation-status,.rich-relation-permissions .pair>.badge) { background:var(--tint); color:var(--muted); }
+.device[data-theme=dark] .rich-relation-status.active,.device[data-theme=dark] .rich-relation-permissions .pair>.badge[data-granted=true] { background:var(--tint); color:var(--link); }
+.device[data-theme=dark] .rich-read-state.status-panel { color:var(--ink); background:linear-gradient(153deg,var(--dim-surface-top),var(--dim-surface-bottom)); }
+.device[data-theme=dark] :is(.rich-read-state.permission,.rich-read-state.error) .status-top>.three-d-icon { background:var(--card); }
+.device[data-theme=dark] .rich-read-state .text-action { color:#fff; }
+/* Clinical warning/urgent and home-alert palettes retain the approved source pairs. */
+.device[data-theme=dark] :is(.status-panel.warning,.status-panel.urgent) :is(p,summary,.pair>span,.pair>strong) { color:inherit; }
+.device[data-theme=dark] .home-alert { box-shadow:var(--dim-shadow); }
+.device[data-theme=dark] .registration-steps li>span { background:var(--card); }
+.device[data-theme=dark] .registration-steps li[aria-current=step]>span { background:var(--blue); border-color:var(--blue); color:#fff; }
+.device[data-theme=dark] .summary-axis { stroke:var(--control); }
+.device[data-theme=dark] .summary-line { stroke:var(--link); }
+.device[data-theme=dark] .summary-point { fill:var(--link); }
+.device[data-theme=dark] .bottom-nav {
+  background:linear-gradient(180deg,#253b50f2,#172536f2); border-top-color:#58708b8c;
+  box-shadow:0 -8px 22px #07132191,inset 0 1px #ffffff23;
+}
+.device[data-theme=dark] .bottom-nav button { color:var(--muted); }
+.device[data-theme=dark] .bottom-nav button[aria-current=page] {
+  color:var(--link); background:linear-gradient(155deg,#315a7d,#254467); border-color:#4c7aa0; box-shadow:var(--dim-tile-shadow);
+}
+.device[data-theme=dark] .sheet { color:var(--ink); background:linear-gradient(160deg,#2a3c51,#19293a); border-color:var(--dim-edge); box-shadow:var(--dim-shadow); }
+.device[data-theme=dark] .sheet-backdrop { background:#071321a8; }
+.device[data-theme=dark] :is(.sheet-handle,.page-end span) { background:var(--line); }
+.device[data-theme=dark] .sheet p { color:var(--muted); }
+.device[data-theme=dark] .sheet :is(.status-panel.warning,.status-panel.urgent) p { color:inherit; }
+.device[data-theme=dark][data-page=UI2-02] .sheet [aria-label=症状语音输入] .voice-icon { background:linear-gradient(145deg,var(--dim-surface-top),var(--tint)); }
+.device[data-theme=dark][data-page=UI2-02] .sheet .voice-error { background:var(--card); color:var(--error); }
+/* Appearance is an ordinary, keyboard-operable account setting. */
+.rich-theme-preference { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; color:var(--ink); font-size:14px; }
+.rich-theme-preference label { font-weight:600; }
+.rich-theme-preference select { min-height:44px; max-width:100%; padding:8px 12px; border:1px solid var(--control); border-radius:12px; background:var(--card); color:var(--ink); }
+.device :focus-visible { outline:3px solid var(--link); outline-offset:4px; }
+.device[data-theme=dark] ::selection { color:#fff; background:#1b70e0; }
+/* Contrast preferences flatten decoration without discarding text or selected semantics. */
+@media (prefers-contrast:more) {
+  .device, .device[data-theme=dark] { --muted:var(--ink); --line:var(--control); }
+  .device:is([data-theme=light],[data-theme=dark]) :is(.card,.home-twin,.rich-profile,.rich-record-card,.feature-grid>button,.quick-grid>button,.symptom-columns>button,.sheet,.rich-read-state.status-panel) { background:var(--card)!important; border:1px solid var(--control); box-shadow:none!important; }
+  .device .bottom-nav button[aria-current=page],.device .segments .selected { outline:2px solid currentColor; outline-offset:-3px; }
+}
+@media (forced-colors:active) {
+  :host, :host([data-theme=dark]) { color-scheme:light dark; }
+  .device, .device[data-theme=dark] { --ink:CanvasText; --muted:CanvasText; --link:LinkText; --blue:Highlight; --page:Canvas; --card:Canvas; --tint:Canvas; --line:CanvasText; --control:ButtonText; color:CanvasText; background:Canvas; }
+  .device *, .device *::before, .device *::after { box-shadow:none!important; text-shadow:none!important; background-image:none!important; }
+  .device :is(.card,.home-twin,.home-alert,.status-panel,.sheet,.bottom-nav,.feature-grid>button,.quick-grid>button,.symptom-columns>button,.home-entry-grid>button) { border:1px solid CanvasText; }
+  .device :is(.button,.header-icon,.sheet-close,.bottom-nav button,.segments button) { border:1px solid ButtonText; }
+  .device .bottom-nav button[aria-current=page],.device .segments .selected { outline:2px solid Highlight; outline-offset:-3px; }
+  .device :focus-visible { outline:3px solid Highlight; outline-offset:4px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .device *, .device *::before, .device *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+  .device button:active:not(:disabled) { transform:none; translate:none; }
+}
+/* Both themes use the original tinted twin-card. Explicit theme+home scope
+   matches the ordinary :is() rule's maximum specificity; this later rule wins. */
+.device[data-theme][data-primary=home] .home-twin{background:linear-gradient(155deg,var(--dim-surface-top),color-mix(in srgb,var(--dim-surface-bottom) 80%,#b2d7ef))}
+.device[data-theme=dark] .sheet-close{background:linear-gradient(145deg,#f8fbff,#c9d9eb);border-color:#fff;box-shadow:0 4px 9px #07132183,inset 0 1px #fff}
+@media(prefers-contrast:more){.device[data-theme][data-primary=home] .home-twin{background:var(--card)}}
+@media(forced-colors:active){.device .sheet-close,.device[data-theme=dark] .sheet-close{background:ButtonFace;border-color:ButtonText;box-shadow:none}}
+
+/* Original signed-in masthead is static. Its pointer-free 46% gloss is positioned
+   against the device, so the soft arc reaches below the header without moving content.
+   Scope this restoration to both home themes; other page/help positioning is unchanged. */
+.solo .device[data-primary=home] .phone-scroll>.app-header{position:static}
+@media(prefers-contrast:more),(forced-colors:active){.device[data-primary=home] .app-header:after{display:none}}
+
+/* Two dark-home utility affordances need extra contrast on the restored gloss.
+   Reuse the original 3D atlas and 14px geometry; never filter clinical artwork. */
+.device[data-theme=dark][data-primary=home] .home-twin-heading>button{color:#83baff}
+.device[data-theme=dark][data-primary=home] .home-patient summary>.three-d-icon,
+.device[data-theme=dark][data-primary=home] .home-twin-heading>button>.three-d-icon{filter:brightness(2.4) saturate(.7)}
+@media(prefers-contrast:more){.device[data-theme=dark][data-primary=home] .home-twin-heading>button{color:var(--ink)}}
+@media(forced-colors:active){
+ .device[data-theme=dark][data-primary=home] .home-twin-heading>button{color:ButtonText}
+ .device[data-theme=dark][data-primary=home] .home-patient summary>.three-d-icon,
+ .device[data-theme=dark][data-primary=home] .home-twin-heading>button>.three-d-icon{filter:none}
+}

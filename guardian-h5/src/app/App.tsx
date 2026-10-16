@@ -24,7 +24,9 @@ import { PrototypePage } from '../features/status/PrototypePage';
 import { UI2FamilyFrame } from '../components/UI2FamilyFrame';
 import { UI2ReadState } from '../components/UI2ReadState';
 
+const CorrectionRequestPage = lazy(() => import('../features/records/CorrectionRequestPage').then(module => ({ default: module.CorrectionRequestPage })));
 const SupportApp = lazy(() => import('../features/support/SupportApp'));
+const RegroupPage = lazy(() => import('../features/archives/UI2RegroupPage').then(module => ({ default: module.UI2RegroupPage })));
 const GroupingPage = lazy(() => import('../features/archives/UI2GroupingPage').then(module => ({ default: module.UI2GroupingPage })));
 const DuplicatesPage = lazy(() => import('../features/archives/UI2DuplicatesPage').then(module => ({ default: module.UI2DuplicatesPage })));
 const ArchivePage = lazy(() => import('../features/archives/UI2ArchivePage').then(module => ({ default: module.UI2ArchivePage })));
@@ -32,6 +34,7 @@ const BatchPage = lazy(() => import('../features/archives/UI2BatchPage').then(mo
 const ConfirmPage = lazy(() => import('../features/archives/UI2ConfirmPage').then(module => ({ default: module.UI2ConfirmPage })));
 const DeltaPage = lazy(() => import('../features/archives/UI2DeltaPage').then(module => ({ default: module.UI2DeltaPage })));
 const PeriodPage = lazy(() => import('../features/records/UI2ObservationPeriodPage').then(module => ({ default: module.UI2ObservationPeriodPage })));
+const AlertPresetsPage = lazy(() => import('../features/account/AlertPresetsPage').then(module => ({ default: module.AlertPresetsPage })));
 const RemindersPage = lazy(() => import('../features/account/UI2RemindersPage').then(module => ({ default: module.UI2RemindersPage })));
 
 export function App() {
@@ -56,6 +59,7 @@ function FamilyApp() {
       <Route path="alerts" element={<UI2AlertsPage />} />
       <Route path="alerts/:alertId" element={<UI2AlertDetailPage />} />
       <Route path="account" element={<UI2AccountPage />} />
+      <Route path="alert-presets" element={<Suspense fallback={<main role="status">正在读取已批准的预警方案</main>}><AlertPresetsPage /></Suspense>} />
       <Route path="account/reminders" element={<Suspense fallback={<UI2FamilyFrame title="资料补充提醒" screenId="UI2-32" note="本人自主启用，可暂停、延后和关闭。" backTo="/account"><UI2ReadState loading /></UI2FamilyFrame>}><RemindersPage /></Suspense>} />
       <Route path="records" element={<UI2RecordsPage />} />
       <Route path="records/period" element={<Suspense fallback={<UI2FamilyFrame title="观察时段" screenId="UI2-31" note="观察范围和真实采样时间分别保存，时段标签属于本人自报。" backTo="/records"><UI2ReadState loading /></UI2FamilyFrame>}><PeriodPage /></Suspense>} />
@@ -64,6 +68,7 @@ function FamilyApp() {
       <Route path="archives/batches/:batchId" element={<Suspense fallback={<UI2FamilyFrame title="批次进度" screenId="UI2-26" note="逐页保存进度，失败和完成内容分别呈现。" backTo="/archives"><UI2ReadState loading /></UI2FamilyFrame>}><BatchPage /></Suspense>} />
       <Route path="archives/changes" element={<Suspense fallback={<UI2FamilyFrame title="这次新增了什么" screenId="UI2-30" note="明确比较基准，逐条变化可以查看来源。" backTo="/archives/batches"><UI2ReadState loading /></UI2FamilyFrame>}><DeltaPage /></Suspense>} />
       <Route path="archives/source" element={<UI2OriginalPage />} />
+      <Route path="archives/regroup" element={<Suspense fallback={<main role="status">正在读取重组来源</main>}><RegroupPage /></Suspense>} />
       <Route path="archives/grouping" element={<Suspense fallback={<UI2FamilyFrame title="文书与就诊归组" screenId="UI2-28" note="一份文书可以包含多次就诊。" backTo="/archives/confirm"><UI2ReadState loading /></UI2FamilyFrame>}><GroupingPage /></Suspense>} />
       <Route path="archives/duplicates" element={<Suspense fallback={<UI2FamilyFrame title="重复资料核对" screenId="UI2-29" note="同一文件、同次采样和独立检查分别判断。" backTo="/archives/confirm"><UI2ReadState loading /></UI2FamilyFrame>}><DuplicatesPage /></Suspense>} />
       <Route path="summaries" element={<UI2SummariesPage />} />
@@ -71,6 +76,7 @@ function FamilyApp() {
       <Route path="records/versions/:versionId" element={<RecordVersionPage />} />
       <Route path="records/:recordId" element={<RecordDetailPage />} />
       <Route path="records/:recordId/history" element={<HistoryPage />} />
+      <Route path="records/:recordId/correction-request" element={<Suspense fallback={<main role="status">正在读取更正申请</main>}><CorrectionRequestPage /></Suspense>} />
       <Route path="records/:recordId/correct" element={<CorrectionPage />} />
       <Route path="records/analytes/:analyteId" element={<AnalytePage />} />
       <Route path="account/data-use" element={<DataUsePage />} />

@@ -1,5 +1,6 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useState } from 'react';
-import type { VerificationResourceView } from '../../../../frontend-design/v2-types';
+import type { VerificationOriginalQuery, VerificationResourceView } from '../../../../frontend-design/v2-types';
 import { ApiError, fetchPrivateDocument } from '../../api/client';
 import type { OriginalSourceView } from '../../api/originalSourceSchema';
 import { readVerificationOriginals, verificationOriginalPath } from '../../api/verifications';
@@ -18,7 +19,7 @@ export function VerificationOriginals({ resource, onRefresh }: { resource: Verif
       try {
         const value = await readVerificationOriginals(resource, controller.signal);
         const images = await Promise.all(value.originals.filter(file => file.status === 'available').map(async file => {
-          const query = new URLSearchParams({ checksum: file.checksum, object_version: file.object_version });
+          const query = new URLSearchParams({ checksum: file.checksum, object_version: file.object_version } satisfies VerificationOriginalQuery);
           const blob = await fetchPrivateDocument(`${verificationOriginalPath(resource)}/${file.file_id}/content?${query}`, file.media_type, controller.signal);
           const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
           if (Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('') !== file.checksum)
@@ -49,7 +50,7 @@ export function VerificationOriginals({ resource, onRefresh }: { resource: Verif
       {!source.originals.length && <p>本份资料尚未附原件。</p>}
       {source.originals.map(file => <section key={file.file_id} className="card form-card">
         <h3>原件顺序 {file.ordinal}</h3><p>原件版本：{file.object_version}；状态：{file.status}</p>
-        <p>平台取得时间：{new Date(file.created_at).toLocaleString('zh-CN')}</p>
+        <p>平台取得时间：{eventTimeLabel(file.created_at)}</p>
         <p>保存页面：{file.pages.map(page => page.ordinal).join('、') || '未知'}</p>
         {file.documents.map(document => <p key={document.document_version_id}>文书版本：{document.document_version_id}；文书形成时间：{timeLabel(document.documented_time)}</p>)}
         {file.use_authorizations.map(item => <p key={item.authorization_id}>允许用途：{item.purpose}；授权依据：{item.evidence_ref}</p>)}

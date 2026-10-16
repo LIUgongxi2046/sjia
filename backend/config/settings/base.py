@@ -9,10 +9,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FILE_OBJECT_ROOT = BASE_DIR.parent / '.backend-work' / 'object-store'
 
 # 本地与集成环境的敏感值从 backend/.env 注入（该文件已 gitignore，不提交）。
 load_dotenv(BASE_DIR / ".env")
+FILE_OBJECT_ROOT = Path(os.environ.get('SJIA_FILE_OBJECT_ROOT') or BASE_DIR.parent / '.backend-work' / 'object-store')
+# No production policy, retention period or automatic journal provisioning.
+SJIA_CONTENT_DISPOSITION_ENABLED = os.environ.get('SJIA_CONTENT_DISPOSITION_ENABLED') == '1'
+SJIA_CONTENT_JOURNAL_ROOT = os.environ.get('SJIA_CONTENT_JOURNAL_ROOT')
+SJIA_CONTENT_CHECKPOINT_PATH = os.environ.get('SJIA_CONTENT_CHECKPOINT_PATH')
+SJIA_RESTORE_ROOT = os.environ.get('SJIA_RESTORE_ROOT')
 SJIA_ENVIRONMENT = os.environ.get('SJIA_ENVIRONMENT')
 CONFIG_EVIDENCE_ROOT = os.environ.get('SJIA_CONFIG_EVIDENCE_ROOT')
 config_evidence_limit = os.environ.get('SJIA_CONFIG_EVIDENCE_MAX_BYTES')
@@ -74,6 +79,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'observability.middleware.RuntimeObservationMiddleware',
+    'retention.content_recovery.RestoreAdmissionMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -117,7 +124,11 @@ DATABASES = {
         "PORT": os.environ.get("SJIA_DB_PORT", "5432"),
         "CONN_MAX_AGE": int(os.environ.get("SJIA_DB_CONN_MAX_AGE", "60")),
         "OPTIONS": {
-            "options": "-c search_path=public -c lock_timeout=5000 -c statement_timeout=30000",
+            "connect_timeout": 3,
+            # Historical V2 SQL changes search_path while migrating. Django's
+            # session/auth tables may therefore live in sjia on a fresh install;
+            # also retain compatibility with existing tables in public.
+            "options": "-c search_path=public,sjia -c lock_timeout=5000 -c statement_timeout=30000",
         },
     }
 }
@@ -229,3 +240,17 @@ def assert_runtime_config() -> None:
         raise RuntimeError(
             "缺少必需的运行配置，进程拒绝启动：" + ", ".join(missing)
         )
+
+# Runtime observations contain only trace ID, operation name, status and elapsed time.
+# Internal peers use the socket address, never caller-supplied forwarding headers.
+INTERNAL_PROBE_NETWORKS = [value.strip() for value in os.environ.get(
+    'SJIA_INTERNAL_PROBE_NETWORKS', '127.0.0.0/8,::1/128').split(',') if value.strip()]
+LOGGING = {
+    'version': 1, 'disable_existing_loggers': False,
+    'formatters': {'sjia_runtime': {'()': 'observability.middleware.SafeRuntimeFormatter'}},
+    'handlers': {'sjia_runtime': {'class': 'logging.StreamHandler', 'formatter': 'sjia_runtime'}},
+    'loggers': {'sjia.runtime': {'handlers': ['sjia_runtime'], 'level': 'INFO', 'propagate': False}},
+}
+
+# Management commands and development imports do not require an admitted runtime.
+REQUIRE_PROCESS_RUNTIME_ADMISSION = False

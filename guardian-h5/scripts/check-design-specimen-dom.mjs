@@ -1,0 +1,51 @@
+// Public DEV specimen: actual production presentation, invented records, no access provider/API.
+import './registration-test-loader.mjs';
+import assert from 'node:assert/strict';
+import { registerHooks } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { webcrypto } from 'node:crypto';
+import { JSDOM } from 'jsdom';
+registerHooks({ load(url, context, nextLoad) {
+  if (/\.(png|webp|jpg|svg)$/.test(url)) return { format: 'module', source: `export default ${JSON.stringify(url)};`, shortCircuit: true };
+  if (/\/state\/access\.tsx$|\/api\/endpoints\.ts$/.test(url)) throw new Error('DEV specimen may not import authorization or private API modules');
+  return nextLoad(url, context);
+} });
+const dom = new JSDOM('<!doctype html><div id="root"></div>', { url: 'http://localhost/dev-specimen.html', pretendToBeVisual: true });
+for (const key of ['window', 'document', 'navigator', 'HTMLElement', 'HTMLInputElement', 'HTMLSelectElement', 'HTMLButtonElement', 'Event', 'KeyboardEvent', 'CustomEvent', 'StorageEvent', 'ShadowRoot']) Object.defineProperty(globalThis, key, { value: dom.window[key], configurable: true });
+Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
+HTMLElement.prototype.getClientRects = function () { return [{ x: 0, y: 0, width: 10, height: 10 }]; };
+window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+let requests = 0; globalThis.fetch = async () => { requests++; throw new Error('DEV specimen must never fetch private or public data'); };
+const { createElement: h, act } = await import('react');
+const { createRoot } = await import('react-dom/client');
+const { Simulate } = await import('react-dom/test-utils');
+const { DesignSpecimen } = await import('../src/dev/DesignSpecimen.tsx');
+const { richThemeStorageKey } = await import('../src/state/richTheme.ts');
+const root = createRoot(document.getElementById('root'));
+const screen = () => document.querySelector('[data-screen-id]').shadowRoot;
+const run = async fn => { await act(async () => { await fn(); }); };
+const button = text => [...screen().querySelectorAll('button')].find(node => node.textContent.trim() === text);
+const click = async node => { assert.ok(node); await run(() => { node.focus(); Simulate.click(node); }); };
+try {
+  await run(() => root.render(h(DesignSpecimen)));
+  assert.match(screen().querySelector('.header-kicker').textContent, /合成界面样本，非真实业务结果/);
+  await click(screen().querySelector('.home-twin-heading>button'));
+  assert.equal(screen().querySelectorAll('.archive-summary').length, 4); assert.equal(screen().querySelectorAll('.archive-symptom-cards>button').length, 3);
+  assert.match(document.querySelector('.specimen-boundary-note').textContent, /合成界面样本，非真实业务结果/);
+  assert.equal(screen().querySelector('.sheet .specimen-disclaimer'), null, 'fixture provenance does not alter production sheet geometry');
+  await click(button('选择形象'));
+  await run(() => Simulate.change(screen().querySelector('input[value="toddler-boy-autumn"]'), { target: { value: 'toddler-boy-autumn' } }));
+  await click(button('应用形象'));
+  for (const selector of ['.home-child-view>img', '.archive-child-view>img']) assert.match(screen().querySelector(selector).getAttribute('src'), /toddler-boy-autumn/);
+  await click(screen().querySelector('button[aria-label="关闭孩子的记录"]'));
+  assert.equal(screen().querySelector('.rich-theme-preference'), null, 'home specimen has no global settings footer');
+  await run(() => window.dispatchEvent(new StorageEvent('storage', { key: richThemeStorageKey, newValue: 'dark' })));
+  assert.equal(screen().querySelector('.device').dataset.theme, 'dark');
+  await click(screen().querySelector('.home-twin-heading>button')); assert.equal(screen().querySelector('.device').dataset.theme, 'dark');
+  await click(screen().querySelector('.archive-symptom-cards>button')); assert.match(screen().querySelector('.sheet').textContent, /没有提交或读取业务资料/);
+  assert.equal(requests, 0);
+  assert.match(readFileSync(new URL('../src/dev/design-specimen.tsx', import.meta.url), 'utf8'), /if \(import\.meta\.env\.DEV\)/);
+  assert.ok(!readFileSync(new URL('../src/app/App.tsx', import.meta.url), 'utf8').includes('DesignSpecimen'));
+  console.log('PASS DEV specimen: actual home/archive/theme/image/modal components; visible synthetic-only disclaimer; no AccessProvider/private API import, no fetch/session/clinical action; entry guarded and absent from production routes');
+} finally { await run(() => root.unmount()); dom.window.close(); }

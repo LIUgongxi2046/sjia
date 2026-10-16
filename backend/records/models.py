@@ -3,11 +3,12 @@
 import uuid
 
 from django.db import models
+from retention.erasure_models import ErasureModel
 
 from core.fields import FiniteDecimalField
 
 
-class Report(models.Model):
+class Report(ErasureModel, models.Model):
     class ReportStatus(models.TextChoices):
         UNKNOWN = "unknown", "unknown"
         PRELIMINARY = "preliminary", "preliminary"
@@ -19,7 +20,7 @@ class Report(models.Model):
     source_revision = models.ForeignKey("sources.SourceRevision", on_delete=models.RESTRICT, null=True, db_column="source_revision_id", related_name="+")
     external_ref = models.TextField(null=True)
     source_organization = models.TextField(null=True)
-    report_status = models.CharField(max_length=16, choices=ReportStatus.choices)
+    report_status = models.CharField(max_length=16, choices=ReportStatus.choices, null=True)
     sample_time_id = models.UUIDField(null=True)
     result_time_id = models.UUIDField(null=True)
     file_group_id = models.UUIDField(null=True)
@@ -62,7 +63,7 @@ class Record(models.Model):
         ]
 
 
-class RecordVersion(models.Model):
+class RecordVersion(ErasureModel, models.Model):
     class OriginType(models.TextChoices):
         SELF_REPORT = "self_report", "self_report"
         REPORT_TRANSCRIPTION = "report_transcription", "report_transcription"
@@ -92,8 +93,8 @@ class RecordVersion(models.Model):
     source_organization = models.TextField(null=True)
     report_id = models.UUIDField(null=True)
     use_authorization_id = models.UUIDField()
-    quality_status = models.CharField(max_length=16, choices=QualityStatus.choices)
-    quality_reasons = models.JSONField()
+    quality_status = models.CharField(max_length=16, choices=QualityStatus.choices, null=True)
+    quality_reasons = models.JSONField(null=True)
     correction_reason = models.TextField(null=True)
     corrected_at = models.DateTimeField(null=True)
     recorded_at = models.DateTimeField()
@@ -125,7 +126,7 @@ class RecordAttachment(models.Model):
         ]
 
 
-class RecordField(models.Model):
+class RecordField(ErasureModel, models.Model):
     class ValueType(models.TextChoices):
         DECIMAL = "decimal", "decimal"
         CATEGORICAL = "categorical", "categorical"
@@ -155,12 +156,12 @@ class RecordField(models.Model):
     patient = models.ForeignKey("identity.Patient", on_delete=models.RESTRICT, db_column="patient_id", related_name="+")
     record_version_id = models.UUIDField()
     ordinal = models.IntegerField()
-    field_code = models.TextField()
+    field_code = models.TextField(null=True)
     concept_code = models.TextField(null=True)
     dictionary_entry = models.ForeignKey("dictionaries.DictionaryEntry", on_delete=models.RESTRICT, null=True, db_column="dictionary_entry_id", related_name="+")
     original_name = models.TextField(null=True)
-    value_type = models.CharField(max_length=16, choices=ValueType.choices)
-    value_state = models.CharField(max_length=16, choices=ValueState.choices)
+    value_type = models.CharField(max_length=16, choices=ValueType.choices, null=True)
+    value_state = models.CharField(max_length=16, choices=ValueState.choices, null=True)
     raw_text = models.TextField(null=True)
     raw_numeric = FiniteDecimalField(null=True)
     categorical_value = models.TextField(null=True)
@@ -170,10 +171,10 @@ class RecordField(models.Model):
     reference_interval = models.TextField(null=True)
     report_flag = models.TextField(null=True)
     medical_time_id = models.UUIDField(null=True)
-    sample_time_origin = models.CharField(max_length=16, choices=SampleTimeOrigin.choices)
+    sample_time_origin = models.CharField(max_length=16, choices=SampleTimeOrigin.choices, null=True)
     anchor_id = models.UUIDField(null=True)
     confirmation_id = models.UUIDField(null=True)
-    quality_reasons = models.JSONField()
+    quality_reasons = models.JSONField(null=True)
 
     class Meta:
         db_table = 'sjia"."record_field'
@@ -187,13 +188,13 @@ class RecordField(models.Model):
         ]
 
 
-class NormalizedMeasurement(models.Model):
+class NormalizedMeasurement(ErasureModel, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     patient_id = models.UUIDField()
     field_id = models.UUIDField()
     mapping = models.ForeignKey("dictionaries.UnitMapping", on_delete=models.RESTRICT, db_column="mapping_id", related_name="+")
-    normalized_value = FiniteDecimalField()
-    normalized_unit = models.TextField()
+    normalized_value = FiniteDecimalField(null=True)
+    normalized_unit = models.TextField(null=True)
     created_at = models.DateTimeField()
 
     class Meta:

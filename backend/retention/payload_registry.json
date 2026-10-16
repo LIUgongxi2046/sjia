@@ -1,0 +1,1599 @@
+{
+  "schema_version": "payload-registry-1",
+  "adapters": {
+    "requests.writerequest": {
+      "model": "requests.WriteRequest",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "actor",
+        "patient",
+        "action",
+        "target_key",
+        "request_id",
+        "payload_sha256",
+        "normalization_version",
+        "expected_version",
+        "status",
+        "resource_type",
+        "resource_id",
+        "error_code",
+        "created_at",
+        "completed_at",
+        "expires_at"
+      ],
+      "live_required_fields": []
+    },
+    "requests.writeintent": {
+      "model": "requests.WriteIntent",
+      "payload_fields": [
+        "authorization_context",
+        "recovery_payload"
+      ],
+      "preserved_fields": [
+        "id",
+        "actor",
+        "patient",
+        "operation_id",
+        "target_key",
+        "request_id",
+        "payload_sha256",
+        "normalization_version",
+        "generation",
+        "status",
+        "prepared_at",
+        "expires_at",
+        "completed_at",
+        "write_request",
+        "error_code",
+        "retention_policy"
+      ],
+      "live_required_fields": []
+    },
+    "tasks.task": {
+      "model": "tasks.Task",
+      "payload_fields": [
+        "input_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "actor",
+        "request_row",
+        "task_type",
+        "schema_version",
+        "input_sha256",
+        "status",
+        "status_version",
+        "lease_generation",
+        "lease_owner",
+        "lease_until",
+        "created_at",
+        "deadline_at"
+      ],
+      "live_required_fields": [
+        "input_refs"
+      ]
+    },
+    "tasks.taskattempt": {
+      "model": "tasks.TaskAttempt",
+      "payload_fields": [
+        "usage_evidence"
+      ],
+      "preserved_fields": [
+        "id",
+        "task",
+        "attempt_number",
+        "lease_generation",
+        "provider_request_id",
+        "started_at",
+        "finished_at",
+        "error_code",
+        "status"
+      ],
+      "live_required_fields": []
+    },
+    "tasks.outboxevent": {
+      "model": "tasks.OutboxEvent",
+      "payload_fields": [
+        "resource_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "event_type",
+        "schema_version",
+        "aggregate_id",
+        "aggregate_version",
+        "occurred_at",
+        "causation_id",
+        "correlation_id",
+        "task",
+        "traceparent",
+        "available_at",
+        "lease_generation",
+        "lease_owner",
+        "lease_until",
+        "published_at"
+      ],
+      "live_required_fields": [
+        "resource_refs"
+      ]
+    },
+    "summaries.summary": {
+      "model": "summaries.Summary",
+      "payload_fields": [
+        "from_date",
+        "to_date",
+        "scope_timezone",
+        "include_unknown_time",
+        "execution_snapshot"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "requested_by",
+        "template",
+        "visibility_policy",
+        "data_epoch",
+        "verification_epoch",
+        "validity",
+        "task_id",
+        "generated_at",
+        "execution_sha256"
+      ],
+      "live_required_fields": [
+        "from_date",
+        "to_date",
+        "scope_timezone",
+        "include_unknown_time"
+      ]
+    },
+    "summaries.summaryitem": {
+      "model": "summaries.SummaryItem",
+      "payload_fields": [
+        "snapshot"
+      ],
+      "preserved_fields": [
+        "id",
+        "summary_id",
+        "patient_id",
+        "record_version_id",
+        "field_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "snapshot"
+      ]
+    },
+    "notifications.notificationattempt": {
+      "model": "notifications.NotificationAttempt",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "recipient_id",
+        "attempt_number",
+        "send_permit_id",
+        "provider_idempotency_key",
+        "authorized_at",
+        "permit_expires_at",
+        "principal_auth_epoch",
+        "relation_auth_epoch",
+        "publication_epoch",
+        "status",
+        "provider_request_id",
+        "started_at",
+        "finished_at"
+      ],
+      "live_required_fields": []
+    },
+    "notifications.notificationreceipt": {
+      "model": "notifications.NotificationReceipt",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "attempt",
+        "provider",
+        "provider_event_id",
+        "status",
+        "occurred_at",
+        "received_at",
+        "evidence_sha256"
+      ],
+      "live_required_fields": []
+    },
+    "medical_time.medicaltime": {
+      "model": "medical_time.MedicalTime",
+      "payload_fields": [
+        "raw_text",
+        "precision",
+        "local_year",
+        "local_month",
+        "end_year",
+        "end_month",
+        "relative_text",
+        "local_date",
+        "local_datetime",
+        "timezone_name",
+        "utc_offset_minutes",
+        "instant",
+        "resolution_status"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient"
+      ],
+      "live_required_fields": [
+        "precision",
+        "resolution_status"
+      ]
+    },
+    "drafts.draft": {
+      "model": "drafts.Draft",
+      "payload_fields": [
+        "payload"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "owner",
+        "form_type",
+        "version",
+        "schema_version",
+        "correction_record_id",
+        "correction_version",
+        "status",
+        "submitted_request",
+        "saved_at",
+        "expires_at",
+        "retention_policy"
+      ],
+      "live_required_fields": [
+        "payload"
+      ]
+    },
+    "verification.verification": {
+      "model": "verification.Verification",
+      "payload_fields": [
+        "evidence_ref",
+        "revocation_reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "record_version_id",
+        "verifier",
+        "policy",
+        "purpose",
+        "evidence_source",
+        "verified_at",
+        "revoked_at",
+        "revoked_by"
+      ],
+      "live_required_fields": [
+        "evidence_ref"
+      ]
+    },
+    "verification.verificationfield": {
+      "model": "verification.VerificationField",
+      "payload_fields": [
+        "result",
+        "reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "verification_id",
+        "record_version_id",
+        "patient_id",
+        "field_id"
+      ],
+      "live_required_fields": [
+        "result"
+      ]
+    },
+    "verification.verificationrequest": {
+      "model": "verification.VerificationRequest",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "requested_by",
+        "assigned_to",
+        "purpose",
+        "status",
+        "created_at",
+        "completed_at"
+      ],
+      "live_required_fields": []
+    },
+    "verification.fieldverificationstate": {
+      "model": "verification.FieldVerificationState",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "field_id",
+        "record_version_id",
+        "patient_id",
+        "purpose",
+        "version",
+        "request_id",
+        "current_verification_id",
+        "status"
+      ],
+      "live_required_fields": []
+    },
+    "verification.correctionrequest": {
+      "model": "verification.CorrectionRequest",
+      "payload_fields": [
+        "reason",
+        "proposed_text",
+        "resolution_reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "requested_by",
+        "field_ids",
+        "status",
+        "version",
+        "created_at",
+        "resolved_by",
+        "resolved_at",
+        "resolution_record_version_id"
+      ],
+      "live_required_fields": [
+        "reason"
+      ]
+    },
+    "recognition.candidateset": {
+      "model": "recognition.CandidateSet",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "file_group_id",
+        "file_group_version",
+        "task_id",
+        "provider",
+        "model_version",
+        "provider_request_id",
+        "schema_version",
+        "raw_response_file_id",
+        "status",
+        "created_at"
+      ],
+      "live_required_fields": []
+    },
+    "recognition.sourceanchor": {
+      "model": "recognition.SourceAnchor",
+      "payload_fields": [
+        "anchor_kind",
+        "coordinate_system",
+        "x",
+        "y",
+        "width",
+        "height",
+        "row_label",
+        "column_label",
+        "original_text"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "page_id"
+      ],
+      "live_required_fields": [
+        "anchor_kind",
+        "coordinate_system",
+        "original_text"
+      ]
+    },
+    "recognition.candidatefield": {
+      "model": "recognition.CandidateField",
+      "payload_fields": [
+        "field_path",
+        "raw_text",
+        "proposed_field",
+        "recognition_status",
+        "confidence"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "candidate_set_id",
+        "field_config_version",
+        "anchor_id"
+      ],
+      "live_required_fields": [
+        "field_path",
+        "recognition_status"
+      ]
+    },
+    "recognition.candidateconfirmation": {
+      "model": "recognition.CandidateConfirmation",
+      "payload_fields": [
+        "confirmed_text",
+        "decision"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "candidate_field_id",
+        "confirmed_by",
+        "confirmed_at"
+      ],
+      "live_required_fields": [
+        "decision"
+      ]
+    },
+    "alerting.alertevaluation": {
+      "model": "alerting.AlertEvaluation",
+      "payload_fields": [
+        "assessment_at",
+        "known_at",
+        "decision",
+        "missing_items"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "task_id",
+        "environment",
+        "policy",
+        "window_policy",
+        "context_sequence",
+        "mode",
+        "status",
+        "data_epoch",
+        "verification_epoch",
+        "publication_epoch",
+        "authorization_version",
+        "lease_generation",
+        "use_authorization_id",
+        "input_digest",
+        "computed_at",
+        "validity"
+      ],
+      "live_required_fields": [
+        "assessment_at",
+        "known_at",
+        "decision",
+        "missing_items"
+      ]
+    },
+    "alerting.alertevaluationinput": {
+      "model": "alerting.AlertEvaluationInput",
+      "payload_fields": [
+        "signal_id",
+        "variable_code",
+        "input_role"
+      ],
+      "preserved_fields": [
+        "id",
+        "evaluation_id",
+        "patient_id",
+        "position",
+        "record_version_id",
+        "field_id",
+        "verification_id",
+        "normalization_id",
+        "medical_time_id",
+        "source_revision"
+      ],
+      "live_required_fields": [
+        "signal_id",
+        "variable_code",
+        "input_role"
+      ]
+    },
+    "alerting.alertevaluationassessment": {
+      "model": "alerting.AlertEvaluationAssessment",
+      "payload_fields": [
+        "role"
+      ],
+      "preserved_fields": [
+        "id",
+        "evaluation_id",
+        "assessment_id",
+        "patient_id"
+      ],
+      "live_required_fields": [
+        "role"
+      ]
+    },
+    "alerting.alertsignalresult": {
+      "model": "alerting.AlertSignalResult",
+      "payload_fields": [
+        "signal_id",
+        "state",
+        "reason_codes",
+        "pair_results"
+      ],
+      "preserved_fields": [
+        "id",
+        "evaluation_id",
+        "patient_id",
+        "schema_version",
+        "algorithm_version",
+        "input_field_ids"
+      ],
+      "live_required_fields": [
+        "signal_id",
+        "state",
+        "reason_codes",
+        "pair_results"
+      ]
+    },
+    "alerting.alertepisode": {
+      "model": "alerting.AlertEpisode",
+      "payload_fields": [
+        "rule_family_key",
+        "opened_at",
+        "last_assessment_at"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "status",
+        "last_evaluation_id",
+        "last_event_id",
+        "state_version",
+        "reset_evaluation_id",
+        "last_context_sequence"
+      ],
+      "live_required_fields": [
+        "rule_family_key",
+        "opened_at",
+        "last_assessment_at"
+      ]
+    },
+    "alerting.alertdecision": {
+      "model": "alerting.AlertDecision",
+      "payload_fields": [
+        "rule_key",
+        "state",
+        "action",
+        "reason_codes"
+      ],
+      "preserved_fields": [
+        "id",
+        "evaluation_id",
+        "patient_id",
+        "episode_id",
+        "sequence",
+        "previous_decision_id"
+      ],
+      "live_required_fields": [
+        "rule_key",
+        "state",
+        "action",
+        "reason_codes"
+      ]
+    },
+    "alerting.alertevent": {
+      "model": "alerting.AlertEvent",
+      "payload_fields": [
+        "trigger_key",
+        "input_snapshot"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "evaluation_id",
+        "release",
+        "trigger_policy",
+        "validity",
+        "created_at"
+      ],
+      "live_required_fields": [
+        "trigger_key",
+        "input_snapshot"
+      ]
+    },
+    "alerting.alertrecipient": {
+      "model": "alerting.AlertRecipient",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "alert_id",
+        "relation_id",
+        "channel",
+        "delivery_status",
+        "read_at"
+      ],
+      "live_required_fields": []
+    },
+    "archives.archivedocument": {
+      "model": "archives.ArchiveDocument",
+      "payload_fields": [
+        "retirement_reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "current_version",
+        "created_at",
+        "retired_at",
+        "retired_by",
+        "retirement_id"
+      ],
+      "live_required_fields": []
+    },
+    "archives.archiveregrouping": {
+      "model": "archives.ArchiveRegrouping",
+      "payload_fields": [
+        "source_refs",
+        "result_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "batch_id",
+        "actor_id",
+        "request_id",
+        "input_sha256",
+        "result_sha256",
+        "created_at"
+      ],
+      "live_required_fields": []
+    },
+    "archives.archivedocumentversion": {
+      "model": "archives.ArchiveDocumentVersion",
+      "payload_fields": [
+        "document_type",
+        "organization",
+        "proposed_metadata",
+        "confirmed_text",
+        "reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "document_id",
+        "version",
+        "batch_id",
+        "grouping_status",
+        "documented_time_id",
+        "available_at",
+        "confirmed_by",
+        "confirmed_at",
+        "supersedes_version"
+      ],
+      "live_required_fields": [
+        "document_type"
+      ]
+    },
+    "archives.archivepageattempt": {
+      "model": "archives.ArchivePageAttempt",
+      "payload_fields": [
+        "usage_evidence"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "page_id",
+        "page_version",
+        "task_id",
+        "task_attempt_id",
+        "attempt_number",
+        "input_sha256",
+        "model_version",
+        "candidate_set_id",
+        "provider_request_id",
+        "started_at",
+        "finished_at",
+        "duration_ms",
+        "cost",
+        "currency",
+        "status",
+        "error_code"
+      ],
+      "live_required_fields": []
+    },
+    "archives.archivefactversion": {
+      "model": "archives.ArchiveFactVersion",
+      "payload_fields": [
+        "context_type",
+        "assertion_state",
+        "raw_time_text",
+        "time_origin",
+        "reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "fact_id",
+        "version",
+        "record_version_id",
+        "field_id",
+        "document_version_id",
+        "page_id",
+        "source_anchor_id",
+        "episode_id",
+        "medical_time_id",
+        "documented_time_id",
+        "available_at",
+        "availability_status",
+        "confirmation_id",
+        "created_at",
+        "supersedes_version"
+      ],
+      "live_required_fields": [
+        "context_type",
+        "assertion_state",
+        "time_origin"
+      ]
+    },
+    "archives.archiverelationversion": {
+      "model": "archives.ArchiveRelationVersion",
+      "payload_fields": [
+        "relation_type",
+        "status",
+        "evidence_ref",
+        "reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "relation_id",
+        "version",
+        "left_fact_version_id",
+        "right_fact_version_id",
+        "left_file_id",
+        "right_file_id",
+        "author_id",
+        "created_at",
+        "verification_id",
+        "supersedes_version"
+      ],
+      "live_required_fields": [
+        "relation_type",
+        "status",
+        "evidence_ref",
+        "reason"
+      ]
+    },
+    "archives.purposecopy": {
+      "model": "archives.PurposeCopy",
+      "payload_fields": [
+        "processing_evidence"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "original_file_id",
+        "derived_file_id",
+        "version",
+        "purpose",
+        "environment",
+        "use_authorization_id",
+        "processing_version",
+        "date_strategy",
+        "clinical_integrity_status",
+        "status",
+        "created_by",
+        "created_at",
+        "disposition_ref"
+      ],
+      "live_required_fields": [
+        "processing_evidence"
+      ]
+    },
+    "archives.purposecopyreview": {
+      "model": "archives.PurposeCopyReview",
+      "payload_fields": [
+        "evidence_ref",
+        "checked_scopes",
+        "identity_result",
+        "clinical_result"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "copy_id",
+        "copy_version",
+        "reviewer_id",
+        "reviewed_at",
+        "original_checksum",
+        "derived_checksum",
+        "revoked_at"
+      ],
+      "live_required_fields": [
+        "evidence_ref",
+        "checked_scopes",
+        "identity_result",
+        "clinical_result"
+      ]
+    },
+    "archives.observationperiodversion": {
+      "model": "archives.ObservationPeriodVersion",
+      "payload_fields": [
+        "label",
+        "label_source"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "period_id",
+        "version",
+        "owner_id",
+        "start_time_id",
+        "end_time_id",
+        "episode_id",
+        "created_at",
+        "supersedes_version"
+      ],
+      "live_required_fields": [
+        "label_source"
+      ]
+    },
+    "archives.deltasummary": {
+      "model": "archives.DeltaSummary",
+      "payload_fields": [
+        "baseline_refs",
+        "current_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "owner_id",
+        "batch_id",
+        "data_epoch",
+        "authorization_version",
+        "visibility_policy_id",
+        "validity",
+        "generated_at",
+        "task_id"
+      ],
+      "live_required_fields": [
+        "current_refs"
+      ]
+    },
+    "archives.deltasummaryitem": {
+      "model": "archives.DeltaSummaryItem",
+      "payload_fields": [
+        "item_kind",
+        "item_source_refs",
+        "limitations",
+        "content"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "summary_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "item_kind",
+        "item_source_refs",
+        "limitations",
+        "content"
+      ]
+    },
+    "archives.evaluationpatientpartition": {
+      "model": "archives.EvaluationPatientPartition",
+      "payload_fields": [
+        "source_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "dataset_version_id",
+        "partition",
+        "use_authorization_id"
+      ],
+      "live_required_fields": [
+        "source_refs"
+      ]
+    },
+    "archives.evaluationlabel": {
+      "model": "archives.EvaluationLabel",
+      "payload_fields": [
+        "label_state",
+        "reference_answer_ref",
+        "reference_recognition_at",
+        "limitations"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "partition_id",
+        "observation_period_id",
+        "confirmed_by",
+        "confirmed_at"
+      ],
+      "live_required_fields": [
+        "label_state",
+        "limitations"
+      ]
+    },
+    "archives.evaluationrun": {
+      "model": "archives.EvaluationRun",
+      "payload_fields": [
+        "input_refs",
+        "result_refs",
+        "denominators",
+        "limitations"
+      ],
+      "preserved_fields": [
+        "id",
+        "dataset_version_id",
+        "operator_id",
+        "implementation_sha256",
+        "rules_refs",
+        "started_at",
+        "finished_at",
+        "status",
+        "mode"
+      ],
+      "live_required_fields": [
+        "input_refs",
+        "result_refs",
+        "denominators",
+        "limitations"
+      ]
+    },
+    "archives.personalrecordtask": {
+      "model": "archives.PersonalRecordTask",
+      "payload_fields": [
+        "title",
+        "description"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "owner_id",
+        "version",
+        "status",
+        "retention_policy",
+        "created_at",
+        "updated_at",
+        "finished_at"
+      ],
+      "live_required_fields": [
+        "title"
+      ]
+    },
+    "archives.materialreminder": {
+      "model": "archives.MaterialReminder",
+      "payload_fields": [],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "owner_id",
+        "version",
+        "target_type",
+        "target_ref",
+        "target_version",
+        "schedule_at",
+        "timezone_name",
+        "quiet_start",
+        "quiet_end",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "live_required_fields": []
+    },
+    "archives.materialremindernotice": {
+      "model": "archives.MaterialReminderNotice",
+      "payload_fields": [
+        "permit_refs",
+        "receipt_refs"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "reminder_id",
+        "reminder_version",
+        "scheduled_at",
+        "channel",
+        "deduplication_key",
+        "status",
+        "provider_request_id",
+        "delivered_at",
+        "read_at",
+        "created_at"
+      ],
+      "live_required_fields": [
+        "permit_refs",
+        "receipt_refs"
+      ]
+    },
+    "records.report": {
+      "model": "records.Report",
+      "payload_fields": [
+        "external_ref",
+        "source_organization",
+        "report_status"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "source_revision",
+        "sample_time_id",
+        "result_time_id",
+        "file_group_id",
+        "replaces_report_id",
+        "created_at"
+      ],
+      "live_required_fields": [
+        "report_status"
+      ]
+    },
+    "records.recordversion": {
+      "model": "records.RecordVersion",
+      "payload_fields": [
+        "source_organization",
+        "quality_status",
+        "quality_reasons",
+        "correction_reason"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "record_id",
+        "version",
+        "supersedes_version",
+        "author",
+        "origin_type",
+        "capture_method",
+        "source_revision",
+        "report_id",
+        "use_authorization_id",
+        "corrected_at",
+        "recorded_at",
+        "retention_policy"
+      ],
+      "live_required_fields": [
+        "quality_status",
+        "quality_reasons"
+      ]
+    },
+    "records.recordfield": {
+      "model": "records.RecordField",
+      "payload_fields": [
+        "field_code",
+        "concept_code",
+        "original_name",
+        "value_type",
+        "value_state",
+        "raw_text",
+        "raw_numeric",
+        "categorical_value",
+        "qualifier",
+        "raw_unit",
+        "method",
+        "reference_interval",
+        "report_flag",
+        "sample_time_origin",
+        "quality_reasons"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "record_version_id",
+        "ordinal",
+        "dictionary_entry",
+        "medical_time_id",
+        "anchor_id",
+        "confirmation_id"
+      ],
+      "live_required_fields": [
+        "field_code",
+        "value_type",
+        "value_state",
+        "sample_time_origin",
+        "quality_reasons"
+      ]
+    },
+    "records.normalizedmeasurement": {
+      "model": "records.NormalizedMeasurement",
+      "payload_fields": [
+        "normalized_value",
+        "normalized_unit"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "field_id",
+        "mapping",
+        "created_at"
+      ],
+      "live_required_fields": [
+        "normalized_value",
+        "normalized_unit"
+      ]
+    },
+    "assessment.assessment": {
+      "model": "assessment.Assessment",
+      "payload_fields": [
+        "assessment_at",
+        "computation_status",
+        "missing_items"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "kind",
+        "rule",
+        "window_policy",
+        "task_id",
+        "data_epoch",
+        "verification_epoch",
+        "validity",
+        "computed_at"
+      ],
+      "live_required_fields": [
+        "computation_status",
+        "missing_items"
+      ]
+    },
+    "assessment.assessmentinput": {
+      "model": "assessment.AssessmentInput",
+      "payload_fields": [
+        "variable_code",
+        "input_snapshot"
+      ],
+      "preserved_fields": [
+        "id",
+        "assessment_id",
+        "patient_id",
+        "record_version_id",
+        "field_id",
+        "verification_id",
+        "normalization_id"
+      ],
+      "live_required_fields": [
+        "variable_code",
+        "input_snapshot"
+      ]
+    },
+    "assessment.assessmentoutput": {
+      "model": "assessment.AssessmentOutput",
+      "payload_fields": [
+        "classification_conditions",
+        "classification_result",
+        "ms_contributions",
+        "ms_total",
+        "ms_threshold_result",
+        "hlh_result"
+      ],
+      "preserved_fields": [
+        "assessment",
+        "schema_version"
+      ],
+      "live_required_fields": []
+    },
+    "case_details.patientprofileversion": {
+      "model": "case_details.PatientProfileVersion",
+      "payload_fields": [
+        "sex",
+        "reported_age_years",
+        "reported_age_months",
+        "age_raw_text",
+        "birth_date",
+        "patient_name",
+        "chief_complaint"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "age_reference_time_id"
+      ],
+      "live_required_fields": [
+        "sex"
+      ]
+    },
+    "case_details.clinicalepisode": {
+      "model": "case_details.ClinicalEpisode",
+      "payload_fields": [
+        "episode_type",
+        "label",
+        "organization_text",
+        "department_text"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "start_time_id",
+        "end_time_id"
+      ],
+      "live_required_fields": [
+        "episode_type",
+        "label"
+      ]
+    },
+    "case_details.recordfieldgroup": {
+      "model": "case_details.RecordFieldGroup",
+      "payload_fields": [
+        "group_type",
+        "label",
+        "specimen_text",
+        "method_text",
+        "source_quote"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id"
+      ],
+      "live_required_fields": [
+        "group_type",
+        "label"
+      ]
+    },
+    "case_details.recordfieldgroupmember": {
+      "model": "case_details.RecordFieldGroupMember",
+      "payload_fields": [
+        "role"
+      ],
+      "preserved_fields": [
+        "id",
+        "group_id",
+        "patient_id",
+        "record_version_id",
+        "field_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "role"
+      ]
+    },
+    "case_details.clinicalstatement": {
+      "model": "case_details.ClinicalStatement",
+      "payload_fields": [
+        "statement_type",
+        "subject",
+        "category",
+        "concept_code",
+        "label",
+        "assertion_status",
+        "status_raw_text",
+        "body_site",
+        "laterality"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id"
+      ],
+      "live_required_fields": [
+        "statement_type",
+        "subject",
+        "label",
+        "assertion_status",
+        "status_raw_text"
+      ]
+    },
+    "case_details.statementevidence": {
+      "model": "case_details.StatementEvidence",
+      "payload_fields": [
+        "role"
+      ],
+      "preserved_fields": [
+        "id",
+        "statement_id",
+        "patient_id",
+        "evidence_field_id",
+        "evidence_record_version_id"
+      ],
+      "live_required_fields": [
+        "role"
+      ]
+    },
+    "case_details.imagingstudy": {
+      "model": "case_details.ImagingStudy",
+      "payload_fields": [
+        "modality",
+        "contrast",
+        "external_study_ref"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "report_id",
+        "study_time_id"
+      ],
+      "live_required_fields": [
+        "modality"
+      ]
+    },
+    "case_details.imagingstudysite": {
+      "model": "case_details.ImagingStudySite",
+      "payload_fields": [
+        "body_site",
+        "laterality"
+      ],
+      "preserved_fields": [
+        "id",
+        "study_id",
+        "patient_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "body_site"
+      ]
+    },
+    "case_details.imagingassetlink": {
+      "model": "case_details.ImagingAssetLink",
+      "payload_fields": [
+        "link_status"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "file_id",
+        "study_id",
+        "evidence_field_id",
+        "evidence_record_version_id",
+        "confirmed_by",
+        "confirmed_at"
+      ],
+      "live_required_fields": [
+        "link_status"
+      ]
+    },
+    "case_details.medicationevent": {
+      "model": "case_details.MedicationEvent",
+      "payload_fields": [
+        "action",
+        "note"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id",
+        "previous_event_id",
+        "reason_statement_id"
+      ],
+      "live_required_fields": [
+        "action"
+      ]
+    },
+    "case_details.medicationeventitem": {
+      "model": "case_details.MedicationEventItem",
+      "payload_fields": [
+        "medication_name",
+        "medication_code",
+        "dose",
+        "dose_unit",
+        "concentration_text",
+        "route_text",
+        "frequency_text",
+        "interval_value",
+        "interval_unit"
+      ],
+      "preserved_fields": [
+        "id",
+        "event_id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "medication_name"
+      ]
+    },
+    "case_details.procedureevent": {
+      "model": "case_details.ProcedureEvent",
+      "payload_fields": [
+        "procedure_name",
+        "body_site"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id",
+        "related_medication_event_id"
+      ],
+      "live_required_fields": [
+        "procedure_name"
+      ]
+    },
+    "case_details.externalscoreobservation": {
+      "model": "case_details.ExternalScoreObservation",
+      "payload_fields": [
+        "instrument",
+        "instrument_version",
+        "context_text",
+        "note"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id",
+        "total_field_id"
+      ],
+      "live_required_fields": [
+        "instrument"
+      ]
+    },
+    "case_details.externalscorecomponent": {
+      "model": "case_details.ExternalScoreComponent",
+      "payload_fields": [
+        "component_code"
+      ],
+      "preserved_fields": [
+        "id",
+        "score_id",
+        "patient_id",
+        "record_version_id",
+        "field_id",
+        "ordinal"
+      ],
+      "live_required_fields": [
+        "component_code"
+      ]
+    },
+    "case_details.followupencounter": {
+      "model": "case_details.FollowupEncounter",
+      "payload_fields": [
+        "kind",
+        "label",
+        "channel_text"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "medical_time_id"
+      ],
+      "live_required_fields": [
+        "kind",
+        "label"
+      ]
+    },
+    "case_details.followupreference": {
+      "model": "case_details.FollowupReference",
+      "payload_fields": [
+        "relation_kind"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "encounter_id",
+        "statement_id",
+        "group_id",
+        "score_id",
+        "medication_event_id"
+      ],
+      "live_required_fields": [
+        "relation_kind"
+      ]
+    },
+    "case_details.dataqualityissue": {
+      "model": "case_details.DataQualityIssue",
+      "payload_fields": [
+        "category",
+        "description",
+        "handling",
+        "status",
+        "resolution_text"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "record_version_id",
+        "source_field_id",
+        "resolution_field_id",
+        "resolution_record_version_id",
+        "resolved_by",
+        "resolved_at"
+      ],
+      "live_required_fields": [
+        "category",
+        "description",
+        "handling",
+        "status"
+      ]
+    },
+    "case_details.dataqualityissuereference": {
+      "model": "case_details.DataQualityIssueReference",
+      "payload_fields": [
+        "role"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient_id",
+        "issue_id",
+        "field_id",
+        "record_version_id",
+        "file_id"
+      ],
+      "live_required_fields": [
+        "role"
+      ]
+    },
+    "recognition.voiceinput": {
+      "model": "recognition.VoiceInput",
+      "payload_fields": [
+        "transcript",
+        "transcription_evidence",
+        "candidates",
+        "decisions"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "actor",
+        "request_id",
+        "transcript_sha256",
+        "input_mode",
+        "original_file",
+        "purpose_copy",
+        "use_authorization",
+        "task",
+        "provider_config",
+        "field_config",
+        "status",
+        "status_version",
+        "raw_response_file",
+        "saved_record_version",
+        "confirmed_at",
+        "created_at",
+        "decided_at",
+        "cancelled_at"
+      ],
+      "live_required_fields": [
+        "transcript",
+        "transcription_evidence"
+      ]
+    },
+    "recognition.transcriptionreceipt": {
+      "model": "recognition.TranscriptionReceipt",
+      "payload_fields": [
+        "transcript",
+        "confirmed_text"
+      ],
+      "preserved_fields": [
+        "id",
+        "patient",
+        "actor",
+        "auth_epoch",
+        "use_authorization",
+        "retention_policy",
+        "audio_sha256",
+        "audio_media_type",
+        "audio_size_bytes",
+        "duration_seconds",
+        "inference_duration_ms",
+        "model_name",
+        "implementation_version",
+        "transcript_sha256",
+        "confirmed_text_sha256",
+        "confirmed_original_file",
+        "status",
+        "status_version",
+        "created_at",
+        "confirmed_at"
+      ],
+      "live_required_fields": [
+        "transcript"
+      ]
+    }
+  }
+}

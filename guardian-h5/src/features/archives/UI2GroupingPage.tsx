@@ -1,11 +1,13 @@
+import { eventTimeLabel } from '../../components/recordTimePresentation';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ArrowDown, ArrowUp, ChevronDown, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowDown as ChevronDown, ShieldCheck } from '../../components/ThreeDIcon';
 import { UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
 import { useAccess } from '../../state/access';
+import { useEndpointAccess } from '../../state/useEndpointAccess';
 import { useArchiveDocument } from '../../api/useArchiveDocument';
 import { ApiError } from '../../api/client';
 import { validateApiValue } from '../../api/schema';
@@ -52,6 +54,7 @@ export function UI2GroupingPage() {
 }
 
 function GroupingContent({ documentId, sourceVersionId }: { documentId: string | null; sourceVersionId: string | null }) {
+  const boundary = useEndpointAccess();
   const access = useAccess();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -59,8 +62,8 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
   const clientRequestId = params.get('client_request');
   const relation = access.relations.find(value => value.patient_id === access.patientId);
   const canRead = !!access.principalId && !!access.patientId && !access.loading && !access.error;
-  const resource = useArchiveDocument(canRead ? documentId : null, access.patientId, access.principalId);
-  const documentValue = canRead ? resource.data : null;
+  const resource = useArchiveDocument(canRead && !boundary.blocked.current ? documentId : null, access.patientId, access.principalId);
+  const documentValue = canRead && !boundary.blocked.current ? resource.data : null;
   const canWrite = !!documentValue && !!access.csrfToken && documentValue.allowed_actions.includes('archive_document_group')
     && relation?.status === 'active' && relation.actions.includes('write_record')
     && Date.parse(relation.valid_from) <= Date.now() && (!relation.valid_until || Date.parse(relation.valid_until) > Date.now());
@@ -80,42 +83,46 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
   const currentVersion = !!documentValue && !!form && documentValue.version === form.expected_version;
   const edit = canWrite && currentVersion && !busy && !identity && !requestId && !clientRequestId && !saved;
 
+  function wipe() { setSaved(null); setRequest(null); setIdentity(null); setIntent(null); setForm(null); setEpisodeOptions([]); }
+  useEffect(() => {
+    if (resource.error && boundary.current() && boundary.deny(resource.error)) { setError(resource.error); pending.current?.abort(); wipe(); }
+  }, [resource.error]);
   useEffect(() => {
     const controller = new AbortController(); setEpisodeOptions([]);
     if (documentValue && access.patientId) void readDocumentInputs(documentValue.batch_id, access.patientId, controller.signal).then(value => {
-      if (!controller.signal.aborted) setEpisodeOptions(value.episodes);
-    }, failure => { if (!controller.signal.aborted) { if (!(failure instanceof Error)) throw failure; setError(failure); } });
+      if (boundary.current(controller.signal)) setEpisodeOptions(value.episodes);
+    }, failure => { if (boundary.current(controller.signal)) { if (!(failure instanceof Error)) throw failure; setError(failure); if (boundary.deny(failure)) { pending.current?.abort(); wipe(); } } });
     return () => controller.abort();
   }, [documentValue?.batch_id, access.patientId]);
 
   useEffect(() => {
     if (!documentValue || form || requestId || clientRequestId) return;
     let current = true;
-    void Promise.resolve().then(() => initialInput(documentValue)).then(value => { if (current) setForm(value); }, failure => {
+    void Promise.resolve().then(() => initialInput(documentValue)).then(value => { if (current && boundary.current()) setForm(value); }, failure => {
       if (!(failure instanceof Error)) throw failure;
-      if (current) setError(failure);
+      if (current && boundary.current()) setError(failure);
     });
     return () => { current = false; };
   }, [documentValue, form, requestId, clientRequestId]);
   useEffect(() => {
     mounted.current = true;
     const changed = () => {
-      if (document.visibilityState !== 'visible') { pending.current?.abort(); setSaved(null); setRequest(null); automaticRequest.current = null; }
+      if (document.visibilityState !== 'visible') { pending.current?.abort(); setSaved(null); setRequest(null); setIdentity(null); setIntent(null); setForm(null); setEpisodeOptions([]); automaticRequest.current = null; }
     };
     document.addEventListener('visibilitychange', changed);
     return () => { mounted.current = false; pending.current?.abort(); document.removeEventListener('visibilitychange', changed); };
   }, []);
-  useEffect(() => { if (!canRead) { pending.current?.abort(); setSaved(null); setRequest(null); automaticRequest.current = null; } }, [canRead]);
+  useEffect(() => { if (!canRead) { pending.current?.abort(); pending.current = null; busyRef.current = false; setBusy(false); setSaved(null); setRequest(null); setIdentity(null); setIntent(null); setForm(null); setEpisodeOptions([]); automaticRequest.current = null; } }, [canRead]);
 
   function run(operation: (controller: AbortController) => Promise<void>) {
-    if (!canRead || busyRef.current) return;
+    if (!canRead || busyRef.current || !boundary.current()) return;
     const controller = new AbortController(); pending.current = controller;
     busyRef.current = true; setBusy(true); setError(null);
-    void operation(controller).then(undefined, failure => {
+    void Promise.resolve().then(() => { boundary.guard(controller.signal); return operation(controller); }).then(undefined, failure => {
       if (!(failure instanceof Error)) throw failure;
-      if (mounted.current && !controller.signal.aborted) {
+      if (mounted.current && boundary.current(controller.signal)) {
         setError(failure);
-        if (failure instanceof ApiError && [401, 403].includes(failure.status)) void access.refresh();
+        if (boundary.deny(failure)) wipe();
         if (failure instanceof ApiError && failure.status === 409) resource.reload();
       }
     }).finally(() => {
@@ -128,10 +135,11 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
 
   async function adoptReceipt(receipt: WriteReceipt, payload: GroupingInput, controller: AbortController) {
     if (!access.patientId || receipt.resource_id !== documentId) throw new Error('归组回执与当前患儿或文书不一致。');
+    boundary.guard(controller.signal);
     const value = await readArchiveDocument(receipt.resource_id, access.patientId, controller.signal);
     if (BigInt(value.version) < BigInt(receipt.version)) throw new Error('重新读取的文书版本早于原保存回执。');
     if (value.version === receipt.version && !documentPayloadMatches(value, payload)) throw new Error('归组回执与重新读取的文书内容不一致，保存结果需要核验。');
-    if (!controller.signal.aborted && mounted.current) { setSaved({ receipt, document: value }); resource.reload(); }
+    if (boundary.current(controller.signal) && mounted.current) { setSaved({ receipt, document: value }); resource.reload(); }
   }
 
   function inspect(id: string, byRequest = false) {
@@ -143,7 +151,7 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
       if (value.operation_id !== 'archive_document_group' || value.target_key !== `/archive-documents/${documentId}/grouping`
         || !value.document_input || !value.generation || !value.expires_at || !value.payload_sha256) throw new Error('该保存请求不属于当前文书归组。');
       const payload = validateApiValue<GroupingInput>('v2-protocol.schema.json#/$defs/GroupingInput', value.document_input);
-      if (controller.signal.aborted || !mounted.current) return;
+      if (!boundary.current(controller.signal) || !mounted.current) return;
       setForm(payload); setRequest(value);
       setIdentity({ operation_id: 'archive_document_group', target_key: value.target_key, request_id: value.request_id,
         schema_version: '2.0.0', payload });
@@ -172,7 +180,7 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
       automaticRequest.current = `request:${current.request_id}`;
       setParams(value => { const next = new URLSearchParams(value); next.set('client_request', current.request_id); return next; }, { replace: true });
       const prepared = intent ?? await prepareDocumentRequest(current, controller.signal);
-      if (controller.signal.aborted || !mounted.current) return;
+      if (!boundary.current(controller.signal) || !mounted.current) return;
       setIntent(prepared);
       automaticRequest.current = `intent:${prepared.intent_id}`;
       setParams(value => { const next = new URLSearchParams(value); next.set('request', prepared.intent_id); return next; }, { replace: true });
@@ -185,7 +193,7 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
     run(async controller => {
       if (!canWrite || !request?.may_retry || !identity || !form) throw new Error('原归组请求尚不具备重新提交条件。');
       const prepared = await retryDocumentRequest(request, controller.signal);
-      if (controller.signal.aborted || !mounted.current) return;
+      if (!boundary.current(controller.signal) || !mounted.current) return;
       setIntent(prepared); setRequest(null);
       await adoptReceipt(await submitDocumentRequest(identity, prepared, controller.signal), form, controller);
     });
@@ -233,8 +241,9 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
   }
 
   return <UI2FamilyFrame title="文书与就诊归组" screenId="UI2-28" note="一份文书可以包含多次就诊。" backTo="/archives/confirm">
-    <button className="patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-    <UI2ReadState loading={resource.loading} error={resource.error} onRetry={resource.reload} />
+    <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
+    {documentValue && <ContextLink className="button secondary" to={`/archives/regroup?batch=${documentValue.batch_id}`}>拆分、合并或移动文书页</ContextLink>}
+    <UI2ReadState loading={resource.loading || busy} error={error ?? resource.error} onRetry={() => boundary.revalidate(() => { automaticRequest.current = null; setError(null); resource.reload(); })} />
     <section className="card form-card"><div className="section-heading"><h2>文书归属</h2><span className="badge neutral">{documentValue ? groupingStates[documentValue.grouping_status] : '待选择原件'}</span></div>
       <div className="pair"><span>原始文书</span><strong>{documentValue ? `版本 ${documentValue.version}` : '尚未提供'}</strong></div>
       <div className="pair"><span>页面与顺序</span><strong>{documentValue ? `${documentValue.page_ids.length} 个原页，按保存顺序排列` : '尚未提供'}</strong></div>
@@ -258,7 +267,7 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
             ...documentValue.documented_time, local_year: documentValue.documented_time.local_year ?? null,
             local_month: documentValue.documented_time.local_month ?? null, end_year: documentValue.documented_time.end_year ?? null,
             end_month: documentValue.documented_time.end_month ?? null, relative_text: documentValue.documented_time.relative_text ?? null })}</strong></div>
-          <div className="pair"><span>平台取得时间</span><strong>{new Date(documentValue.available_at).toLocaleString('zh-CN')}</strong></div>
+          <div className="pair"><span>平台取得时间</span><strong>{eventTimeLabel(documentValue.available_at)}</strong></div>
           <ol>{form.page_ids.map((id, index) => <li key={id}>原页 {index + 1} · {id}
             <button className="text-action" type="button" disabled={!edit || index === 0} aria-label={`原页 ${index + 1}向前移动`} onClick={() => movePage(index, -1)}><ArrowUp size={16} />向前移动</button>
             <button className="text-action" type="button" disabled={!edit || index === form.page_ids.length - 1} aria-label={`原页 ${index + 1}向后移动`} onClick={() => movePage(index, 1)}><ArrowDown size={16} />向后移动</button>
@@ -289,7 +298,7 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
     {canWrite && request?.may_retry && !saved && <button className="button secondary" disabled={busy} onClick={retry}>重新提交原归组请求</button>}
     {documentValue && request && <p role="status">请求状态：{request.state}；请求版本：{request.generation}{request.error_code ? `；${request.error_code}` : ''}</p>}
     {documentValue && saved && <section className="status-panel success" role="status"><h2>文书归组已经保存</h2>
-      <div className="pair"><span>保存回执版本</span><strong>{saved.receipt.version}</strong></div><div className="pair"><span>保存时间</span><strong>{new Date(saved.receipt.saved_at).toLocaleString('zh-CN')}</strong></div>
+      <div className="pair"><span>本次保存版本</span><strong>{saved.receipt.version}</strong></div><div className="pair"><span>保存时间</span><strong>{eventTimeLabel(saved.receipt.saved_at)}</strong></div>
       <p>{saved.document.version === saved.receipt.version ? '保存内容与重新读取的准确文书版本一致。' : `原请求保存事实已核验；文书目前为版本 ${saved.document.version}，当前内容对应后续更正。`}</p>
       <p>本人就诊说明和专业就诊依据分别保留，事实医学时间继续使用其原始版本。</p>
     </section>}

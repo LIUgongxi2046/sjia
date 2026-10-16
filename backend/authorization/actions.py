@@ -9,12 +9,14 @@ CASE_ACTIONS = frozenset(
     {
         "read_raw",
         "write_record",
+        "write_professional",
         "correct_record",
         "read_history",
         "read_file",
         "view_request",
         "manage_draft",
         "receive_alert",
+        "select_alert_preset",
         "create_summary",
         "read_summary",
         "request_correction",
@@ -42,6 +44,7 @@ SERVICE_ACTIONS = frozenset(
         "manage_disposition",
         "manage_data_use",
         "manage_notifications",
+        "reconcile_task",
     }
 )
 

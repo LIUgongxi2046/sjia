@@ -1,0 +1,112 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-policy-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "retain",
+        "revoke_access",
+        "erase_selected_content"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "profile": {
+      "const": "relationship-skeleton-1",
+      "title": "Profile",
+      "type": "string"
+    },
+    "registry_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Registry Sha256",
+      "type": "string"
+    },
+    "preservation_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Preservation Sha256",
+      "type": "string"
+    },
+    "allowed_adapters": {
+      "items": {
+        "maxLength": 256,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Allowed Adapters",
+      "type": "array"
+    },
+    "access_purpose": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Access Purpose",
+      "type": "string"
+    },
+    "retention_seconds": {
+      "minimum": 0,
+      "title": "Retention Seconds",
+      "type": "integer"
+    },
+    "clock": {
+      "enum": [
+        "recorded_at",
+        "created_at",
+        "saved_at",
+        "generated_at",
+        "started_at",
+        "confirmed_at"
+      ],
+      "title": "Clock",
+      "type": "string"
+    },
+    "receipt_keep_until": {
+      "format": "date-time",
+      "title": "Receipt Keep Until",
+      "type": "string"
+    },
+    "metadata_keep_until": {
+      "format": "date-time",
+      "title": "Metadata Keep Until",
+      "type": "string"
+    },
+    "recheck_at": {
+      "format": "date-time",
+      "title": "Recheck At",
+      "type": "string"
+    },
+    "local_objects": {
+      "title": "Local Objects",
+      "type": "boolean"
+    },
+    "all_copies_required": {
+      "title": "All Copies Required",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "mode",
+    "profile",
+    "registry_sha256",
+    "preservation_sha256",
+    "allowed_adapters",
+    "access_purpose",
+    "retention_seconds",
+    "clock",
+    "receipt_keep_until",
+    "metadata_keep_until",
+    "recheck_at",
+    "local_objects",
+    "all_copies_required"
+  ],
+  "title": "ContentPolicyRules",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

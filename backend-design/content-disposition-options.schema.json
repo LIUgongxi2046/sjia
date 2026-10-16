@@ -1,0 +1,299 @@
+{
+  "$defs": {
+    "ContentHoldChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "hold_id": {
+          "format": "uuid",
+          "title": "Hold Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "state": {
+          "enum": [
+            "clear",
+            "held",
+            "unresolved"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "valid_until": {
+          "format": "date-time",
+          "title": "Valid Until",
+          "type": "string"
+        },
+        "eligible": {
+          "title": "Eligible",
+          "type": "boolean"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "pattern": ".*\\S.*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason Code"
+        }
+      },
+      "required": [
+        "hold_id",
+        "version",
+        "state",
+        "valid_until",
+        "eligible",
+        "reason_code"
+      ],
+      "title": "ContentHoldChoice",
+      "type": "object"
+    },
+    "ContentPolicyChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": {
+          "format": "uuid",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "mode": {
+          "enum": [
+            "retain",
+            "revoke_access",
+            "erase_selected_content"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "execution_enabled": {
+          "title": "Execution Enabled",
+          "type": "boolean"
+        },
+        "retention_seconds": {
+          "minimum": 0,
+          "title": "Retention Seconds",
+          "type": "integer"
+        },
+        "clock": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Clock",
+          "type": "string"
+        },
+        "access_purpose": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Access Purpose",
+          "type": "string"
+        },
+        "recheck_at": {
+          "format": "date-time",
+          "title": "Recheck At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_id",
+        "version",
+        "mode",
+        "execution_enabled",
+        "retention_seconds",
+        "clock",
+        "access_purpose",
+        "recheck_at"
+      ],
+      "title": "ContentPolicyChoice",
+      "type": "object"
+    },
+    "ContentTargetChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "target": {
+          "discriminator": {
+            "mapping": {
+              "database": "#/$defs/DatabaseTarget",
+              "local_object": "#/$defs/LocalObjectTarget"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DatabaseTarget"
+            },
+            {
+              "$ref": "#/$defs/LocalObjectTarget"
+            }
+          ],
+          "title": "Target"
+        },
+        "label": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Label",
+          "type": "string"
+        },
+        "record_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Record Id"
+        }
+      },
+      "required": [
+        "target",
+        "label",
+        "record_id"
+      ],
+      "title": "ContentTargetChoice",
+      "type": "object"
+    },
+    "DatabaseTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "database",
+          "title": "Kind",
+          "type": "string"
+        },
+        "adapter": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Adapter",
+          "type": "string"
+        },
+        "object_id": {
+          "format": "uuid",
+          "title": "Object Id",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "adapter",
+        "object_id",
+        "version"
+      ],
+      "title": "DatabaseTarget",
+      "type": "object"
+    },
+    "LocalObjectTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "local_object",
+          "title": "Kind",
+          "type": "string"
+        },
+        "file_id": {
+          "format": "uuid",
+          "title": "File Id",
+          "type": "string"
+        },
+        "object_version": {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Object Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "file_id",
+        "object_version"
+      ],
+      "title": "LocalObjectTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "content-disposition-options-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "patient_id": {
+      "format": "uuid",
+      "title": "Patient Id",
+      "type": "string"
+    },
+    "display_id": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "title": "Display Id",
+      "type": "string"
+    },
+    "policies": {
+      "items": {
+        "$ref": "#/$defs/ContentPolicyChoice"
+      },
+      "title": "Policies",
+      "type": "array"
+    },
+    "hold": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ContentHoldChoice"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/ContentTargetChoice"
+      },
+      "title": "Targets",
+      "type": "array"
+    },
+    "default_policy": {
+      "title": "Default Policy",
+      "type": "null"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patient_id",
+    "display_id",
+    "policies",
+    "hold",
+    "targets",
+    "default_policy"
+  ],
+  "title": "ContentOptionsView",
+  "type": "object"
+}

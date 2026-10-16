@@ -26,7 +26,7 @@ UI2-24,*,StatusPage,family,no_restricted_content,UI2-01,none,none,T54,secondary
 UI2-25,/archives,ArchivePage,family,read_raw,UI2-05,archive_search;archive_batch_search;archive_document_read,none,T45,secondary
 UI2-26,/archives/batches/:batchId,BatchPage,family,read_raw,UI2-25,archive_batch_read;archive_page_read;task_read,archive_batch_process;archive_page_retry;archive_page_cancel,T42,secondary
 UI2-27,/archives/confirm,FactConfirmationPage,family,write_record,UI2-26,archive_candidates_read;archive_fact_read;archive_page_read,archive_candidates_confirm,T41,secondary
-UI2-28,/archives/grouping,GroupingPage,family,write_record,UI2-27,archive_document_read;archive_document_history,archive_document_create;archive_document_group,T43,secondary
+UI2-28,/archives/grouping,GroupingPage,family,write_record,UI2-27,archive_document_read;archive_document_history;archive_regroup_options,archive_document_create;archive_document_group;archive_documents_regroup,T43,secondary
 UI2-29,/archives/duplicates,RelationPage,family,write_record,UI2-27,archive_relation_search;archive_relation_read,archive_relation_create;archive_relation_update,T44,secondary
 UI2-30,/archives/changes,DeltaPage,family,read_raw,UI2-26,archive_delta_read;archive_batch_read,archive_delta_create,T46,secondary
 UI2-31,/records/period,ObservationPeriodPage,family,read_raw,UI2-05,observation_period_read,observation_period_change,T47,secondary
@@ -36,5 +36,5 @@ UI2-34,/support/verification,VerificationPage,support,verify_field,UI2-34,clinic
 UI2-35,/support/assessment,AssessmentPage,support,read_assessment,UI2-34,clinical_directory_read;assessment_creation_options;assessment_v2_read;assessment_task_read;alert_evaluation_v2_read,assessment_v2_create;alert_evaluation_v2_create,T50,support
 UI2-36,/support/publication,PublicationPage,support,manage_config,UI2-35,config_read;release_read,config_create;config_submit;config_approve;config_validate;config_enable;config_disable;release_create;release_approve;release_enable;release_disable,T51,support
 UI2-37,/support/datasets,DatasetPage,support,manage_data_use,UI2-37,dataset_search;dataset_read;dataset_run_read,dataset_create;dataset_freeze;dataset_partition;dataset_label;dataset_run_create,T48,support
-UI2-38,/support/data-use,PurposeCopyPage,support,manage_data_use,UI2-38,purpose_copy_options;purpose_copy_read;purpose_copy_evidence;purpose_copy_content;purpose_copy_review_content,purpose_copy_create;purpose_copy_review;purpose_copy_revoke,T40,support
-UI2-39,/support/deliveries,DeliveriesPage,support,manage_notifications,UI2-39,notification_search;notification_read,notification_resolve,T52,support
+UI2-38,/support/data-use,PurposeCopyPage,support,manage_data_use,UI2-38,purpose_copy_options;purpose_copy_read;purpose_copy_evidence;purpose_copy_content;purpose_copy_review_content;disposition_coverage_read,purpose_copy_create;purpose_copy_review;purpose_copy_revoke,T40,support
+UI2-39,/support/deliveries,NotificationPage,support,manage_notifications,UI2-39,notification_scopes;notification_support_history;notification_support_record,notification_v2_send;notification_intent_cancel,T52,support

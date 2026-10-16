@@ -1,0 +1,572 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "HLHAgeAtSample": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "age_days": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Age Days"
+        },
+        "hemoglobin_fact_version_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hemoglobin Fact Version Id"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "age_days",
+        "hemoglobin_fact_version_id"
+      ],
+      "title": "HLHAgeAtSample",
+      "type": "object"
+    },
+    "HLHAssertion": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "value"
+      ],
+      "title": "HLHAssertion",
+      "type": "object"
+    },
+    "HLHFactProof": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_version_id": {
+          "format": "uuid",
+          "title": "Fact Version Id",
+          "type": "string"
+        },
+        "source_revision_id": {
+          "format": "uuid",
+          "title": "Source Revision Id",
+          "type": "string"
+        },
+        "verification_id": {
+          "format": "uuid",
+          "title": "Verification Id",
+          "type": "string"
+        },
+        "verified_by": {
+          "format": "uuid",
+          "title": "Verified By",
+          "type": "string"
+        },
+        "evidence_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "title": "Evidence Ref",
+          "type": "string"
+        },
+        "medical_interval": {
+          "$ref": "#/$defs/HLHMedicalInterval"
+        },
+        "available_at": {
+          "format": "date-time",
+          "title": "Available At",
+          "type": "string"
+        },
+        "verified_at": {
+          "format": "date-time",
+          "title": "Verified At",
+          "type": "string"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid Until"
+        },
+        "sample_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sample Id"
+        }
+      },
+      "required": [
+        "fact_version_id",
+        "source_revision_id",
+        "verification_id",
+        "verified_by",
+        "evidence_ref",
+        "medical_interval",
+        "available_at",
+        "verified_at",
+        "valid_until",
+        "sample_id"
+      ],
+      "title": "HLHFactProof",
+      "type": "object"
+    },
+    "HLHHemophagocytosis": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "specimen_site": {
+          "enum": [
+            "bone_marrow",
+            "spleen",
+            "lymph_node",
+            "other",
+            "unknown"
+          ],
+          "title": "Specimen Site",
+          "type": "string"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "value",
+        "specimen_site"
+      ],
+      "title": "HLHHemophagocytosis",
+      "type": "object"
+    },
+    "HLHMedicalInterval": {
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "format": "date-time",
+          "title": "Lower",
+          "type": "string"
+        },
+        "upper": {
+          "format": "date-time",
+          "title": "Upper",
+          "type": "string"
+        },
+        "upper_inclusive": {
+          "title": "Upper Inclusive",
+          "type": "boolean"
+        },
+        "precision": {
+          "enum": [
+            "date",
+            "minute",
+            "second"
+          ],
+          "title": "Precision",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "upper_inclusive",
+        "precision"
+      ],
+      "title": "HLHMedicalInterval",
+      "type": "object"
+    },
+    "HLHMolecularAssertion": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "assertion_type": {
+          "const": "molecular_diagnosis_consistent_with_hlh",
+          "title": "Assertion Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "value",
+        "assertion_type"
+      ],
+      "title": "HLHMolecularAssertion",
+      "type": "object"
+    },
+    "HLHNKActivity": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "laboratory_reference": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": ".*\\S.*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Laboratory Reference"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "value",
+        "laboratory_reference"
+      ],
+      "title": "HLHNKActivity",
+      "type": "object"
+    },
+    "HLHNumericObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "qualification": {
+          "enum": [
+            "qualified",
+            "missing",
+            "unverified",
+            "conflict",
+            "unknown_unit",
+            "invalid_time",
+            "invalid_context"
+          ],
+          "title": "Qualification",
+          "type": "string"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HLHFactProof"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "qualifier": {
+          "anyOf": [
+            {
+              "enum": [
+                "eq",
+                "lt",
+                "le",
+                "gt",
+                "ge"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Qualifier"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": ".*\\S.*",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "qualification",
+        "proof",
+        "value",
+        "qualifier",
+        "unit"
+      ],
+      "title": "HLHNumericObservation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "hlh-2004-inputs-1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "assessment_at": {
+      "format": "date-time",
+      "title": "Assessment At",
+      "type": "string"
+    },
+    "known_at": {
+      "format": "date-time",
+      "title": "Known At",
+      "type": "string"
+    },
+    "applicability": {
+      "$ref": "#/$defs/HLHAssertion"
+    },
+    "molecular": {
+      "$ref": "#/$defs/HLHMolecularAssertion"
+    },
+    "fever": {
+      "$ref": "#/$defs/HLHAssertion"
+    },
+    "splenomegaly": {
+      "$ref": "#/$defs/HLHAssertion"
+    },
+    "hemoglobin": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "platelet_count": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "neutrophil_count": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "triglycerides": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "triglycerides_fasting": {
+      "$ref": "#/$defs/HLHAssertion"
+    },
+    "fibrinogen": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "hemophagocytosis": {
+      "$ref": "#/$defs/HLHHemophagocytosis"
+    },
+    "no_malignancy_evidence": {
+      "$ref": "#/$defs/HLHAssertion"
+    },
+    "nk_activity": {
+      "$ref": "#/$defs/HLHNKActivity"
+    },
+    "ferritin": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "soluble_cd25": {
+      "$ref": "#/$defs/HLHNumericObservation"
+    },
+    "age_at_hemoglobin": {
+      "$ref": "#/$defs/HLHAgeAtSample"
+    }
+  },
+  "required": [
+    "schema_version",
+    "assessment_at",
+    "known_at",
+    "applicability",
+    "molecular",
+    "fever",
+    "splenomegaly",
+    "hemoglobin",
+    "platelet_count",
+    "neutrophil_count",
+    "triglycerides",
+    "triglycerides_fasting",
+    "fibrinogen",
+    "hemophagocytosis",
+    "no_malignancy_evidence",
+    "nk_activity",
+    "ferritin",
+    "soluble_cd25",
+    "age_at_hemoglobin"
+  ],
+  "title": "HLHInputs",
+  "type": "object"
+}

@@ -1,10 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, MoreHorizontal, X } from 'lucide-react';
-import { Bell, CircleHelp, ClipboardList, House, UserRound } from './ThreeDIcon';
+import { MoreHorizontal } from 'lucide-react';
+import { ChevronLeft as ArrowLeft, X, Bell, CircleHelp, ClipboardList, House, UserRound } from './ThreeDIcon';
 import sourceStyles from '../../../ui-delivery/v2/src/styles.css?inline';
 import tokens from '../../../ui-delivery/v2/tokens.json';
+import richStyles from '../styles/rich-ui.css?inline';
+import richPageStyles from '../styles/rich-pages.css?inline';
+import richRegistrationStyles from '../styles/rich-registration.css?inline';
+import richThemeStyles from '../styles/rich-theme.css?inline';
+import { useRichTheme } from '../state/richTheme';
+import { richPageSubtitles } from './richPagePresentation';
 
 const designStyle: CSSProperties = {
   fontFamily: tokens.font.family, color: tokens.color.text.primary,
@@ -15,12 +21,14 @@ const designStyle: CSSProperties = {
 } as CSSProperties;
 
 export function UI2Frame({ title, screenId, note, onBack, children, audience = 'support', primary,
-  onNavigate, scrollKey, scrollPosition = 0, onScroll, overlay }: {
+  onNavigate, scrollKey, scrollPosition = 0, onScroll, overlay, heading, kicker, subtitle }: {
   title: string; screenId: string; note: string; onBack: () => void; children: ReactNode;
   audience?: 'family' | 'support'; primary?: 'home' | 'records' | 'account';
+  heading?: string; kicker?: string | null; subtitle?: string | null;
   onNavigate?: (path: string) => void; scrollKey?: string; scrollPosition?: number; onScroll?: (position: number) => void;
   overlay?: ReactNode;
 }) {
+  const { preference, theme } = useRichTheme();
   const host = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -46,6 +54,7 @@ export function UI2Frame({ title, screenId, note, onBack, children, audience = '
     if (!controls.length) throw new Error('页面说明缺少关闭操作。');
     controls[0].focus();
     function handleKey(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
       if (event.key === 'Escape') { setSheet(false); event.preventDefault(); }
       if (event.key === 'Tab') {
         const first = controls[0], last = controls[controls.length - 1];
@@ -64,16 +73,19 @@ export function UI2Frame({ title, screenId, note, onBack, children, audience = '
     if (!onNavigate) throw new Error('当前页面缺少导航处理。');
     onNavigate(path);
   }
-  return <div ref={host} style={designStyle} data-screen-id={screenId}>
-    {root && createPortal(<><style>{sourceStyles}</style><div className="studio solo">
-      <main className="canvas"><div className="device"><div ref={content} className="phone-scroll" onScroll={event => onScroll?.(event.currentTarget.scrollTop)}>
-        <header className={`app-header${primary ? ' root-header' : ''}`}><div className="app-title-row">
-          {!primary && <button className="header-icon" aria-label="返回上级页面" onClick={onBack}><ArrowLeft size={21} /></button>}
-          <div><span className="header-kicker">{primary === 'home' ? '每一次记录，都有陪伴' : audience === 'support' ? '授权工作空间' : 'sJIA 守护者联盟'}</span><h1 tabIndex={-1}>{primary === 'home' ? '陪伴孩子，健康成长' : title}</h1></div>
-          {primary === 'home' ? <button className="header-icon" aria-label="查看预警记录" onClick={() => navigate('/alerts')}><Bell size={29} /></button>
-            : <button className="header-icon" aria-label="页面说明" onClick={() => setSheet(true)}><MoreHorizontal size={23} /></button>}
-        </div></header><div className="page-content" style={{ overflowWrap: 'anywhere' }}>{children}</div>
-        <footer className="page-end"><span />资料与来源共同保留<span /></footer>
+  return <div ref={host} style={designStyle} data-screen-id={screenId} data-theme={theme} data-theme-preference={preference}>
+    {root && createPortal(<><style>{sourceStyles}{richStyles}{richPageStyles}{richRegistrationStyles}{richThemeStyles}</style><div className="studio solo">
+      <main className="canvas"><div className="device" data-theme={theme} data-primary={primary} data-audience={audience} data-page={screenId}><div ref={content} className="phone-scroll" onScroll={event => onScroll?.(event.currentTarget.scrollTop)}>
+        <header className={`app-header${primary ? ' root-header' : ''}`}>
+          {kicker !== null && <span className="header-kicker">{kicker ?? (primary === 'home' ? new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date()) : audience === 'support' ? '授权工作空间' : '家庭记录')}</span>}
+          <div className="app-title-row">
+            {!primary && <button className="header-icon" aria-label="返回上级页面" onClick={onBack}><ArrowLeft size={22} /></button>}
+            <div><h1 tabIndex={-1}>{heading ?? (primary === 'home' ? '陪伴孩子，健康成长' : title)}</h1>
+              {primary !== 'home' && subtitle !== null && <p className="header-subtitle">{subtitle ?? richPageSubtitles[screenId] ?? (audience === 'support' ? '按当前岗位与授权范围操作' : '保留准确的资料')}</p>}</div>
+            {primary === 'home' && <button className="header-icon" aria-label="查看预警记录" onClick={() => navigate('/alerts')}><Bell size={22} /></button>}
+          </div>
+          {primary !== 'home' && <button className="header-help" aria-label="页面说明" onClick={() => setSheet(true)}><MoreHorizontal size={20} /></button>}
+        </header><div className="page-content" style={{ overflowWrap: 'anywhere' }}>{children}</div>
       </div>{primary && <nav className="bottom-nav" aria-label="家庭主导航">
         {([{ key: 'home', label: '首页', Icon: House }, { key: 'records', label: '记录', Icon: ClipboardList },
           { key: 'account', label: '我的', Icon: UserRound }] as const).map(({ key, label, Icon }) =>
@@ -89,7 +101,7 @@ export function UI2Frame({ title, screenId, note, onBack, children, audience = '
   </div>;
 }
 
-export function UI2Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function UI2Sheet({ title, onClose, children, variant }: { title: string; onClose: () => void; children: ReactNode; variant?: 'archive' }) {
   const host = useRef<HTMLSpanElement>(null);
   const panel = useRef<HTMLElement>(null);
   const [container, setContainer] = useState<HTMLElement | null>(null);
@@ -119,6 +131,7 @@ export function UI2Sheet({ title, onClose, children }: { title: string; onClose:
     if (!first) throw new Error('弹层缺少可访问控件。');
     first.focus();
     function handleKey(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
       if (event.key === 'Escape') { event.preventDefault(); onClose(); }
       if (event.key === 'Tab') {
         const values = controls(), first = values[0], last = values[values.length - 1];
@@ -134,8 +147,8 @@ export function UI2Sheet({ title, onClose, children }: { title: string; onClose:
       if (previous?.isConnected) previous.focus();
     };
   }, [container, onClose]);
-  return <><span ref={host} hidden />{container && createPortal(<div className="sheet-backdrop" onClick={onClose}><section ref={panel} className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={event => event.stopPropagation()}>
+  return <><span ref={host} hidden />{container && createPortal(<div className={`sheet-backdrop${variant === 'archive' ? ' archive-backdrop' : ''}`} onClick={onClose}><section ref={panel} className={`sheet${variant === 'archive' ? ' sheet-archive' : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={event => event.stopPropagation()}>
     <button className="sheet-close" aria-label={`关闭${title}`} onClick={onClose}><X size={20} /></button><span className="sheet-handle" />
-    <h2>{title}</h2>{children}
+    <h2 className={variant === 'archive' ? 'archive-sheet-title' : undefined}>{title}</h2>{children}
   </section></div>, container)}</>;
 }

@@ -8,6 +8,7 @@ from django.utils import timezone
 from pydantic import BaseModel, ConfigDict, Field
 
 from alerting.policies import DynamicSchedulePolicy
+from family_content.gate_locks import read_environment_gate_shared
 from assessment.configuration_proofs import configuration_proof
 from assessment.provenance import entity_reference
 from assessment.qualified_facts import QualificationRejected, qualified_configuration, lock_case_permissions
@@ -69,6 +70,8 @@ def source_matches(event, config, policy):
 
 @transaction.atomic
 def fanout_dynamic_change(event):
+    from alerting.presets import schedule_binding
+    read_environment_gate_shared(event.resource_refs['environment'])
     source = OutboxEvent.objects.select_for_update().get(id=event.id)
     if source.event_type not in SOURCE_TYPES or source.schema_version != 'clinical-change-2':
         raise QualificationRejected('DYNAMIC_TRIGGER_SOURCE_INVALID')
@@ -80,10 +83,15 @@ def fanout_dynamic_change(event):
         policy = DynamicSchedulePolicy.model_validate_json(json.dumps(config.payload))
         if not source_matches(source, config, policy):
             continue
+        try:
+            binding = schedule_binding(config, policy)
+        except QualificationRejected:
+            continue  # Ineligible or stale plans never create a new clinical task.
         patient = Patient.objects.get(id=policy.patient_id)
         actor = Principal.objects.get(id=policy.actor_id)
         task = register_task(actor=actor, patient=patient, task_type='reconcile', schema_version=TRIGGER_SCHEMA,
-            input_refs={'schedule': entity_reference(config), 'source': source_reference(source)},
+            input_refs={'schedule': entity_reference(config), 'source': source_reference(source),
+                **({'preset_selection': binding} if binding is not None else {})},
             deadline_seconds=policy.trigger_deadline_seconds)
         emit_event(event_type='alert_evaluation.trigger_requested', schema_version=TRIGGER_SCHEMA,
             aggregate_id=task.id, aggregate_version=1, correlation_id=source.correlation_id, causation_id=source.id,
@@ -101,8 +109,15 @@ def trigger_scope(reference, *, patient, actor, payload, environment, purpose):
     source = OutboxEvent.objects.get(id=reference['source']['id'])
     parent = Task.objects.get(id=reference['trigger_task_id'], patient_id=patient.id, actor_id=actor.id,
         schema_version=TRIGGER_SCHEMA, task_type='reconcile')
-    if (parent.input_sha256 != input_digest(parent.input_refs) or parent.input_refs !=
-            {'schedule': reference['schedule'], 'source': reference['source']} or parent.status not in ('running', 'completed')):
+    expected_refs = {'schedule': reference['schedule'], 'source': reference['source']}
+    from alerting.presets import schedule_binding
+    binding = schedule_binding(config, policy)
+    if binding is not None:
+        expected_refs['preset_selection'] = binding
+    if reference.get('preset_selection') != binding:
+        raise QualificationRejected('PRESET_SELECTION_CHANGED')
+    if (parent.input_sha256 != input_digest(parent.input_refs) or parent.input_refs != expected_refs
+            or parent.status not in ('running', 'completed')):
         raise QualificationRejected('DYNAMIC_TRIGGER_INPUT_CHANGED')
     # 投递租约属于运行状态；来源摘要只固定事件的业务身份。
     if source_reference(source) != reference['source']:
@@ -132,22 +147,26 @@ def schedule_payload(policy, assessment_at):
 
 
 def static_payload(plan, policy, assessment_at):
-    return {**plan.model_dump(mode='json'), 'mode': 'current', 'assessment_at': assessment_at, 'known_at': assessment_at,
+    return {**plan.model_dump(mode='json', exclude_none=True), 'mode': 'current', 'assessment_at': assessment_at, 'known_at': assessment_at,
         'observation_period_id': str(policy.observation_period_id) if policy.observation_period_id else None,
         'clinical_selections': []}
 
 
 def check_schedule_inputs(config, policy, actor, assessment_at):
-    from alerting.service import prepare_dynamic_scope
+    from alerting.inputs import collect_dynamic_inputs
     from assessment.service import prepare_assessment_scope
 
-    inputs, _ = prepare_dynamic_scope(patient_id=policy.patient_id, actor=actor, auth_epoch=actor.auth_epoch,
+    # Eligibility of an approved option is distinct from selecting/admitting it.
+    # Collect qualified facts/configurations without creating a task or applying
+    # the currently selected preset; task admission applies that guard separately.
+    inputs = collect_dynamic_inputs(patient_id=policy.patient_id, actor=actor, auth_epoch=actor.auth_epoch,
         environment=policy.environment, payload=schedule_payload(policy, assessment_at))
     if policy.purpose != inputs.context['purpose']:
         raise QualificationRejected('DYNAMIC_TRIGGER_SCOPE_INVALID')
     sets = [inputs.policy.payload['conditions'], *[value['conditions'] for value in inputs.snapshot['lifecycle'].values()]]
-    required = {(condition['assessment_rule_id'], 'classification' if condition['kind'] == 'classification_met' else 'ms')
-        for conditions in sets for condition in conditions if condition['kind'] in ('classification_met', 'ms_threshold_met')}
+    from alerting.inputs import STATIC_SIGNAL_KINDS
+    required = {(condition['assessment_rule_id'], STATIC_SIGNAL_KINDS[condition['kind']])
+        for conditions in sets for condition in conditions if condition['kind'] in STATIC_SIGNAL_KINDS}
     configured = {(str(item.rule_id), item.kind) for item in policy.static_assessments}
     if not required <= configured:
         raise QualificationRejected('DYNAMIC_TRIGGER_STATIC_PLAN_REQUIRED')
@@ -242,7 +261,8 @@ def execute_dynamic_trigger(event, owner):
     if not continuing:
         attempt = create_attempt(task, task.lease_generation)
     payload = schedule_payload(policy, assessment_at)
-    reference = {'schedule': task.input_refs['schedule'], 'source': task.input_refs['source'], 'trigger_task_id': str(task.id)}
+    reference = {'schedule': task.input_refs['schedule'], 'source': task.input_refs['source'], 'trigger_task_id': str(task.id),
+        **({'preset_selection': task.input_refs['preset_selection']} if 'preset_selection' in task.input_refs else {})}
     if not continuing and policy.static_assessments:
         trigger_scope(reference, patient=task.patient, actor=actor, payload=payload,
             environment=policy.environment, purpose=policy.purpose)

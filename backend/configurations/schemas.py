@@ -92,6 +92,9 @@ def field_definition_reason(payload):
 def runtime_reason(payload):
     if payload['session']['idle_ttl_seconds'] > payload['session']['absolute_ttl_seconds']:
         return 'CONFIG_SESSION_LIMIT_INVALID'
+    if 'archive_delta_visibility_config_id' in payload and not any(
+            task['task_type'] == 'summary' for task in payload['tasks']):
+        return 'CONFIG_ARCHIVE_DELTA_TASK_REQUIRED'
     for collection, key in ((payload['tasks'], 'task_type'), (payload['providers'], 'kind'),
             (payload['limits']['rate_limits'], 'operation_id')):
         values = [item[key] for item in collection]

@@ -15,6 +15,7 @@ from records.models import Record, RecordVersion, RecordField
 from records.service import read_record
 from tasks.models import Task
 from family_content.models import EnvironmentGate, ReleaseComponent
+from family_content.gate_locks import read_environment_gate_shared
 from family_content.qualification import release_qualification_reason
 
 
@@ -37,7 +38,7 @@ def summary_publication_current(summary, inputs):
         and inputs.get('publication_epoch') == str(gate.publication_epoch))
 
 
-def current_summary_config(kind, environment):
+def current_summary_config(kind, environment, *, lock=True):
     gate = EnvironmentGate.objects.filter(environment=environment, enabled=True).first()
     if gate is None or gate.active_release_id is None:
         raise SummaryRejected('SUMMARY_PUBLICATION_UNAVAILABLE')
@@ -50,14 +51,17 @@ def current_summary_config(kind, environment):
         if configuration_qualification_reason(config, environment) is not None:
             raise SummaryRejected('SUMMARY_CONFIGURATION_PENDING')
         return config
-    configs = summary_configuration_candidates(kind, environment, components)
+    configs = summary_configuration_candidates(kind, environment, components, lock=lock)
     if len(configs) != 1:
         raise SummaryRejected('SUMMARY_CONFIGURATION_PENDING')
     return configs[0]
 
 
-def summary_configuration_candidates(kind, environment, components):
-    return [config for config in ConfigVersion.objects.select_for_update().filter(kind=kind, status='enabled', schema_version=f'{kind}-1')
+def summary_configuration_candidates(kind, environment, components, *, lock=True):
+    configs = ConfigVersion.objects.filter(kind=kind, status='enabled', schema_version=f'{kind}-1')
+    if lock:
+        configs = configs.select_for_update()
+    return [config for config in configs
         if config.payload['purpose'] == components['content'].payload['purpose']
         and set(config.payload['field_codes']) <= set(components['visibility'].payload['field_codes'])
         and configuration_qualification_reason(config, environment) is None]
@@ -106,7 +110,7 @@ def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezon
     if to_date < from_date:
         raise SummaryRejected('DATE_RANGE_INVALID')
     zone = ZoneInfo(scope_timezone)
-    EnvironmentGate.objects.select_for_update().get(environment=environment)
+    read_environment_gate_shared(environment)
     template = current_summary_config('summary', environment)
     visibility = current_summary_config('visibility', environment)
     gate = summary_publication_gate(environment, template, visibility)
@@ -117,7 +121,7 @@ def generate_summary(*, patient, requested_by, from_date, to_date, scope_timezon
     if not isinstance(template_fields, list) or not isinstance(visible_fields, list):
         raise SummaryRejected('SUMMARY_CONFIGURATION_PENDING')
     permitted = set(field_codes) & set(template_fields) & set(visible_fields)
-    patient = Patient.objects.select_for_update().get(id=patient.id)
+    patient = Patient.objects.select_for_update(no_key=True).get(id=patient.id)
     current_records = Record.objects.filter(patient=patient, status='active', id=OuterRef('record_id'), current_version=OuterRef('version'))
     versions = RecordVersion.objects.filter(patient=patient).filter(Exists(current_records)).order_by('record_id')
     snapshots = []
@@ -219,7 +223,7 @@ def approved_snapshot_config(config, checksum, environment):
         return False
     if config.kind == 'visibility':
         return components['visibility'].id == config.id
-    return [row.id for row in summary_configuration_candidates(config.kind, environment, components)] == [config.id]
+    return [row.id for row in summary_configuration_candidates(config.kind, environment, components, lock=False)] == [config.id]
 
 
 @transaction.atomic

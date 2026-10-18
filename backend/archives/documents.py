@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from django.core import signing
 
 from archives.models import ArchiveBatch, ArchiveDocumentVersion, ArchiveDocumentPage, ArchiveDocumentEpisode, ArchivePage, ArchiveFactVersion, ArchiveFact
-from archives.queries import fact_source
+from archives.queries import current_fact_versions, fact_sources
 from case_details.models import ClinicalEpisode
 from configurations.service import compute_checksum
 from files.models import FileGroup, FileObject, FilePage
@@ -24,9 +24,8 @@ def document_record_scope(document, patient, version):
             patient_id=patient.id).values_list('id', flat=True))
         fact_ids = ArchiveFactVersion.objects.filter(document_version_id__in=document_version_ids,
             patient_id=patient.id).values('fact_id')
-        for fact in ArchiveFact.objects.filter(id__in=fact_ids, patient_id=patient.id).order_by('id'):
-            current = ArchiveFactVersion.objects.get(fact_id=fact.id, patient_id=patient.id,
-                version=fact.current_version)
+        facts = ArchiveFact.objects.filter(id__in=fact_ids, patient_id=patient.id).order_by('id')
+        for current in current_fact_versions(facts, patient).values():
             if current.document_version_id in document_version_ids:
                 version_ids.add(current.record_version_id)
     version_ids.update(ClinicalEpisode.objects.filter(id__in=episode_ids,
@@ -65,11 +64,15 @@ def document_sources(*, document, patient, version):
         if field.anchor_id != anchor.id or not any(page.file_page_id == anchor.page_id for page in pages):
             raise QueryRejected('DOCUMENT_EPISODE_SOURCE_INVALID')
     facts = list(ArchiveFactVersion.objects.filter(document_version_id=version.id, patient_id=patient.id).order_by('id'))
+    sources = fact_sources(facts, patient)
+    anchors = SourceAnchor.objects.filter(id__in=[fact.source_anchor_id for fact in facts], patient=patient).in_bulk()
     for fact in facts:
-        field, _ = fact_source(fact, patient)
+        field, _ = sources[fact.id]
         if fact.page_id not in page_by_id or fact.source_anchor_id is None:
             raise QueryRejected('DOCUMENT_FACT_SOURCE_INVALID')
-        anchor = SourceAnchor.objects.get(id=fact.source_anchor_id, patient=patient)
+        anchor = anchors.get(fact.source_anchor_id)
+        if anchor is None:
+            raise SourceAnchor.DoesNotExist('文书事实的原文锚点无法读取。')
         if anchor.page_id != page_by_id[fact.page_id].file_page_id or field.anchor_id != anchor.id:
             raise QueryRejected('DOCUMENT_FACT_SOURCE_INVALID')
     return batch, pages, list(files.values()), list(groups.values()), episodes, facts

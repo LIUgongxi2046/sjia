@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import json
 import os
@@ -41,6 +42,10 @@ def require(condition, message):
 
 
 def main():
+    arguments = argparse.ArgumentParser()
+    arguments.add_argument('--database-name', default=DATABASE_NAME)
+    arguments.add_argument('--report-path', type=Path, default=ROOT / '.planning-work/t35-data.json')
+    options = arguments.parse_args()
     parser = MarkdownIt('commonmark').enable('table')
     fields = set()
     for name in ('sJIA合并MAS预警平台数据LLD.md', 'data-design/v2-data-specification.md'):
@@ -59,10 +64,10 @@ def main():
     config = settings.DATABASES['default']
     connection_args = dict(host=config['HOST'], port=config['PORT'], user=config['USER'], password=config['PASSWORD'])
     with psycopg.connect(dbname='postgres', autocommit=True, **connection_args) as administrative:
-        exists = administrative.execute('SELECT 1 FROM pg_database WHERE datname = %s', (DATABASE_NAME,)).fetchone()
+        exists = administrative.execute('SELECT 1 FROM pg_database WHERE datname = %s', (options.database_name,)).fetchone()
         if exists is None:
-            administrative.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(DATABASE_NAME)))
-    with psycopg.connect(dbname=DATABASE_NAME, autocommit=True, **connection_args) as database:
+            administrative.execute(sql.SQL('CREATE DATABASE {}').format(sql.Identifier(options.database_name)))
+    with psycopg.connect(dbname=options.database_name, autocommit=True, **connection_args) as database:
         require(database.execute("SELECT count(*) FROM pg_tables WHERE schemaname = 'sjia'").fetchone()[0] == 0, '设计检查实例必须没有业务表')
         database.execute('BEGIN')
         database.execute((ROOT / 'data-design/schema.sql').read_text(), prepare=False)
@@ -91,6 +96,7 @@ def main():
             statement = sql.SQL('SELECT count(*) FROM {}.{}').format(sql.Identifier('sjia'), sql.Identifier(table))
             require(database.execute(statement).fetchone()[0] == 0, '设计检查不能包含病例或模拟资料')
         engine = database.execute('SHOW server_version').fetchone()[0]
+        engine_version = database.info.server_version
         database.execute('ROLLBACK')
         require(database.execute("SELECT count(*) FROM pg_tables WHERE schemaname = 'sjia'").fetchone()[0] == 0, '空结构检查未完整结束')
 
@@ -100,14 +106,16 @@ def main():
     report = {
         'checked_at': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(),
         'capability': 'DESIGN', 'status': 'PASS', 'field_groups': len(fields),
-        'database': DATABASE_NAME, 'engine': engine, 'target_postgresql_17': 'NOT_RUN',
+        'database': options.database_name, 'engine': engine, 'engine_version': engine_version,
+        'runtime_python': sys.version.split()[0],
+        'target_postgresql_17': 'PASS' if 170000 <= engine_version < 180000 else 'NOT_RUN',
         'existing_tables': len(existing), 'new_tables': sorted(TABLES),
         'new_constraints': len(new_constraints), 'clinical_rows_inserted': 0,
         'production_migrations': 'NOT_RUN', 'actual_migration_readback': 'NOT_RUN',
         'visual_validation': 'NOT_RUN', 'business_validation': 'NOT_RUN',
         'source_sha256': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in inputs},
     }
-    (ROOT / '.planning-work/t35-data.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    options.report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

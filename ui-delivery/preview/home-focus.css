@@ -11,14 +11,14 @@
 .home-notice .notice-footer{margin-top:7px;padding-top:3px;align-items:center}
 .home-notice .notice-footer>small{padding-top:0;font-size:10px}
 .home-notice .notice-actions>button{border:0;padding:0;min-height:36px;font-size:11px}
-.home-twin{padding:12px 12px 12px;background:var(--card);border-radius:24px}
+.home-twin{--home-companion-height:clamp(232px,64vw,300px);padding:12px 12px 12px;background:var(--card);border-radius:24px}
 .home-twin>.section-label{margin:0;gap:8px;min-height:44px}
 .home-twin .section-label>button{font-size:11px;min-height:44px}
 .home-twin .home-patient{display:flex;align-items:center;gap:5px;color:var(--ink);background:transparent}
 .home-patient strong{font-size:16px}
 .home-patient>span{color:var(--muted);font-size:10px}
-.home-child-stage{height:164px;display:flex;justify-content:center;background:radial-gradient(ellipse at 50% 75%,var(--tint),transparent 68%);margin-top:3px}
-.home-child-stage .child-view{width:135px;height:164px}
+.home-child-stage{height:var(--home-companion-height);display:flex;justify-content:center;background:radial-gradient(ellipse at 50% 75%,var(--tint),transparent 68%);margin-top:3px}
+.home-child-stage .child-view{width:calc(var(--home-companion-height) * 135 / 164);height:100%}
 .home-child-stage .child-view>img{display:block;width:100%;height:100%;object-fit:contain}
 .home-twin .symptom-compact{padding-top:8px;border:0;margin-top:0}
 .phone .home-twin .symptom-compact>img{width:calc(100% - 16px);height:96px;object-fit:cover;margin-inline:auto;border-radius:14px}
@@ -27,7 +27,7 @@
 .home-twin .symptom-columns strong{font-size:12px}
 .home-twin .symptom-columns small{font-size:10px;font-weight:500}
 .home-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.home-entry-grid>button{display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid var(--line);border-radius:17px;background:var(--card);color:var(--ink);padding:10px 4px;min-height:74px}
+.home-entry-grid>button{display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--ink);padding:10px 4px;min-height:74px}
 .home-entry-grid>button>span{color:var(--link);height:24px}
 .home-entry-grid strong{font-size:12px;font-weight:500}
 .home-entry-grid>button:first-child{background:var(--blue);border-color:var(--blue);color:#fff}

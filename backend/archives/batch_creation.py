@@ -15,7 +15,7 @@ from authorization.policy import check_principal_session
 from configurations.evidence import inspect_approved_evidence
 from configurations.models import ConfigVersion
 from configurations.qualification import configuration_qualification_reason
-from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from files.models import FileGroup, FileObject, FilePage, UploadPart
 from files.purpose import lock_original, lock_use_authorization
 from identity.models import Patient, Principal
@@ -41,14 +41,14 @@ def batch_input(payload):
 def batch_write_identity(actor, epoch, patient_id):
     if not settings.SJIA_ENVIRONMENT:
         raise ApiError('ENVIRONMENT_CONFIGURATION_REQUIRED', 503)
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+    gate = read_environment_gate_shared(settings.SJIA_ENVIRONMENT)
     if not gate.enabled:
         raise ApiError('ENVIRONMENT_DISABLED', 403)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
-    check_principal_session(actor, epoch)
     patient = Patient.objects.select_for_update().get(id=patient_id)
     if patient.status != 'active':
         raise ApiError('PATIENT_NOT_AVAILABLE', 403)
+    actor = Principal.objects.select_for_update().get(id=actor.id)
+    check_principal_session(actor, epoch)
     return actor, patient, gate
 
 
@@ -146,7 +146,7 @@ def received_sources(actor, patient, gate, payload, *, receive):
 
 def receiving_quota(gate, sources, pages):
     runtime = batch_runtime()
-    candidates = list(ConfigVersion.objects.select_for_update().filter(kind='provider', status='enabled',
+    candidates = list(ConfigVersion.objects.filter(kind='provider', status='enabled',
         schema_version='archive-quota-1', payload__environment=gate.environment,
         payload__runtime_config_id=str(runtime.id)).order_by('id'))
     if not candidates:
@@ -159,7 +159,7 @@ def receiving_quota(gate, sources, pages):
     provider_entries = [entry for entry in runtime.payload['providers'] if entry['kind'] == 'ocr' and entry['enabled']]
     if len(provider_entries) != 1 or provider_entries[0]['config_id'] != quota.payload['provider_config_id']:
         raise ApiError('ARCHIVE_PROVIDER_CONFIGURATION_PENDING', 503)
-    provider = ConfigVersion.objects.select_for_update().filter(id=quota.payload['provider_config_id'], kind='provider').first()
+    provider = ConfigVersion.objects.filter(id=quota.payload['provider_config_id'], kind='provider').first()
     if (provider is None or provider.schema_version != 'provider-1'
             or configuration_qualification_reason(provider, gate.environment) is not None):
         raise ApiError('ARCHIVE_PROVIDER_CONFIGURATION_PENDING', 503)
@@ -169,13 +169,14 @@ def receiving_quota(gate, sources, pages):
         raise ApiError('ARCHIVE_PROVIDER_BUDGET_INVALID', 409)
     evidence = {}
     for field, purpose in (('measurement_evidence_ref', 'archive_measurement'), ('pricing_evidence_ref', 'archive_pricing')):
-        revision, _, reason = inspect_approved_evidence(quota.payload[field], purpose=purpose, lock=True)
+        revision, _, reason = inspect_approved_evidence(quota.payload[field], purpose=purpose)
         if reason:
             raise ApiError(reason, 503)
         evidence[field] = {'source_revision_id': str(revision.id), 'checksum': revision.checksum}
     maximum_pages = min(runtime.payload['limits']['max_pages'], quota.payload['max_pages'])
     maximum_bytes = min(runtime.payload['limits']['max_upload_bytes'], quota.payload['max_bytes'])
-    if len(pages) > maximum_pages or sum(source.size_bytes for source in sources) > maximum_bytes:
+    unique_sources = {source.id: source for source in sources}
+    if len(pages) > maximum_pages or sum(source.size_bytes for source in unique_sources.values()) > maximum_bytes:
         raise ApiError('ARCHIVE_BATCH_LIMIT_EXCEEDED', 422)
     with localcontext() as arithmetic:
         arithmetic.prec = len(quota.payload['per_page_reservation']) + len(str(len(pages))) + 1

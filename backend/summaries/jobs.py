@@ -11,6 +11,7 @@ from configurations.models import ConfigVersion
 from configurations.qualification import configuration_qualification_reason
 from configurations.service import compute_checksum
 from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from identity.models import Patient, Principal
 from summaries.inputs import SummaryInput
 from summaries.service import (SummaryRejected, current_summary_config,
@@ -32,9 +33,9 @@ class SummaryDeferred(Exception):
 def lock_summary_scope(actor_id, patient_id, environment):
     # Same prefix for admission, worker, cancellation and failure. In particular,
     # do not hold Task before the permission evaluator's Gate/Principal locks.
-    gate = EnvironmentGate.objects.select_for_update().get(environment=environment)
-    actor = Principal.objects.select_for_update().get(id=actor_id)
-    patient = Patient.objects.select_for_update().get(id=patient_id)
+    gate = read_environment_gate_shared(environment)
+    actor = Principal.objects.select_for_update(no_key=True).get(id=actor_id)
+    patient = Patient.objects.select_for_update(no_key=True).get(id=patient_id)
     return gate, actor, patient
 
 

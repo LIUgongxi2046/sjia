@@ -24,6 +24,7 @@ class ApiError(Exception):
     def __init__(self, code, http_status=400, message=None):
         super().__init__(message or code)
         self.code = code
+        self.reason_code = code
         self.http_status = http_status
         self.message = message or code
 
@@ -45,7 +46,7 @@ def get_patient(patient_id):
     return patient
 
 
-def authorize_case(request, principal, patient, action, field_codes=None, record_id=None, author_id=None, require_relation=False, whole_resource=False):
+def authorize_case(request, principal, patient, action, field_codes=None, record_id=None, author_id=None, require_relation=False, whole_resource=False, lock=True):
     _, auth_epoch, _ = read_session_principal(request)
     try:
         return evaluate(
@@ -53,6 +54,8 @@ def authorize_case(request, principal, patient, action, field_codes=None, record
             environment=settings.SJIA_ENVIRONMENT, session_auth_epoch=auth_epoch, field_codes=field_codes,
             record_id=record_id, author_id=author_id, require_relation=require_relation,
             whole_resource=whole_resource,
+            read_only=request.method in ('GET', 'HEAD'),
+            lock=lock,
         )
     except Denied as exc:
         raise ApiError(exc.reason_code, status.HTTP_403_FORBIDDEN)
@@ -84,7 +87,8 @@ def handle(view):
                 response = view(*args, **kwargs)
             else:
                 from retention.content_fences import content_reader
-                with content_reader():
+                from configurations.evidence import artifact_verification_scope
+                with content_reader(), artifact_verification_scope():
                     response = view(*args, **kwargs)
             response['Cache-Control'] = 'no-store, private'
             return response

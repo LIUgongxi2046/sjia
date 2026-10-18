@@ -26,13 +26,13 @@ def record_read_snapshot(view):
 
 
 def authorize_record_snapshot(request, principal, patient, action, *, record_id=None,
-                              author_id=None, field_codes=None):
+                              author_id=None, field_codes=None, require_relation=False):
     """Read authorization only; mutation callers must retain their locked gate.
 
     A revocation committed after this transaction's first read applies to the next
     query. Never mix new permission rows with old clinical rows inside one result.
     """
-    if action not in {'read_raw', 'read_history'}:
+    if action not in {'read_raw', 'read_history', 'read_summary'}:
         raise Denied('READ_SNAPSHOT_ACTION_INVALID')
     _, auth_epoch, _ = read_session_principal(request)
     try:
@@ -45,6 +45,7 @@ def authorize_record_snapshot(request, principal, patient, action, *, record_id=
             raise Denied('PATIENT_UNAVAILABLE')
         return check_case_grant(principal, patient, action, timezone.now(),
             record_id=record_id, author_id=author_id, field_codes=field_codes,
+            require_relation=require_relation,
             purpose='family_observation')
     except Denied as exc:
         from api.base import ApiError

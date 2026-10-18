@@ -18,18 +18,31 @@ export function UI2ReadState({ loading = false, error, onRetry, requirePatient =
     catch (failure) { setRetryError(failure instanceof Error ? failure : new Error('重新读取未完成，请稍后重试。')); }
     finally { pending.current = false; setRetrying(false); }
   }
-  const permission = !access.principalId || (requirePatient && !access.patientId)
-    || (error instanceof ApiError && (error.status === 401 || error.status === 403));
+  async function recheckAccess() {
+    if (pending.current || access.loading) return;
+    pending.current = true;
+    try {
+      await access.refresh();
+      if (access.hasCurrentAccess()) await onRetry?.();
+    } finally { pending.current = false; }
+  }
+  const sessionRequired = !access.principalId || (error instanceof ApiError && error.status === 401);
   if (access.error) return <section className={`status-panel rich-read-state ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
     <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div><h2>{navigator.onLine ? (access.errorSource === 'relations' ? '患儿关联暂未读取' : '身份服务读取失败') : '网络连接已中断'}</h2>{access.errorSource === 'relations' && <p>账号已登录，无需重复注册。关联核验成功前不能访问患儿资料。</p>}<p>{access.error}</p>
     <button className="text-action" onClick={() => void access.refresh()}>重新核验访问权限<ArrowRight size={16} /></button>
   </section>;
-  if (permission) return <section className="status-panel permission rich-read-state" role="status">
-    <div className="status-top"><LockKeyhole size={22} /><span>页面状态</span></div><h2>当前访问关系需要核验</h2><p>重新取得有效权限后才能查看资料。</p>
-    {error instanceof ApiError && <><p>{error.message}</p><details><summary>查看错误详情</summary><p>HTTP {error.status} · {error.code}</p></details></>}
-    {retryError && <p>{retryError.message}</p>}
-    {onRetry && <button className="text-action" disabled={retrying || access.loading} onClick={() => void retry()}>重新核验访问权限<ArrowRight size={16} /></button>}
-    <button className="text-action" onClick={() => navigate(access.principalId ? '/associations' : '/login')}>核验访问权限<ArrowRight size={16} /></button>
+  if (sessionRequired) return <section className="status-panel permission rich-read-state" role="status">
+    <div className="status-top"><LockKeyhole size={22} /><span>登录状态</span></div>
+    <h2>{access.principalId ? '登录状态已失效' : '请先登录账号'}</h2>
+    <p>{access.principalId ? '请重新登录，继续查看本人获准的资料。' : '登录后可以查看和管理本人获准的患儿资料。'}</p>
+    <button className="text-action" onClick={() => navigate('/login')}>登录账号<ArrowRight size={16} /></button>
+    <button className="text-action" disabled={access.loading} onClick={() => void recheckAccess()}>检查登录状态<ArrowRight size={16} /></button>
+  </section>;
+  if (requirePatient && !access.patientId) return <section className="status-panel permission rich-read-state" role="status">
+    <div className="status-top"><LockKeyhole size={22} /><span>患儿关联</span></div><h2>尚无可访问的患儿记录</h2>
+    <p>当前账号已登录。请查看患儿关联及申请状态，取得有效关联后即可访问资料。</p>
+    <button className="text-action" onClick={() => navigate('/associations')}>管理患儿关联<ArrowRight size={16} /></button>
+    <button className="text-action" disabled={access.loading} onClick={() => void access.refresh()}>重新读取患儿关联<ArrowRight size={16} /></button>
   </section>;
   if (error instanceof ApiError && error.code === 'CONTENT_DISPOSED') return <section className="status-panel rich-read-state" role="status">
     <div className="status-top"><LockKeyhole size={22} /><span>资料状态</span></div><h2>这份内容已处置</h2>
@@ -37,6 +50,13 @@ export function UI2ReadState({ loading = false, error, onRetry, requirePatient =
   </section>;
   if (error instanceof ApiError && error.code === 'CONTENT_ACCESS_REVOKED') return <section className="status-panel rich-read-state" role="status">
     <h2>这份资料的访问已撤销</h2><p>内容保留情况以处置记录为准。</p>
+  </section>;
+  if (error instanceof ApiError && error.status === 403) return <section className="status-panel permission rich-read-state" role="status">
+    <div className="status-top"><LockKeyhole size={22} /><span>访问权限</span></div><h2>当前账号没有访问权限</h2>
+    <p>请检查当前患儿的关联和授权范围。</p><p>{error.message}</p>
+    <details><summary>查看错误详情</summary><p>HTTP {error.status} · {error.code}</p></details>
+    <button className="text-action" disabled={access.loading} onClick={() => void recheckAccess()}>重新检查访问权限<ArrowRight size={16} /></button>
+    <button className="text-action" onClick={() => navigate('/associations')}>管理患儿关联<ArrowRight size={16} /></button>
   </section>;
   if (error) return <section className={`status-panel rich-read-state ${navigator.onLine ? 'error' : 'offline'}`} role="alert" style={{ overflowWrap: 'anywhere' }}>
     <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div>

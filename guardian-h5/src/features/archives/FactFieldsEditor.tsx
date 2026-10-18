@@ -2,6 +2,7 @@ import type { FieldInput, MedicalTime, MedicalTimeInput } from '../../../../fron
 import type { FactContextInput } from '../../../../frontend-design/v2-types';
 import { MedicalTimeInput as TimeEditor, timePayload, type TimeInput } from '../../components/MedicalTimeInput';
 import { editableMedicalTime, isTimeInputValid } from '../../components/medicalTimeValue';
+import { assertionStateOptions, factContextOptions } from '../../components/factPresentation';
 
 export interface EditableFact { field: FieldInput; context: FactContextInput; time: TimeInput; documented: TimeInput }
 export function editableTime(value: MedicalTime | MedicalTimeInput | null): TimeInput {
@@ -30,8 +31,8 @@ export function FactFieldsEditor({ value, onChange, disabled, sourceLabel }: { v
     <TimeEditor label="此项医学时间" ui2 extended disabled={disabled} value={value.time} onChange={changeTime} />
     {!isTimeInputValid(value.time) && <p role="alert">请补全符合所选精度的医学时间。</p>}
     <details><summary>语境、就诊与原文时间</summary>
-      <label className="field"><span>事实语境</span><select disabled={disabled} value={context.context_type} onChange={event => contextUpdate({ context_type: event.target.value as FactContextInput['context_type'] })}>{[['history', '既往病史'], ['current', '此次病情'], ['discharge', '出院结论'], ['planned', '计划治疗'], ['actual', '实际治疗'], ['unknown', '无法确定']].map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
-      <label className="field"><span>发生状态</span><select disabled={disabled} value={context.assertion_state} onChange={event => contextUpdate({ assertion_state: event.target.value as FactContextInput['assertion_state'] })}><option value="present">原文确认存在</option><option value="absent">原文明确否定</option><option value="unknown">无法确定</option></select></label>
+      <label className="field"><span>事实语境</span><select disabled={disabled} value={context.context_type} onChange={event => contextUpdate({ context_type: event.target.value as FactContextInput['context_type'] })}>{factContextOptions.map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
+      <label className="field"><span>发生状态</span><select disabled={disabled} value={context.assertion_state} onChange={event => contextUpdate({ assertion_state: event.target.value as FactContextInput['assertion_state'] })}>{assertionStateOptions.map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
       <label className="field"><span>原始时间文字</span><input disabled={disabled} value={context.raw_time_text ?? ''} onChange={event => contextUpdate({ raw_time_text: event.target.value || null })} /></label>
       <label className="field"><span>时间出处</span><select disabled={disabled} value={context.time_origin} onChange={event => {
         const origin = event.target.value as FactContextInput['time_origin'];

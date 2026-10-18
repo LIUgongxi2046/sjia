@@ -289,7 +289,10 @@ def verification_creation_scope(version_id, purpose, actor, epoch, environment):
     version = RecordVersion.objects.get(id=version_id)
     _, patient, actor, _, _ = lock_actor(version.patient_id, actor, epoch, environment, 'verify_field')
     fields = list(RecordField.objects.filter(patient=patient, record_version_id=version.id).order_by('ordinal', 'id'))
-    fields = permitted_fields(actor, patient, version, purpose, fields)
+    allowed = permitted_fields(actor, patient, version, purpose, fields)
+    if fields and not allowed:
+        raise VerificationRejected('VERIFICATION_FIELD_SCOPE_DENIED')
+    fields = allowed
     patient, actor, version, fields, _, runtime, _ = version_scope(version.id, actor, epoch, environment,
         purpose, [field.id for field in fields])
     states = states_for(fields, purpose)

@@ -6,6 +6,8 @@
   "properties": {
     "schema_version": {"const": "backend-runtime-1"},
     "environment": {"type": "string", "minLength": 1, "maxLength": 64},
+    "archive_delta_visibility_config_id": {"type": "string", "format": "uuid", "description": "本人新增内容整理采用的准确visibility-1版本；使用该功能时必须配置。"},
+    "observation_period_visibility_config_id": {"type": "string", "format": "uuid", "description": "本人观察资料采用的准确visibility-1版本；使用该功能时必须配置。"},
     "api": {"type": "object", "additionalProperties": false, "required": ["lock_timeout_ms", "statement_timeout_ms", "request_timeout_ms", "upload_timeout_ms", "max_json_bytes", "allowed_origins", "intent_ttl_seconds", "max_page_size", "poll_after_ms"], "properties": {
       "lock_timeout_ms": {"$ref": "#/$defs/positive"}, "statement_timeout_ms": {"$ref": "#/$defs/positive"}, "request_timeout_ms": {"$ref": "#/$defs/positive"}, "upload_timeout_ms": {"$ref": "#/$defs/positive"}, "max_json_bytes": {"$ref": "#/$defs/positive"}, "allowed_origins": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "format": "uri", "pattern": "^https://"}}, "intent_ttl_seconds": {"$ref": "#/$defs/positive"}, "max_page_size": {"$ref": "#/$defs/positive"}, "poll_after_ms": {"$ref": "#/$defs/positive"}
     }},

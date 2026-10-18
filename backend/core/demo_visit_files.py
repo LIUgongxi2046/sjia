@@ -5,12 +5,10 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
+from django.conf import settings
 
 from core.demo_experience import KEY, NAMESPACE, identity, require_test_context
 from core.demo_files_summary import ensure_demo_image_attachment
-
-FONT_PATH = Path('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc')
-
 
 def medical_date(day):
     return {'raw_text': day.isoformat(), 'precision': 'date', 'local_year': None,
@@ -46,12 +44,13 @@ def render_demo_visit_png(note):
             or any(not isinstance(line, str) or len(line) > 60 or '\n' in line for line in lines)
             or note.get('confirmed_text') != '\n'.join(lines)):
         raise ValueError('DEMO_VISIT_TEXT_INVALID')
-    if not FONT_PATH.is_file():
+    font_path = Path(settings.SJIA_DEMO_FONT_PATH)
+    if not font_path.is_file():
         raise ValueError('DEMO_CHINESE_RENDER_FONT_REQUIRED')
     image = Image.new('RGB', (1280, 180 + 66 * len(lines)), '#f7f9fc')
     draw = ImageDraw.Draw(image)
-    body = ImageFont.truetype(str(FONT_PATH), size=30, index=2)
-    title = ImageFont.truetype(str(FONT_PATH), size=42, index=2)
+    body = ImageFont.truetype(str(font_path), size=30, index=2)
+    title = ImageFont.truetype(str(font_path), size=42, index=2)
     for index, line in enumerate(lines):
         draw.text((64, 64 + index * 66), line, font=title if index == 1 else body,
             fill='#163c50' if index < 4 else '#364756')

@@ -49,9 +49,9 @@ def _retain_unknown_reservation(task, attempt_id, currency, reject, unknown_rese
     return reserved
 
 
-def _task_cost(task, task_attempts, currency, reject, unknown_reservations):
+def _task_cost(task, task_attempts, currency, reject, unknown_reservations, *, page_attempts=None):
     if task.schema_version == 'archive-page-1':
-        page_attempts = list(ArchivePageAttempt.objects.filter(task_id=task.id).order_by('attempt_number'))
+        page_attempts = list(ArchivePageAttempt.objects.filter(task_id=task.id).order_by('attempt_number')) if page_attempts is None else page_attempts
         task_attempt_by_id = {str(item.id): item for item in task_attempts}
         measured = Decimal('0')
         needs_reservation = task.status in ('accepted', 'queued', 'running', 'cancel_requested') and (

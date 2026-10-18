@@ -22,6 +22,7 @@ backend/runtime.json
 backend/.env
 .qa-work/
 .simulation-work/
+模拟数据，不上传github/
 .DS_Store
 **/.DS_Store
 .vite/

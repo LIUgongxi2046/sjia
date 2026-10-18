@@ -44,13 +44,18 @@ def relation_fields(row):
         'relation_type': row.relation_type, 'status': row.status, 'evidence_ref': row.evidence_ref, 'reason': row.reason}
 
 
-def source_scope(request, actor, patient, kind, identity, action, *, require_current=False):
+def source_scope(request, actor, patient, kind, identity, action, *, require_current=False, read_context=None):
+    if read_context is not None and (require_current or action not in ('read_raw', 'read_history', 'read_file')
+            or read_context.patient.id != patient.id):
+        raise ApiError('ARCHIVE_RELATION_READ_CONTEXT_INVALID', 422)
     _, _, audience = current_principal(request)
     family = audience == 'family'
     if kind == 'fact':
-        fact = ArchiveFactVersion.objects.get(id=identity, patient_id=patient.id)
-        field, version = fact_source(fact, patient)
-        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
+        fact = (ArchiveFactVersion.objects.get(id=identity, patient_id=patient.id) if read_context is None
+            else read_context.get(ArchiveFactVersion, id=identity, patient_id=patient.id))
+        field, version = fact_source(fact, patient) if read_context is None else read_context.fact_source(fact)
+        original = (RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=version.record_id, patient_id=patient.id, version=1)
+            if read_context is None else read_context.original_record(version.record_id))
         authorize_case(request, actor, patient, action if family else 'read_case',
             record_id=version.record_id, author_id=original.author_id, field_codes=[field.field_code], require_relation=family)
         if require_current:
@@ -59,8 +64,10 @@ def source_scope(request, actor, patient, kind, identity, action, *, require_cur
             if archive_fact.current_version != fact.version or record.current_version != version.version or record.status != 'active':
                 raise ApiError('ARCHIVE_RELATION_SOURCE_CHANGED', 409)
         return fact, field, version
-    source = FileObject.objects.get(id=identity, patient_id=patient.id)
-    group = FileGroup.objects.get(id=source.file_group_id, patient_id=patient.id)
+    source = (FileObject.objects.get(id=identity, patient_id=patient.id) if read_context is None
+        else read_context.get(FileObject, id=identity, patient_id=patient.id))
+    group = (FileGroup.objects.get(id=source.file_group_id, patient_id=patient.id) if read_context is None
+        else read_context.get(FileGroup, id=source.file_group_id, patient_id=patient.id))
     authorize_case(request, actor, patient, 'read_file', author_id=group.owner_id, require_relation=family, whole_resource=True)
     if action in ('write_record', 'correct_record'):
         authorize_case(request, actor, patient, action, author_id=group.owner_id, require_relation=family, whole_resource=True)
@@ -121,10 +128,15 @@ def relation_view(row, *, allowed_actions=()):
     return value
 
 
-def fact_source_view(fact, patient):
-    field, version = fact_source(fact, patient)
-    view = fact_read(fact=ArchiveFact.objects.get(id=fact.fact_id, patient_id=patient.id), patient=patient, version=fact)
-    report = Report.objects.get(id=version.report_id, patient_id=patient.id) if version.report_id else None
+def fact_source_view(fact, patient, *, read_context=None):
+    field, version = fact_source(fact, patient) if read_context is None else read_context.fact_source(fact)
+    parent = (ArchiveFact.objects.get(id=fact.fact_id, patient_id=patient.id) if read_context is None
+        else read_context.get(ArchiveFact, id=fact.fact_id, patient_id=patient.id))
+    view = fact_read(fact=parent, patient=patient, version=fact, read_context=read_context)
+    report = None
+    if version.report_id is not None:
+        report = (Report.objects.get(id=version.report_id, patient_id=patient.id) if read_context is None
+            else read_context.get(Report, id=version.report_id, patient_id=patient.id))
     return {'kind': 'fact', 'id': str(fact.id), 'label': f'{field.original_name or field.field_code} · 记录版本 {version.version}',
         'record_id': str(version.record_id), 'record_version_id': str(version.id), 'field_code': field.field_code,
         'report_identifier': report.external_ref if report else None, 'medical_time': view['context']['medical_time'],

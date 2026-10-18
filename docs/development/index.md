@@ -1,6 +1,6 @@
 # 开发记录索引
 
-本索引登记稳定任务身份和主记录路径。状态唯一来源为 [交付记录](../../planning/delivery-ledger.json)，工单内容见 [实施计划](../../implementation-tasks.md)。已有主记录持续更新；尚无正文的路径在执行对应任务时创建。T34 的工程接收与 HLD 2.0 依据见 [主记录](T34.md)，T35 的数据规范与 SQL 校验见 [主记录](T35.md)，T36 的接口、字段与任务规范见 [主记录](T36.md)，本期实施要求见 [知识说明](../knowledge/prd2-delivery.md)。路径登记不代表实现或验收完成。当前顺序见 [2.0 迭代计划](../../2.0迭代计划.md)。
+本索引登记稳定任务身份和主记录路径。T01—T60 状态以 [交付记录](../../planning/delivery-ledger.json) 为准，专项 QA 状态以各自主记录为准；工单内容见 [实施计划](../../implementation-tasks.md)。已有主记录持续更新；尚无正文的路径在执行对应任务时创建。T34 的工程接收与 HLD 2.0 依据见 [主记录](T34.md)，T35 的数据规范与 SQL 校验见 [主记录](T35.md)，T36 的接口、字段与任务规范见 [主记录](T36.md)，本期实施要求见 [知识说明](../knowledge/prd2-delivery.md)。路径登记不代表实现或验收完成。当前顺序见 [2.0 迭代计划](../../2.0迭代计划.md)。
 
 检索规则：按 task_id、需求/验收 ID、模块或 identifier 查询；同时阅读实际代码与当前设计。每项验收前核对唯一主记录、有效引用、真实证据及受影响记录。关联记录为该任务 depends_on 的主记录以及第七列的消费方记录。
 
@@ -34,6 +34,30 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| QA29 | 真实原件范围与准确制品 | Range；内存；63份原件；完整API；当前采用 | FR-02；FR-09；NFR-07；OPS | docs/development/QA29-real-original-range-reads.md | file_content；get_range；backend_artifact_manifest；实际HTTP及Chrome | T12；T28；T33；T46；T56；T57；QA14 |
+| QA28 | 目标运行版本与空库迁移 | Python3.13；PostgreSQL17；正式迁移；结构；真实参数；设计回执 | OPS；V01；V02；V35；V39 | docs/development/QA28-target-runtime-compatibility.md | 正式migrations；data-design.check_v2；只读实际数据库 | T01；T02；T27；T35；T39；T57；QA14 |
+| QA27 | 真实临床入口权限范围 | 核对字段403；空病例目录；current；replay；整理 | FR-09；FR-10；AC-10 | docs/development/QA27-real-clinical-access-scope.md | verification.workflow；assessment；实际Chrome | T49；T50；T56；QA12；QA14 |
+| QA26 | 支持端访问状态与恢复 | 会话受众；岗位；实际登录；手动核验；返回 | FR-01；FR-09；AC-H5-05 | docs/development/QA26-support-access-recovery.md | SupportApp；PurposeCopyPage；实际Chrome检查 | T09；T54；T56；QA09；QA14 |
+| QA25 | 真实评价来源清单 | 原件SHA256；准确页面；未知单位；用途资格 | FR-20；GRAC-08 | docs/development/QA25-real-evaluation-source-inventory.md | case_details.evaluation_inventory；FileObject；FilePage | T48；QA10；QA11；QA12；QA14 |
+| QA24 | 真实重复资料目录读取 | SQL数量；准确来源；历史；权限；分页 | FR-16；NFR-15 | docs/development/QA24-real-relation-read-performance.md | archives.relation_queries；relations；authorization | T44；T57；QA18；QA23；QA14 |
+| QA23 | 真实相同文件关系 | 相同字节；准确来源；确认；解除；历史 | FR-16；GRAC-04；FD-64 | docs/development/QA23-real-duplicate-files.md | archives.relations；relation_queries；UI2DuplicatesPage | T44；QA11；QA12；QA14 |
+| QA22 | 真实PDF原生文字与手工文书 | 文字层覆盖；准确原页；未知元数据；原回执 | FR-13；FR-15；GRAC-03 | docs/development/QA22-real-native-pdf-document.md | UI2DocumentCreatePage；archives.grouping；requests.archive_documents | T40；T43；QA11；QA12；QA14 |
+| QA21 | 真实观察范围保存与历史版本 | 当前查询范围；self_report；原回执；更正；依赖失效 | FR-19；GRAC-07 | docs/development/QA21-real-observation-period-save.md | records.periods；requests.observation_periods；UI2ObservationPeriodPage | T47；QA20；QA19；QA14 |
+| QA20 | 真实观察时段与未知采样时间 | 明确可见字段；实际原值；未知间隔；来源 | FR-19；GRAC-07 | docs/development/QA20-real-observation-period.md | records.periods；UI2ObservationPeriodPage | T16；T47；QA12；QA14 |
+| QA19 | 真实新增内容整理 | 独立可见字段；准确批次；确定性项目；来源 | FR-18；GRAC-06 | docs/development/QA19-real-archive-delta.md | summaries；requests；runtime.schema | T46；QA12；QA14 |
+| QA18 | 真实文书读取性能 | 批量来源核验；准确权限范围；内容保持 | FR-15；FR-17；NFR-14 | docs/development/QA18-document-read-performance.md | archives；views_archive_documents | T43；T45；T56；T57；QA14 |
+| QA17 | 真实资料权限撤销与恢复 | read_raw；manage_grant；原件校验和；版本 | FR-01；FR-15；GRAC-03／05 | docs/development/QA17-real-access-revocation.md | authorization；支持接口；UI2GroupingPage | T09；T43；T56；QA14 |
+| QA16 | 文书归组原文入口 | document_id；version_id；原件来源 | FR-15；FR-17；GRAC-03／05 | docs/development/QA16-document-source-entry.md | UI2GroupingPage；DocumentOriginalPage | T43；T45；QA12；QA14 |
+| QA15 | 本地真实资料提醒 | personal_record_task；in_app；delivered；read_at | FR-22；GRAC-10 | docs/development/QA15-real-material-reminders.md | backend/notifications；requests；tasks；UI2RemindersPage | T53；QA12；QA14 |
+| QA14 | 全部功能持续开发与定时提交 | FR-01—22；当前授权；main；06:00 | 当前全部 AC／GRAC | docs/development/QA14-full-function-delivery.md | planning；backend；guardian-h5；docs | T01—T60；QA09—QA13 |
+| QA13 | 档案任务并发与容量 | 环境共享锁；原件；预留；PostgreSQL | QA13 并发与容量验收 | docs/development/QA13-archive-worker-concurrency.md | backend/archives；recognition；family_content；authorization | QA12；QA10 |
+| QA12 | 真实 OCR 与字段验证 | Ark；隐私复核；输入副本；字段；来源；费用 | QA12 识别验收 | docs/development/QA12-real-ocr-validation.md | .qa-work/QA12；backend现有服务 | QA10；QA11；T55 |
+| QA11 | 真实资料本地验证环境 | 数据库；原件；PDF；配置；任务；来源 | QA11-01—06 | docs/development/QA11-real-data-workspace.md | .qa-work/QA11；backend现有服务 | QA10；QA07；T04；T06 |
+| QA10 | 真实资料处理与功能验证 | 原件；OCR；比较符；时间；来源；任务；真实评价 | QA10-01—07 | docs/development/QA10-real-data-validation.md | backend；guardian-h5；.qa-work/QA10 | QA09；T41；T42；T50；T52；T55 |
+| QA09 | 登录与访问状态恢复 | UI2ReadState；AccessProvider；会话；关联；恢复入口 | QA09-01—05 | docs/development/QA09-access-recovery.md | guardian-h5/src/components；features/account | QA07；T07；T54 |
+| QA07 | 并发读取、照片上传与摘要处理 | Principal；只读快照；runtime；worker；UploadedPhotos | QA07-01—06 | docs/development/QA07-concurrent-read-repair.md | backend/authorization；summaries；config；core；guardian-h5 | QA06；T03；T25；T28 |
+| QA06 | 模拟资料业务验收 | 模拟输入；实际接口；保存重读；任务；异常恢复 | QA06-01—09 | docs/development/QA06-simulation-acceptance.md | guardian-h5；backend；.qa-work/QA06 | QA05；T29；T54；T56 |
+| QA05 | 首页形象与操作样式 | HomeCompanion；主操作；主题；尺寸 | QA05-01—05；AC-H5 | docs/development/QA05-ui-consistency.md | guardian-h5；ui-delivery | T07；T54；QA04 |
 | QA04 | 输入与页面反馈修复 | 语音；缩略图；报告；处方；人物比例 | FR-02；AC-H5；T12—T15 | docs/development/QA04-input-feedback.md | guardian-h5；backend；docs/testing | QA03；T12；T13；T14；T15 |
 | QA03 | 页面比对与Agent异常回归 | UI3；Ark；候选；异常；权限；恢复 | FR-01—FR-12；AC-H5；EV01 | docs/development/QA03-comprehensive-retest.md | guardian-h5；backend；docs/testing | QA01；QA02；T29 |
 | QA02 | 本地功能续接 | 健康档案、症状、照片、草稿、医学时间、完整历史、提示、摘要 | GAP01—GAP08；SU01 | docs/development/QA02-local-completion.md | guardian-h5；backend | T10—T16；T21；T22；T24；T25；T29 |

@@ -66,32 +66,40 @@ function DuplicatesContent() {
   const mounted = useRef(true);
   const recovered = useRef<string | null>(null);
   const loaded = useRef<string | null>(null);
+  const preparingNew = useRef<string | null>(null), rejectedRequest = useRef<string | null>(null);
   const sources = directory.data?.sources ?? [];
   const left = sources.find(value => value.id === leftId);
   const right = sources.find(value => value.id === rightId);
   const edit = canWrite && !busy && !identity && !saved && !requestId && !clientRequestId;
   const permitted = !selected || selected.allowed_actions.includes('archive_relation_update');
+  const bytesMismatch = canRead && error instanceof ApiError && error.status === 422 && error.code === 'ARCHIVE_RELATION_BYTES_MISMATCH';
   const sourceFiles = [left, right].flatMap((value, index) => {
     const fileId = value?.kind === 'file' ? value.id : value?.source?.file_id;
     return fileId ? [{ file_id: fileId, ordinal: index + 1, checksum: value?.checksum ?? undefined }] : [];
   });
 
-  function wipe() { setSaved(null); setRequest(null); setSelected(null); setIdentity(null); setIntent(null); setLeftId(''); setRightId(''); setType(''); setReason(''); setEvidence(''); }
+  function wipe() { preparingNew.current = null; setSaved(null); setRequest(null); setSelected(null); setIdentity(null); setIntent(null); setLeftId(''); setRightId(''); setType(''); setReason(''); setEvidence(''); }
   useEffect(() => {
     if (directory.error && boundary.current() && boundary.deny(directory.error)) { setError(directory.error); active.current?.abort(); wipe(); }
   }, [directory.error]);
   function run(operation: (controller: AbortController) => Promise<void>) {
     if (!canRead || !directory.visible || busyRef.current || !boundary.current()) return;
+    preparingNew.current = null;
     const controller = new AbortController(); active.current = controller; busyRef.current = true;
     setBusy(true); setError(null);
     void Promise.resolve().then(() => { boundary.guard(controller.signal); return operation(controller); }).then(undefined, failure => {
       if (!(failure instanceof Error)) throw failure;
       if (boundary.current(controller.signal) && mounted.current) {
+        if (preparingNew.current && failure instanceof ApiError && failure.status === 422 && failure.code === 'ARCHIVE_RELATION_BYTES_MISMATCH') {
+          rejectedRequest.current = preparingNew.current;
+          setIdentity(null); setIntent(null); setRequest(null); recovered.current = null;
+          setParams(current => { const next = new URLSearchParams(current); for (const key of ['client_request', 'request', 'operation']) next.delete(key); return next; }, { replace: true });
+        }
         setError(failure);
         if (boundary.deny(failure)) wipe();
         if (failure instanceof ApiError && failure.status === 409) directory.reload();
       }
-    }).finally(() => { if (active.current === controller) { active.current = null; busyRef.current = false; if (mounted.current) setBusy(false); } });
+    }).finally(() => { if (active.current === controller) { active.current = null; preparingNew.current = null; busyRef.current = false; if (mounted.current) setBusy(false); } });
   }
 
   function fill(payload: RelationInput | RelationChangeInput) {
@@ -112,6 +120,7 @@ function DuplicatesContent() {
   }
 
   function inspect(identifier: string, byRequest = false) {
+    if (byRequest && identifier === rejectedRequest.current) return;
     run(async controller => {
       if (!access.patientId) throw new Error('当前患儿尚未取得访问资格。');
       const operation = params.get('operation');
@@ -145,7 +154,7 @@ function DuplicatesContent() {
   }, [canRead]);
   useEffect(() => {
     const lookup = requestId ? `intent:${requestId}` : clientRequestId ? `request:${clientRequestId}` : null;
-    if (canRead && directory.visible && lookup && recovered.current !== lookup && !busyRef.current) { recovered.current = lookup; inspect(requestId ?? clientRequestId!, !requestId); }
+    if (canRead && directory.visible && lookup && (requestId || clientRequestId !== rejectedRequest.current) && recovered.current !== lookup && !busyRef.current) { recovered.current = lookup; inspect(requestId ?? clientRequestId!, !requestId); }
     else if (canRead && directory.visible && relationId && !lookup && loaded.current !== relationId && !busyRef.current) {
       loaded.current = relationId;
       run(async controller => { const value = await readArchiveRelation(relationId, access.patientId!, controller.signal);
@@ -182,7 +191,9 @@ function DuplicatesContent() {
       }
       setIdentity(current); recovered.current = `request:${current.request_id}`;
       setParams(next => { const copy = new URLSearchParams(next); copy.set('client_request', current.request_id); copy.set('operation', current.operation_id); return copy; }, { replace: true });
+      if (!identity && !intent) preparingNew.current = current.request_id;
       const prepared = intent ?? await prepareRelationRequest(current, controller.signal);
+      preparingNew.current = null;
       if (!boundary.current(controller.signal) || !mounted.current) return;
       setIntent(prepared); recovered.current = `intent:${prepared.intent_id}`;
       setParams(next => { const copy = new URLSearchParams(next); copy.set('request', prepared.intent_id); return copy; }, { replace: true });
@@ -213,7 +224,10 @@ function DuplicatesContent() {
 
   return <UI2FamilyFrame title="重复资料核对" screenId="UI2-29" note="同一文件、同次采样和独立检查分别判断。" backTo="/archives/confirm">
     <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{association?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-    <UI2ReadState loading={directory.loading || busy} error={error ?? directory.error} onRetry={() => boundary.revalidate(() => { recovered.current = null; loaded.current = null; setError(null); directory.reload(); })} />
+    <UI2ReadState loading={directory.loading || busy} error={bytesMismatch ? directory.error : error ?? directory.error} onRetry={() => boundary.revalidate(() => { recovered.current = null; loaded.current = null; setError(null); directory.reload(); })} />
+    {bytesMismatch && <section className="status-panel error" role="alert"><h2>文件内容不同</h2><p>这两个原件的完整内容不同，不能确认为相同文件。</p>
+      <p>原件选择、关系依据和原因已保留。{edit ? '请重新核验原件和关系类别。' : '请按原请求身份核验保存状态。'}</p>
+      <details><summary>查看错误详情</summary><p>HTTP 422 · ARCHIVE_RELATION_BYTES_MISMATCH</p></details></section>}
     <section className="card form-card"><div className="section-heading"><h2>确认资料关系</h2><span className="badge neutral">{selected ? statuses[selected.status] : left && right ? '待确认关系' : '待选择原件'}</span></div>
       <div className="pair"><span>原始文书</span><strong>{left && right ? `${left.label}；${right.label}` : '尚未提供'}</strong></div>
       <div className="pair"><span>页面与顺序</span><strong>{selected ? `关系版本 ${selected.version}，来源版本分别保留` : '尚未提供'}</strong></div>
@@ -247,7 +261,7 @@ function DuplicatesContent() {
       <button className="button" type="submit" disabled={!canWrite || !permitted || busy || !!saved || !!identity && request?.state !== 'pending' || !identity && (!left || !right || !type || !evidence.trim() || !reason.trim())}>{busy ? '正在核验关系保存结果' : '确认关系'}</button>
       <button className="button secondary" type="button" disabled={!edit || !permitted || !selected || selected.status === 'released' || !evidence.trim() || !reason.trim()} onClick={() => submit(true)}>解除当前关联</button>
     </form>
-    {error && <section className="status-panel error" role="alert"><h2>关系结果需要核验</h2><p>{error.message}</p></section>}
+    {error && !bytesMismatch && <section className="status-panel error" role="alert"><h2>关系结果需要核验</h2><p>{error.message}</p></section>}
     {(intent || requestId || clientRequestId) && canRead && !saved && <section className="status-panel pending" role="status"><h2>原请求结果待核验</h2><p>准确原请求及正文继续保留，明确保存结果后可以继续整理。</p>
       <button className="text-action" disabled={busy} onClick={() => { const id = intent?.intent_id ?? requestId; inspect(id ?? clientRequestId!, !id); }}>查询原关系请求</button>
       {request?.may_retry && <button className="button secondary" disabled={busy} onClick={retry}>重新提交原关系请求</button>}</section>}

@@ -1,3 +1,4 @@
+import argparse
 import csv
 import hashlib
 import importlib.metadata
@@ -8,7 +9,7 @@ import platform
 import subprocess
 import sys
 from datetime import datetime
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urljoin, urlsplit
 from urllib.request import urlopen
 from zoneinfo import ZoneInfo
 
@@ -39,6 +40,16 @@ def csv_rows(path):
 
 
 def main():
+    arguments = argparse.ArgumentParser()
+    arguments.add_argument('--api-url', default='http://127.0.0.1:8000')
+    arguments.add_argument('--frontend-url', default='http://127.0.0.1:5173/')
+    arguments.add_argument('--report-path', type=Path, default=ROOT / '.planning-work/t34-reception.json')
+    options = arguments.parse_args()
+    for value in (options.api_url, options.frontend_url):
+        address = urlsplit(value)
+        require(address.scheme == 'http' and address.hostname in {'127.0.0.1', 'localhost'}
+            and not address.username and not address.password and not address.query and not address.fragment
+            and address.path in {'', '/'}, '接收检查需要明确的本地服务地址')
     rows = csv_rows(ROOT / 'planning/reception-v2.csv')
     require(len(rows) == 22, '功能接收清单数量必须为 22')
     require({row['requirement'] for row in rows} == {f'FR-{n:02}' for n in range(1, 23)}, '功能接收编号不完整')
@@ -102,10 +113,10 @@ def main():
     broker = redis.Redis(host='127.0.0.1', port=6379, socket_connect_timeout=3, socket_timeout=3)
     require(broker.ping(), 'Redis 读取失败')
     broker_version = broker.info('server')['redis_version']
-    with urlopen('http://127.0.0.1:8000/internal/readiness', timeout=10) as response:
+    with urlopen(urljoin(options.api_url, '/internal/readiness'), timeout=10) as response:
         readiness = json.load(response)
     require(readiness['status'] == 'ready', '后端依赖未就绪')
-    with urlopen('http://127.0.0.1:5173/', timeout=10) as response:
+    with urlopen(options.frontend_url, timeout=10) as response:
         frontend_status = response.status
         frontend_cache = response.headers.get('Cache-Control')
     require(frontend_status == 200 and frontend_cache == 'no-store', '正式前端未正常提供禁止缓存响应')
@@ -114,18 +125,19 @@ def main():
         sources.add(ROOT / name)
     report = {
         'checked_at': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(),
-        'status': 'PASS', 'capability': 'DESIGN', 'scope': '系统接收与实际运行身份',
+        'status': 'PASS', 'capability': 'DESIGN', 'scope': '接收清单结构、引用与实际运行身份',
         'counts': {'requirements': len(rows), 'pages': len(pages), 'states': 328, 'support_pages': 6},
         'runtime': {'python': platform.python_version(), 'node': subprocess.check_output(['node', '--version'], text=True).strip(),
                     'django': django.get_version(), 'celery': importlib.metadata.version('celery'),
                     'database': {'version': database_version, 'name': database_name, 'user': database_user, 'port': database_port},
-                    'redis': broker_version, 'readiness': readiness, 'frontend_http': frontend_status, 'frontend_cache': frontend_cache},
+                    'redis': broker_version, 'readiness': readiness, 'frontend_http': frontend_status, 'frontend_cache': frontend_cache,
+                    'api_url': options.api_url, 'frontend_url': options.frontend_url},
         'existing_inventory': {'records': record_count, 'record_versions': version_count, 'files': file_count, 'pending_migrations': pending_migrations},
-        'business_validation': 'NOT_RUN', 'visual_validation': 'NOT_RUN', 'real_devices': 'NOT_RUN',
+        'semantic_ownership_validation': 'NOT_RUN', 'business_validation': 'NOT_RUN',
+        'visual_validation': 'NOT_RUN', 'real_devices': 'NOT_RUN',
         'source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(sources)},
     }
-    output = ROOT / '.planning-work/t34-reception.json'
-    output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    options.report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

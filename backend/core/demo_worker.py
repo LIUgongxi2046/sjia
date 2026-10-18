@@ -77,20 +77,18 @@ def require_local_runtime(runtime, environment):
 
 @transaction.atomic
 def worker_scope(*, username, principal_id, acknowledge_test_only=False):
-    """Read and lock the existing seed identity; never provision or repair it."""
+    """检查既有示例账号和资料范围，不创建或修改前置资料。"""
     require_test_context(acknowledge_test_only=acknowledge_test_only)
     principal_id = _account_arguments(username, principal_id)
     environment = settings.SJIA_ENVIRONMENT
-    # Gate -> principal -> patients follows normal service lock ordering. Only
-    # non-secret principal fields are selected here; execute_* retain their own
-    # unchanged current-authority checks.
-    gate = EnvironmentGate.objects.select_for_update().filter(environment=environment, enabled=True).first()
+    # 范围检查仅读取已提交资料，execute_* 在写入前继续锁定并检查当前权限。
+    gate = EnvironmentGate.objects.filter(environment=environment, enabled=True).first()
     if gate is None or gate.runtime_config_id is None:
         raise CommandError('DEMO_EXISTING_TEST_RUNTIME_REQUIRED')
     if not PrincipalIdentity.objects.filter(provider='self', provider_subject=username,
             principal_id=principal_id).exists():
         raise CommandError('DEMO_ACCOUNT_IDENTITY_MISMATCH')
-    actor = Principal.objects.select_for_update().only('id', 'account_status').get(id=principal_id)
+    actor = Principal.objects.get(id=principal_id)
     if actor.account_status != 'active':
         raise CommandError('DEMO_ACCOUNT_NOT_ACTIVE')
     if ServiceRoleGrant.objects.filter(principal_id=actor.id, revoked_at__isnull=True).exists():
@@ -99,7 +97,7 @@ def worker_scope(*, username, principal_id, acknowledge_test_only=False):
     if (Relation.objects.filter(guardian_id=actor.id).exclude(patient_id__in=patient_ids).exists()
             or AccessGrant.objects.filter(principal_id=actor.id).exclude(patient_id__in=patient_ids).exists()):
         raise CommandError('DEMO_ACCOUNT_ALREADY_HAS_OTHER_PATIENT_SCOPE')
-    runtime = ConfigVersion.objects.select_for_update().get(id=gate.runtime_config_id)
+    runtime = ConfigVersion.objects.get(id=gate.runtime_config_id)
     require_local_runtime(runtime, environment)
     reason = configuration_qualification_reason(runtime, environment)
     if reason:
@@ -125,7 +123,7 @@ def worker_scope(*, username, principal_id, acknowledge_test_only=False):
     now = timezone.now()
     for key, display_id in PATIENTS.items():
         patient_id = identity(f'patient:{key}')
-        if not Patient.objects.select_for_update().filter(id=patient_id, display_id=display_id,
+        if not Patient.objects.filter(id=patient_id, display_id=display_id,
                 status='active').exists():
             raise CommandError('DEMO_PATIENT_CONFLICT')
         if not Relation.objects.filter(id=identity(f'relation:{key}'), patient_id=patient_id,

@@ -40,14 +40,23 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
     operating.current = true; setBusy(true); setError(null);
     const controller = new AbortController(); pending.current = controller;
     const id = groupId ?? crypto.randomUUID();
-    if (!groupId) setParams(current => { const next = new URLSearchParams(current); next.set('upload_group', id); return next; }, { replace: true });
     const operation = async () => {
+      const savedPages = group?.files.reduce((count, file) => count + file.page_count, 0) ?? 0;
+      const newFiles = queue.filter(item => !group?.files.some(file => file.ordinal === item.ordinal));
+      if (savedPages + newFiles.length > options.max_pages)
+        throw new Error(`每组最多接收 ${options.max_pages} 页，当前选择的文件数量已超出剩余页数，请分批提供。`);
+      for (const item of queue) {
+        if (!options.media_types.includes(item.file.type))
+          throw new Error(`${item.file.type === 'application/pdf' ? 'PDF' : item.file.name} 暂未包含在当前可接收格式中，请查看下方文件范围。`);
+        if (item.file.size <= 0) throw new Error(`${item.file.name} 没有可读取的内容，请重新选择。`);
+        if (item.file.size > options.max_upload_bytes)
+          throw new Error(`${item.file.name} 超出单份文件容量，当前上限为 ${(options.max_upload_bytes / 1048576).toLocaleString('zh-CN', { maximumFractionDigits: 2 })} MiB。`);
+      }
+      if (!groupId) setParams(current => { const next = new URLSearchParams(current); next.set('upload_group', id); return next; }, { replace: true });
       const receipt = await createFileGroup(access.patientId!, access.csrfToken ?? undefined, authorization, id);
       if (receipt.group_id !== id) throw new Error('上传组回执与原请求身份不一致。');
       for (const item of queue) {
         if (controller.signal.aborted) return;
-        if (!options.media_types.includes(item.file.type) || item.file.size <= 0 || item.file.size > options.max_upload_bytes)
-          throw new Error('所选文件格式或容量超出当前批准范围。');
         await uploadArchiveFile(id, item.id, await item.file.arrayBuffer(), item.file.type, item.ordinal, controller.signal);
       }
       if (controller.signal.aborted) return;
@@ -77,7 +86,8 @@ export function ArchiveUpload({ onSaved }: { onSaved: (groupId: string) => void 
   return <section className="card form-card"><h2>提供新的原件</h2>
     {error && <p role="alert">{error.message}</p>}
     {!options && !error && <p role="status">正在读取当前上传范围</p>}
-    {options && <><p>当前启用 {options.media_types.join('、')}；每份文件不超过 {options.max_upload_bytes} bytes，上传组不超过 {options.max_pages} 页。</p>
+    {options && <><p>每份文件最多 {(options.max_upload_bytes / 1048576).toLocaleString('zh-CN', { maximumFractionDigits: 2 })} MiB，每组最多 {options.max_pages} 页。</p>
+      <details><summary>查看可接收的文件格式</summary><p>{options.media_types.join('、')}</p></details>
       <label className="field"><span>资料用途授权</span><select value={authorization} disabled={busy || !ready || ['available', 'validating', 'failed'].includes(group?.status ?? '')} onChange={event => setAuthorization(event.target.value)}>
         <option value="">请选择准确资料来源</option>{options.authorizations.map(value => <option key={value.authorization_id} value={value.authorization_id}>{value.source_label} · {value.evidence_ref}</option>)}
       </select></label>

@@ -71,7 +71,6 @@ def artifact_verification_scope():
 
 
 def actual_artifact_checksum(config):
-    root = Path(__file__).resolve().parents[2]
     if config.schema_version == 'purpose-processing-2':
         from files.purpose_processing import processing_artifact_checksum
 
@@ -80,18 +79,23 @@ def actual_artifact_checksum(config):
         from files.purpose_text import text_processing_artifact_checksum
 
         return text_processing_artifact_checksum()
+    return compute_checksum(backend_artifact_manifest())
+
+
+def backend_artifact_manifest():
+    root = Path(__file__).resolve().parents[2]
     paths = {root / 'backend/requirements.lock.txt', root / 'backend/manage.py'}
     directories = {Path(app.path) for app in apps.get_app_configs()
         if Path(app.path).is_relative_to(root / 'backend')}
     directories.add(root / 'backend/config')
+    directories.add(root / 'backend/api')
     for directory in directories:
         suffixes = ('.py',) if directory == root / 'backend/config' else ('.py', '.json')
         for parent, _, filenames in os.walk(directory, onerror=raise_artifact_scan_error):
             paths.update(Path(parent) / name for name in filenames if name.endswith(suffixes))
     for directory in ('backend-design', 'alert-design', 'data-design'):
         paths.update((root / directory).glob('*.schema.json'))
-    manifest = {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(paths)}
-    return compute_checksum(manifest)
+    return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(paths)}
 
 
 def raise_artifact_scan_error(error):

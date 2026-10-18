@@ -5,7 +5,8 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from django.db import transaction
+from django.core.exceptions import ImproperlyConfigured
+from django.db import connection, transaction
 from django.utils import timezone as dj_timezone
 
 from authorization.actions import CASE_ACTIONS, SERVICE_ACTIONS
@@ -13,6 +14,7 @@ from authorization.models import AccessGrant, ServiceRoleGrant
 from family_content.models import EnvironmentGate
 from family_content.gate_locks import read_environment_gate_shared
 from identity.models import Principal
+from identity.read_locks import read_principal_shared
 from relations.models import Relation
 
 
@@ -150,16 +152,29 @@ def evaluate(
     author_id=None,
     require_relation=False,
     whole_resource=False,
+    read_only=False,
+    lock=True,
 ) -> PolicyDecision:
     """锁定当前环境和人员，岗位授权保持至调用事务结束。"""
     now = _utcnow()
     read_actions = {'read_raw', 'read_history', 'read_file', 'view_request', 'read_summary',
         'read_case', 'read_assessment', 'execute_assessment'}
-    gate = (read_environment_gate_shared(environment) if action in read_actions
-        else EnvironmentGate.objects.select_for_update().filter(environment=environment).first())
+    shared = read_only or action in read_actions
+    if not lock:
+        with connection.cursor() as cursor:
+            cursor.execute('SHOW transaction_read_only')
+            if cursor.fetchone()[0] != 'on':
+                raise ImproperlyConfigured('无锁授权检查要求只读事务。')
+        gate = EnvironmentGate.objects.filter(environment=environment).first()
+    else:
+        gate = (read_environment_gate_shared(environment) if shared or action in CASE_ACTIONS
+            or action in {'manage_data_use', 'verify_field'}
+            else EnvironmentGate.objects.select_for_update().filter(environment=environment).first())
     if gate is None or not gate.enabled:
         raise Denied('ENVIRONMENT_DISABLED')
-    principal = Principal.objects.select_for_update().get(id=principal.id)
+    principal = (Principal.objects.get(id=principal.id) if not lock else
+        read_principal_shared(principal.id) if shared else
+        Principal.objects.select_for_update(no_key=True).get(id=principal.id))
     check_principal_session(principal, session_auth_epoch)
     if action in SERVICE_ACTIONS:
         grant = check_service_grant(principal, action, environment, now)

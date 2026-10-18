@@ -17,7 +17,7 @@ from configurations.models import ConfigVersion
 from configurations.qualification import configuration_qualification_reason
 from files.model_input import model_copy_ref
 from identity.models import Patient
-from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from recognition.provider_budget import check_provider_budget
 from tasks.models import Task
 from tasks.outbox import emit_event
@@ -103,7 +103,7 @@ def reserved_cost(task):
 
 def check_budget(quota, batch, pages):
     provider = ConfigVersion.objects.get(id=quota.payload['provider_config_id'])
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+    gate = read_environment_gate_shared(settings.SJIA_ENVIRONMENT)
     runtime = ConfigVersion.objects.select_for_update().get(id=gate.runtime_config_id,
         kind='provider', schema_version='backend-runtime-1', status='enabled')
     entries = [item for item in runtime.payload['providers'] if item['enabled']

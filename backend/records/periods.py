@@ -32,7 +32,6 @@ from records.period_schemas import checked_period
 from records.service import medical_time_view
 from retention.models import RetentionPolicy
 from summaries.delta import comparable, fact_value
-from summaries.service import current_summary_config
 from verification.models import Verification
 
 
@@ -90,11 +89,15 @@ def episode_scope(actor, patient, episode):
     return version, field
 
 
-def period_retention(runtime):
+def period_retention_policies(runtime):
     rows = list(RetentionPolicy.objects.select_for_update().filter(id__in=runtime.payload['retention_policy_ids'],
         data_class='observation', status='active').order_by('id'))
-    rows = [row for row in rows if row.approved_by_id is not None and row.approved_at is not None
+    return [row for row in rows if row.approved_by_id is not None and row.approved_at is not None
         and isinstance(row.evidence_ref, str) and row.evidence_ref.strip()]
+
+
+def period_retention(runtime):
+    rows = period_retention_policies(runtime)
     if len(rows) != 1:
         raise ApiError('OBSERVATION_PERIOD_RETENTION_UNAVAILABLE', 503)
     return rows[0]
@@ -247,18 +250,31 @@ def sampling_interval(before, after, relations, patient, frequency, frequency_re
         'reason_codes': list(dict.fromkeys(reasons)), 'relation_version_ids': [str(row.id) for row in pair]})
 
 
+def observation_visibility(runtime):
+    identity = runtime.payload.get('observation_period_visibility_config_id')
+    if identity is None:
+        raise ApiError('OBSERVATION_PERIOD_VISIBILITY_UNAVAILABLE', 503)
+    config = ConfigVersion.objects.filter(id=identity, kind='visibility', schema_version='visibility-1').first()
+    if (config is None or config.payload['environment'] != settings.SJIA_ENVIRONMENT
+            or config.payload['purpose'] != 'family_observation' or config.payload['clinical_fields']
+            or configuration_qualification_reason(config, settings.SJIA_ENVIRONMENT)):
+        raise ApiError('OBSERVATION_PERIOD_VISIBILITY_UNAVAILABLE', 503)
+    return config
+
+
 def period_view(actor, patient, runtime, row=None):
     current = current_period(patient, actor)
     if row is None:
         row = current
     if row is not None and (row.patient_id != patient.id or row.owner_id != actor.id):
         raise ApiError('OBSERVATION_PERIOD_SCOPE_DENIED', 403)
-    visibility = current_summary_config('visibility', settings.SJIA_ENVIRONMENT)
-    if visibility.payload['purpose'] != 'family_observation' or configuration_qualification_reason(visibility, settings.SJIA_ENVIRONMENT):
-        raise ApiError('OBSERVATION_PERIOD_VISIBILITY_UNAVAILABLE', 503)
+    visibility = observation_visibility(runtime)
     first, last = [MedicalTime.objects.get(id=identity, patient=patient) for identity in (row.start_time_id, row.end_time_id)] if row else (None, None)
     start, end = interval_or_none(first), interval_or_none(last)
     reasons = ['OBSERVATION_PERIOD_NOT_SELECTED'] if row is None else ['OBSERVATION_PERIOD_TIME_UNKNOWN'] if start is None or end is None else []
+    retention_ready = len(period_retention_policies(runtime)) == 1
+    if not retention_ready:
+        reasons.append('OBSERVATION_PERIOD_RETENTION_UNAVAILABLE')
     if row is not None and current.id != row.id:
         reasons.append('OBSERVATION_PERIOD_SUPERSEDED')
     artifact = deployed_artifact_checksum(runtime)
@@ -333,7 +349,8 @@ def period_view(actor, patient, runtime, row=None):
         'interval_policy_id': str(config.id) if config else None, 'samplings': samplings, 'intervals': intervals,
         'unknown_time_fact_ids': unknown, 'reason_codes': list(dict.fromkeys(reasons)),
         'episode_options': [{'episode_id': str(item.id), 'label': item.label, 'organization': item.organization_text} for item in episodes],
-        'allowed_actions': ['observation_period_change'] if grants_for(actor, patient, 'write_record', author_id=actor.id, whole_resource=True) else []}
+        'allowed_actions': ['observation_period_change'] if retention_ready
+            and grants_for(actor, patient, 'write_record', author_id=actor.id, whole_resource=True) else []}
     value['snapshot_version'] = compute_checksum({'view': value, 'data_epoch': str(patient.data_epoch), 'verification_epoch': str(patient.verification_epoch),
         'auth_epoch': str(actor.auth_epoch), 'grants': [entity_reference(grant) for grant in directory_grants(actor, patient)],
         'runtime': entity_reference(runtime), 'visibility': entity_reference(visibility)})

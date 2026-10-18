@@ -28,6 +28,8 @@ from relations.inputs import ApplicationRetryInput
 from summaries.inputs import SummaryRetryInput
 from summaries.service import list_summaries
 from summaries.submission import prepare_summary_intent, submit_summary, summary_request_view, summary_permission, retry_summary_intent
+from summaries.submission import summary_snapshot_permission
+from records.snapshot import record_read_snapshot
 
 
 def _draft_view(draft: Draft) -> dict:
@@ -110,16 +112,14 @@ def draft_abandon(request, draft_id):
     return Response(_draft_view(draft))
 
 
-@transaction.atomic
+@record_read_snapshot
 def summary_listing(request, patient_id):
-    with connection.cursor() as cursor:
-        cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
     principal, auth_epoch, audience = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     patient = get_patient(patient_id)
-    decision = summary_permission(principal, patient, auth_epoch, audience, 'read_summary')
-    return Response(list_summaries(patient, decision.grant.field_codes))
+    grant = summary_snapshot_permission(request, principal, patient, audience)
+    return Response(list_summaries(patient, grant.field_codes))
 
 
 @api_view(["GET", "POST"])
@@ -139,19 +139,17 @@ def summary_collection(request, patient_id):
 
 @api_view(["GET"])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def summary_read(request, summary_id):
-    with connection.cursor() as cursor:
-        cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
     principal, auth_epoch, audience = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     summary = Summary.objects.filter(id=summary_id).first()
     if summary is None:
         raise ApiError("SUMMARY_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    decision = summary_permission(principal, summary.patient, auth_epoch, audience, 'read_summary')
+    grant = summary_snapshot_permission(request, principal, summary.patient, audience)
     result = read_summary(summary_id, summary.patient)
-    if any(item['snapshot']['field']['field_code'] not in decision.grant.field_codes for item in result['items']):
+    if any(item['snapshot']['field']['field_code'] not in grant.field_codes for item in result['items']):
         result['needs_regeneration'] = True
     if result['needs_regeneration']:
         result['items'] = []

@@ -7,6 +7,7 @@ import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
 import { useAccess } from '../../state/access';
 import { useEndpointAccess } from '../../state/useEndpointAccess';
+import { ApiError } from '../../api/client';
 import { readBatch } from '../../api/archiveBatches';
 import { readCandidates, readPageOriginal } from '../../api/archiveFacts';
 import { documentPayloadMatches, findDocumentRequest, prepareDocumentRequest, readArchiveDocument,
@@ -52,7 +53,9 @@ function CreateContent() {
   const [loading, setLoading] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState<Error | null>(null);
   const [reload, setReload] = useState(0), [visible, setVisible] = useState(document.visibilityState === 'visible');
   const pending = useRef<AbortController | null>(null), mounted = useRef(true), running = useRef(false), restored = useRef('');
+  const preparingNew = useRef<string | null>(null), rejectedRequest = useRef<string | null>(null);
   const ready = !!access.principalId && !!access.patientId && !access.loading && !access.error && visible;
+  const duplicatePage = ready && error instanceof ApiError && error.status === 409 && error.code === 'DOCUMENT_COPY_CONFIRMATION_REQUIRED';
   const relation = access.relations.find(value => value.patient_id === access.patientId);
   const manual = batch?.intake_mode === 'manual';
   const canWrite = ready && !!form && relation?.status === 'active' && relation.actions.includes('write_record');
@@ -64,7 +67,7 @@ function CreateContent() {
   const target = `/patients/${access.patientId}/archive-documents`;
 
   function clear() { setBatch(null); setCandidate(null); setEpisodeOptions([]); setForm(null); setIdentity(null); setIntent(null); setRequest(null); setSaved(null); setDocumented(emptyTime); }
-  function stop() { pending.current?.abort(); pending.current = null; running.current = false; setBusy(false); restored.current = ''; }
+  function stop() { pending.current?.abort(); pending.current = null; running.current = false; preparingNew.current = null; setBusy(false); restored.current = ''; }
   useEffect(() => {
     mounted.current = true;
     const freeze = () => { stop(); clear(); setVisible(false); };
@@ -100,9 +103,17 @@ function CreateContent() {
   }, [ready, batchId, pageId, reload]);
   function run(work: (signal: AbortSignal) => Promise<void>) {
     if (!ready || running.current || !boundary.current()) return;
+    preparingNew.current = null;
     const controller = new AbortController(); pending.current = controller; running.current = true; setBusy(true); setError(null);
-    void Promise.resolve().then(() => { boundary.guard(controller.signal); return work(controller.signal); }).then(() => { if (mounted.current && boundary.current(controller.signal) && pending.current === controller) { running.current = false; setBusy(false); } }, value => {
-      if (mounted.current && boundary.current(controller.signal) && pending.current === controller) { running.current = false; setBusy(false); failed(value); }
+    void Promise.resolve().then(() => { boundary.guard(controller.signal); return work(controller.signal); }).then(() => { if (mounted.current && boundary.current(controller.signal) && pending.current === controller) { preparingNew.current = null; running.current = false; setBusy(false); } }, value => {
+      if (mounted.current && boundary.current(controller.signal) && pending.current === controller) {
+        if (preparingNew.current && value instanceof ApiError && value.status === 409 && value.code === 'DOCUMENT_COPY_CONFIRMATION_REQUIRED') {
+          rejectedRequest.current = preparingNew.current;
+          setIdentity(null); setIntent(null); setRequest(null); restored.current = '';
+          setParams(current => { const next = new URLSearchParams(current); next.delete('client_request'); next.delete('request'); return next; }, { replace: true });
+        }
+        preparingNew.current = null; running.current = false; setBusy(false); failed(value);
+      }
     });
   }
   function marker(value: DocumentIntentInput, prepared?: IntentView) {
@@ -114,22 +125,26 @@ function CreateContent() {
     if (BigInt(document.version) < BigInt(value.receipt.version) || document.version === value.receipt.version && !documentPayloadMatches(document, value.document_input)) throw new Error('文书回执与重新读取的保存内容不一致。');
     if (boundary.current(signal)) { setSaved(document); setRequest(value); }
   }
-  function inspect() { run(async signal => {
-    if (!requestId && !clientId) throw new Error('文书原请求缺少准确恢复身份。');
-    const value = requestId ? await readDocumentRequest(requestId, signal) : await findDocumentRequest(clientId!, 'archive_document_create', target, signal);
-    if (value.operation_id !== 'archive_document_create' || value.target_key !== target || !value.document_input
-        || value.document_input.batch_id !== batchId || value.document_input.page_ids.some(id => !batch?.pages.some(page => page.page_id === id))) throw new Error('文书原请求与当前患儿、批次及原页不一致。');
-    if (!boundary.current(signal)) return;
-    const original: DocumentIntentInput = { operation_id: 'archive_document_create', target_key: target,
-      request_id: value.request_id, schema_version: '2.0.0', payload: value.document_input };
-    setIdentity(original); setForm(value.document_input); setRequest(value); marker(original, { intent_id: value.intent_id } as IntentView);
-    if (value.state === 'committed') await readSaved(value, signal);
-    else if (value.state === 'pending' && !value.may_retry) { const prepared = await prepareDocumentRequest(original, signal); if (boundary.current(signal)) setIntent(prepared); }
-  }); }
+  function inspect() {
+    const key = requestId ?? clientId;
+    if (key && key === rejectedRequest.current) return;
+    run(async signal => {
+      if (!requestId && !clientId) throw new Error('文书原请求缺少准确恢复身份。');
+      const value = requestId ? await readDocumentRequest(requestId, signal) : await findDocumentRequest(clientId!, 'archive_document_create', target, signal);
+      if (value.operation_id !== 'archive_document_create' || value.target_key !== target || !value.document_input
+          || value.document_input.batch_id !== batchId || value.document_input.page_ids.some(id => !batch?.pages.some(page => page.page_id === id))) throw new Error('文书原请求与当前患儿、批次及原页不一致。');
+      if (!boundary.current(signal)) return;
+      const original: DocumentIntentInput = { operation_id: 'archive_document_create', target_key: target,
+        request_id: value.request_id, schema_version: '2.0.0', payload: value.document_input };
+      setIdentity(original); setForm(value.document_input); setRequest(value); marker(original, { intent_id: value.intent_id } as IntentView);
+      if (value.state === 'committed') await readSaved(value, signal);
+      else if (value.state === 'pending' && !value.may_retry) { const prepared = await prepareDocumentRequest(original, signal); if (boundary.current(signal)) setIntent(prepared); }
+    });
+  }
   useEffect(() => {
     const key = requestId ?? clientId;
-    if (!ready || loading || busy || !batch || identity || !key || restored.current === key) return;
-    let active = true; queueMicrotask(() => { if (active && restored.current !== key) { restored.current = key; inspect(); } });
+    if (!ready || loading || busy || !batch || identity || !key || key === rejectedRequest.current || restored.current === key) return;
+    let active = true; queueMicrotask(() => { if (active && rejectedRequest.current !== key && restored.current !== key) { restored.current = key; inspect(); } });
     return () => { active = false; };
   }, [ready, loading, busy, batch, identity, requestId, clientId]);
   async function finish(original: DocumentIntentInput, prepared: IntentView, signal: AbortSignal) {
@@ -148,7 +163,9 @@ function CreateContent() {
     const original = identity ?? { operation_id: 'archive_document_create' as const, target_key: target,
       request_id: crypto.randomUUID(), schema_version: '2.0.0' as const, payload };
     setIdentity(original); marker(original);
+    preparingNew.current = !identity && !intent ? original.request_id : null;
     const prepared = intent ?? await prepareDocumentRequest(original, signal);
+    preparingNew.current = null;
     if (!boundary.current(signal)) return;
     setIntent(prepared); marker(original, prepared); await finish(original, prepared, signal);
   }); }
@@ -175,7 +192,12 @@ function CreateContent() {
   const episodes = form?.proposed_metadata?.episodes ?? [];
   return <UI2FamilyFrame title={manual ? '手工整理文书' : '文书与就诊归组'} screenId="UI2-28" note="一份文书可以包含多次就诊。" backTo={manual ? `/archives/batches/${batchId}` : `/archives/confirm${batchId ? `?batch=${batchId}${pageId ? `&page=${pageId}` : ''}` : ''}`}>
     <button className="patient rich-record-patient" onClick={() => navigate('/associations')}><span className="patient-icon"><UsersRound size={23} /></span><span><strong>{relation?.display_id ?? '选择患儿'}</strong><small>查看本人获准的资料</small></span><ChevronDown size={17} /></button>
-    <UI2ReadState loading={loading || access.loading} error={error} onRetry={() => boundary.revalidate(() => { restored.current = ''; setError(null); setReload(value => value + 1); })} />
+    <UI2ReadState loading={loading || access.loading} error={duplicatePage ? null : error} onRetry={() => boundary.revalidate(() => { restored.current = ''; setError(null); setReload(value => value + 1); })} />
+    {duplicatePage && <section className="status-panel error" role="alert"><h2>原页已经归入文书</h2>
+      <p>存在已被其他文书引用的原页。{edit ? '请核验文书边界和复印关系，重新选择需要整理的原页。' : '请按原请求身份核验保存状态和原页关系。'}</p>
+      <p>原文和选择保留在当前页面。</p><ContextLink className="text-action" to="/archives">查看档案目录</ContextLink>
+      <details><summary>查看错误详情</summary><p>HTTP 409 · DOCUMENT_COPY_CONFIRMATION_REQUIRED</p></details>
+    </section>}
     {manual && <div className="note blue"><ShieldCheck size={17} /><p>手工整理，未使用自动识别。请对照原件填写；就诊说明属于家庭补充，待专业核对。</p></div>}
     <section className="card form-card"><div className="section-heading"><h2>文书归属</h2><span className="badge neutral">{saved ? saved.grouping_status === 'pending' ? '已保存 · 待专业核对' : '已保存' : form ? '待归组' : '待选择原件'}</span></div><div className="pair"><span>原始文书</span><strong>{pageId ? '已接收的准确原页' : batch ? '请选择这份文书的原页' : '尚未提供'}</strong></div><div className="pair"><span>页面与顺序</span><strong>{form ? `${form.page_ids.length} 个原页，按本人选择顺序排列` : '尚未提供'}</strong></div>{pageId ? <ContextLink className="button secondary" to={`/archives/source?page=${pageId}&batch=${batchId}`}>查看原文依据</ContextLink> : <button className="button secondary" disabled>查看原文依据</button>}</section>
     <section className="card form-card"><label className="field"><span>文书类型</span><select disabled={!edit} value={form?.document_type ?? 'unknown'} onChange={event => { if (form) setForm({ ...form, document_type: event.target.value as DocumentType }); }}>{types.map(([kind, label]) => <option key={kind} value={kind}>{label}</option>)}</select></label><label className="field"><span>来源医院</span><input disabled={!edit} placeholder="尚未填写" value={form?.organization ?? ''} onChange={event => { if (form) setForm({ ...form, organization: event.target.value || null }); }} /></label>

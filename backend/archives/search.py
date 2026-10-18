@@ -16,7 +16,7 @@ from api.base import ApiError
 from archives.batches import batch_runtime
 from archives.documents import document_read, document_record_scope, document_sources
 from archives.models import ArchiveBatch, ArchiveDocument, ArchiveDocumentVersion
-from archives.queries import fact_source
+from archives.queries import fact_source, fact_sources
 from archives.search_schemas import checked_search
 from archives.search_context import ArchiveSearchContext
 from records.service import medical_time_view
@@ -54,10 +54,7 @@ def document_scope(actor, patient, document, version):
             return None
         grants.extend(allowed)
     episodes = []
-    fields = []
-    for fact in facts:
-        field, source = fact_source(fact, patient)
-        fields.append((field, source))
+    fields = list(fact_sources(facts, patient).values())
     for link in links:
         episode = ClinicalEpisode.objects.get(id=link.episode_id, patient_id=patient.id)
         field = RecordField.objects.get(id=episode.source_field_id, record_version_id=episode.record_version_id, patient_id=patient.id)
@@ -65,13 +62,23 @@ def document_scope(actor, patient, document, version):
         fields.append((field, source))
         episodes.append({'episode_id': str(episode.id), 'label': episode.label, 'episode_type': episode.episode_type,
             'organization': episode.organization_text, 'record_version_id': str(episode.record_version_id)})
+    originals = {row.record_id: row for row in RecordVersion.all_objects.filter(
+        record_id__in={source.record_id for _, source in fields}, patient_id=patient.id, version=1)
+        .only('id', 'patient_id', 'record_id', 'version', 'author_id')}
+    checked = set()
     for field, source in fields:
-        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=source.record_id, patient_id=patient.id, version=1)
+        original = originals.get(source.record_id)
+        if original is None:
+            raise RecordVersion.DoesNotExist('文书事实的原始记录无法读取。')
+        scope = source.record_id, original.author_id, field.field_code
+        if scope in checked:
+            continue
         allowed = grants_for(actor, patient, 'read_raw', record_id=source.record_id,
             author_id=original.author_id, field_codes=[field.field_code])
         if not allowed:
             return None
         grants.extend(allowed)
+        checked.add(scope)
     uses = {str(file.id): original_use_view(file, next(group for group in groups if group.id == file.file_group_id), patient) for file in files}
     return {'grants': grants, 'batch': batch, 'pages': pages, 'files': files, 'episodes': episodes, 'fields': fields, 'uses': uses}
 

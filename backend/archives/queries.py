@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
 from django.core import signing
-from archives.models import ArchiveFactVersion, ArchiveDocumentVersion, ArchiveDocumentPage, ArchivePage
+from django.db.models import OuterRef, Subquery
+from archives.models import ArchiveFact, ArchiveFactVersion, ArchiveDocumentVersion, ArchiveDocumentPage, ArchivePage
 from files.models import FilePage, FileObject
 from recognition.models import SourceAnchor
 from records.models import RecordField, RecordVersion
@@ -11,47 +12,90 @@ from verification.models import FieldVerificationState, Verification, Verificati
 from configurations.service import compute_checksum
 
 
-def fact_source(version, patient):
-    field = RecordField.objects.get(id=version.field_id, record_version_id=version.record_version_id, patient=patient)
-    record_version = RecordVersion.objects.get(id=version.record_version_id, patient=patient)
+def current_fact_versions(facts, patient):
+    facts = list(facts)
+    if any(fact.patient_id != patient.id for fact in facts):
+        raise QueryRejected('FACT_PATIENT_INVALID')
+    current = ArchiveFact.objects.filter(id=OuterRef('fact_id'), patient_id=patient.id).values('current_version')[:1]
+    rows = list(ArchiveFactVersion.objects.filter(patient_id=patient.id,
+        fact_id__in=[fact.id for fact in facts], version=Subquery(current)))
+    versions = {row.fact_id: row for row in rows}
+    if len(rows) != len(versions) or set(versions) != {fact.id for fact in facts}:
+        raise ArchiveFactVersion.DoesNotExist('当前事实版本无法读取。')
+    if any(versions[fact.id].version != fact.current_version for fact in facts):
+        raise QueryRejected('FACT_VERSION_INVALID')
+    return versions
+
+
+def checked_fact_source(version, patient, field, record):
+    if field is None or field.record_version_id != version.record_version_id:
+        raise RecordField.DoesNotExist('事实字段及其记录版本无法读取。')
+    if record is None:
+        raise RecordVersion.DoesNotExist('事实记录版本无法读取。')
     if (version.patient_id != patient.id or version.medical_time_id != field.medical_time_id
         or version.source_anchor_id != field.anchor_id or version.confirmation_id != field.confirmation_id):
         raise QueryRejected('FACT_SOURCE_INVALID')
-    return field, record_version
+    return field, record
 
 
-def fact_read(*, fact, patient, version=None, allowed_actions=()):
+def fact_sources(versions, patient):
+    versions = list(versions)
+    fields = RecordField.objects.filter(patient=patient, id__in=[version.field_id for version in versions]).in_bulk()
+    records = RecordVersion.objects.filter(patient=patient, id__in=[version.record_version_id for version in versions]).in_bulk()
+    return {version.id: checked_fact_source(version, patient, fields.get(version.field_id),
+        records.get(version.record_version_id)) for version in versions}
+
+
+def fact_source(version, patient):
+    return fact_sources([version], patient)[version.id]
+
+
+def fact_read(*, fact, patient, version=None, allowed_actions=(), read_context=None):
     if fact.patient_id != patient.id:
         raise QueryRejected('FACT_PATIENT_INVALID')
+    if read_context is not None and read_context.patient.id != patient.id:
+        raise QueryRejected('FACT_PATIENT_INVALID')
+
+    def get(model, **scope):
+        if read_context is None:
+            return model.objects.get(**scope)
+        return read_context.get(model, **scope)
+
     if version is None:
-        version = ArchiveFactVersion.objects.get(fact_id=fact.id, patient_id=patient.id, version=fact.current_version)
+        version = get(ArchiveFactVersion, fact_id=fact.id, patient_id=patient.id, version=fact.current_version)
     if version.fact_id != fact.id or version.patient_id != patient.id:
         raise QueryRejected('FACT_VERSION_INVALID')
-    field, record_version = fact_source(version, patient)
-    anchor = SourceAnchor.objects.get(id=field.anchor_id, patient=patient) if field.anchor_id is not None else None
-    file_page = FilePage.objects.get(id=anchor.page_id, patient_id=patient.id) if anchor is not None else None
+    field, record_version = fact_source(version, patient) if read_context is None else read_context.fact_source(version)
+    anchor = get(SourceAnchor, id=field.anchor_id, patient_id=patient.id) if field.anchor_id is not None else None
+    file_page = get(FilePage, id=anchor.page_id, patient_id=patient.id) if anchor is not None else None
     if file_page is not None:
-        source_file = FileObject.objects.get(id=file_page.file_id, patient=patient)
+        source_file = get(FileObject, id=file_page.file_id, patient_id=patient.id)
     if version.page_id is not None:
-        page = ArchivePage.objects.get(id=version.page_id, patient_id=patient.id)
+        page = get(ArchivePage, id=version.page_id, patient_id=patient.id)
         if file_page is None or page.file_page_id != file_page.id or page.file_id != file_page.file_id:
             raise QueryRejected('FACT_SOURCE_INVALID')
         if page.file_object_version != source_file.object_version or page.checksum != source_file.checksum:
             raise QueryRejected('FACT_SOURCE_INVALID')
     if version.document_version_id is not None:
-        ArchiveDocumentVersion.objects.get(id=version.document_version_id, patient_id=patient.id)
-        if version.page_id is None or not ArchiveDocumentPage.objects.filter(patient_id=patient.id,
-            document_version_id=version.document_version_id, page_id=version.page_id).exists():
+        get(ArchiveDocumentVersion, id=version.document_version_id, patient_id=patient.id)
+        if version.page_id is None:
             raise QueryRejected('FACT_SOURCE_INVALID')
-    verification = FieldVerificationState.objects.filter(patient_id=patient.id, field_id=field.id,
-        record_version_id=record_version.id, purpose='family_observation').first()
+        page_scope = {'patient_id': patient.id, 'document_version_id': version.document_version_id, 'page_id': version.page_id}
+        page_exists = (ArchiveDocumentPage.objects.filter(**page_scope).exists() if read_context is None
+            else read_context.exists(ArchiveDocumentPage, **page_scope))
+        if not page_exists:
+            raise QueryRejected('FACT_SOURCE_INVALID')
+    verification_scope = {'patient_id': patient.id, 'field_id': field.id,
+        'record_version_id': record_version.id, 'purpose': 'family_observation'}
+    verification = (FieldVerificationState.objects.filter(**verification_scope).first() if read_context is None
+        else read_context.first(FieldVerificationState, **verification_scope))
     verification_ids = []
     if verification is not None and verification.status == 'verified' and verification.current_verification_id is None:
         raise QueryRejected('FACT_VERIFICATION_INVALID')
     if verification is not None and verification.current_verification_id is not None:
-        proof = Verification.objects.get(id=verification.current_verification_id, patient=patient,
+        proof = get(Verification, id=verification.current_verification_id, patient_id=patient.id,
             record_version_id=record_version.id, purpose=verification.purpose)
-        proof_field = VerificationField.objects.get(verification_id=proof.id, patient_id=patient.id,
+        proof_field = get(VerificationField, verification_id=proof.id, patient_id=patient.id,
             record_version_id=record_version.id, field_id=field.id)
         if verification.status == 'verified' and proof.revoked_at is not None:
             raise QueryRejected('FACT_VERIFICATION_INVALID')

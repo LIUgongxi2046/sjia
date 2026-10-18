@@ -38,8 +38,8 @@
   border-color:var(--dim-edge); box-shadow:var(--dim-tile-shadow);
 }
 .device[data-theme=dark] .home-entry-grid>button:first-child {
-  background:linear-gradient(150deg,#2665ae,#195a9f 67%,#124883); border-color:#1e5796; color:#fff;
-  box-shadow:0 7px 14px #1e559a45,inset 0 1px #ffffff8a;
+  background:var(--action-primary-background); border-color:var(--action-primary-border); color:#fff;
+  box-shadow:var(--action-primary-shadow);
 }
 /* Home is not the archive twin-stage: retain the original brighter home halo in dark mode. */
 .device[data-theme=dark] .home-child-stage { background:radial-gradient(ellipse at 50% 70%,#b2d8ebaf,transparent 68%); }

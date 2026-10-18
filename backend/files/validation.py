@@ -13,6 +13,7 @@ from authorization.policy import check_principal_session, evaluate
 from configurations.evidence import deployed_artifact_checksum
 from configurations.service import compute_checksum
 from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from files.errors import FileRejected
 from files.models import FileGroup, FileObject, FilePage, UploadPart
 from files.purpose import checked_bytes, lock_original, lock_use_authorization
@@ -65,28 +66,32 @@ def target_group(target):
     return FileGroup.objects.get(id=canonical_uuid(match[1]))
 
 
-def prefix(actor_id, patient_id):
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
-    actor = Principal.objects.select_for_update().get(id=actor_id)
-    patient = Patient.objects.select_for_update().get(id=patient_id)
+def prefix(actor_id, patient_id, *, lock=True):
+    principals = Principal.objects.select_for_update(no_key=True) if lock else Principal.objects.all()
+    patients = Patient.objects.select_for_update(no_key=True) if lock else Patient.objects.all()
+    gate = (read_environment_gate_shared(settings.SJIA_ENVIRONMENT) if lock
+        else EnvironmentGate.objects.get(environment=settings.SJIA_ENVIRONMENT))
+    actor = principals.get(id=actor_id)
+    patient = patients.get(id=patient_id)
     if not gate.enabled or patient.status != 'active':
         raise FileRejected('FILE_VALIDATION_SCOPE_UNAVAILABLE')
     return gate, actor, patient
 
 
-def scope(*, actor, auth_epoch, audience, group_id, payload):
+def scope(*, actor, auth_epoch, audience, group_id, payload, lock=True):
     from archives.batches import batch_runtime
     from sources.models import SourceRegistry, SourceRevision
     payload = checked_payload(payload)
     initial = FileGroup.objects.get(id=group_id)
-    gate, actor, patient = prefix(actor.id, initial.patient_id)
+    gate, actor, patient = prefix(actor.id, initial.patient_id, lock=lock)
     check_principal_session(actor, auth_epoch)
     if audience != 'family':
         raise FileRejected('FAMILY_AUDIENCE_REQUIRED')
     grant = evaluate(principal=actor, patient=patient, action='write_record', purpose='family_observation',
         environment=settings.SJIA_ENVIRONMENT, session_auth_epoch=auth_epoch,
-        author_id=actor.id, whole_resource=True).grant
-    group = FileGroup.objects.select_for_update().get(id=group_id, patient=patient)
+        author_id=actor.id, whole_resource=True, lock=lock).grant
+    groups = FileGroup.objects.select_for_update() if lock else FileGroup.objects.all()
+    group = groups.get(id=group_id, patient=patient)
     if group.owner_id != actor.id or str(group.version) != payload['expected_version']:
         raise FileRejected('FILE_VALIDATION_GROUP_MISMATCH')
     if group.status not in ('initiated', 'uploaded', 'validating', 'available', 'failed'):
@@ -96,7 +101,8 @@ def scope(*, actor, auth_epoch, audience, group_id, payload):
     if len(policies) != 1:
         raise FileRejected('FILE_VALIDATION_POLICY_REQUIRED')
     policy, limits = policies[0], runtime.payload['limits']
-    parts = list(UploadPart.objects.select_for_update().filter(file_group_id=group.id, patient_id=patient.id).order_by('ordinal'))
+    uploads = UploadPart.objects.select_for_update() if lock else UploadPart.objects.all()
+    parts = list(uploads.filter(file_group_id=group.id, patient_id=patient.id).order_by('ordinal'))
     if (not parts or any(part.status != 'stored' for part in parts)
             or [str(part.file_id) for part in parts] != payload['file_ids']):
         raise FileRejected('FILE_VALIDATION_GROUP_INCOMPLETE')
@@ -104,21 +110,24 @@ def scope(*, actor, auth_epoch, audience, group_id, payload):
         raise FileRejected('FILE_VALIDATION_GROUP_INCOMPLETE')
     originals, pages, auth = [], [], None
     for part in parts:
-        original = lock_original(part.file_id)
+        original = lock_original(part.file_id, lock=lock)
         if (original.patient_id != patient.id or original.file_group_id != group.id
                 or original.object_version != part.object_version or original.object_key != part.object_key
                 or original.checksum != part.declared_checksum or original.size_bytes != part.declared_size_bytes
                 or original.media_type != part.declared_media_type or original.media_type not in limits['media_types']
                 or original.size_bytes <= 0 or original.size_bytes > limits['max_upload_bytes']):
             raise FileRejected('FILE_VALIDATION_ORIGINAL_CHANGED')
-        auth = lock_use_authorization(group.use_authorization_id, original, 'family_observation', settings.SJIA_ENVIRONMENT)
+        auth = lock_use_authorization(group.use_authorization_id, original, 'family_observation', settings.SJIA_ENVIRONMENT, lock=lock)
         originals.append(original)
-        pages.extend(FilePage.objects.select_for_update().filter(file_id=original.id, file_group_id=group.id,
+        file_pages = FilePage.objects.select_for_update() if lock else FilePage.objects.all()
+        pages.extend(file_pages.filter(file_id=original.id, file_group_id=group.id,
             patient=patient).order_by('ordinal'))
     if not pages or len(pages) > limits['max_pages'] or [page.ordinal for page in pages] != list(range(1, len(pages) + 1)):
         raise FileRejected('FILE_VALIDATION_PAGE_MISMATCH')
-    revision = SourceRevision.objects.select_for_update().get(id=group.source_revision_id)
-    source = SourceRegistry.objects.select_for_update().get(id=revision.source_id)
+    revisions = SourceRevision.objects.select_for_update() if lock else SourceRevision.objects.all()
+    sources = SourceRegistry.objects.select_for_update() if lock else SourceRegistry.objects.all()
+    revision = revisions.get(id=group.source_revision_id)
+    source = sources.get(id=revision.source_id)
     context = {'environment': settings.SJIA_ENVIRONMENT, 'auth_epoch': str(auth_epoch), 'audience': audience,
         'patient_id': str(patient.id), 'actor_id': str(actor.id), 'group_id': str(group.id), 'group_version': str(group.version),
         'actor': entity_reference(actor), 'grant': entity_reference(grant), 'authorization': entity_reference(auth),
@@ -337,9 +346,9 @@ def execute_validation(event, owner):
 def record_failure(event, owner, code, generation=None):
     seed = Task.objects.get(id=event.task_id, task_type='file_validation', schema_version=SCHEMA)
     # Failure recording does not require the now-revoked permission or active patient.
-    EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
-    Principal.objects.select_for_update().get(id=seed.actor_id)
-    Patient.objects.select_for_update().get(id=seed.patient_id)
+    read_environment_gate_shared(settings.SJIA_ENVIRONMENT)
+    Principal.objects.select_for_update(no_key=True).get(id=seed.actor_id)
+    Patient.objects.select_for_update(no_key=True).get(id=seed.patient_id)
     task = Task.objects.select_for_update().get(id=seed.id)
     if (event.event_type != EVENT or event.schema_version != SCHEMA or event.aggregate_id != task.id
             or event.aggregate_version != 1 or event.resource_refs != {'task_id': str(task.id)}
@@ -364,8 +373,8 @@ def record_failure(event, owner, code, generation=None):
 
 
 @transaction.atomic
-def read_validation_task(*, task, actor, auth_epoch, audience):
-    scope(actor=actor, auth_epoch=auth_epoch, audience=audience, group_id=task.input_refs['context']['group_id'], payload=task.input_refs['input'])
+def read_validation_task(*, task, actor, auth_epoch, audience, lock=True):
+    scope(actor=actor, auth_epoch=auth_epoch, audience=audience, group_id=task.input_refs['context']['group_id'], payload=task.input_refs['input'], lock=lock)
     task.refresh_from_db()
     return task_view(task)
 

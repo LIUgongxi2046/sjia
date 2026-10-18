@@ -31,6 +31,7 @@ from retention.models import DispositionItem, RetentionPolicy
 from sources.models import DataUseAuthorization
 from tasks.models import Task
 from verification.models import CorrectionRequest
+from records.snapshot import record_read_snapshot
 
 
 class TranscriptionAuthorizationInput(BaseModel):
@@ -60,7 +61,7 @@ def file_group_create(request, patient_id):
 
 @api_view(['GET'])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def archive_upload_options(request, patient_id):
     principal, _, audience = current_principal(request)
     if principal is None:
@@ -68,7 +69,7 @@ def archive_upload_options(request, patient_id):
     if audience != 'family':
         raise ApiError('FAMILY_AUDIENCE_REQUIRED', 403)
     patient = get_patient(patient_id)
-    authorize_case(request, principal, patient, 'write_record', author_id=principal.id, whole_resource=True)
+    authorize_case(request, principal, patient, 'write_record', author_id=principal.id, whole_resource=True, lock=False)
     return Response(upload_options(patient))
 
 
@@ -308,8 +309,7 @@ def file_content(request, file_id):
     group = FileGroup.objects.filter(id=file_object.file_group_id, patient_id=file_object.patient_id).first()
     if group is None:
         raise ApiError('GROUP_NOT_FOUND', status.HTTP_404_NOT_FOUND)
-    # Neither a field nor a page-scoped grant authorizes the complete stored file,
-    # including when the client requests only a byte range of that original.
+    # 原件字节范围要求完整原件授权，字段及页面范围授权保持独立边界。
     authorize_case(request, principal, group.patient, "read_file", author_id=group.owner_id, whole_resource=True)
     if file_object.status != FileObject.Status.AVAILABLE:
         raise ApiError('FILE_NOT_AVAILABLE', status.HTTP_409_CONFLICT)
@@ -319,17 +319,18 @@ def file_content(request, file_id):
 
     from retention.content_fences import assert_content_available
     assert_content_available('files.fileobject', file_object.id)
-    data = object_store.get(file_object.object_key)
     range_header = request.headers.get("Range")
     if range_header is None:
+        data = object_store.get(file_object.object_key)
         return HttpResponse(data, content_type=file_object.media_type, headers={'Accept-Ranges': 'bytes'})
-    try:
-        start, end = parse_range(range_header, len(data))
-    except RangeNotSatisfiable:
-        return HttpResponse(status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
-            headers={'Accept-Ranges': 'bytes', 'Content-Range': f'bytes */{len(data)}'})
-    return HttpResponse(data[start : end + 1], content_type=file_object.media_type, status=status.HTTP_206_PARTIAL_CONTENT,
-        headers={'Accept-Ranges': 'bytes', 'Content-Range': f'bytes {start}-{end}/{len(data)}'})
+    size = file_object.size_bytes
+    start, end = parse_range(range_header, size)
+    data = object_store.get_range(file_object.object_key, start, end)
+    if len(data) != end - start + 1:
+        raise ApiError('FILE_OBJECT_SIZE_MISMATCH', status.HTTP_409_CONFLICT,
+            '原件读取范围与登记大小不一致，请核查原件。')
+    return HttpResponse(data, content_type=file_object.media_type, status=status.HTTP_206_PARTIAL_CONTENT,
+        headers={'Accept-Ranges': 'bytes', 'Content-Range': f'bytes {start}-{end}/{size}'})
 
 
 @api_view(["GET"])

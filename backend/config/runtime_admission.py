@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
+from configurations.evidence import artifact_verification_scope
 
 _LOCK = RLock()
 _ADMITTED = None
@@ -172,19 +173,20 @@ def _capability_policies(task_types, environment):
                 reasons[capability] = 'RUNTIME_CAPABILITY_POLICY_UNAVAILABLE'
             identities.extend({'id':str(row.id),'checksum':row.checksum} for row in qualified)
     if 'summary' in task_types:
-        from summaries.service import current_summary_config, summary_publication_gate
+        from summaries.service import SummaryRejected, current_summary_config, summary_publication_gate
         try:
-            template = current_summary_config('summary', environment)
-            visibility = current_summary_config('visibility', environment)
+            template = current_summary_config('summary', environment, lock=False)
+            visibility = current_summary_config('visibility', environment, lock=False)
             if summary_publication_gate(environment, template, visibility) is None:
                 reasons['summary'] = 'RUNTIME_SUMMARY_PUBLICATION_UNAVAILABLE'
             identities.extend({'id':str(row.id),'checksum':row.checksum} for row in (template,visibility))
-        except Exception as exc:
-            reasons['summary'] = getattr(exc,'reason_code','RUNTIME_SUMMARY_CONFIGURATION_UNAVAILABLE')
+        except SummaryRejected as exc:
+            reasons['summary'] = exc.reason_code
     return identities, reasons
 
 
 @transaction.atomic
+@artifact_verification_scope()
 def inspect_runtime(environment=None):
     """Read current qualified desired state; never update the admitted snapshot."""
     _restore_admission()

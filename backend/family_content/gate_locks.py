@@ -4,7 +4,7 @@ from django.db import connections
 from family_content.models import EnvironmentGate
 
 
-def read_environment_gate_shared(environment, *, using='default'):
+def find_environment_gate_shared(environment, *, using='default'):
     connection = connections[using]
     if connection.vendor != 'postgresql' or not connection.in_atomic_block:
         raise ImproperlyConfigured('环境读取锁要求 PostgreSQL 及有效事务。')
@@ -17,8 +17,15 @@ def read_environment_gate_shared(environment, *, using='default'):
         )
         row = cursor.fetchone()
     if row is None:
-        raise EnvironmentGate.DoesNotExist(environment)
+        return None
     return EnvironmentGate(
         environment=row[0], version=row[1], publication_epoch=row[2], enabled=row[3],
         active_release_id=row[4], runtime_config_id=row[5], updated_at=row[6],
     )
+
+
+def read_environment_gate_shared(environment, *, using='default'):
+    gate = find_environment_gate_shared(environment, using=using)
+    if gate is None:
+        raise EnvironmentGate.DoesNotExist(environment)
+    return gate

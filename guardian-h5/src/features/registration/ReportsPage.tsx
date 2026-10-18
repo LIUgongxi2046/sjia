@@ -153,7 +153,7 @@ export function ReportsPage() {
     <section className="card form-card registration-originals"><div className="section-heading"><h2>原始照片</h2><button className="text-action" disabled={inputBlocked} onClick={() => navigate({ pathname: '/register/reports', search: location.search })}>添加照片</button></div>
       {photos.length > 0 ? <PrivateSourceGallery files={photos.map((photo, index) => ({ file_id: photo.file_id, ordinal: index + 1 }))} /> : <p>对照原图填写，尚未登记的内容保持空白。</p>}
     </section>
-    <UI2ReadState />{review}
+    {review}
     {draft.restoring && <p role="status">正在恢复草稿</p>}{draft.error && <p role="alert">{draft.error}</p>}
   </UI2FamilyFrame>;
 

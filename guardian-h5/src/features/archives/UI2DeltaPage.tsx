@@ -16,9 +16,9 @@ import type { DeltaFact, DeltaIdentity, DeltaRequest, DeltaView } from '../../..
 import type { ArchiveSearchView } from '../../../../frontend-design/archive-search-types';
 import { documentTimeLabel } from './documentTimeLabel';
 import { documentLabels } from './documentLabels';
+import { assertionStateLabel, comparisonSymbol, factContextLabel, verificationStatusLabel } from '../../components/factPresentation';
 
 const tabs = ['新增事实', '重复资料', '待核对'] as const;
-const verification = { unverified: '尚未核对', pending: '等待核对', verified: '专业核对有效', needs_correction: '需要更正', revoked: '核对已撤销' };
 const reasonLabels: Record<string, string> = {
   BASELINE_NOT_SELECTED: '尚未指定比较基准，仅整理本批资料。', FILE_CHECKSUM_MATCH_REQUIRES_CONFIRMATION: '文件校验值相同，仍需确认资料关系。',
   FIELD_VERIFICATION_REQUIRED: '需要有效专业核对。', FACT_MEDICAL_TIME_UNKNOWN: '事实发生时间尚未明确。', DOCUMENT_TIME_UNKNOWN: '文书形成时间尚未明确。',
@@ -34,10 +34,10 @@ const reasonLabels: Record<string, string> = {
 
 function FactContent({ value, label }: { value: DeltaFact; label: string }) {
   return <section className="form-card" aria-label={label}><h3>{label} · {value.original_name ?? value.field_code}</h3>
-    <p>{value.value_state === 'known' ? value.value_type === 'decimal' ? `${value.qualifier ?? '比较符号未知'} ${value.raw_numeric ?? '数值未知'} ${value.raw_unit ?? '单位未知'}`
+    <p>{value.value_state === 'known' ? value.value_type === 'decimal' ? `${comparisonSymbol(value.qualifier)} ${value.raw_numeric ?? '数值未知'} ${value.raw_unit ?? '单位未知'}`
       : value.raw_text ?? value.categorical_value ?? '尚未提供原文' : '原值尚不能确认'}</p>
-    <p>{documentTimeLabel(value.medical_time)} · {verification[value.verification_status]}</p>
-    <p>检验方法：{value.method ?? '尚未提供'}；语境：{value.context_type}；发生状态：{value.assertion_state}</p>
+    <p>{documentTimeLabel(value.medical_time)} · {verificationStatusLabel(value.verification_status)}</p>
+    <p>检验方法：{value.method ?? '尚未提供'}；语境：{factContextLabel(value.context_type)}；发生状态：{assertionStateLabel(value.assertion_state)}</p>
   </section>;
 }
 

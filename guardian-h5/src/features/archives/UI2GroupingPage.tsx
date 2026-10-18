@@ -47,7 +47,7 @@ export function UI2GroupingPage() {
   const access = useAccess();
   const [params] = useSearchParams();
   const documentId = params.get('document');
-  const sourceVersionId = params.get('version');
+  const sourceVersionId = params.get('document_version');
   if (!documentId) return <UI2DocumentCreatePage />;
   return <GroupingContent key={JSON.stringify([access.principalId, access.patientId, documentId])}
     documentId={documentId} sourceVersionId={sourceVersionId} />;
@@ -223,7 +223,8 @@ function GroupingContent({ documentId, sourceVersionId }: { documentId: string |
   const unknownResult = identity !== null && !saved;
   const canContinue = canWrite && !busy && !saved && !!form?.reason.trim()
     && (identity === null ? currentVersion && !requestId && !clientRequestId : request?.state === 'pending' && !request.may_retry);
-  const sourcePath = sourceVersionId && documentId ? `/archives/source?version=${encodeURIComponent(sourceVersionId)}&document=${encodeURIComponent(documentId)}` : null;
+  const sourceVersion = sourceVersionId === null ? documentValue?.version_id : sourceVersionId;
+  const sourcePath = sourceVersion && documentId ? `/archives/source?document_version=${encodeURIComponent(sourceVersion)}&document=${encodeURIComponent(documentId)}` : null;
 
   function episodeFields(index: number, value: ProposedEpisode) {
     return <div key={index} style={{ display: 'contents' }}>

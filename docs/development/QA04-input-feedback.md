@@ -1,5 +1,7 @@
 # QA04 语音、照片识别与页面反馈
 
+当前首页形象尺寸及登记按钮采用 [QA05](QA05-ui-consistency.md)中的响应式比例与共享操作规范。当前服务与对应检查结果见该记录；本记录的QA04验收保留其既定日期和环境范围。
+
 日期：2026-10-05。状态：本地验收完成。文档有效性：CURRENT。状态来源：planning/delivery-ledger.json continuation.constraints 的QA04记录，验收证据见QA04报告。
 
 ## 需求与环境

@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from configurations.models import ConfigVersion
 from configurations.qualification import configuration_qualification_reason
-from family_content.models import EnvironmentGate
+from family_content.gate_locks import find_environment_gate_shared
 from identity.models import Patient, Principal
 from files.models import FileObject
 from files.service import object_store
@@ -36,14 +36,13 @@ def select_workflow_field_config(provider, field_kind, field_id=None):
 
 def lock_receipt_identity(task):
     """Lock identity only; revoked permission must not discard a paid receipt."""
-    EnvironmentGate.objects.select_for_update().filter(environment=task.input_refs.get(
-        'environment', settings.SJIA_ENVIRONMENT)).first()
+    find_environment_gate_shared(task.input_refs.get('environment', settings.SJIA_ENVIRONMENT))
     Patient.objects.select_for_update().get(id=task.patient_id)
     Principal.objects.select_for_update().get(id=task.actor_id)
 
 
 def _runtime(kind, field_kind, provider_id=None, field_id=None):
-    gate = EnvironmentGate.objects.select_for_update().filter(environment=settings.SJIA_ENVIRONMENT).first()
+    gate = find_environment_gate_shared(settings.SJIA_ENVIRONMENT)
     if gate is None or not gate.enabled or gate.runtime_config_id is None:
         raise InvocationRejected('MODEL_RUNTIME_CONFIGURATION_REQUIRED')
     runtime = ConfigVersion.objects.select_for_update().filter(id=gate.runtime_config_id,
@@ -199,7 +198,7 @@ def persist_call_receipt(*, task, attempt, original, result, provider, call_inde
 
 @transaction.atomic
 def record_invocation_failure(task_id, owner, reason):
-    EnvironmentGate.objects.select_for_update().filter(environment=settings.SJIA_ENVIRONMENT).first()
+    find_environment_gate_shared(settings.SJIA_ENVIRONMENT)
     task = Task.objects.select_for_update().get(id=task_id)
     if task.status not in ('accepted', 'queued', 'running', 'cancel_requested', 'cancelled'):
         return

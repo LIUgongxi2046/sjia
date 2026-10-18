@@ -86,7 +86,7 @@ def current_file_grants(file, actor, purpose, now):
                 yield grant
 
 
-def pending_disposition(file_id, copy_id=None):
+def pending_disposition(file_id, copy_id=None, *, lock=True):
     targets = [str(file_id)]
     if copy_id is not None:
         targets.append(str(copy_id))
@@ -96,8 +96,10 @@ def pending_disposition(file_id, copy_id=None):
     if items:
         return True
     file = FileObject.objects.get(id=file_id)
-    requests = DispositionRequest.objects.select_for_update().filter(patient_id=file.patient_id,
+    requests = DispositionRequest.objects.filter(patient_id=file.patient_id,
         status__in=['pending', 'approved', 'running', 'blocked'])
+    if lock:
+        requests = requests.select_for_update()
     for request in requests:
         if not isinstance(request.scope, dict):
             return True
@@ -109,24 +111,30 @@ def pending_disposition(file_id, copy_id=None):
     return False
 
 
-def lock_original(file_id):
-    file = FileObject.objects.select_for_update().get(id=file_id)
+def lock_original(file_id, *, lock=True):
+    files = FileObject.objects.select_for_update() if lock else FileObject.objects.all()
+    file = files.get(id=file_id)
     if file.purpose != FileObject.Purpose.ORIGINAL or file.status != FileObject.Status.AVAILABLE:
         raise FileRejected('ORIGINAL_UNAVAILABLE')
-    policy = read_retention_policy_shared(file.retention_policy_id)
+    policy = (read_retention_policy_shared(file.retention_policy_id) if lock
+        else RetentionPolicy.objects.get(id=file.retention_policy_id))
     if policy.status != 'active' or not policy.evidence_ref or policy.approved_at is None or policy.approved_by_id is None:
         raise FileRejected('PURPOSE_RETENTION_UNAVAILABLE')
-    if pending_disposition(file.id):
+    if pending_disposition(file.id, lock=lock):
         raise FileRejected('PURPOSE_DISPOSITION_PENDING')
     return file
 
 
-def lock_use_authorization(authorization_id, original, purpose, environment):
-    auth = DataUseAuthorization.objects.select_for_update().get(id=authorization_id, patient_id=original.patient_id)
+def lock_use_authorization(authorization_id, original, purpose, environment, *, lock=True):
+    authorizations = DataUseAuthorization.objects.select_for_update() if lock else DataUseAuthorization.objects.all()
+    auth = authorizations.get(id=authorization_id, patient_id=original.patient_id)
     now = timezone.now()
-    revision = SourceRevision.objects.select_for_update().get(id=auth.source_revision_id)
-    source = SourceRegistry.objects.select_for_update().get(id=revision.source_id)
-    approver = Principal.objects.select_for_update().get(id=auth.approved_by_id)
+    revisions = SourceRevision.objects.select_for_update() if lock else SourceRevision.objects.all()
+    sources = SourceRegistry.objects.select_for_update() if lock else SourceRegistry.objects.all()
+    principals = Principal.objects.select_for_update(no_key=True) if lock else Principal.objects.all()
+    revision = revisions.get(id=auth.source_revision_id)
+    source = sources.get(id=revision.source_id)
+    approver = principals.get(id=auth.approved_by_id)
     group = FileGroup.objects.get(id=original.file_group_id, patient_id=original.patient_id)
     if (auth.purpose != purpose or auth.environment != environment or not auth.evidence_ref.strip()
             or auth.approved_at > now or auth.revoked_at is not None

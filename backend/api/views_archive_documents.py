@@ -7,7 +7,7 @@ from api.base import ApiError, authorize_case, current_principal, get_patient, h
 from api.views_archive_facts import fact_history_limit
 from archives.documents import document_read, document_record_scope, document_sources, document_versions
 from archives.models import ArchiveBatch, ArchiveDocument, ArchiveDocumentVersion
-from archives.queries import fact_source
+from archives.queries import fact_sources
 from case_details.models import ClinicalEpisode
 from records.models import RecordField
 from records.models import RecordVersion
@@ -26,19 +26,27 @@ def authorize_document(request, principal, patient, document, version, action):
     for group in groups:
         proofs.append(authorize_case(request, principal, patient, 'read_file', record_id=record_id,
             author_id=group.owner_id, require_relation=True, whole_resource=True))
-    for fact in facts:
-        field, record_version = fact_source(fact, patient)
-        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient=patient, version=1)
-        proofs.append(authorize_case(request, principal, patient, action, field_codes=[field.field_code],
-            record_id=record_version.record_id, author_id=original.author_id, require_relation=True))
+    fields = list(fact_sources(facts, patient).values())
     for relation in episodes:
         episode = ClinicalEpisode.objects.get(id=relation.episode_id, patient_id=patient.id)
         field = RecordField.objects.get(id=episode.source_field_id, record_version_id=episode.record_version_id,
             patient_id=patient.id)
         record_version = RecordVersion.objects.get(id=episode.record_version_id, patient_id=patient.id)
-        original = RecordVersion.all_objects.only('id', 'patient_id', 'record_id', 'version', 'author_id').get(record_id=record_version.record_id, patient_id=patient.id, version=1)
+        fields.append((field, record_version))
+    originals = {row.record_id: row for row in RecordVersion.all_objects.filter(
+        record_id__in={record.record_id for _, record in fields}, patient=patient, version=1)
+        .only('id', 'patient_id', 'record_id', 'version', 'author_id')}
+    checked = set()
+    for field, record_version in fields:
+        original = originals.get(record_version.record_id)
+        if original is None:
+            raise RecordVersion.DoesNotExist('文书事实的原始记录无法读取。')
+        scope = record_version.record_id, original.author_id, field.field_code
+        if scope in checked:
+            continue
         proofs.append(authorize_case(request, principal, patient, action, field_codes=[field.field_code],
             record_id=record_version.record_id, author_id=original.author_id, require_relation=True))
+        checked.add(scope)
     scopes = [{'grant_id': str(proof.grant.id), 'field_codes': sorted(proof.grant.field_codes)} for proof in proofs]
     return decision, scopes
 

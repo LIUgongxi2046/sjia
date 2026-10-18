@@ -127,7 +127,7 @@ export function UI2HomePage() {
         const selection = projection?.display;
         const entry = selection && ['single', 'latest'].includes(selection.state) ? selection.entries[0] : null;
         return { label, disabled: canRead && (!observations || !!observationError),
-          value: noRelations ? '关联后查看' : !canRead ? '需要核验权限' : observationError ? '读取失败' : !selection ? '正在读取' : entry ? fieldValue(entry.field)
+          value: noRelations ? '关联后查看' : !canRead ? (access.principalId ? '关联后查看' : '登录后查看') : observationError ? '读取失败' : !selection ? '正在读取' : entry ? fieldValue(entry.field)
             : selection.state === 'empty' ? '尚无获准记录' : selection.state === 'same_time' ? '同时间有多条记录，请查看' : '记录时间无法确定先后，请查看',
           time: entry ? timeLabel(entry.field.medical_time) : undefined,
           context: projection?.scopedToTimed && selection?.state !== 'indeterminate' ? '最近有明确时间的记录' : undefined,
@@ -139,7 +139,7 @@ export function UI2HomePage() {
           && relation.actions.includes('read_raw') && Date.parse(relation.valid_from) <= Date.now()
           && (!relation.valid_until || Date.parse(relation.valid_until) > Date.now()))
           .map(relation => <option key={relation.relation_id} value={relation.patient_id}>{relation.display_id}</option>)}</select></label>
-        : <button className="text-action" onClick={() => navigate(noRelations ? '/associations/new' : access.principalId ? '/associations' : '/login')}>{noRelations ? '添加患儿关联' : '核验患儿关联'}</button>}>
+        : <button className="text-action" onClick={() => navigate(noRelations ? '/associations/new' : access.principalId ? '/associations' : '/login')}>{noRelations ? '添加患儿关联' : access.principalId ? '管理患儿关联' : '前往登录'}</button>}>
       {patientSelectionError && <UI2ReadState requirePatient={false} error={patientSelectionError} onRetry={retryPatientSelection} />}
       {observationError && <UI2ReadState error={observationError} onRetry={() => setReload(value => value + 1)} />}
     </HomeCompanion>

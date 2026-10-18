@@ -14,6 +14,7 @@ from summaries.inputs import SummaryInput, SummaryIntentInput, SummaryWriteHeade
 from summaries.models import Summary
 from summaries.service import SummaryRejected, generate_summary
 from tasks.models import Task, TaskAttempt
+from family_content.gate_locks import read_environment_gate_shared
 
 
 def summary_permission(actor, patient, auth_epoch, audience, action='create_summary'):
@@ -26,6 +27,18 @@ def summary_permission(actor, patient, auth_epoch, audience, action='create_summ
     if decision.grant.record_scope != 'all':
         raise SummaryRejected('SUMMARY_SCOPE_NOT_AVAILABLE')
     return decision
+
+
+def summary_snapshot_permission(request, actor, patient, audience):
+    from records.snapshot import authorize_record_snapshot
+    if audience != 'family':
+        raise SummaryRejected('FAMILY_AUDIENCE_REQUIRED')
+    if patient.status != 'active':
+        raise Denied('SUMMARY_PATIENT_SCOPE_DENIED')
+    grant = authorize_record_snapshot(request, actor, patient, 'read_summary')
+    if grant.record_scope != 'all':
+        raise SummaryRejected('SUMMARY_SCOPE_NOT_AVAILABLE')
+    return grant
 
 
 def summary_target(target):
@@ -98,8 +111,8 @@ def summary_request_view(intent):
 @transaction.atomic
 def prepare_summary_intent(*, actor, auth_epoch, audience, data, retention_policy):
     from family_content.models import EnvironmentGate
-    EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
+    read_environment_gate_shared(settings.SJIA_ENVIRONMENT)
+    actor = Principal.objects.select_for_update(no_key=True).get(id=actor.id)
     check_principal_session(actor, auth_epoch)
     data = SummaryIntentInput.model_validate(data)
     patient = summary_target(data.target_key)
@@ -158,8 +171,8 @@ def submit_summary(*, actor, patient, auth_epoch, audience, target, data, header
 @transaction.atomic
 def retry_summary_intent(*, actor, auth_epoch, audience, intent_id, expected_generation):
     from family_content.models import EnvironmentGate
-    EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
+    read_environment_gate_shared(settings.SJIA_ENVIRONMENT)
+    actor = Principal.objects.select_for_update(no_key=True).get(id=actor.id)
     check_principal_session(actor, auth_epoch)
     intent = WriteIntent.objects.select_for_update().filter(id=intent_id, actor=actor, operation_id='summary_create').first()
     if intent is None:

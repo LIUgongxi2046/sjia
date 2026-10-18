@@ -25,20 +25,24 @@ export function SupportReadStatus({ state, error, onRefresh }: {
   state: SupportReadState; error: string | null; onRefresh: () => void;
 }) {
   if (state === 'default') return null;
-  const title = { loading: '正在读取当前资料', permission: '当前访问关系需要核验',
+  const title = { loading: '正在读取当前资料', permission: '当前账号没有所需访问权限',
     error: '暂时无法取得资料', offline: '网络连接已中断' }[state];
   const description = { loading: '读取完成后显示当前获准内容。', permission: '重新取得有效权限后才能查看资料。',
     error: '重新读取前，现有资料状态保持未知。', offline: '尚未保存的输入保留在当前页面。' }[state];
   const readableError = error ? ({
-    SUPPORT_AUDIENCE_REQUIRED: '当前账号没有支持端访问权限。需要独立岗位授权后才能使用这些功能。',
-    AUTH_REQUIRED: '当前尚未取得有效登录身份，请登录后再核验岗位授权。',
-    RUNTIME_CONFIGURATION_PENDING: '服务配置尚未完成，暂时无法读取。',
-  } as Record<string, string>)[error] : undefined;
+    SUPPORT_AUDIENCE_REQUIRED: { title: '请使用支持端登录入口', description: '当前会话使用家庭端身份。登录支持端后，将按当前账号的岗位授权核验访问权限。' },
+    AUTH_REQUIRED: { title: '请登录支持端', description: '当前尚未取得有效登录身份。请登录后继续访问当前岗位获准的功能。' },
+    SUPPORT_ACTION_DENIED: { title: '当前账号没有所需岗位权限', description: '请核对当前账号的岗位授权范围，或使用已获授权的支持账号。' },
+    RUNTIME_CONFIGURATION_PENDING: { title: '服务配置尚未完成', description: '当前服务配置尚未完成，暂时无法读取。' },
+  } as Record<string, { title: string; description: string }>)[error] : undefined;
+  const needsLogin = error === 'AUTH_REQUIRED' || error === 'SUPPORT_AUDIENCE_REQUIRED';
   const Icon = state === 'loading' ? LoaderCircle : state === 'permission' ? LockKeyhole : state === 'offline' ? WifiOff : CircleAlert;
   return <section className={`status-panel rich-read-state ${state}`} role="status"><div className="status-top"><Icon size={22} /><span>页面状态</span></div>
-    <h2>{title}</h2><p>{readableError ?? error ?? description}</p>
+    <h2>{readableError?.title ?? title}</h2><p>{readableError?.description ?? error ?? description}</p>
     {readableError && <details><summary>查看技术详情</summary><p>错误代码：{error}</p></details>}
-    {state !== 'loading' && <button className="text-action" onClick={onRefresh}>{state === 'permission' ? '核验访问权限' : '重新读取'}</button>}
+    {state === 'permission' && <><a className="text-action" href="/support/login">{needsLogin ? '登录支持端' : '更换支持账号'}</a>
+      <a className="text-action" href="/account">返回家庭端</a></>}
+    {state !== 'loading' && <button type="button" className="text-action" onClick={onRefresh}>{state === 'permission' ? '重新核验访问权限' : '重新读取'}</button>}
   </section>;
 }
 

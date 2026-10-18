@@ -33,7 +33,6 @@ from records.service import medical_time_view
 from relations.models import Relation
 from summaries.delta_schemas import checked_delta
 from summaries.jobs import lock_summary_scope
-from summaries.service import current_summary_config
 from tasks.models import Task, TaskAttempt
 from tasks.service import acquire_lease, complete_task, create_attempt, finish_attempt, register_task
 from verification.models import FieldVerificationState, Verification, VerificationField
@@ -51,6 +50,17 @@ def delta_task_policy(runtime, *, required=True):
             raise ApiError('ARCHIVE_DELTA_TASK_POLICY_UNAVAILABLE', 503)
         return None
     return deepcopy(policies[0])
+
+
+def delta_visibility(runtime, frozen=None):
+    identity = runtime.payload.get('archive_delta_visibility_config_id') if frozen is None else frozen['visibility_policy_id']
+    if identity is None:
+        raise ApiError('ARCHIVE_DELTA_VISIBILITY_UNAVAILABLE', 503)
+    config = ConfigVersion.objects.filter(id=identity, kind='visibility', schema_version='visibility-1').first()
+    if (config is None or config.payload['environment'] != settings.SJIA_ENVIRONMENT
+            or config.payload['purpose'] != 'family_observation' or config.payload['clinical_fields']):
+        raise ApiError('ARCHIVE_DELTA_VISIBILITY_UNAVAILABLE', 503)
+    return config
 
 
 def lock_delta_scope(actor, epoch, patient_id):
@@ -118,6 +128,14 @@ def source_refs(document, version, scope, fact=None):
         'fact_version_id': str(fact.id) if fact else None, 'anchor_id': str(fact.source_anchor_id) if fact and fact.source_anchor_id else None}) for page in pages]
 
 
+def reusable_document_scope(scope):
+    grants = scope['grants']
+    if any(grant.valid_until is not None for grant in grants):
+        return False
+    return not Relation.objects.filter(id__in={grant.relation_id for grant in grants if grant.relation_id},
+        valid_until__isnull=False).exists()
+
+
 def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, generating=False):
     checked_delta('Input', payload)
     seed = ArchiveBatch.objects.get(id=batch_id)
@@ -143,9 +161,9 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
         raise ApiError('ARCHIVE_DELTA_DOCUMENTS_REQUIRED', 409)
     if {row.id for row in current} & {row.id for row in baseline}:
         raise ApiError('ARCHIVE_DELTA_BASELINE_OVERLAP', 422)
-    if len(current) + len(baseline) > 100 or len(pages) > runtime.payload['api']['max_page_size']:
+    if len(current) + len(baseline) > 100 or len(pages) > runtime.payload['limits']['max_pages']:
         raise ApiError('ARCHIVE_DELTA_SCOPE_LIMIT_EXCEEDED', 422)
-    visibility = current_summary_config('visibility', settings.SJIA_ENVIRONMENT) if frozen is None else ConfigVersion.objects.get(id=frozen['visibility_policy_id'])
+    visibility = delta_visibility(runtime, frozen)
     policy_reason = configuration_qualification_reason(visibility, settings.SJIA_ENVIRONMENT)
     if generating and policy_reason:
         raise ApiError('ARCHIVE_DELTA_VISIBILITY_UNAVAILABLE', 503)
@@ -171,6 +189,7 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
                     author_id=scope['batch'].submitted_by, record_id=document_record_scope(document, patient, version), whole_resource=True)
                 grants.append(decision.grant)
             grants.extend(scope['grants'])
+            source_documents = {version.id: (version, scope, reusable_document_scope(scope))}
             _, _, _, _, _, linked = document_sources(document=document, patient=patient, version=version)
             if document.retired_at is None and (side == 'current' or version.version == document.current_version):
                 document_versions = ArchiveDocumentVersion.objects.filter(document_id=document.id, patient_id=patient.id).values('id')
@@ -194,10 +213,14 @@ def material_scope(request, actor, epoch, batch_id, payload, frozen=None, *, gen
                 state = FieldVerificationState.objects.filter(field_id=field.id, patient_id=patient.id,
                     record_version_id=record_version.id, purpose='family_observation').first()
                 saved_proof = Verification.objects.get(id=state.current_verification_id) if state and state.current_verification_id else None
-                source_version = ArchiveDocumentVersion.objects.get(id=fact.document_version_id, document_id=document.id, patient_id=patient.id)
-                source_scope = document_scope(actor, patient, document, source_version)
-                if source_scope is None:
-                    raise ApiError('ARCHIVE_DELTA_SCOPE_DENIED', 403)
+                cached = source_documents.get(fact.document_version_id)
+                if cached is None or not cached[2]:
+                    source_version = ArchiveDocumentVersion.objects.get(id=fact.document_version_id, document_id=document.id, patient_id=patient.id)
+                    source_scope = document_scope(actor, patient, document, source_version)
+                    if source_scope is None:
+                        raise ApiError('ARCHIVE_DELTA_SCOPE_DENIED', 403)
+                    source_documents[source_version.id] = source_version, source_scope, reusable_document_scope(source_scope)
+                source_version, source_scope, _ = source_documents[fact.document_version_id]
                 grants.extend(source_scope['grants'])
                 if source_version.version != document.current_version or document.retired_at is not None:
                     decision = authorize_case(request, actor, patient, 'read_history', require_relation=True,

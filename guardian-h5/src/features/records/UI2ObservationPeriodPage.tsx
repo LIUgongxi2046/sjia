@@ -9,6 +9,7 @@ import { useAccess } from '../../state/access';
 import { ApiError } from '../../api/client';
 import { preparePeriod, readObservationPeriod, readPeriodRequest, retryPeriod, submitPeriod } from '../../api/observationPeriods';
 import { documentTimeLabel } from '../archives/documentTimeLabel';
+import { assertionStateLabel, comparisonSymbol, factContextLabel, verificationStatusLabel } from '../../components/factPresentation';
 import type { IntentView, MedicalTimeInput } from '../../../../frontend-design/types';
 import type { ObservationPeriodView, PeriodIdentity, PeriodRequest } from '../../../../frontend-design/observation-period-types';
 
@@ -29,6 +30,7 @@ const reasons: Record<string, string> = {
   OBSERVATION_PERIOD_SUPERSEDED: '此观察范围已有新版本。', NO_NEW_SAMPLING_DATA: '没有新增采样资料，当前资料不能证明没有风险。',
   FACT_AVAILABILITY_UNKNOWN: '该项资料的可得时间尚未明确。', FACT_NOT_YET_AVAILABLE: '该项资料在当前时点尚不可采用。',
   OBSERVATION_PERIOD_EPISODE_UNAVAILABLE: '关联就诊资料的当前权限需要核验。',
+  OBSERVATION_PERIOD_RETENTION_UNAVAILABLE: '观察范围的保存条件尚未准备好，当前资料可按权限读取。',
 };
 function reasonText(code: string) { return reasons[code] ?? `资料限制：${code}`; }
 function dateInput(value: string, zone: string): MedicalTimeInput {
@@ -225,11 +227,12 @@ function PeriodContent() {
           <label className="field"><span>保存说明</span><input required disabled={!editable} value={reason} onChange={event => setReason(event.target.value)} /></label>
         </details></section>
       <section className="card">{!inScope.length ? <div className="empty"><span className="empty-icon"><CalendarDays size={54} /></span>
-        <h3>该时段尚无采样资料</h3><p>同日多次检查分别保留，资料间隔按实际时间显示。</p></div>
+        <h3>当前可访问范围暂无采样资料</h3><p>仅显示当前权限允许读取的资料。没有显示内容不能说明没有风险。</p></div>
         : <><h2 className="section-title">同日采样与资料间隔</h2>{inScope.map(item => <details key={item.fact.fact_version_id}>
           <summary>{item.fact.original_name ?? item.fact.field_code} · {documentTimeLabel(item.fact.medical_time)}</summary>
-          <p>{item.fact.raw_numeric ?? item.fact.raw_text ?? '原值未知'} {item.fact.raw_unit ?? '单位未知'}；{item.fact.method ?? '检验方法未知'}</p>
-          <p>语境：{item.fact.context_type}；发生状态：{item.fact.assertion_state}；核对：{item.fact.verification_status}</p>
+          <p>{comparisonSymbol(item.fact.qualifier)} {item.fact.raw_numeric ?? item.fact.raw_text ?? '原值未知'} {item.fact.raw_unit ?? '单位未知'}；{item.fact.method ?? '检验方法未知'}</p>
+          <p>语境：{factContextLabel(item.fact.context_type)}；发生状态：{assertionStateLabel(item.fact.assertion_state)}；核对：{verificationStatusLabel(item.fact.verification_status)}</p>
+          <p>资料可得时间：{item.available_at ? <time dateTime={item.available_at}>{new Date(item.available_at).toLocaleString('zh-CN', { timeZoneName: 'short' })}</time> : '未知'}。平台取得资料的时间不能代替检查时间。</p>
           {item.reason_codes.map(code => <p key={code}>{reasonText(code)}</p>)}
           <ContextLink className="text-action" to={`/records/versions/${item.fact.record_version_id}`}>查看来源版本<ChevronRight size={17} /></ContextLink>
           {item.document_version_id && item.document_id && <ContextLink className="text-action" to={`/archives/source?document_version=${item.document_version_id}&document=${item.document_id}`}>查看原文依据<ChevronRight size={17} /></ContextLink>}

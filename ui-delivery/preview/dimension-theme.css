@@ -4,6 +4,9 @@
   --dim-edge:#ffffff;
   --dim-shadow:0 2px 2px #153a5d0a,0 11px 24px #173d651b,inset 0 1px 0 #ffffff;
   --dim-tile-shadow:0 5px 11px #193f661c,inset 0 1px 0 #ffffff;
+  --action-primary-background:linear-gradient(165deg,color-mix(in srgb,var(--blue) 92%,#0b2549),var(--blue) 56%,color-mix(in srgb,var(--blue) 84%,#0b2549));
+  --action-primary-border:color-mix(in srgb,var(--blue) 83%,#0b2549);
+  --action-primary-shadow:0 5px 12px #164e9538,inset 0 1px 0 #ffffff75,inset 0 -2px 0 #092f6654;
   background:linear-gradient(160deg,#e6f0fa 0%,#f4f8fb 34%,#e9f1fa 100%);
   box-shadow:0 34px 90px #16375836,0 0 0 1px #ffffff,0 0 0 8px #cedbe9;
 }
@@ -25,14 +28,14 @@
 .phone :is(.field-card,.profile-card,.priority-results,.voice-entry,.capture-card){overflow:visible}
 .phone .notice-card{background:linear-gradient(155deg,color-mix(in srgb,var(--notice-bg) 82%,white),var(--notice-bg));box-shadow:0 3px 3px #19395b0c,0 13px 25px #19395b20,inset 0 1px 0 #ffffffbb}
 .phone.dark .notice-card{background:linear-gradient(155deg,color-mix(in srgb,var(--notice-bg) 85%,#20344b),var(--notice-bg));box-shadow:var(--dim-shadow)}
-.phone .action{background:linear-gradient(165deg,color-mix(in srgb,var(--blue) 92%,#0b2549),var(--blue) 56%,color-mix(in srgb,var(--blue) 84%,#0b2549));border:1px solid color-mix(in srgb,var(--blue) 83%,#0b2549);box-shadow:0 5px 12px #164e9538,inset 0 1px 0 #ffffff75,inset 0 -2px 0 #092f6654}
+.phone .action{background:var(--action-primary-background);border:1px solid var(--action-primary-border);border-radius:18px;box-shadow:var(--action-primary-shadow)}
 .phone .action.secondary{background:linear-gradient(155deg,color-mix(in srgb,var(--tint) 55%,white),var(--tint));color:var(--link);border:1px solid color-mix(in srgb,var(--link) 22%,transparent);box-shadow:var(--dim-tile-shadow)}
 .phone .action:disabled{background:var(--page);color:var(--muted);border:1px solid var(--line);box-shadow:none}
 .phone :is(.icon-tile,.voice-icon,.capture-icon,.large-icon,.profile-icon,.state-symbol,.empty-symbol,.login-logo){background:linear-gradient(145deg,color-mix(in srgb,var(--card) 65%,white),color-mix(in srgb,var(--tint) 72%,#8dbce7));border:1px solid color-mix(in srgb,var(--line) 45%,white);box-shadow:var(--dim-tile-shadow)}
 .phone .login-logo{background:linear-gradient(150deg,#377bca,#135391)}
 .phone .row{border-radius:18px;background:linear-gradient(150deg,color-mix(in srgb,var(--card) 94%,white),color-mix(in srgb,var(--card) 83%,var(--tint)));box-shadow:inset 0 1px 0 #ffffff8c}
 .phone .home-entry-grid>button,.phone .tools-grid>button,.phone .twin-label,.phone .symptom-columns>button{background:linear-gradient(155deg,var(--dim-surface-top),var(--dim-surface-bottom));border:1px solid color-mix(in srgb,var(--line) 55%,var(--dim-edge));box-shadow:var(--dim-tile-shadow)}
-.phone .home-entry-grid>button:first-child{background:linear-gradient(150deg,#2665ae,#195a9f 67%,#124883);border-color:#1e5796;box-shadow:0 7px 14px #1e559a45,inset 0 1px 0 #ffffff8a}
+.phone .home-entry-grid>button:first-child{background:var(--action-primary-background);border-color:var(--action-primary-border);box-shadow:var(--action-primary-shadow)}
 .phone .twin-card{background:linear-gradient(155deg,var(--dim-surface-top),color-mix(in srgb,var(--dim-surface-bottom) 80%,#b2d7ef));box-shadow:var(--dim-shadow)}
 .phone .twin-stage{background:radial-gradient(ellipse at 50% 72%,#a8d2ec75,transparent 68%)}
 .phone.dark .twin-stage{background:radial-gradient(ellipse at 50% 72%,#39749b60,transparent 68%)}

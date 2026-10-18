@@ -1,5 +1,7 @@
 # PRD 2.0 实施与验证依据
 
+2026-10-19当前实施与真实验证以[QA14](../development/QA14-full-function-delivery.md)、[QA29](../development/QA29-real-original-range-reads.md)及交付记录为准。当前测试使用用户已授权真实资料，不创建模拟临床资料、独立答案或外部回执。当前实际来源为63份原件及290个数据库页面，完整临床及业务验收继续保留原条件；下列2026-10-09记录按其明确时间和模拟范围保留。
+
 日期：2026-10-09。用户授权全部功能、参赛优化及完整业务验收，当前全部开发使用模拟数据，截止北京时间2026-10-10 09:00。实施任务和验收状态只维护于 [交付记录](../../planning/delivery-ledger.json)。[开发索引](../development/index.md)登记每项任务的唯一主记录。
 
 全部60项模拟开发已完成，开发剩余0项；验收剩余57项。T29的scope04来源、分类、MS、动态评估、唯一通知送达及本人阅读、30项Summary已实际保存重读，14项来源组合通过。T56通知与摘要页面四项、PostgreSQL逐项交叉读取及正式前端修复已经通过并接收，见 [共享运行记录](../development/T56-shared-integration.md)。T55语音辅助更正保留旧版本并保存版本2，未产生独立新Record，见 [共享运行记录](../development/T55-shared-integration.md)。T60最终37份源码与36份输入证据清单核验通过，86项来源索引作为交付输出独立生成并保存重读，全部输入的字节与摘要保持一致，见 [最终清单](../../.planning-work/parallel/window1/t60-delivery-manifest-verification-main-final-delivery-03.json)及 [证据索引](../../.planning-work/parallel/window1/t60-simulation-evidence-index.json)。当前构建11项及39页入口交付检查通过。V34、V36、V38、V39当前输入需要复验，开发保持完成。集合外患儿不能计入冻结集合临床分母，临床指标NOT_MEASURED。共享Worker/Beat未启动；共享授权撤销、实际提供方账单、临床、真实家庭、设备、微信及39页视觉继续NOT_RUN。

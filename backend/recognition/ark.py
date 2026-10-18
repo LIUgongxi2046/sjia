@@ -75,6 +75,9 @@ def _completion(messages, max_tokens=600, model=None, thinking=None, validate_ou
     try:
         with urllib.request.urlopen(request, timeout=settings.ARK_REQUEST_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds, context=ssl_context) as response:
             raw_response = response.read()
+            http_response = {'status': response.status,
+                'request_id': response.headers.get('x-request-id'),
+                'retry_after': response.headers.get('retry-after')}
             try:
                 body = ArkCompletion.model_validate_json(raw_response)
             except ValidationError:
@@ -82,11 +85,16 @@ def _completion(messages, max_tokens=600, model=None, thinking=None, validate_ou
                     raise
                 body = None  # The governed caller persists malformed raw responses too.
     except urllib.error.HTTPError as exc:
-        raise ArkRejected("ARK_HTTP_ERROR") from exc
+        if validate_output:
+            raise ArkRejected("ARK_HTTP_ERROR") from exc
+        # 保留服务返回的错误正文，交由调用方保存回执后终止任务。
+        return None, exc.read(), {'status': exc.code,
+            'request_id': exc.headers.get('x-request-id'),
+            'retry_after': exc.headers.get('retry-after')}
     except urllib.error.URLError as exc:
         raise ArkRejected("ARK_NETWORK_ERROR") from exc
     if not validate_output:
-        return body, raw_response
+        return body, raw_response, http_response
     if not body.choices:
         raise ArkRejected("ARK_EMPTY_RESPONSE")
     if len(body.choices) != 1:
@@ -99,11 +107,11 @@ def _completion(messages, max_tokens=600, model=None, thinking=None, validate_ou
     content = choice.message.content
     if content is None or not content.strip():
         raise ArkRejected("ARK_EMPTY_CONTENT")
-    return body, raw_response
+    return body, raw_response, http_response
 
 
 def _chat(messages, max_tokens=600, model=None) -> str:
-    body, _ = _completion(messages, max_tokens=max_tokens, model=model)
+    body, _, _ = _completion(messages, max_tokens=max_tokens, model=model)
     return body.choices[0].message.content
 
 

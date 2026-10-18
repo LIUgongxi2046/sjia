@@ -524,17 +524,15 @@ def source_resolve_view(request, record_version_id, field_id):
 
 @api_view(["GET"])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def field_config_read_view(request, patient_id):
-    with connection.cursor() as cursor:
-        cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
     principal, _, audience = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     if audience != 'family':
         raise ApiError('FAMILY_AUDIENCE_REQUIRED', 403)
     patient = get_patient(patient_id)
-    authorize_case(request, principal, patient, 'read_raw', author_id=principal.id, require_relation=True)
+    authorize_record_snapshot(request, principal, patient, 'read_raw', author_id=principal.id, require_relation=True)
     if any(len(request.query_params.getlist(key)) != 1 for key in request.query_params):
         raise ApiError('CONFIG_QUERY_INVALID', 422)
     data = validate_operation_input('FieldConfigQuery', request.query_params.dict())
@@ -549,13 +547,13 @@ def field_config_read_view(request, patient_id):
 
 @api_view(["GET"])
 @handle
-@transaction.atomic
+@record_read_snapshot
 def home_read(request, patient_id):
     principal, _, _ = current_principal(request)
     if principal is None:
         raise ApiError("AUTH_REQUIRED", status.HTTP_401_UNAUTHORIZED)
     patient = get_patient(patient_id)
-    authorize_case(request, principal, patient, "read_raw", require_relation=True)
+    authorize_record_snapshot(request, principal, patient, "read_raw", require_relation=True)
     from django.conf import settings
     from api.family_home_details import build_home
 
@@ -628,8 +626,43 @@ def alert_mark_read(request, alert_id):
 
 @api_view(["GET"])
 @handle
-@transaction.atomic
 def task_read(request, task_id):
+    from tasks.models import Task
+
+    principal, _, _ = current_principal(request)
+    if principal is None:
+        raise ApiError('AUTH_REQUIRED', 401)
+    task = Task.objects.filter(id=task_id, actor=principal).first()
+    if task is None:
+        raise ApiError('TASK_NOT_FOUND', 404)
+    if task.task_type in (Task.TaskType.SUMMARY, Task.TaskType.FILE_VALIDATION):
+        return local_task_snapshot(request, task_id)
+    return locked_task_read(request, task_id)
+
+
+@record_read_snapshot
+def local_task_snapshot(request, task_id):
+    from tasks.models import Task
+
+    principal, auth_epoch, audience = current_principal(request)
+    if principal is None:
+        raise ApiError('AUTH_REQUIRED', 401)
+    task = Task.objects.filter(id=task_id, actor=principal).first()
+    if task is None:
+        raise ApiError('TASK_NOT_FOUND', 404)
+    if task.task_type == Task.TaskType.SUMMARY:
+        from summaries.submission import summary_snapshot_permission, summary_task_view
+        summary_snapshot_permission(request, principal, task.patient, audience)
+        return Response(summary_task_view(task))
+    if task.task_type == Task.TaskType.FILE_VALIDATION:
+        from files.validation import read_validation_task
+        return Response(read_validation_task(task=task, actor=principal,
+            auth_epoch=auth_epoch, audience=audience, lock=False))
+    raise ApiError('TASK_TYPE_INVALID', 422)
+
+
+@transaction.atomic
+def locked_task_read(request, task_id):
     from tasks.models import Task
 
     principal, _, _ = current_principal(request)

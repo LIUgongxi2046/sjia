@@ -2,6 +2,20 @@
 
 日期：2026-10-07。版本：BACK V2.0。模式：`DESIGN / CONTINUOUS_DELIVERY`。责任：S005-2。实际实施与业务验收由 [交付记录](./planning/delivery-ledger.json)维护。
 
+原件字节范围读取继续检查完整原件授权、当前可用状态与内容处置范围，依据不可变FileObject的登记大小使用现有get_range读取请求字节。读取长度不一致立即返回409 FILE_OBJECT_SIZE_MISMATCH；非法范围由统一处理返回416，完整读取保留200语义。当前真实原件及内存测量见[QA29](./docs/development/QA29-real-original-range-reads.md)。
+
+backend_artifact_manifest将完整api源码与Schema、config及全部本地应用、依赖与正式Schema纳入准确后端制品清单。配置核验、进程采用及业务结果使用同一准确摘要；图像与文本用途处理配置继续采用各自处理制品范围。当前完整清单包含780个文件及53份API文件，实际采用与来源检查由QA29维护。
+
+专业核对范围读取要求实际病例字段授权。实际记录包含字段且当前账号没有任何获准核对字段时，verification_creation_scope立即返回403 VERIFICATION_FIELD_SCOPE_DENIED，不返回原始字段；取得获准范围后继续准确版本、字段、用途、来源、保留策略和核对人员检查。全局verify_field岗位不授予病例字段范围，真实验证见[QA27](./docs/development/QA27-real-clinical-access-scope.md)。
+
+FR-16重复资料目录使用当前请求内的ArchiveRelationReadContext批量读取准确来源，保留全部事实版本、原始记录作者、锚点、文件版本、文书页与核对证明检查。来源授权继续逐项执行当前账号、字段、用途及实际期限检查；读取上下文限制为只读用途，原有写入锁及来源检查独立执行。正式接口、候选规则、版本与签名分页语义保持，实际验证见 [QA24](./docs/development/QA24-real-relation-read-performance.md)。
+
+FR-18确定性档案整理的准确可见字段、运行引用、事务、历史失效及迁移规范见 [新增内容运行设计](./backend-design/archive-delta-runtime.md)。archive_delta_visibility_config_id只用于本人档案整理；家庭提示与就医摘要继续采用既有发布、联系和内容资格。实际真实资料验证由QA19维护。
+
+FR-19本人观察资料明确使用observation_period_visibility_config_id，完整配置、权限、未知时间与迁移规范见 [观察资料运行设计](./backend-design/observation-period-runtime.md)。采样医学时间、可得时间、专业核对及频率资格分别保存和检查；实际真实资料验证由QA20维护。
+
+观察范围保存同时要求当前唯一有效的observation类保留策略与本人写入权限。读取结果提供的保存操作采用相同条件，策略不足时保留获准读取及明确限制；保存准备继续独立检查。本人实际查询范围、历史版本、原回执和依赖失效的当前验证由QA21维护。
+
 ## 1. 架构上下文与资产映射
 
 ### 1.1 输入与依赖

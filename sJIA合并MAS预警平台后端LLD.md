@@ -1,10 +1,10 @@
 # sJIA 合并 MAS 预警平台后端详细设计（LLD-BACK）
 
-日期：2026-10-07。版本：BACK V2.0。模式：`DESIGN / CONTINUOUS_DELIVERY`。责任：S005-2。实际实施与业务验收由 [交付记录](./planning/delivery-ledger.json)维护。
+日期：2026-10-20。版本：BACK V2.0。模式：`DESIGN / CONTINUOUS_DELIVERY`。文档有效性：CURRENT。责任为S005-2／T36，源码维护于codex/current-design-reception。当前设计、软件实施及业务验收由[交付记录](./planning/delivery-ledger.json)分别维护。
 
 原件字节范围读取继续检查完整原件授权、当前可用状态与内容处置范围，依据不可变FileObject的登记大小使用现有get_range读取请求字节。读取长度不一致立即返回409 FILE_OBJECT_SIZE_MISMATCH；非法范围由统一处理返回416，完整读取保留200语义。当前真实原件及内存测量见[QA29](./docs/development/QA29-real-original-range-reads.md)。
 
-backend_artifact_manifest将完整api源码与Schema、config及全部本地应用、依赖与正式Schema纳入准确后端制品清单。配置核验、进程采用及业务结果使用同一准确摘要；图像与文本用途处理配置继续采用各自处理制品范围。当前完整清单包含780个文件及53份API文件，实际采用与来源检查由QA29维护。
+backend_artifact_manifest将完整api源码与Schema、config、全部本地应用、依赖及正式Schema纳入后端制品清单。配置核验、进程采用和业务结果使用同一准确摘要；图像与文本用途处理配置分别采用明确的处理制品范围。当前原main使用f406制品和102项迁移，独立候选使用c65制品和105项迁移；实际范围及来源检查由QA29和QA43维护，QA44整组服务切换仍待明确批准。
 
 专业核对范围读取要求实际病例字段授权。实际记录包含字段且当前账号没有任何获准核对字段时，verification_creation_scope立即返回403 VERIFICATION_FIELD_SCOPE_DENIED，不返回原始字段；取得获准范围后继续准确版本、字段、用途、来源、保留策略和核对人员检查。全局verify_field岗位不授予病例字段范围，真实验证见[QA27](./docs/development/QA27-real-clinical-access-scope.md)。
 
@@ -28,14 +28,14 @@ FR-19本人观察资料明确使用observation_period_visibility_config_id，完
 | 交互 | [页面流程](./sJIA合并MAS预警平台页面流程.md)、[原型说明](./guardian-h5/原型交互说明.md) | S01—S15、草稿、照片整理、请求恢复、历史、摘要 |
 | 当前调用方 | guardian-h5/src/app/App.tsx、guardian-h5/src/api/client.ts | 正式 H5 已有业务接口；UI 2.0 的 39 页接收与完整业务适配由 T38／T54 负责 |
 | UI 补充 | [UI 决定](./ui-delivery/assumptions-and-open-questions.md)、[提示状态](./ui-delivery/alerts/specifications.md) | 语音确认、原图、关注项目、历史时间查看；预览情景不作为运行规则 |
-| 本地病例 | [demo 说明](./demo-data/README.md)、[当前资料状态](./data-design/clinical-dataset-status.json) | 已有用户授权本地使用的病例、四张附件和数据投影；生产导入、临床核对、独立答案分别未完成 |
+| 当前资料 | [资料状态](./data-design/clinical-dataset-status.json)、[QA25](./docs/development/QA25-real-evaluation-source-inventory.md)、[QA43](./docs/development/QA43-existing-data-upgrade.md) | 指定63份原件、290页及准确摘要用于获准软件测试；独立患者数量、专业核对及独立答案分别保持必要条件 |
 | Agent | PRD 第 9 节、HLD ADR-005 | `NOT_APPLICABLE`：当前工作为 OCR 候选和确定性规则，无自主 Agent 或 RAG |
 
-认证及关联接入依赖 D02；OCR 与专业核对依赖 D03；评估依赖 D04、D07、D08；家庭临床内容与渠道依赖 D05、D06；生产资料保留与联系依赖 D09；部署、容量及运行责任依赖 D01。这些依赖限制对应能力启用，设计继续覆盖完整接口与失败路径。本地病例可用于结构、引用和序列化检查，其用途不能自动扩展为外部 OCR 传输或临床验收。
+认证采用当前自建账号及数据库Session，关联与逐患儿授权分别判定。指定原件的隐私复核、现有Ark处理及本地候选确认保存已经获得用户授权。D01—D10分别维护准确生产环境、专业核对、临床规则、家庭发布、渠道、单位方法、独立评价、保留及真实处理条件；必要未知仅限制对应操作，完整接口和失败路径持续维护。
 
 ### 1.2 后端模块与调用责任
 
-保留 HLD 的 Python 3.13、Django 5.2 LTS、DRF、psycopg、PostgreSQL 17、Celery 5.6、Redis Broker、boto3、Pillow、Nginx、Gunicorn 和 OpenTelemetry 选择。补丁及依赖组合在 S008 实施时锁定；本次校验使用现有本地 Python 与 PostgreSQL，实际版本写入报告。
+保留当前HLD的Python3.13、Django5.2 LTS、DRF、psycopg、PostgreSQL17、Celery5.6、Redis Broker、boto3、Pillow、PyMuPDF、Nginx、Gunicorn和OpenTelemetry选择。依赖准确版本由requirements.lock.txt维护。原服务使用Python3.12.7及PostgreSQL18.4，独立候选和设计检查使用Python3.13.13及PostgreSQL17.11；各自制品、数据库和准入状态分别核验。
 
 | 模块 | 写入所有权 | 读取和调用方 |
 | --- | --- | --- |
@@ -54,11 +54,11 @@ HTTP View 只协调认证、Serializer、领域动作和响应；QuerySet 负责
 
 | ID | 来源与决定 | 状态及影响 |
 | --- | --- | --- |
-| BACK-001 | `INFERRED`，HLD ADR-003/006：同源 Cookie Session，家庭与支持入口分别限定 Cookie 与角色 | `PROPOSED`；D02 确认认证 Provider 后绑定身份，所有业务接口沿用 |
-| BACK-002 | `INFERRED`，DATA TX01—TX08：增加环境资格行，提供发布尚未建立时的共同锁对象 | `PROPOSED`；[后端补充 SQL](./backend-design/schema.sql) 为本文件唯一维护位置 |
-| BACK-003 | `INFERRED`，PRD NFR-08/12：业务写入使用持久提交意图及代次，解决响应未知和延迟请求竞争 | `PROPOSED`；业务、write_request、Task、Outbox 和成功审计仍同事务 |
-| BACK-004 | `INFERRED`，FR-08/12：岗位授权、配置验证与专业字段更正申请有独立持久结构 | `PROPOSED`；与既有病例动作授权共同检查，不扩大管理权限 |
-| BACK-005 | `INFERRED`，HLD ADR-006：任务采用有界轮询，无 SSE、WebSocket 或模型流式输出 | `PROPOSED`；前端恢复通过当前状态与 status_version 完成 |
+| BACK-001 | INFERRED，HLD ADR-003/006：自建账号、同源Cookie Session，家庭与支持audience分别检查 | ACCEPTED；软件设计已获授权，准确身份、关联及病例范围逐请求核验 |
+| BACK-002 | INFERRED，DATA TX01—TX08：EnvironmentGate提供共同锁对象 | ACCEPTED；[结构规范](./backend-design/schema.sql)及实际Django migrations分别维护职责 |
+| BACK-003 | INFERRED，NFR-08/12：持久提交意图及代次处理响应未知和延迟竞争 | ACCEPTED；业务、write_request、Task、Outbox和成功审计同事务 |
+| BACK-004 | INFERRED，FR-08/12：岗位授权、配置验证和专业更正申请分别保存 | ACCEPTED；病例范围继续独立核验，管理岗位不取得专业或病例资格 |
+| BACK-005 | INFERRED，HLD ADR-006：任务采用有界轮询 | ACCEPTED；前端通过当前状态、status_version及原请求恢复 |
 
 本文件、[接口目录](./backend-design/api-catalog.csv)、[协议 Schema](./backend-design/protocol.schema.json)、[跨层接口接收规范](./backend-design/handshake.md) 和后端补充 SQL 共同定义当前后端设计。S005-1 维护医学事实和 82 张数据表；补充运行表由 S005-2 维护，S008 的 Django migrations 成为实际结构变更入口。S005-4 维护页面适配，S005-3 维护动态预警编排。接收规范第 1—7 节分别维护首页与归属、配置与候选、来源与原件、申请与恢复、CSRF、任务和持久关系。
 
@@ -98,7 +98,7 @@ JSON 使用 UTF-8；decimal 为有限十进制字符串；bigint 版本及 epoch
 
 ### 2.3 写入身份与请求恢复
 
-每个有业务副作用的请求携带 `Idempotency-Key: UUID`，正文不重复携带 request_id；`X-Write-Intent: UUID` 与 `X-Intent-Generation: positive integer string` 指向当前提交意图。作用域为 `(actor_id, operation_id, target_key, request_id)`。POST `/write-intents` 是自动的协议准备步骤，无新增家庭确认页面：提交完整业务载荷及目标，服务端校验、规范化并保存摘要、患儿、有效期；客户端取得意图后调用业务接口。
+采用intent的业务请求携带`Idempotency-Key: UUID`、`X-Write-Intent: UUID`和`X-Intent-Generation: positive integer string`，作用域为`(actor_id,operation_id,target_key,request_id)`。POST `/write-intents`自动准备完整业务载荷、目标、摘要、患儿及有效期，客户端取得准确意图后提交。目录中的provider_event、actor_client_key、manifest_source、plan_journal及review_version_source分别采用明确身份；登录和只读search按其实际语义处理。内容处置的完整边界由[V2服务行为](./backend-design/v2-service-behavior.md)维护。
 
 规范化采用版本 `back-json-1`：DRF/JSON Schema 完成类型检查；序列化成熟 JSON 实现按键排序、固定分隔符、UTF-8 和禁止非有限数字；保持数组顺序、原文、decimal 字符串、空值与缺失差别；摘要覆盖 operation、target、schema_version 和 payload，不含 CSRF、Session 和追踪头。文件正文使用服务器核验的完整字节 SHA-256、字节数与声明媒体类型参与摘要，上传流结束后再次比对。不同正文使用同一业务键返回 `IDEMPOTENCY_CONFLICT`。
 
@@ -458,43 +458,43 @@ Broker 中断时已提交业务和 Outbox 可查询；Worker 中断后由租约�
 
 | ID | 需求、入口及真实操作 | 必须断言的结果 | 当前状态 |
 | --- | --- | --- | --- |
-| BQA01 | FR-01、AC-01、NFR-01；申请、核验、多个监护人读取及撤销 | 本人成功；待核验、跨患儿、管理员普通角色被拒绝；审计重新读取 | BLOCKED：身份与业务服务 |
-| BQA02 | FR-02、AC-02、NFR-02；真实报告上传、OCR、本人修订、保存回读 | 字节/页/原文/比较符/单位/时间/来源一致；未核对；候选不能自行授予资格 | BLOCKED：Provider 与服务 |
-| BQA03 | FR-03、AC-03；记录、历次值、字典、病例父项分页 | 同时点冲突与未知时间可解释；全部获准子项返回；未知值未补齐 | BLOCKED：业务查询 |
-| BQA04 | FR-04、AC-04；已核对真实字段运行分类 | 精确输入与批准判定表一致；资格缺少不采用字段；家庭无越权字段 | BLOCKED：D04/D08 及执行器 |
-| BQA05 | FR-05、AC-05、NFR-03；固定七项及参考答案 | Decimal 贡献/总分可重现；任意缺项无完整评分；SJADAS/SMS 保持来源量表 | BLOCKED：独立答案与执行器 |
-| BQA06 | FR-06、AC-06、NFR-10；缺少依赖及齐全依赖分别触发 | 缺少任一依赖时临床事件和外部发送为零；获准完整条件按 D05 判定 | BLOCKED：批准与服务 |
-| BQA07 | FR-07、AC-07；真实渠道发送、未知受理、回执与阅读 | 重复消息无重复发送；未知受理先查询；阅读与送达独立 | BLOCKED：渠道与真实接收对象 |
-| BQA08 | FR-08、AC-08、NFR-04；并发更正、核对撤销、迟到结果 | 仅一个当前版本；新字段未核对；旧摘要和提示不可当作当前内容 | BLOCKED：领域服务 |
-| BQA09 | FR-09、AC-09、NFR-07/NFR-09；全部资源允许/拒绝、删除及恢复 | 无跨患儿/跨岗位内容；逐对象处置回执；恢复后撤权与删除继续生效 | BLOCKED：获准环境 |
-| BQA10 | FR-10、AC-10；分配核对、字段证明、旧版本提交 | 仅指定字段及用途有资格；越权保护字段拒绝；来源保持 | BLOCKED：核对流程与服务 |
-| BQA11 | FR-11、AC-11；生成摘要、回查来源、更正、新增及联系过期 | 原值和范围一致；失效提示准确；无隐藏评分和过期联系 | BLOCKED：摘要服务 |
-| BQA12 | FR-12、AC-12；配置、批准、验证、启用、停用与全部家庭读取 | 启用使用准确制品/版本证据；未批准字段不存在；当前策略覆盖历史 | BLOCKED：配置执行器 |
+| BQA01 | FR-01、AC-01、NFR-01；申请、核验、多监护人及撤销 | 本人成功；待核验、跨患儿及普通管理员拒绝；审计回读 | NOT_RUN；完整业务由T56维护 |
+| BQA02 | FR-02、AC-02、NFR-02；原报告上传、OCR、修订及保存 | 字节、页、原文、比较符、单位、时间及来源一致；本人确认保持未核对 | NOT_RUN；T41／T42／T56 |
+| BQA03 | FR-03、AC-03；记录、历次值、字典及父项分页 | 冲突和未知可解释；获准子项完整；未知值未补齐 | NOT_RUN；T45／T56 |
+| BQA04 | FR-04、AC-04；已核对真实字段运行分类 | 准确输入符合批准答案；资格不足不采用字段；家庭无越权字段 | NOT_RUN；T49及独立答案 |
+| BQA05 | FR-05、AC-05、NFR-03；七项输入及独立答案 | Decimal贡献及总值可重现；缺项没有完整评分；来源量表保留 | NOT_RUN；T49及独立答案 |
+| BQA06 | FR-06、AC-06、NFR-10；依赖不足和齐全分别触发 | 依赖不足时没有临床事件或外部发送；完整条件按D05判定 | NOT_RUN；T50／T51 |
+| BQA07 | FR-07、AC-07；真实渠道、未知受理、回执及阅读 | 重复不增发送；未知受理查询；送达与阅读独立 | NOT_RUN；T52及真实接收 |
+| BQA08 | FR-08、AC-08、NFR-04；并发更正、撤销及迟到结果 | 当前版本唯一；新字段未核对；旧内容不能作为当前依据 | NOT_RUN；T41／T50／T56 |
+| BQA09 | FR-09、AC-09、NFR-07／09；权限、处置及恢复 | 没有跨患儿或岗位内容；逐对象回执；撤权及处置继续生效 | NOT_RUN；T56／T57／T58 |
+| BQA10 | FR-10、AC-10；核对分配、字段证明及旧版本提交 | 资格限定准确字段及用途；保护字段拒绝；来源保持 | NOT_RUN；T49及真实专业核对 |
+| BQA11 | FR-11、AC-11；摘要、来源、更正、新增及联系过期 | 原值和范围一致；失效提示准确；没有隐藏评分或过期联系 | NOT_RUN；T46／T51／T56 |
+| BQA12 | FR-12、AC-12；配置、批准、验证、启用和停用 | 采用准确制品及版本证据；未批准字段不存在；历史遵循当前策略 | NOT_RUN；T51／T56 |
 | BQA13 | AC-H5-01、AC-H5-02、NFR-05/NFR-11；实际手机输入、原图和时间 | 数值字符串、时间精度及比例坐标对应；移动操作可达 | NOT_RUN |
-| BQA14 | AC-H5-03、AC-H5-04、NFR-08/NFR-12；中断响应、过期意图、延迟旧请求与重试竞争 | 原业务键唯一效果；旧 generation 被拒绝；成功必须重新读取 | BLOCKED：真实请求流程 |
-| BQA15 | AC-H5-05、AC-H5-06、NFR-13；退出、换账号、撤权、后台恢复 | 受限内容清理；新请求重新鉴权；浏览器无病例持久缓存 | BLOCKED：身份及手机环境 |
-| BQA16 | NFR-06；真实数据查询计划与峰值读取、写入、OCR并发 | 目标容量、p95/p99、连接和成本符合获准目标，未删减字段 | BLOCKED：D01 容量目标 |
-| BQA17 | Outbox、租约、Broker 与 Worker 中断恢复 | 业务与事件一致；旧代次不提交；不重复未知外部操作 | BLOCKED：真实任务环境 |
-| BQA18 | 配置版本、秘密及 observability 检查 | 运行时采用准确配置；日志无临床正文与秘密；告警有实际回执 | BLOCKED：运行环境 |
+| BQA14 | AC-H5-03／04、NFR-08／12；响应中断、过期及延迟竞争 | 原业务键唯一效果；旧generation拒绝；成功重新读取 | NOT_RUN；T56及实际设备 |
+| BQA15 | AC-H5-05／06、NFR-13；退出、换账号、撤权及恢复 | 受限内容清理；请求重新鉴权；没有病例持久缓存 | NOT_RUN；T56及实际设备 |
+| BQA16 | NFR-06；真实查询计划及峰值读写和OCR并发 | 容量、p95／p99、连接及成本符合获准目标，字段完整 | NOT_RUN；T59及D01目标 |
+| BQA17 | Outbox、租约、Broker及Worker中断恢复 | 业务及事件一致；旧代次不提交；未知外部操作不重复 | NOT_RUN；T57／T59 |
+| BQA18 | 配置、秘密及observability | 进程采用准确配置；日志没有敏感正文及秘密；告警有实际回执 | NOT_RUN；T57／T58 |
 
 ### 8.2 本次设计验证
 
-检查脚本：[validate.py](./backend-design/validate.py)。结果：[validation-report.json](./backend-design/validation-report.json)。执行 `PYTHONPATH=.data-work/deps python3 backend-design/validate.py`，使用 jsonschema、referencing、markdown-it-py 与实际 PostgreSQL；所有中间产物位于已忽略的 `.backend-work/`。检查文档结构及本地引用、接口标识及 Schema 引用、Schema 自身合法性、原病例医学时间与领域结构引用、补充 SQL 与基础 SQL 组合建表和参数化查询准备。
+当前检查为[check_v2.py](./backend-design/check_v2.py)、[实际路由核验](./backend-design/check_runtime_routes.py)及[调用方解析](./backend-design/read_api_callers.mjs)。Django实际URL解析器核验109项目录操作、143条V2路由及HTTP方法，权限来自实际CASE_ACTIONS及SERVICE_ACTIONS；Rolldown解析当前前端调用与Schema登记；referencing按各级资源作用域解析完整本地Schema，JSON Pointer采用成熟解析。字段、空值、读取及恢复设计保留原范围。准确计数、输入和执行结果由[T36](./docs/development/T36.md)及正式收据维护。
 
-设计检查不调用业务 Provider、不创建临床核对或家庭提示，不运行视觉功能。完整后端业务服务与目标 PostgreSQL 17 的业务集成验收仍需实施；本地数据库实际版本、检查输入 SHA-256、输出和退出码以报告为准。Markdown Mermaid 内容仅作结构检查，未运行渲染。
+设计检查不执行数据库请求或业务Provider，不创建临床核对、家庭事件或外部回执，不执行视觉操作。T35维护433项实际字段及独立DDL证明，QA43维护完整真实资料升级副本；T36的静态证明不取得完整业务、临床答案、手机或渠道验收资格。两笔未知OCR及2 CNY和两个并发预留保持原状态。
 
 ### 8.3 任务与交接
 
 | 任务 | 责任与产物 | 依赖及状态 |
 | --- | --- | --- |
 | BACK-DESIGN-01 | 本文件八节、接口目录、协议 Schema、补充 SQL、设计校验 | DESIGN；文档已编制，机器检查结果见报告 |
-| BACK-IDENTITY | S008：Session、岗位、关系、Policy Gate、审计 | 本设计、D02、运行环境；TODO |
-| BACK-RECORDS | S008：资料版本、病例领域、请求意图、草稿、查询与字段投影 | 数据结构、字段配置、身份；TODO |
-| BACK-FILES | S008：文件隔离、原图代理、页组版本、OCR 与本人确认 | D03/D08/D09、获准 Provider；TODO |
-| BACK-CLINICAL | S008：核对、确定性评估、配置批准及家庭投影 | D03—D08、独立答案；TODO |
-| BACK-ASYNC | S008：Task、Outbox、租约、结果采用与未知结果核查 | 真实 Broker、Worker 与各领域动作；TODO |
-| BACK-SUMMARY-NOTIFY | S008：确定性摘要、发送许可、渠道回执与本人阅读 | D05/D06/D09 及对应依赖；TODO |
-| BACK-OPS | S011：进程、网络、配置、秘密、指标、备份与恢复 | D01、D09 和运行责任；TODO |
-| BACK-INTEGRATION | S005-4/S008/S009/S010：全部组件映射、BQA01—BQA18 | 各接口实际实施及获准环境；TODO |
+| BACK-IDENTITY | Session、岗位、关系、Policy Gate及审计 | 实际源码已接收，完整业务按T56验收 |
+| BACK-RECORDS | 资料版本、病例领域、意图、草稿及查询 | T35字段已核验，实际消费按原功能任务验收 |
+| BACK-FILES | 文件、原件、页组、OCR及本人确认 | 本地真实资料及读取已有各自证明，完整T40—T43继续验收 |
+| BACK-CLINICAL | 专业核对、确定性评估、配置及家庭投影 | T49—T51分别验收，专业和临床依据独立 |
+| BACK-ASYNC | Task、Outbox、租约、采用及未知结果 | 实际处理函数已接收，恢复和容量由T57／T59验收 |
+| BACK-SUMMARY-NOTIFY | 摘要、发送许可、回执及本人阅读 | T46／T52分别验收，准确真实接收范围独立 |
+| BACK-OPS | 进程、配置、秘密、指标、备份及恢复 | QA43已有完整隔离升级证明，QA44切换仍待批准 |
+| BACK-INTEGRATION | 全部组件及BQA01—BQA18 | T54—T59及原业务任务分别保存完整验收 |
 
 S006 审查范围、字段传播和事务完整性；S007 以这些任务和 BQA 编号建立实施记录。接口清单的完成表示设计覆盖；服务、数据库迁移、临床启用、外部通知和手机业务通过声明必须引用对应真实证据。

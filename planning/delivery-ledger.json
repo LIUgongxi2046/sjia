@@ -970,7 +970,7 @@
     }
     ,{"id":"V34","commitment_id":"OPS","scenario":"逐项接收PRD 2.0、UI 2.0、现有代码及证据","expected_result":"当前系统边界、版本、全部FR及未知输入均有维护责任和后续任务","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T34","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T34"],"consumer":{"required":false,"description":"设计接收；后续采用由T35—T38验证"}}
     ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
-    ,{"id":"V36","commitment_id":"OPS","scenario":"核对家庭与受控API、任务、权限、结果未知和恢复","expected_result":"新增接口及全部调用方具有一致Schema、幂等语义和真实业务终态","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T36","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T36"],"consumer":{"required":false,"description":"接口设计；业务使用由各功能任务验证"}}
+    ,{"id":"V36","commitment_id":"OPS","scenario":"核对家庭与受控API、任务、权限、结果未知和恢复","expected_result":"新增接口及全部调用方具有一致Schema、幂等语义和真实业务终态","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T36","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T36"],"consumer":{"required":false,"description":"接口设计；业务使用由各功能任务验证"}}
     ,{"id":"V37","commitment_id":"FR-06","scenario":"检查逐事实识别和N00—N11确定性编排设计","expected_result":"来源、输入资格、current/replay及失败状态完整，模型不授予专业资格","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T37","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T37"],"consumer":{"required":false,"description":"算法设计；实际采用由T41、T49、T50验证"}}
     ,{"id":"V38","commitment_id":"UI","scenario":"逐页接收39页、状态、正式类型、接口、角色及Token","expected_result":"全部页面有正式归属和接口状态，六个受控入口不增加家庭权限","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T38","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T38"],"consumer":{"required":false,"description":"前端设计；实际使用由T54和T56验证"}}
     ,{"id":"V39","commitment_id":"CASE","scenario":"在获准隔离数据库迁移真实旧资料并恢复和重新读取","expected_result":"数量、原值、来源、核对范围一致，未知时间不补造，重复执行不增加事实","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T39","kind":"INTEGRATION"}],"status":"STALE","evidence_ids":["EVID-T39"],"consumer":{"required":true,"description":"新旧读取服务使用准确迁移后版本","check_id":"CHECK-T39"}}
@@ -1705,8 +1705,8 @@
     }
     ,{"id":"T34","acceptance_ids":["V34"],"depends_on":[],"state":"ACCEPTED","allowed_paths":["sJIA合并MAS预警平台HLD.md","planning/","implementation-tasks.md","2.0迭代计划.md","docs/development/T34.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T35","acceptance_ids":["V35"],"depends_on":["T34"],"state":"ACCEPTED","allowed_paths":["sJIA合并MAS预警平台数据LLD.md","data-design/","docs/development/T35.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
-    ,{"id":"T36","acceptance_ids":["V36"],"depends_on":["T35"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台后端LLD.md","backend-design/","docs/development/T36.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
-    ,{"id":"T37","acceptance_ids":["V37"],"depends_on":["T36"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台预警编排LLD.md","alert-design/","docs/development/T37.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T36","acceptance_ids":["V36"],"depends_on":["T35"],"state":"ACCEPTED","allowed_paths":["sJIA合并MAS预警平台后端LLD.md","backend-design/","docs/development/T36.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T37","acceptance_ids":["V37"],"depends_on":["T36"],"state":"ACCEPTED","allowed_paths":["sJIA合并MAS预警平台预警编排LLD.md","alert-design/","docs/development/T37.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T38","acceptance_ids":["V38"],"depends_on":["T36","T37"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台前端LLD.md","sJIA合并MAS预警平台页面流程.md","frontend-design/","docs/development/T38.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T39","acceptance_ids":["V39"],"depends_on":["T35","T36"],"state":"IMPLEMENTED","allowed_paths":["backend/","data-design/","deploy/Dockerfile","docs/development/T39.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T40","acceptance_ids":["V40"],"depends_on":["T39","T36","T38"],"state":"IMPLEMENTED","allowed_paths":["backend/files/","backend/archives/migrations/0003_review_unknown.py","backend/identity/support_session.py","backend/retention/","backend/authorization/","backend/api/","backend/support/","backend/tests/","backend/tasks/","backend/config/","backend/.env.example","backend/configurations/","backend/requests/","backend/recognition/","backend/core/management/commands/seed_simulation.py","backend/core/management/commands/seed_simulation_batches.py","backend/requirements.txt","backend/requirements.lock","backend-design/v2-protocol.schema.json","backend-design/v2-api-catalog.csv","backend-design/api-catalog.csv","backend-design/archive-search.schema.json","backend-design/v2-service-behavior.md","backend-design/check_v2.py","frontend-design/v2-types.ts","frontend-design/archive-search-types.ts","frontend-design/api-bindings.csv","frontend-design/v2-routes.csv","guardian-h5/src/","guardian-h5/scripts/","guardian-h5/package.json","guardian-h5/package-lock.json","docs/development/T36.md","docs/development/T38.md","docs/development/T40.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
@@ -1934,8 +1934,8 @@
     },
     {
       "id": "EVID-T36", "check_id": "CHECK-T36", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-20261008T062531Z-25034/receipt.json",
-      "receipt_sha256": "5041c53c8c693ce55330466c8877938c585d7acd8e73a1c1825552d5649d59aa"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36/receipt.json",
+      "receipt_sha256": "b713ca4ec174da5ed33396ba18f8d6178537741b0d314e49fb1837621163424b"
     },
     {
       "id": "EVID-T39", "check_id": "CHECK-T39", "kind": "INTEGRATION",
@@ -2016,13 +2016,13 @@
       "T30",
       "T31",
       "T32",
-      "T33", "T36", "T37", "T38", "T39", "T40", "T41", "T42", "T43", "T44", "T45", "T46", "T47", "T48", "T49", "T50", "T51", "T52", "T53", "T54", "T55", "T56", "T57", "T58", "T59", "T60"
+      "T33", "T38", "T39", "T40", "T41", "T42", "T43", "T44", "T45", "T46", "T47", "T48", "T49", "T50", "T51", "T52", "T53", "T54", "T55", "T56", "T57", "T58", "T59", "T60"
     ],
-    "next_task_id": "T36",
+    "next_task_id": "T38",
     "constraints": [
       "2026-10-18用户要求持续完成全部功能，委托执行软件范围内的设计决策与配置批准；使用获准真实资料、真实账号和现有服务，保留独立临床答案、专业核对、真实接收及实际设备的证据要求。当前用户禁止模拟和主动视觉操作的规则持续有效。",
       "用户指定GitHub目标main；2026-10-19已发布提交f05dbcf，单次自动任务sjia-main保持PAUSED。当前QA44冻结候选0e6c79c和原运行环境分别维护，整组运行切换仍待明确批准。真实资料、凭据、本地数据库、模型响应及私有验收产物排除在提交范围。",
-      "当前独立设计分支codex/current-design-reception已完成T34及T35设计接收，22项FR、D01至D10责任、39页及328项状态完整。T35的71个字段组对应433项实际持久字段和89处实际使用入口；独立PostgreSQL17实例完成22张新增表及218项约束检查，63份原件的290页与准确字节摘要保持。T37的77份Schema、2883项引用及29处实际登记通过正式检查。当前V34、V35及V37为PASS；30项承诺及60项任务均保留，57项验收尚未通过，58项任务等待完整接收。软件实现和业务验收分别管理，next_task_id为T36。",
+      "当前独立设计分支codex/current-design-reception已完成T34—T37设计接收，22项FR、D01至D10责任、39页及328项状态完整。T35的71个字段组对应433项实际持久字段，63份原件及290页保持准确摘要。T36的109项目录操作、143条实际V2路由、146项HTTP方法、99项字段转换、132处明确路径及30处组合调用均已核验。T37的77份Schema、2883项引用及29处实际登记通过正式检查，完整输入持续一致。当前V34—V37为PASS；30项承诺及60项任务保留，56项验收和56项任务等待完整接收。软件实施和业务验收分别管理，next_task_id为T38。",
       "2026-10-09用户更新：全部开发与联调使用模拟数据，截止北京时间2026-10-10 09:00；模拟资料、角色、批准和业务结果仅保存在sjia_simulation及独立文件、消息环境。模拟验收与真实验收分别记录，视觉限制继续有效。完成一项完整任务后报告开发与验收剩余数量，继续下一项。",
       "2026-10-08用户调整执行顺序：优先完成全部可开发功能，外部资料、授权及业务验收条件单独登记，继续实施其他任务；功能及必要运行检查完成登记IMPLEMENTED，业务验收通过登记ACCEPTED。每完成一项任务报告编号、完成内容和剩余未完成数量；已有有效证据无需重复捕获，视觉比对继续NOT_RUN。",
       "2026-10-07用户授权完成PRD 2.0全部功能、参赛优化、UI 2.0一比一还原和完整业务验收，连续实施全部已授权任务。工单为implementation-tasks.md，状态以本文件维护；原始未完成验收完整保留。指定外部发送和正式部署仍需准确目标与依据。",

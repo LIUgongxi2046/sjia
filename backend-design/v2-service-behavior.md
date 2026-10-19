@@ -1,6 +1,6 @@
 # BACK V2.0 服务行为
 
-日期：2026-10-07。接口目录为 [v2-api-catalog.csv](v2-api-catalog.csv)，载荷为 [v2-protocol.schema.json](v2-protocol.schema.json)，实体与未知语义引用 [DATA V2.0](../data-design/v2-data-specification.md)。业务 URL 前缀为 `/api/v2`；现有 `/api/v1` 继续服务已发布调用方。V2 新增写入不通过 V1 接口混用输入，schema_version 固定为 `2.0.0`。T38 维护逐页面使用位置，T39—T53 实施接口；目录存在不表示运行路由已注册。
+日期：2026-10-20。接口目录为[v2-api-catalog.csv](v2-api-catalog.csv)，载荷为[v2-protocol.schema.json](v2-protocol.schema.json)，实体及未知语义引用[DATA V2.0](../data-design/v2-data-specification.md)。业务前缀为`/api/v2`，`/api/v1`继续采用其明确协议。当前109项目录操作均具有准确实际路由；全部143条V2路由及146项HTTP方法由Django解析器核验。动态目标由[composed-callers.json](composed-callers.json)逐项维护，实际字段传播及业务终态由原功能任务验收。
 
 ## 授权与合法前置
 
@@ -12,13 +12,13 @@ support_session 使用现有账号密码及当前环境的有效 ServiceRoleGran
 
 所有读取、总数、游标、子项和附件执行同一 Policy Gate；家庭 projection 不包括受控全文、内部计算、标签答案、Provider 身份或费用。本人提醒过滤 owner_id，支持角色不能修改另一主体的个人设置。资料使用说明返回当前真实用途、保留与 Provider 能力，未配置值保持未知。
 
-manage_data_use 与 manage_notifications 为新增 ServiceRoleGrant 动作，由对应实施任务加入登记清单；另行逐患儿核验 read_case 与字段范围，专业标签还核验 verify_field。运行身份没有此类授权时拒绝受控入口，不能因岗位页面可见取得权限。
+manage_data_use及manage_notifications已经登记在实际SERVICE_ACTIONS。岗位资格仍需准确ServiceRoleGrant，逐患儿read_case、字段范围及专业verify_field继续独立核验；运行身份和岗位导航均不授予这些范围。
 
 ## 请求、版本与读取
 
 新增读接口使用安全 JSON 投影，search 为只读 POST，敏感过滤留在正文。继承 V1 Error、WriteIntent、WriteReceipt、TaskView 和 Page 的格式，V2 与 V1 definition 的版本冲突由 V2 显式替换。版本、epoch 均为十进制整数字符串；Decimal 保留文字；来源文字不被 normalized 字段替代。required 与 null 各自保持业务含义；所有 object 禁止 additionalProperties。
 
-每项新增业务写入携带 Idempotency-Key、X-Write-Intent、X-Intent-Generation；意图准备登记准确 V2 operation_id、target_key 和 schema_version。目标键不含 API 前缀。唯一身份 `(actor_id,operation_id,target_key,request_id)` 保持至允许重试与资料保留窗口结束；同键异内容拒绝。更新还必须提供 expected_version 或逐页 expected_status_version。业务、意图、write_request、版本、epoch、Task、Outbox、审计同事务提交。响应中断按原意图查询，unknown 不允许新键提交。
+目录中idempotency=intent的业务写入携带Idempotency-Key、X-Write-Intent及X-Intent-Generation，准备时固定V2 operation_id、target_key和schema_version。目标键没有API前缀，唯一身份`(actor_id,operation_id,target_key,request_id)`保持至允许重试和保留窗口结束；相同身份与不同正文拒绝。更新要求准确expected_version或expected_status_version，业务、意图、WriteRequest、版本、epoch、Task、Outbox及审计同事务提交。响应中断查询原意图，unknown不新建业务身份。其他幂等类别按目录及内容处置行为执行。
 
 用途意图保存 patient_id、original_file_id、purpose 和 environment 的授权范围，查询和重试重新核验同一范围。副本的人工复核同时保存准确 ServiceRoleGrant、AccessGrant 及人员 auth_epoch；撤权、失效或人员状态改变后，旧复核不能授予后续外发。临床完整性或日期一致性未确认时保存 unknown，副本保持待复核。复核为明确失败时保存 failed，并拒绝采用副本。
 
@@ -49,17 +49,17 @@ purpose_copy_options 按准确原件身份与目标用途执行当前岗位、�
 | material_reminder | 本人、准确 target_type/ref、版本、enabled/paused/snoozed/disabled、真实渠道订阅与定时条件 | 初始 disabled；填写正式目标后完成关闭；个人文字不生成临床分级 |
 | notification_reconcile / notification_receipt | 准确 attempt/provider_request、签名原字节摘要、event_id 与许可；回执及结果去重 | accepted、delivered、read 独立；未知先查询，禁止跨渠道自动重复；不能用手动结果标送达 |
 | notification_send | 当前 recipient、expected_snapshot、明确写入意图、manage_notifications 岗位及整患儿 read_case 权限；重新核验许可、发布和有效事件 | 返回准确 notification.Record；登记发送与 delivered/read 不同，未知结果不得手工标记成功 |
-| archive_regrouping | 同一患儿/批次的全部来源文书准确版本、页集合、目标归组与原请求身份一次事务核验 | 保存拆分/合并/移动后的新版本，旧事实与来源仍可追溯；冲突不部分采用 |
+| archive_regrouping | 同一患儿及批次的全部来源文书版本、页集合、目标归组及原请求身份一次事务核验 | 保存重新分组、合并及移动形成的新版本，旧事实和来源保持；冲突不部分采用 |
 
 archive_fact_read 与 archive_fact_history 读取准确事实、记录版本及字段，逐项执行当前家庭权限。事实读取保留历史缺少状态；FactFieldSnapshot 的 quality_reasons_snapshot_state 为 not_recorded 时，仅允许 unknown／invalid 字段及原有空原因集合。新资料输入继续使用 clinicalField 的完整性约束。历史分页读取批准的 backend-runtime-1 的 api.max_page_size，绑定人员、身份版本、患儿、事实当前版本、数据及核对版本、授权字段与运行配置；游标到期时间不得超过当前会话有效期。历史每项重新检查当前记录及字段授权。
 
-当前 UI2-39 使用 notification_scopes、notification_support_history、notification_support_record 和 notification_v2_send；分页参数只有 cursor。旧设计中的 /support/deliveries API 与 notification_resolve 不作为实现接口，也不将“resolve”悄悄映射为再次发送。界面路由 /support/deliveries 保留，实际组件为 NotificationPage。发送后的核对与恢复沿用原任务/请求协议，管理人员不能手动制造提供方回执。接口目录中的 manage_notifications 为岗位入口要求，不替代逐患儿 read_case 及完整资源权限。
+UI2-39的NotificationPage使用notification_scopes、notification_support_history、notification_support_record及notification_v2_send，页面路由为/support/deliveries，分页参数为cursor。发送后继续查询原任务及请求，管理人员不能填写提供方回执。manage_notifications限定岗位入口，逐患儿read_case和完整资源权限继续独立判定。
 
-disposition_coverage_read 是要求 manage_disposition 和具体患儿授权的只读覆盖清单，显式传入 purpose；不是删除计划或批准。UI2-38 的页面岗位入口不赋予此操作权限，具体调用仍独立核验。未定义的数据库版本、审计和备份清除能力明确返回未支持，不以只读清单冒充物理删除执行器。
+disposition_coverage_read读取覆盖清单，要求manage_disposition、具体患儿授权及明确purpose。UI2-38导航不授予该操作，调用时独立核验。准确处置计划、批准和执行分别取得明确依据；不支持的数据库版本、审计及备份清除能力返回准确范围。
 
 锁顺序沿用 EnvironmentGate → Patient → Principal／授权 → 意图 → 业务对象；多个 ID 排序。当前指针使用条件更新，旧版本不可覆盖；读取使用一次短 REPEATABLE READ 快照。网络请求与长文件处理位于事务外。原件、资料用途、授权、核对、映射、规则或观察期变化使对应采用资格失效，新请求即时核验，异步遍历只维护查询状态。
 
-字段映射的唯一维护位置为 [v2-field-map.csv](v2-field-map.csv)。 既有 V2 字段使用 Definition.field；独立 Schema 使用 namespace.Definition::field，检查器逐层解析本地 $ref 与组合属性。个人资料任务和站内提醒消息分别以 personal-record-task、material-reminder-notice 的现行契约为准；消息公开字段为 receipts 和 snapshot_version，内部 permit_refs 不作为公开 API 字段。purpose_copy 创建任务尚无副本时只返回 Task；真实副本与 checksum 已保存后才能读取 PurposeCopyView。副本 status 使用 DATA 的 pending_review/approved/rejected/revoked/disposed；目标和处理配置保存在 processing_evidence。用途、环境、目标与精确副本复核共同校验。
+字段映射由[v2-field-map.csv](v2-field-map.csv)维护。V2字段使用Definition.field，独立Schema使用namespace.Definition::field，referencing负责准确资源和本地引用，组合属性继续逐项核验。个人资料任务和提醒消息分别采用personal-record-task及material-reminder-notice协议；公开字段为receipts和snapshot_version，permit_refs保持内部范围。purpose_copy在副本尚未保存时返回准确受理回执及任务；真实副本和checksum保存后才能读取PurposeCopyView。副本status为pending_review／approved／rejected／revoked／disposed，目标及处理配置保存于processing_evidence，采用时共同核验用途、环境和准确复核。
 
 评价集合分组使用 development/validation，分别对应调参和业务验收。positive/negative 标签只保存独立答案已经确认的结果；分歧及待裁定保留 unknown 与 limitations，实际裁定依据写入 reference_answer_ref。coverage 保存真实 source_manifest_ref、purpose_copy_ids、label_version_ref 与分母说明；这些字段不得由界面展示数量推断。资料目录需要不可变 dataset_version 的冻结动作，冻结前逐用途、分组、答案与checksum核验，完整检查后设置 frozen_at。
 
@@ -95,7 +95,7 @@ local_disposition 使用当前批准保留策略和准确范围摘要准备 Writ
 
 T36 的 STATIC 检查校验目录完整性、Schema 自身及引用、逐写入读取入口、权限、FR 与 UI2引用、事务与任务定义，并读取当前运行 View、URL 与 Policy Gate 的实际 identifier。静态证据不代替业务、设备、视觉、临床或真实发送验收。T37 接收候选及计算，T38 接收 UI2 与状态，T39 接收实体，T40—T53 分别实施并回读。
 
-## T26 内容处置与本人申请的实际补充契约
+## T26内容处置与本人申请
 
 目录中 13 个 content-disposition 路由对应 15 个 HTTP 方法操作。family_content_disposition_requests_read/create 共用按方法分支的 family_content_disposition_requests handler；content_disposition_review_read/record 共用 content_disposition_review handler。所有 schema 来自独立 content-disposition 系列文件，不扩展旧文件处置请求或模拟提供方协议。
 

@@ -8,6 +8,7 @@ import { FileText, UsersRound } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { ContextLink } from '../../components/ContextLink';
+import { ApiError } from '../../api/client';
 import { useAccess } from '../../state/access';
 import { useSummaryResource } from '../../api/useSummaryResource';
 import { prepareSummary, submitSummary, readSummary, readSummaryRequest, readSummaryTask, retrySummary,
@@ -132,6 +133,14 @@ function SummaryForm() {
     const current = { requestId: crypto.randomUUID(), input, intent: null };
     setAttempt(current); void operate(signal => send(current, signal));
   };
+  const permissionDenied = directory.error instanceof ApiError && directory.error.status === 403
+    && list.error instanceof ApiError && list.error.status === 403;
+  if (canRead && permissionDenied) return <UI2FamilyFrame title="就医摘要" screenId="UI2-13" note="按照患儿与时间范围选择当前可见资料。" backTo="/records">
+    <SummaryPatient />
+    <section className="card form-card" aria-label="就医摘要权限说明"><p>当前账号已登录。就医摘要的查看和生成权限需要分别核验。</p></section>
+    <UI2ReadState error={directory.error} onRetry={() => { directory.reload(); list.reload(); }} />
+    <ContextLink className="text-action" to="/records">查看原始记录<ArrowRight size={15} /></ContextLink>
+  </UI2FamilyFrame>;
   return <UI2FamilyFrame title="就医摘要" screenId="UI2-13" note="按照患儿与时间范围选择当前可见资料。" backTo="/records">
     <SummaryPatient /><UI2ReadState loading={directory.loading} error={directory.error} onRetry={directory.reload} />
     <section className="summary-intro"><FileText size={48} /><h2>把就诊资料整理好</h2><p>保留原始记录与来源，方便就诊沟通。</p></section>

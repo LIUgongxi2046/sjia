@@ -135,6 +135,7 @@ export function checkUnion(binding, branches, name) {
 }
 
 export const explicitBindings = {
+  Page: { module: 'frontend-design/types.ts', name: 'Page' },
   ...Object.fromEntries(['UploadFileReceipt', 'UploadError', 'UploadGroupView'].map(name => [name, {
     module: 'guardian-h5/src/api/archiveUploads.ts', callSchema: `v2-protocol.schema.json#/$defs/${name}`,
   }])),
@@ -174,31 +175,20 @@ export function runChecks(root) {
       const module = mapping.module ?? 'frontend-design/v2-types.ts';
       let selected = project;
       if (!selected.program.getSourceFile(path.join(root, module))) selected = application;
-      let binding;
-      try { binding = mapping.callSchema
+      const binding = mapping.callSchema
         ? schemaCallType(selected.program, selected.checker, path.join(root, module), mapping.callSchema, path.join(root, 'guardian-h5/src/api/schema.ts'))
-        : exportedType(selected.program, selected.checker, path.join(root, module), mapping.name); }
-      catch (error) {
-        if (mapping.module || explicitBindings[name]) throw error;
-        binding = exportedType(project.program, project.checker, path.join(root, 'frontend-design/types.ts'), name);
-        selected = project;
-      }
+        : exportedType(selected.program, selected.checker, path.join(root, module), mapping.name);
       return { ...selectType(binding, mapping.steps, selected.checker), checker: selected.checker, mapping };
     };
     const descriptions = JSON.parse(fs.readFileSync(path.join(root, '.planning-work/t38-types-description.json'), 'utf8'));
     let propertiesChecked = 0;
-    const failures = [];
     const checked = [];
     for (const [name, schema] of Object.entries(descriptions)) {
-      try {
-        const binding = resolve(name);
-        if (schema.union_refs) checkUnion(binding, schema.union_refs.map(resolve), name);
-        else propertiesChecked += checkObject(binding, schema, binding.checker, name, binding.mapping.omit);
-        checked.push(name);
-      } catch (error) { failures.push({ name, error: error.message }); }
+      const binding = resolve(name);
+      if (schema.union_refs) checkUnion(binding, schema.union_refs.map(resolve), name);
+      else propertiesChecked += checkObject(binding, schema, binding.checker, name, binding.mapping.omit);
+      checked.push(name);
     }
-    if (failures.length) return { status: 'FAIL', checked_types: checked, properties: propertiesChecked, failures,
-      runtime_validation: 'NOT_RUN', visual_validation: 'NOT_RUN' };
 const tokenMap = JSON.parse(fs.readFileSync(path.join(root, 'frontend-design/v2-token-map.json'), 'utf8'));
 const tokens = JSON.parse(fs.readFileSync(path.join(root, tokenMap.source), 'utf8'));
 const tokenCss = postcss.parse(fs.readFileSync(path.join(root, tokenMap.cssTokenSource), 'utf8'));

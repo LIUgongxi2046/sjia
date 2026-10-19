@@ -1,10 +1,12 @@
 # FRONT V2.0 页面、状态与实际业务采用
 
-日期：2026-10-07。能力：DESIGN。准确需求为 PRD 2.0，系统、数据、接口及编排分别引用 HLD／DATA／BACK／ALERT V2.0。正式产品位于 `guardian-h5`，全部状态唯一来源为交付记录。
+日期：2026-10-20。能力：DESIGN。准确需求为PRD2.0，系统、数据、接口及编排分别引用HLD／DATA／BACK／ALERT V2.0。当前开发分支为codex/current-design-reception，正式应用位于guardian-h5，任务状态由交付记录维护。
 
 ## 1. 上游页面与业务映射
 
 [v2-routes.csv](v2-routes.csv)登记全部 39 个页面、准确路由、容器、受众、权限、父页面、读取与写入 operation_id、实施任务和布局。[设计页面清单](../ui-delivery/v2/screen-design-map.csv)维护需求及全部 328 个适用页面状态；该分母没有减少。旧 S 标识保留为既有接口与记录的引用，UI2-01—39 为当前页面验收身份。
+
+[实际路由检查](read-route-ownership.mjs)通过Rolldown AST读取App、FamilyApp、SupportApp、准确转出及React.lazy。当前39条家庭路径和13条支持路径分别绑定实际组件；[附加入口](runtime-entry-map.csv)维护其中13项入口的对应页面及任务，39项设计页面和328项状态完整保留。[当前接口补充](runtime-api-map.csv)维护自建登录及注册的准确URL、后端函数和前端调用，UI2-17采用当前真实账号流程。
 
 家庭只访问有效 Relation／AccessGrant 的患儿、动作及字段；支持入口同时需要 ServiceRoleGrant、患儿授权、CaseReadScope、环境与用途。内部评估、证明、集合和用途处理内容不得通过家庭接口取得。UI2-34—39 使用独立 `/support` 导航和包边界，家庭包不包含其组件；共同视觉组件不包含专业数据请求。深链仍由 API 当前授权，页面按钮不产生权限。
 
@@ -12,7 +14,7 @@ UI2-27／28／29／30／33 使用不透明 `page_id`、`document_id`、`relation
 
 ## 2. 身份与状态维护
 
-React 18.3.1、React Router 7.18.4、Vite 8.3.1、TypeScript 7.0.2 和现有 Context／领域协调器继续使用。读取、表单、草稿、提交、原图和任务分别具有所有者；当前 `Routes`、`AccessProvider`、`useResource` 及 SubmissionCoordinator 已存在，新设计需要实际功能验收后确认采用。
+React18.3.1、React Router7.18.4、Vite8.3.1及TypeScript7.0.2继续采用锁定依赖。createBrowserRouter承载App和当前Routes；AccessProvider、useResource、useFamilyResource、useFormDraft及领域提交函数分别维护准确身份、读取、表单、草稿和请求恢复。支持会话由SupportApp独立读取，业务采用继续按原任务验收。
 
 `RequestIdentityV2`固定主体、audience、患儿、scopeGeneration、operationId、objectId、objectVersion 和 requestSequence。每项请求发出时保存该身份；响应与全部当前身份一致才能更新页面。相同查询的新请求也递增 sequence。Task 使用 task_id/status_version，页处理使用 page_id/version/status_version，候选使用 page_id/page_version/candidate_set_id，采用动作再次核验当前来源版本。
 
@@ -30,7 +32,7 @@ React 18.3.1、React Router 7.18.4、Vite 8.3.1、TypeScript 7.0.2 和现有 Con
 | 页面 | 普通边距 18px，手机独立页面左右 20px，紧凑宽度手机独立页面 14px；最大阅读宽度 580px |
 | 卡片及表单 | 通用 card 20px 圆角；form-card 19px 内边距和 15px 间隔；紧凑宽度 15px；专用卡片保留准确 12／17／18／21／22px 等数值 |
 | 标题与导航 | 深蓝渐变 app-header；家庭底部只有首页、记录、我的，仅 UI2-01／05／15 显示；原稿导航最小 74px，safe-area 保留 |
-| 儿童 | `child-neutral-front@2x.png`，原稿 138×184px；紧凑宽度 124×169px；object-fit=contain，完整宽高比例及位置继承源码 |
+| 儿童 | HomeCompanion采用useCompanionPreference的17项既有示意选项，rich-ui.css使用clamp(232px,64vw,300px)控制高度，宽度按135／164计算，object-fit=contain保持比例；标记表示资料分类 |
 | 图标与品牌 | 三张原始图标表与原始格位、裁切、阴影，尺寸按页面；登录与我的品牌使用 logo-embrace@2x.png，首页资产位置按原稿 |
 | 弹层 | 页面说明、当前操作、离开编辑、原件查看分别有准确标题、关闭、焦点限制及恢复；保留当前动作输入，不叠加多个对象弹层 |
 | 状态 | status-panel 按当前设计背景、字体、标题、图标和操作；三级临床颜色须有实际批准 level |
@@ -38,7 +40,7 @@ React 18.3.1、React Router 7.18.4、Vite 8.3.1、TypeScript 7.0.2 和现有 Con
 
 公共布局接收手机内容区域和交互。设计工作台目录、检查面板与预览机框属于评审界面；正式业务页面中的内容、导航、状态、说明及所有控件完整保留。登录原稿的配置说明区域在真实认证可用时承接实际账号表单和恢复操作，来源为现有自建身份服务；不制造认证成功。版面和控件位置按原稿区域维护。
 
-[资产清单](../ui-delivery/v2/asset-manifest.csv)的文件摘要和 [页面资产映射](../ui-delivery/v2/page-asset-map.csv)逐项核查。使用图片路径与字节摘要不执行图像读取。视觉比对全部 NOT_RUN，一比一还原须另行逐页视觉验收；构建、DOM 和 Token 通过各自记录。
+[资产清单](../ui-delivery/v2/asset-manifest.csv)及[页面资产映射](../ui-delivery/v2/page-asset-map.csv)逐项核验，身份资产继续采用[准确清单](../ui-delivery/identity/asset-manifest.csv)。当前23份图片的明确来源、格式元数据及字节摘要均纳入检查，公开图标副本与原设计来源比较。UI2Frame的五份正式CSS顺序来自实际JSX，八份导入CSS由PostCSS读取；当前主题与按钮状态分别采用准确语义变量。视觉验收保持NOT_RUN，构建、DOM、样式及设备分别记录。
 
 ## 4. 类型、序列化与状态来源
 
@@ -60,10 +62,10 @@ graph TD
   Family --> Frame[UI2PageFrame与Header]
   Support --> Frame
   Frame --> Present[原稿Card Field Row 状态弹层]
-  Family --> Submission[SubmissionCoordinator]
-  Family --> Draft[DraftCoordinator]
+  Family --> Submission[当前领域提交函数]
+  Family --> Draft[useFormDraft]
   Family --> Original[OriginalViewer]
-  Family --> Task[TaskCoordinator]
+  Family --> Task[当前任务读取及版本检查]
   Support --> Submission
   Support --> Original
   Support --> Task

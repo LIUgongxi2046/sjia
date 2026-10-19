@@ -1,6 +1,6 @@
 # sJIA 合并 MAS 预警平台前端详细设计（LLD-FRONT）
 
-日期：2026-10-07。版本：FRONT V2.0。模式：`DESIGN / CONTINUOUS_DELIVERY`。文档状态：`CURRENT`。维护责任：S005-4。目标端：监护人手机 H5 与六项独立受控支持页面。前端设计、类型、映射和设计检查与应用接入、真机业务及临床验收分别记录。
+日期：2026-10-20。版本：FRONT V2.0。模式：`DESIGN / CONTINUOUS_DELIVERY`。文档有效性：CURRENT。维护责任为S005-4／T38，当前开发分支为codex/current-design-reception。目标为监护人手机H5及六项受控设计页面；实际附加入口一并维护。类型、实际源码、设计检查、完整业务、手机和临床验收分别保存证据。
 
 ## 1. 架构上下文与上游资产映射
 
@@ -15,7 +15,7 @@
 | 数据语义 | [数据 LLD](./sJIA合并MAS预警平台数据LLD.md) DATA V2.0、[新增规范](./data-design/v2-data-specification.md) | 原值、逐事实时间、关系、副本与评价分母 | SATISFIED：设计输入；T39 本地迁移已验证 |
 | 后端协议 | [后端 LLD](./sJIA合并MAS预警平台后端LLD.md) BACK V2.0、[新增接口](./backend-design/v2-api-catalog.csv)、[新增 Schema](./backend-design/v2-protocol.schema.json) | V1 兼容与 V2 协议，意图、任务、逐页恢复和真实通知 | SATISFIED：设计输入；运行采用由功能任务验证 |
 | 预警编排 | [预警编排 LLD](./sJIA合并MAS预警平台预警编排LLD.md) ALERT V2.0；S005-3 | 逐事实候选、专业资格、current／replay、顺序与周期 | SATISFIED：设计；实际采用由 T41／T49／T50 验证 |
-| 本地病例 | [病例资料说明](./demo-data/README.md)、[资料状态](./data-design/clinical-dataset-status.json) | 已有本地授权资料可用于引用和数据结构检查；不自动授权浏览器临床显示或外部识别 | PENDING：真实服务、临床核对和对应用途 |
+| 当前资料 | [资料状态](./data-design/clinical-dataset-status.json)、[QA25](./docs/development/QA25-real-evaluation-source-inventory.md)、[QA43](./docs/development/QA43-existing-data-upgrade.md) | 指定63份原件、290页和准确摘要；本地软件测试、现有Ark处理及候选确认保存已经获准 | 独立患者、专业核对、临床答案及正式用途分别取得准确依据 |
 
 UI 的静态情景只提供交互结构。业务入口从 Session、Relation、Capability 和当前资源读取内容。页面不引用 `preview/design-scenario.js`、设备预览数据库或评审状态控制器作为业务来源。
 
@@ -42,13 +42,13 @@ UI 的静态情景只提供交互结构。业务入口从 Session、Relation、C
 
 | 决定 ID | 来源、决定及状态 | 实施位置与验证 |
 | --- | --- | --- |
-| FRONT-001 | INFERRED / PROPOSED：使用当前 React 的 Context + useReducer；按身份、表单、任务分别管理 | `AccessProvider`、`FormProvider`、`TaskCoordinator`；纯 reducer，无通用全量病例 Store |
-| FRONT-002 | INFERRED / PROPOSED：React Router Data Router 负责 loader/action/errorElement 与离页 useBlocker | 将 `main.tsx` 的路由入口接入 createBrowserRouter；保持 [routes.csv](./frontend-design/routes.csv) 的全部地址及父页面；验证真实返回和未保存保护 |
-| FRONT-003 | INFERRED / PROPOSED：请求使用同源 Fetch；采用成熟 JSON Schema 2020-12 校验库 Ajv 与格式插件 | `api/client`、`api/schema`；实施时锁定库版本并核验全部 `$ref`；不自行编写 JSON、SSE 或 Markdown parser |
-| FRONT-004 | 继承 HLD ADR-001/006：无病例持久缓存；前台有界轮询；服务端草稿 | loader 数据只用于本次当前页面；退出、切换、撤权和前台恢复重新授权；FRONT-Q01—Q20 |
+| FRONT-001 | ACCEPTED／INFERRED：当前React Context及页面Hook分别管理身份、输入、提交和任务 | AccessProvider、useFormDraft、useRecordSubmission及领域页面任务读取；原任务维护完整行为验收 |
+| FRONT-002 | ACCEPTED／INFERRED：createBrowserRouter承载App，FamilyApp与SupportApp分别登记Routes | main.tsx、App.tsx及SupportApp.tsx；读取由当前Hook和页面负责，useFormDraft使用useBlocker保护离开 |
+| FRONT-003 | ACCEPTED／INFERRED：同源Fetch及成熟JSON Schema2020-12校验 | api/client、api/schema及准确AJV8.17.1；请求和响应分别核验准确Schema及身份 |
+| FRONT-004 | 继承HLD ADR-001/006：病例只保留当前内存，前台有界轮询及服务端草稿 | 当前Hook结果按主体、对象、权限代次及顺序采用，退出、切换、撤权和前台恢复重新授权 |
 | FRONT-005 | 继承 UI 2.0：三项主页面显示导航，二级页面显示返回；品牌及资产使用原稿位置 | `Layout`、`TaskHeader`、`BrandLockup`；素材及 CSS 引用准确来源，DOM 与视觉分别验收 |
 
-C01 通过同源 HTTPS 访问 C03。家庭包不包含 `/support`、内部指标、配置发布或核对管理组件；六项支持页面使用独立受众门禁与包。C04 独立处理 OCR、规则与摘要；H5 页面关闭、后台或断网不能承担必须执行的评估及通知。SSR、Service Worker 病例离线模式、原生应用或浏览器推送没有当前批准接入任务。
+C01通过同源HTTPS访问C03。App对/support/*使用React.lazy加载SupportApp，家庭路由由AccessProvider维护；支持会话及岗位读取独立进行。六项支持设计页面及其附加入口逐请求取得准确岗位和病例范围。C04负责独立处理OCR、规则、摘要和通知；页面关闭或后台不替代服务端执行。源码边界、构建输出、实际权限和设备分别验收。
 
 ### 1.4 接口接收与外部条件
 
@@ -108,11 +108,11 @@ C01 通过同源 HTTPS 访问 C03。家庭包不包含 `/support`、内部指标
 | 状态 | 来源／所有者 | 更新与清理 |
 | --- | --- | --- |
 | 会话与关联 | SessionView、RelationView／AccessProvider | 集中选择和撤销事件；有效状态变化使全部受限读取失效 |
-| 服务端页面内容 | Router loader／对应 Container | 单次当前读取；每次进入和重新验证获取新响应；不得乐观修改核对或临床结果 |
-| 表单输入 | FormProvider／纯 reducer | 字段事件携带 client_field_id；inputRevision 单调增加；患儿保持绑定 |
-| 草稿保存 | DraftCoordinator | 同一草稿串行意图；保存时间仅来自实际 saved_at；正文不进入 URL |
-| 写入与恢复 | SubmissionCoordinator | 固定原始载荷、request_id、intent_id、generation；query 原意图后决定下一动作 |
-| OCR 和后台任务 | TaskCoordinator | 同 task_id 单调 status_version；有效结果重新读取资源；终态释放计时器 |
+| 服务端页面内容 | useResource、useFamilyResource及各领域页面 | 当前身份读取和重新验证取得新响应，核对及临床结果依服务端事实采用 |
+| 表单输入 | 登记组件的受控状态及当前表单Hook | 稳定client_field_id、准确输入版本和固定患儿；输入与已保存版本分别管理 |
+| 草稿保存 | useFormDraft | 串行保存、原意图恢复及准确saved_at，正文不进入URL |
+| 写入与恢复 | useRecordSubmission、useCorrectionSubmission及领域提交函数 | 固定载荷、request_id、intent_id和generation，查询原请求后继续 |
+| OCR及后台任务 | 领域页面、当前任务读取函数及版本检查 | 同一task_id的status_version单调采用，有效结果重读资源，明确终态释放计时器 |
 | 表单展开与弹层 | 页面组件 | 与临床对象分开；单个 BottomSheet；关闭恢复焦点 |
 | 导航与筛选 | NavigationMemory／ContextLink | 内存条件与返回位置；history.state 只含无病例地址和定位键 |
 | 公共资产 | Vite 静态资源 | 按内容摘要缓存；角色不参与诊断或临床状态 |
@@ -138,7 +138,7 @@ HTTP 非 2xx、业务不足和能力未配置保留各自准确状态。网络�
 | `--motion` | motion.fast `180ms`，减少动态为零 | 控件 |
 | 专用组件 | src/styles.css 的全部准确选择器 | 字号、梯度、间距、圆角、阴影、布局及状态 |
 
-antd-mobile ConfigProvider 的品牌、背景、文字和危险操作变量引用当前语义 Token；Danger 只表示操作错误。Tailwind 只提供布局工具。服务、资料、处理和临床状态依当前投影及状态采用表；临床等级与准确文字须获批准。颜色模式完整继承 UI2 原稿，不自行新增主题。
+UI2Frame的designStyle引用当前语义Token，按sourceStyles、richStyles、richPageStyles、richRegistrationStyles及richThemeStyles顺序加载正式样式。主题及按钮状态由rich-theme.css中的明确变量维护，clinical等级和文字仍须获准投影。Tailwind及antd-mobile沿用当前工程职责。具体样式来源和顺序由成熟AST及PostCSS核验，完整呈现和设备仍分别验收。
 
 ### 3.2 组件、资产与响应式规则
 
@@ -151,7 +151,7 @@ antd-mobile ConfigProvider 的品牌、背景、文字和危险操作变量引�
 | 固定区域 | 主页面正文保留导航实际高度及 safe-area；二级页面末尾保留 24px 及 safe-area；提交按钮位于表单之后 |
 | 弹层 | 最大 88dvh；一个内部滚动区域；真实 dialog 标题、关闭按钮、焦点限制和关闭恢复；不叠加多层临床内容 |
 | 三维图标 | 三张 `assets/master/*-3d-icons.png` 四乘四图标表；格位与裁切直接继承 [图标组件](./ui-delivery/preview/three-d-icons.jsx) 的 index、0.08 内边距和 0.84 viewBox；共享 Icon 组件；保留原始颜色与文字名称 |
-| 儿童形象 | `assets/2x/child-neutral-front@2x.png`；准确 138×184px，紧凑条件 124×169px，位置及 contain 继承原稿；不推断真实外貌或受累部位 |
+| 儿童形象 | HomeCompanion采用当前明确选择的示意资产，useCompanionPreference提供17项既有选项；rich-ui.css通过clamp(232px,64vw,300px)控制高度，宽度按135／164计算，object-fit=contain保持原比例；位置标记表示资料分类 |
 | 品牌 | `identity/2x/logo-embrace@2x.png` 与产品名称；登录上部、我的管理内容之后；任务标题保留当前操作 |
 | 原图 | contain 显示真实字节；缩放、翻页、旋转作用于查看视图；区域框跟随同一变换；不修改原件 |
 
@@ -282,44 +282,36 @@ stateDiagram-v2
 
 ```mermaid
 graph TD
-    Router[DataRouter] --> Access[AccessProvider Container]
-    Access --> Layout[Layout Presentational]
-    Access --> Loader[RouteLoader Container]
-    Layout --> Header[TaskHeader Presentational]
-    Layout --> Tabs[TabBar Presentational]
-    Loader --> Home[HomeContainer]
-    Home --> Alert[AlertCard Presentational]
-    Home --> Twin[TwinPanelContainer]
-    Twin --> Sheet[BottomSheet Presentational]
-    Twin --> Tags[SourceStatus and RecordCard Presentational]
-    Loader --> Form[RegistrationContainer]
-    Form --> Fields[Controlled Fields Presentational]
-    Form --> Draft[DraftCoordinator]
-    Form --> Submit[SubmissionCoordinator]
-    Form --> Photo[PhotoCoordinator]
-    Photo --> Review[PhotoReview Presentational]
-    Photo --> Viewer[OriginalViewerContainer]
-    Photo --> OCR[RecognitionCoordinator]
-    OCR --> Candidate[CandidateReview Presentational]
-    Form --> Voice[VoiceEntryContainer]
-    Submit --> Actions[FormActions Presentational]
-    OCR --> Task[TaskCoordinator]
-    Loader --> Records[Records and History Containers]
-    Records --> Cards[RecordTimeline Presentational]
-    Loader --> Summary[SummaryContainer]
-    Summary --> Task
-    Loader --> Detail[AlertDetailContainer]
-    Detail --> Contact[ContactContainer]
-    Loader --> Account[Account and Association Containers]
+    Router[createBrowserRouter] --> App[App]
+    App --> Family[FamilyApp]
+    App --> Support[SupportApp动态导入]
+    Family --> Access[AccessProvider]
+    Access --> Pages[39项设计页面及附加入口]
+    Support --> Roles[支持会话及岗位页面]
+    Pages --> Frame[UI2FamilyFrame与UI2Frame]
+    Roles --> Frame
+    Frame --> Sheet[UI2Sheet及焦点管理]
+    Pages --> Reads[useFamilyResource及useResource]
+    Pages --> Forms[三类登记及更正]
+    Forms --> Draft[useFormDraft]
+    Forms --> Submit[useRecordSubmission及useCorrectionSubmission]
+    Forms --> Original[原件及候选查看]
+    Forms --> Voice[真实声音及逐项确认]
+    Pages --> Task[领域任务读取及版本检查]
+    Pages --> Home[UI2HomePage]
+    Home --> Companion[HomeCompanion]
+    Home --> Archive[HealthArchive]
+    Pages --> Summaries[UI2SummariesPage及UI2SummaryDetailPage]
+    Pages --> Alerts[UI2AlertsPage及UI2AlertDetailPage]
 ```
 
-Container 使用 loader、Context 与领域协调器取得真实数据；Presentational 只接收 props 并发送动作，不发请求、不访问病例存储、不计算风险。副作用组件 VoiceEntry、OriginalViewer 与 TaskCoordinator 明确在 Container 层承载。FormProvider 位于对应表单路由的 errorElement 之外，以便写入结果未知时保留当前获准输入。
+页面和当前Hook负责获准数据、提交、草稿及任务，展示组件采用准确props并发出明确动作。UI2FamilyFrame维护当前导航与返回，UI2Frame维护ShadowRoot、样式、焦点和说明弹层，UI2Sheet负责当前弹层及清理。写入未知期间保留同一获准表单的隔离输入，重新读取原请求事实后继续；来源、语音和任务的副作用由各自当前所有者释放。
 
 ### 5.3 核心组件接口与共享回归
 
 | 组件 | 类型／所有状态及副作用 | Props／Events | 使用页面／可访问性与验收 |
 | --- | --- | --- | --- |
-| PageFrame、TaskHeader、TabBar | Presentational；布局和导航事件 | screenId/title/context/backTarget/tabVisible → navigate | 全部页面；真实 h1、跳转主要内容、当前导航；Q14/Q15/Q20 |
+| UI2FamilyFrame、UI2Frame及UI2Sheet | 导航、当前ShadowRoot、样式、焦点及说明弹层 | screenId/title/backTo/primary/overlay及明确事件 | 全部UI2页面；真实h1、导航、弹层及焦点；Q14/Q15/Q20 |
 | SourceStatus、RecordCard | Presentational；无请求 | FamilyField/FamilyRecord → openRecord/openSource | S03/S07/S08/S09/S10-B/S11/S12/TW；长原文和缺项；Q03/Q11/Q15 |
 | TwinPanelContainer | Container；类别、历史选择和授权读取 | AccessContext/HomeView → openRecord/register/close | S03/TW；单个 dialog；未知时间独立列示；Q03/Q04/Q15 |
 | Field、SelectField、TimeField | Presentational；受控值 | value/config/errors/composing → change/blur/composition | S04/S05/S06/S10-A/S12-A；label、错误路径；Q03/Q07/Q16 |
@@ -328,7 +320,7 @@ Container 使用 loader、Context 与领域协调器取得真实数据；Present
 | OriginalViewerContainer | Container；授权 Blob、变换及 URL 生命周期 | file/page/anchor/context → close/changePage | S05/S06/S08/S11/S12 来源；dialog、44px 操作、焦点恢复；Q09/Q15 |
 | CandidateReview／RecognitionSourceView | Presentational；确认事件 | CandidateField/decision/currentInput/anchor → accept/modify/unknown/exclude/openSource | S05/S06；原文、页码与待确认原因；Q10 |
 | VoiceEntryContainer | Container；MediaRecorder、同源语音转写、计时器、取消与重试 | context/currentText → confirmedText/cancel/error | S04；按钮状态和转写 label；Q16 |
-| FormActions | Presentational；无网络副作用 | SaveState/DraftState → submit/check/retry/review/openRecord | S04/S05/S06/S10-A；aria-busy 和准确保存时间；Q06/Q07/Q08 |
+| FormActions及DraftActions | 当前提交和草稿状态展示 | 准确状态、saved_at及明确submit/check/retry/save动作 | 三类登记及更正；aria-busy和准确保存时间；Q06/Q07/Q08 |
 | RecordsContainer／AnalyteContainer | Container；筛选、分页和当前读取 | context/filter/conceptCode → filter/readSource | S07/S09；未知时间和不可比较说明；Q03/Q04 |
 | CorrectionContainer／CorrectionRequestContainer | Container；原版本、可编辑字段和写入 | FamilyRecord/editable_field_ids → correct/request | S08/S10-A；专业字段只申请，原因必填；Q07 |
 | SummaryContainer／SummaryDetail | Container／Presentational；范围、Task、重读 | SummaryInput/SummaryView → generate/openSource | S12；生成状态和有效性各自说明；Q12 |
@@ -337,7 +329,7 @@ Container 使用 loader、Context 与领域协调器取得真实数据；Present
 | DraftsContainer／LeaveDialog | Container／Presentational；草稿操作及 Router blocker | DraftView/dirty/uncertain → restore/abandon/stay/saveAndLeave/discard | S14 和全部表单；危险操作不默认焦点；Q08/Q14 |
 | DispositionContainer | Container；批准政策下的对象选择、申请和状态 | capability/approvedPolicy/targets → request/read | S13-B 的可选内嵌流程；无政策时不开放；Q17 |
 
-共享组件修改需要覆盖上述全部调用页面，核查空值、长内容、部分资料、新结果、弹层、滚动、键盘、深色和权限失效。前端实体 ID 使用真实 UUID；数组位置只用于页面排序，不作为记录或字段身份。
+共享组件修改需要覆盖对应全部调用页面，核查空值、长内容、部分资料、新结果、弹层、滚动、键盘、深色和权限失效。前端实体ID使用真实UUID，数组位置只表示页面顺序。39项设计页面的实际组件、转出及React.lazy来源由[路由检查](./frontend-design/read-route-ownership.mjs)核验；[附加入口](./frontend-design/runtime-entry-map.csv)维护13项实际入口的准确职责和任务。
 
 ### 5.4 接口适配清单
 
@@ -356,7 +348,7 @@ Container 使用 loader、Context 与领域协调器取得真实数据；Present
 | requests/tasks | intent/task 身份与 status_version → 领域状态 | 原请求身份查询和单任务轮询分别管理，过期结果不得更新其他页面 |
 | dispositions | 批准 policy_id、当前对象 ID/version 与依据 → DispositionInput | 申请通过重读 DispositionView；completed 及逐对象回执才表达已处理 |
 
-Route loader 将每次 Fetch 的 signal 与当前 context 绑定。读取失败显示当前请求错误；范围变更直接取消。HTTP Schema 或枚举不匹配在 adapter 抛出 protocol 错误，页面阻止采用。成功资源不可读时保留提交事实并显示访问状态，不重新创建业务记录。
+当前读取Hook和页面将Fetch的signal与准确context绑定。读取失败显示当前请求错误，范围变化取消旧读取；Schema或枚举不一致立即产生协议错误并阻止采用。已提交资源当前不可读时保留准确提交事实和访问状态，不重新创建同一业务动作。
 
 ## 6. 异步交互引擎与 BFF 挂载
 
@@ -369,8 +361,8 @@ sequenceDiagram
     actor G as 监护人
     participant C as RegistrationContainer
     participant A as 同源API
-    participant T as TaskCoordinator
-    participant S as FormProvider
+    participant T as 当前任务读取
+    participant S as 当前表单状态
     participant R as Presentational
     G->>C: 主动选择获准原件
     C->>A: 固定声明准备意图并上传真实字节
@@ -433,7 +425,7 @@ sequenceDiagram
 
 ### 6.3 请求数据与缓存生命周期
 
-`DataRouter loader` 管理当前页面读取，`shouldRevalidate` 对病例进入、返回、写入及手动更新要求真实重新请求。读取结果按下列完整身份记录在内存，身份改变立即失效。默认不采用跨路由旧内容，不启用 optimistic 临床更新。提交意图和固定载荷由 SubmissionCoordinator 单独保存。
+useResource、useFamilyResource和当前领域页面负责读取、取消及重新验证。病例进入、返回、写入后重读和手动更新均需真实请求；结果按完整身份保留当前内存，身份变化后失效。提交Hook单独保存原意图及固定载荷，临床状态依当前服务端事实采用。
 
 ```typescript
 // 身份键用于读取采用与取消；不写入浏览器持久存储。
@@ -536,17 +528,15 @@ E2E 监听在动作之前建立，按 operation_id、方法、业务 ID、reques
 
 ### 7.3 设计检查与交付证据
 
-当前设计检查为 [check_v2.py](./frontend-design/check_v2.py)与 [check-v2-types.mjs](./frontend-design/check-v2-types.mjs)，唯一主记录为 [T38](./docs/development/T38.md)。完整 39 页、328 状态、新增类型、接口、全部资产与准确 CSS 来源均纳入 CHECK-T38。正式业务、设备与视觉分别验收；已有检查仅按其准确源码及范围引用。
+当前检查为[check_v2.py](./frontend-design/check_v2.py)、[类型检查](./frontend-design/check-v2-types.mjs)及[实际路由来源](./frontend-design/read-route-ownership.mjs)，主记录为[T38](./docs/development/T38.md)。39项设计页面、328项状态、13个附加入口、193项类型及1334个属性均按准确源码核验。Page明确引用frontend-design/types.ts，其余对象采用准确声明和显式绑定。
 
-设计检查入口：[validate.py](./frontend-design/validate.py)、[TypeScript 检查](./frontend-design/check-types.mjs)。报告：[validation-report.json](./frontend-design/validation-report.json)。中间结果放在已忽略 `.front-work/`，执行环境的中间文件目录也限定在该目录。
+资产检查覆盖原稿9项资产及121项页面引用，以及当前源码导入和公开地址使用的23份图片。来源清单、Pillow格式元数据及当前SHA256分别核验；清单提供准确摘要时逐项比较，图标公开副本与明确设计来源保持相同字节。当前8份导入CSS使用PostCSS解析，正式Frame的5份样式顺序具有实际JSX依据。检查不读取图像像素，视觉验收保持NOT_RUN。
 
 ```bash
-PYTHONPATH=.data-work/deps python3 frontend-design/validate.py
-node guardian-h5/node_modules/typescript/bin/tsc -p frontend-design/tsconfig.json
-node frontend-design/check-types.mjs
+python3 frontend-design/check_v2.py --report-path .qa-work/QA48/current.json
 ```
 
-检查范围：七个主要章节、本地引用、现有路由与页面映射、全部家庭操作的 Schema 和职责引用、57 个 FD 及全部 FR/AC/NFR、Token 路径和公共资产、英文 DTO 属性／空值／枚举与源 Schema、独立 TypeScript 编译。使用成熟 CSV/JSON/Markdown/TypeScript 工具读取格式，不生成病例、认证或业务成功响应。文件摘要、实际运行时间、工具版本、命令、退出码和原始结果见报告。
+正式命令由已有Python3.13.13解释器执行，TMPDIR位于.qa-work/QA48/tmp，准确依赖通过原package-lock.json执行npm ci取得。完整命令、工具版本、输入、输出及收据见T38；七节设计、全部FD和FR／AC／NFR继续保留，业务输入与临床答案没有通过静态检查取得资格。
 
 Mermaid 本次仅检查结构，语法渲染为 NOT_RUN；视觉、真实账号业务、服务接入、手机和临床验收均未完成。设计检查通过只证明报告所列范围。用户禁止视觉功能，本次没有读取图像像素、截图或比较画面。
 
@@ -556,14 +546,14 @@ Mermaid 本次仅检查结构，语法渲染为 NOT_RUN；视觉、真实账号�
 | --- | --- | --- |
 | FRONT-DESIGN-01 | S005-4：本文件七节、types、routes、api-bindings、token-map、acceptance、设计检查 | DESIGN；证据以报告为准 |
 | FRONT-PROTOCOL-01 | S005-2/S005-3：FRONT-D01—D10、FRONT-D12、FRONT-D13 的准确 Schema、字段配置、映射及用途 | SATISFIED：设计接收；D02 及真实服务接入另行验收 |
-| FRONT-ACCESS-01 | S008：DataRouter、身份与患儿、上下文取消、CSRF、资源返回与清理 | D02、FRONT-D13、真实认证和前端设计；TODO |
+| FRONT-ACCESS-01 | AccessProvider、当前路由、上下文取消、CSRF及清理 | 当前源码已接收，完整身份与业务由T56验收 |
 | FRONT-UI-01 | S008：UI Token、三维资产、品牌、三项导航及响应式组件 | UI 2.0、当前资产；T54 维护实际状态 |
-| FRONT-FORM-01 | S008：受控字段、时间、字典、IME、草稿、离开及提交恢复 | FRONT-D03/D09/D10、实际接口；TODO |
-| FRONT-FILE-01 | S008：真实照片、字节上传、原图查看、OCR 候选及取消 | FRONT-D04/D08、D03/D08/D09、获准 Provider；TODO |
-| FRONT-READ-01 | S008：记录、历史、历次值、儿童类别与实际时间查看 | FRONT-D06/D08/D12、真实查询；TODO |
-| FRONT-ALERT-01 | S008：多维预警、准确事件详情、阅读及联系 | FRONT-D01/D02/D05、D04—D06、有效发布；TODO |
-| FRONT-SUMMARY-01 | S008：摘要范围、任务、来源与失效；处置内嵌流程 | 真实摘要、D06/D09；TODO |
-| FRONT-VOICE-01 | S008：浏览器采集、普通话转写核对、取消与限时 | 声音处理依据及实机环境；TODO |
-| FRONT-INTEGRATION-01 | S009/S010/S011：FRONT-Q01—Q20、业务／安全／手机证据 | 实际服务、账号、资料、批准配置和环境；BLOCKED |
+| FRONT-FORM-01 | 受控输入、时间、字典、IME、草稿、离开及提交恢复 | T41及T54—T56维护完整实际操作 |
+| FRONT-FILE-01 | 原字节上传、原件、候选、本人确认及取消 | T40—T43维护真实来源、逐项保存及重读 |
+| FRONT-READ-01 | 记录、历史、历次值及准确医学时间 | T45／T47／T56维护当前可见范围和实际消费 |
+| FRONT-ALERT-01 | 多维状态、准确事件、阅读及联系 | T50—T52维护全部当前发布资格及真实回执 |
+| FRONT-SUMMARY-01 | 摘要范围、任务、来源、失效及处置申请 | T46／T56分别保存完整实际业务证明 |
+| FRONT-VOICE-01 | 真实采集、同源转写、逐项确认、取消及期限 | T55维护真实模型范围，T58维护实际设备 |
+| FRONT-INTEGRATION-01 | FRONT-Q01—Q20及业务、安全和手机证据 | T54—T59按原范围分别验收，准确状态来自交付记录 |
 
 S006 检查字段传播与共享组件全部调用方；S007 按任务和用例编号建立实施记录。上游医学规则、专业资格、角色范围、Token 数值及接口变更仍由对应唯一维护位置负责。

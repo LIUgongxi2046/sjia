@@ -1,0 +1,3 @@
+operation_id,caller,method,path,backend_view,frontend_function,owner
+auth_login,family,POST,/auth/login,backend/api/views_family.py#auth_login,guardian-h5/src/api/endpoints.ts#login,T09
+auth_register,family,POST,/auth/register,backend/api/views_family.py#auth_register,guardian-h5/src/api/endpoints.ts#register,T09

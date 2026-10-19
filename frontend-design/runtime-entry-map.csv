@@ -1,0 +1,14 @@
+path,container,audience,related_screen_id,owner,scope
+/register/reports/confirm,ReportsPage,family,UI2-03,T42,同一报告登记容器的确认入口
+/alert-presets,AlertPresetsPage,family,UI2-01,T50,读取当前批准的预警方案及本人选择
+/archives/batches,UI2BatchPage,family,UI2-26,T42,本人批次目录及准确批次选择
+/archives/regroup,UI2RegroupPage,family,UI2-28,T43,按准确来源版本重新组合文书
+/records/:recordId/correction-request,CorrectionRequestPage,family,UI2-08,T56,当前获准记录的专业更正申请
+/prototype,PrototypePage,family,UI2-24,T54,页面目录及当前访问状态说明
+/support/login,SupportLogin,support,UI2-17,T40,实际支持端会话建立
+/support/professional-records,ProfessionalRecordPage,support,UI2-34,T56,准确病例范围的专业原始记录
+/support/applications,ApplicationsReviewPage,support,UI2-18,T56,当前岗位的关联申请核验
+/support/corrections,CorrectionReviewPage,support,UI2-08,T56,当前岗位和病例范围的更正处理
+/support/sources,SourcesPage,support,UI2-38,T56,准确来源版本及保留依据
+/support/delivery,NotificationPage,support,UI2-39,T52,同一通知记录容器的明确地址
+/support/*,UI2Frame,support,UI2-24,T54,支持入口中的无匹配地址说明

@@ -1914,13 +1914,13 @@
     },
     {
       "id": "EVID-T38", "check_id": "CHECK-T38", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA50/receipt.json",
-      "receipt_sha256": "ed13315628e8f3af5ff9799c28a993b2aa315db7ca6b6d5b125b0f145f770a35"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA51-VERIFIED/receipt.json",
+      "receipt_sha256": "c1d93e3919ce01d5bfb3d6f7a2dc08c187af8f082bc127dfb20cb52e3661dbe9"
     },
     {
       "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37-QA50/receipt.json",
-      "receipt_sha256": "abca177918674d2283741155ac9464f5554af021d2066b3e2feac26c075e089f"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37-QA51-VERIFIED/receipt.json",
+      "receipt_sha256": "17a93494bf931b4a46fff29dca0011c0fd7faec6ab805e14c802333084eaea7a"
     },
     {
       "id": "EVID-T34", "check_id": "CHECK-T34", "kind": "STATIC",
@@ -1934,8 +1934,8 @@
     },
     {
       "id": "EVID-T36", "check_id": "CHECK-T36", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-QA50/receipt.json",
-      "receipt_sha256": "9d5ed7b82aa147483346b994b58baa8b0bc8fc571e5b4fb18d6efd4e76d5ff3e"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-QA51-VERIFIED/receipt.json",
+      "receipt_sha256": "af4f4c7466522d62f9f174a03affed47e89928b34a08d4c3ee3bafd68803e58a"
     },
     {
       "id": "EVID-T39", "check_id": "CHECK-T39", "kind": "INTEGRATION",

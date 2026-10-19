@@ -11,7 +11,8 @@ import { useAccess } from '../../state/access';
 import { useEndpointAccess } from '../../state/useEndpointAccess';
 import { readDeltaBatches } from '../../api/archiveDelta';
 import { ApiError } from '../../api/client';
-import { batchInputs, batchRequest, prepareBatch, readBatch, retryBatchRequest, submitBatch, type BatchIdentity } from '../../api/archiveBatches';
+import { batchInputs, batchPollingInterval, batchRequest, prepareBatch, readBatch, retryBatchRequest, submitBatch, type BatchIdentity } from '../../api/archiveBatches';
+import { automaticPollingBudgetMs, canContinueTaskPolling } from '../../api/taskPolling';
 import type { BatchInputsView, BatchList, BatchView, PageView, RequestView } from '../../../../frontend-design/v2-types';
 import type { IntentView } from '../../../../frontend-design/types';
 
@@ -49,11 +50,14 @@ function BatchContent() {
   const [error, setError] = useState<Error | null>(null), [reload, setReload] = useState(0), [visible, setVisible] = useState(document.visibilityState === 'visible');
   const [identity, setIdentity] = useState<BatchIdentity | null>(null), [intent, setIntent] = useState<IntentView | null>(null);
   const [request, setRequest] = useState<RequestView | null>(null);
+  const [pollingPaused, setPollingPaused] = useState(false);
+  const polling = useRef<{ batchId: string; startedAt: number } | null>(null);
   const mounted = useRef(true), running = useRef(false), pending = useRef<AbortController | null>(null), restored = useRef('');
   const preparing = useRef(false);
   const batchId = params.get('batch') ?? route.batchId ?? null, intentId = params.get('request'), clientId = params.get('client_request');
   const ready = !!access.principalId && !!access.patientId && !access.loading && !access.error && visible;
   const relation = access.relations.find(item => item.patient_id === access.patientId);
+  function refreshProgress() { polling.current = null; setPollingPaused(false); setReload(current => current + 1); }
   function wipe() { setValue(null); setList(null); setInputs(null); setSelected([]); setSelectedPages([]); setIdentity(null); setIntent(null); setRequest(null); }
   useEffect(() => {
     setSelectedPages(current => current.filter(id => value?.pages.some(page => page.page_id === id && page.status === 'uploaded')));
@@ -178,12 +182,19 @@ function BatchContent() {
     queueMicrotask(() => { if (active && restored.current !== key) { restored.current = key; inspect(); } });
     return () => { active = false; };
   }, [ready, intentId, clientId, busy, identity]);
+  useEffect(() => { polling.current = null; setPollingPaused(false); }, [batchId, ready]);
   useEffect(() => {
-    if (!ready || busy || identity || !value?.pages.some(page => ['queued', 'processing', 'cancel_requested'].includes(page.status))) return;
-    const delay = Math.max(...value.pages.map(page => page.task?.poll_after_ms ?? 1000));
-    const timer = window.setTimeout(() => setReload(current => current + 1), delay);
+    if (!ready || busy || identity || !value || pollingPaused) return;
+    const delay = batchPollingInterval(value);
+    if (delay === null) { polling.current = null; return; }
+    if (polling.current?.batchId !== value.batch_id) polling.current = { batchId: value.batch_id, startedAt: performance.now() };
+    if (!canContinueTaskPolling(performance.now() - polling.current.startedAt, delay)) { setPollingPaused(true); return; }
+    const timer = window.setTimeout(() => {
+      if (!polling.current || performance.now() - polling.current.startedAt >= automaticPollingBudgetMs) { setPollingPaused(true); return; }
+      setReload(current => current + 1);
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [ready, busy, identity, value]);
+  }, [ready, busy, identity, value, pollingPaused]);
   const blocked = !ready || boundary.blocked.current || loading || busy || !!identity || !!intentId || !!clientId;
   const manual = value?.intake_mode === 'manual';
   const processingLimit = error instanceof ApiError && processingLimits.includes(error.code);
@@ -197,8 +208,9 @@ function BatchContent() {
     {choosing && !boundary.blocked.current && <section className="card form-card"><h2>选择已接收原件</h2>{inputs?.items.map((item, index) => <label className="check-line" key={item.file_group_id}><input type="checkbox" disabled={blocked} checked={selected.includes(item.file_group_id)} onChange={event => setSelected(current => event.target.checked ? [...current, item.file_group_id] : current.filter(id => id !== item.file_group_id))} />原件组 {index + 1} · {item.page_count} 页 · {eventTimeLabel(item.created_at)}</label>)}
       {inputs?.items.length === 0 && <p>尚无未接收的可用原件。</p>}<label className="field"><span>整理方式</span><select disabled={blocked} value={intakeMode} onChange={event => setIntakeMode(event.target.value as BatchView['intake_mode'])}><option value="manual">手工整理</option><option value="ocr">自动识别</option></select></label><p>{intakeMode === 'manual' ? '保留原件，由家庭对照填写，未使用自动识别。' : '自动识别后，仍需本人对照原件确认。'}</p><button className="button" disabled={blocked || !selected.length} onClick={create}>接收所选资料</button>
       <ArchiveUpload key={JSON.stringify([access.principalId, access.patientId])} onSaved={id => { run(async signal => { const available = await batchInputs(access.patientId!, signal); if (boundary.current(signal)) { setInputs(available); setSelected(current => current.includes(id) ? current : [...current, id]); } }); }} /></section>}
-    <div className="section-heading"><h2>当前处理进度</h2><button className="text-action" disabled={busy || !ready} onClick={() => setReload(count => count + 1)}>刷新进度</button></div>
-    <UI2ReadState loading={access.loading || loading && !value} error={processingLimit ? null : error} onRetry={() => boundary.revalidate(() => { restored.current = ''; setError(null); setReload(count => count + 1); })} />
+    <div className="section-heading"><h2>当前处理进度</h2><button className="text-action" disabled={busy || !ready} onClick={refreshProgress}>刷新进度</button></div>
+    {pollingPaused && <section className="status-panel pending" role="status"><p>页面自动查询已经结束，可以刷新进度继续读取原批次。</p></section>}
+    <UI2ReadState loading={access.loading || loading && !value} error={processingLimit ? null : error} onRetry={() => boundary.revalidate(() => { restored.current = ''; setError(null); refreshProgress(); })} />
     {processingLimit && <section className="status-panel error rich-read-state" role="alert"><h2>当前识别额度已占用</h2>
       <p>{['PROVIDER_CONCURRENCY_LIMIT', 'ARCHIVE_PAGE_CONCURRENCY_EXCEEDED'].includes(error.code)
         ? '本次选择超过当前可用并发额度。请减少选择的页数，或在已有请求核验完成后继续提交。'

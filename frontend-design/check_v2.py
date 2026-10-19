@@ -259,8 +259,10 @@ def main():
             union = object_union_description(schema, resolver, name)
             if union is not None:
                 object_descriptions[name] = union
-    description_path = ROOT / '.planning-work/t38-types-description.json'
-    description_path.write_text(json.dumps(object_descriptions, ensure_ascii=False, indent=2) + '\n')
+    description_path = options.report_path.with_name(options.report_path.stem + '-types.json')
+    require(not description_path.exists(), '类型描述需要全新输出路径')
+    with description_path.open('x') as output:
+        output.write(json.dumps(object_descriptions, ensure_ascii=False, indent=2) + '\n')
     parser = MarkdownIt('commonmark').enable('table')
     pending = {ROOT / 'docs/evidence/CHECK-T38/receipt.json', ROOT / 'docs/evidence/CHECK-T38/output.log'}
     for name in ['sJIA合并MAS预警平台前端LLD.md', 'sJIA合并MAS预警平台页面流程.md', 'frontend-design/v2-interaction.md', 'docs/development/T38.md']:
@@ -274,7 +276,7 @@ def main():
                         require(link.is_file() or link in pending, f'本地引用不存在：{path.relative_to(ROOT)} -> {link.relative_to(ROOT) if link.is_relative_to(ROOT) else link}')
                         if link not in pending and link != ROOT / 'planning/delivery-ledger.json':
                             sources.add(link)
-    process = subprocess.run(['node', str(ROOT / 'frontend-design/check-v2-types.mjs')], cwd=ROOT, env=os.environ.copy(), text=True, capture_output=True, check=False)
+    process = subprocess.run(['node', str(ROOT / 'frontend-design/check-v2-types.mjs'), '--description-path', str(description_path)], cwd=ROOT, env=os.environ.copy(), text=True, capture_output=True, check=False)
     if process.returncode:
         raise ValueError('TypeScript类型检查未通过：\n' + process.stdout + process.stderr)
     types_report = json.loads(process.stdout)

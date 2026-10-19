@@ -2,9 +2,16 @@ import type { IntentView } from '../../../frontend-design/types';
 import type { BatchActionIntentInput, BatchIntentInput, BatchInputsView, BatchView, RequestView, WriteReceipt } from '../../../frontend-design/v2-types';
 import { fetchJson } from './client';
 import { validateApiValue } from './schema';
+import { requiredTaskPollingInterval } from './taskPolling';
 
 export type BatchIdentity = BatchIntentInput | BatchActionIntentInput;
 const schema = 'v2-protocol.schema.json#/$defs/';
+export function batchPollingInterval(batch: Pick<BatchView, 'pages'>): number | null {
+  const active = batch.pages.filter(page => ['queued', 'processing', 'cancel_requested'].includes(page.status));
+  if (active.length === 0) return null;
+  return Math.max(...active.map(page => requiredTaskPollingInterval(page.task?.poll_after_ms)));
+}
+
 export function batchTarget(identity: BatchIdentity) {
   validateApiValue(schema + (identity.operation_id === 'archive_batch_create' ? 'BatchIntentInput' : 'BatchActionIntentInput'), identity);
   const patterns = { archive_batch_create: /^\/patients\/([0-9a-f-]{36})\/archive-batches$/,
@@ -28,6 +35,7 @@ export async function readBatch(batchId: string, patientId: string, signal?: Abo
   const value = validateApiValue<BatchView>(schema + 'BatchView', await fetchJson<unknown>(`/api/v2/archive-batches/${batchId}`, { signal }));
   if (value.batch_id !== batchId || value.patient_id !== patientId || value.pages.some(page => page.batch_id !== batchId))
     throw new Error('批次或原页身份与当前资料不一致。');
+  batchPollingInterval(value);
   return value;
 }
 export async function prepareBatch(identity: BatchIdentity, signal: AbortSignal) {

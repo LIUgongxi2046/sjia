@@ -1914,28 +1914,28 @@
     },
     {
       "id": "EVID-T38", "check_id": "CHECK-T38", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38/receipt.json",
-      "receipt_sha256": "030a02de1985b3b8cde425c51923687480e9fb6cbfd3ba4ce038dcd4fea25fcb"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA50/receipt.json",
+      "receipt_sha256": "ed13315628e8f3af5ff9799c28a993b2aa315db7ca6b6d5b125b0f145f770a35"
     },
     {
       "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37/receipt.json",
-      "receipt_sha256": "69f6d2552d76397bcfb3d9db3077001f371302f7e161ad94a497ddb25454b7cb"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37-QA50/receipt.json",
+      "receipt_sha256": "abca177918674d2283741155ac9464f5554af021d2066b3e2feac26c075e089f"
     },
     {
       "id": "EVID-T34", "check_id": "CHECK-T34", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34/receipt.json",
-      "receipt_sha256": "d560a7b62dae3841b7898eff87b42af7be9a834894b9ed57378915e0f2816f32"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34-QA50/receipt.json",
+      "receipt_sha256": "a413273b746f5481a7d5b0504a3e0a6502c6ddea4b1a7b7b968425a0135dec32"
     },
     {
       "id": "EVID-T35", "check_id": "CHECK-T35", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T35/receipt.json",
-      "receipt_sha256": "46bc6e9d1abba885e7948cbcd7082b55499e4260c0b493f1da8f7cb38e91ad52"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T35-QA50/receipt.json",
+      "receipt_sha256": "eea4ce73c747b920ff7ec1a3136d8a2ad8e319ef034adc050a8bfe09dc8478f0"
     },
     {
       "id": "EVID-T36", "check_id": "CHECK-T36", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36/receipt.json",
-      "receipt_sha256": "b713ca4ec174da5ed33396ba18f8d6178537741b0d314e49fb1837621163424b"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-QA50/receipt.json",
+      "receipt_sha256": "9d5ed7b82aa147483346b994b58baa8b0bc8fc571e5b4fb18d6efd4e76d5ff3e"
     },
     {
       "id": "EVID-T39", "check_id": "CHECK-T39", "kind": "INTEGRATION",

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import * as ts from '../guardian-h5/node_modules/typescript/dist/api/sync/api.js';
 import * as ast from '../guardian-h5/node_modules/typescript/dist/ast/is.js';
 import postcss from '../guardian-h5/node_modules/postcss/lib/postcss.mjs';
@@ -160,7 +161,7 @@ export const explicitBindings = {
   RegroupRequestView: { module: 'frontend-design/archive-regroup-types.ts', name: 'RegroupRequest' },
 };
 
-export function runChecks(root) {
+export function runChecks(root, descriptionPath) {
   const api = new ts.API({ cwd: root });
   const projects = ['frontend-design/tsconfig.json', 'guardian-h5/tsconfig.json'].map(name => path.join(root, name));
   const snapshot = api.updateSnapshot({ openProjects: projects });
@@ -180,7 +181,7 @@ export function runChecks(root) {
         : exportedType(selected.program, selected.checker, path.join(root, module), mapping.name);
       return { ...selectType(binding, mapping.steps, selected.checker), checker: selected.checker, mapping };
     };
-    const descriptions = JSON.parse(fs.readFileSync(path.join(root, '.planning-work/t38-types-description.json'), 'utf8'));
+    const descriptions = JSON.parse(fs.readFileSync(descriptionPath, 'utf8'));
     let propertiesChecked = 0;
     const checked = [];
     for (const [name, schema] of Object.entries(descriptions)) {
@@ -213,7 +214,9 @@ css.walkDecls(() => declarationsCount += 1);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const report = runChecks(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
+  const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+  const { values } = parseArgs({ options: { 'description-path': { type: 'string', default: path.join(root, '.planning-work/t38-types-description.json') } } });
+  const report = runChecks(root, values['description-path']);
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   if (report.status !== 'PASS') process.exitCode = 1;
 }

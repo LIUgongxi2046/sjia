@@ -38,7 +38,9 @@ def resolve_references(resource: Resource, resolver):
 def main():
     arguments = argparse.ArgumentParser()
     arguments.add_argument('--node-modules', type=Path, default=ROOT / 'guardian-h5/node_modules')
+    arguments.add_argument('--report-path', type=Path, default=ROOT / '.planning-work/t37-orchestration.json')
     options = arguments.parse_args()
+    require(not options.report_path.exists(), '检查结果需要全新输出路径')
     sources = {Path(__file__).resolve()}
     manifest_path = ROOT / 'alert-design/design-manifest.json'
     manifest = json.loads(manifest_path.read_text())
@@ -150,8 +152,8 @@ def main():
         'business_validation': 'NOT_RUN', 'clinical_validation': 'NOT_RUN', 'visual_validation': 'NOT_RUN',
         'source_sha256': {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(sources)},
     }
-    output = ROOT / '.planning-work/t37-orchestration.json'
-    output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    with options.report_path.open('x') as output:
+        output.write(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

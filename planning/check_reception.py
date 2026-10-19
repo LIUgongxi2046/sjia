@@ -1,32 +1,20 @@
 import argparse
 import csv
 import hashlib
-import importlib.metadata
 import json
-import os
 from pathlib import Path
 import platform
 import subprocess
 import sys
 from datetime import datetime
-from urllib.parse import unquote, urljoin, urlsplit
-from urllib.request import urlopen
+from urllib.parse import unquote, urlsplit
 from zoneinfo import ZoneInfo
 
 from markdown_it import MarkdownIt
 
+from check_reception_ownership import check_ownership
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / 'backend'))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
-
-import django
-
-django.setup()
-
-from django.db import connection, transaction
-from django.db.migrations.loader import MigrationLoader
-import redis
 
 
 def require(condition, message):
@@ -39,11 +27,28 @@ def csv_rows(path):
         return list(csv.DictReader(stream))
 
 
+def probe_runtime(source, python, settings, paths, *, api_url=None, frontend_url=None):
+    command = [str(python), str(ROOT / 'planning/probe_reception_runtime.py'),
+        '--runtime-source', str(source), '--settings-module', settings]
+    for path in paths:
+        command.extend(['--pythonpath', str(path)])
+    if api_url:
+        command.extend(['--api-url', api_url, '--frontend-url', frontend_url])
+    return json.loads(subprocess.check_output(command, text=True))
+
+
 def main():
     arguments = argparse.ArgumentParser()
     arguments.add_argument('--api-url', default='http://127.0.0.1:8000')
     arguments.add_argument('--frontend-url', default='http://127.0.0.1:5173/')
     arguments.add_argument('--report-path', type=Path, default=ROOT / '.planning-work/t34-reception.json')
+    arguments.add_argument('--node-modules', type=Path, required=True)
+    arguments.add_argument('--runtime-source', type=Path, required=True)
+    arguments.add_argument('--runtime-python', type=Path, required=True)
+    arguments.add_argument('--runtime-settings', required=True)
+    arguments.add_argument('--runtime-pythonpath', type=Path, action='append', default=[])
+    arguments.add_argument('--candidate-settings', required=True)
+    arguments.add_argument('--candidate-pythonpath', type=Path, action='append', default=[])
     options = arguments.parse_args()
     for value in (options.api_url, options.frontend_url):
         address = urlsplit(value)
@@ -67,6 +72,9 @@ def main():
                 path = ROOT / name
                 require(path.is_file(), f'接收源码不存在：{name}')
                 sources.add(path)
+    ownership = check_ownership(ROOT, rows, tasks, options.node_modules.resolve(strict=True))
+    sources.update(ROOT / name for name in ownership['source_sha256'])
+    sources.add(ROOT / 'planning/probe_reception_runtime.py')
 
     pages = csv_rows(ROOT / 'ui-delivery/v2/screen-design-map.csv')
     require(len(pages) == 39 and {p['screen_id'] for p in pages} == {f'UI2-{n:02}' for n in range(1, 40)}, '39 页清单不完整')
@@ -90,55 +98,40 @@ def main():
             for child in token.children or []:
                 if child.type == 'link_open':
                     target = urlsplit(child.attrGet('href'))
-                    if not target.scheme:
+                    if not target.scheme and target.path:
                         link = (path.parent / unquote(target.path)).resolve()
                         # 收据和输出由调用检查的证据工具在执行结束时创建。
                         pending = {ROOT / 'docs/evidence/CHECK-T34/receipt.json', ROOT / 'docs/evidence/CHECK-T34/output.log'}
                         require(link.is_file() or link in pending, f'引用文件不存在：{link}')
 
-    with transaction.atomic():
-        with connection.cursor() as cursor:
-            cursor.execute('SET TRANSACTION READ ONLY')
-            cursor.execute('SELECT version(), current_database(), current_user, inet_server_port()')
-            database_version, database_name, database_user, database_port = cursor.fetchone()
-            cursor.execute('SELECT count(*) FROM sjia.record')
-            record_count = cursor.fetchone()[0]
-            cursor.execute('SELECT count(*) FROM sjia.record_version')
-            version_count = cursor.fetchone()[0]
-            cursor.execute('SELECT count(*) FROM sjia.file_object')
-            file_count = cursor.fetchone()[0]
-        loader = MigrationLoader(connection)
-        pending_migrations = sorted(set(loader.disk_migrations) - set(loader.applied_migrations))
-    require(not pending_migrations, f'已有数据库存在未执行迁移：{pending_migrations}')
-    broker = redis.Redis(host='127.0.0.1', port=6379, socket_connect_timeout=3, socket_timeout=3)
-    require(broker.ping(), 'Redis 读取失败')
-    broker_version = broker.info('server')['redis_version']
-    with urlopen(urljoin(options.api_url, '/internal/readiness'), timeout=10) as response:
-        readiness = json.load(response)
-    require(readiness['status'] == 'ready', '后端依赖未就绪')
-    with urlopen(options.frontend_url, timeout=10) as response:
-        frontend_status = response.status
-        frontend_cache = response.headers.get('Cache-Control')
-    require(frontend_status == 200 and frontend_cache == 'no-store', '正式前端未正常提供禁止缓存响应')
+    require(options.runtime_python.is_file(), '运行Python不存在')
+    runtime = probe_runtime(options.runtime_source.resolve(strict=True), options.runtime_python.absolute(),
+        options.runtime_settings, options.runtime_pythonpath, api_url=options.api_url, frontend_url=options.frontend_url)
+    candidate = probe_runtime(ROOT, Path(sys.executable), options.candidate_settings, options.candidate_pythonpath)
+    require(candidate['database']['name'] != runtime['database']['name'], '候选验证需要明确的独立数据库')
 
     for name in ('planning/environment.json', 'guardian-h5/package.json', 'guardian-h5/package-lock.json', 'backend/requirements.lock.txt', 'ui-delivery/v2/screen-design-map.csv', 'ui-delivery/v2/tokens.json', 'ui-delivery/v2/asset-manifest.csv', 'sJIA合并MAS预警平台PRD.md'):
         sources.add(ROOT / name)
     report = {
         'checked_at': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(),
-        'status': 'PASS', 'capability': 'DESIGN', 'scope': '接收清单结构、引用与实际运行身份',
+        'status': 'PASS', 'capability': 'DESIGN', 'scope': '当前功能职责、未知输入责任、完整设计清单及分别核验的运行身份',
         'counts': {'requirements': len(rows), 'pages': len(pages), 'states': 328, 'support_pages': 6},
-        'runtime': {'python': platform.python_version(), 'node': subprocess.check_output(['node', '--version'], text=True).strip(),
-                    'django': django.get_version(), 'celery': importlib.metadata.version('celery'),
-                    'database': {'version': database_version, 'name': database_name, 'user': database_user, 'port': database_port},
-                    'redis': broker_version, 'readiness': readiness, 'frontend_http': frontend_status, 'frontend_cache': frontend_cache,
-                    'api_url': options.api_url, 'frontend_url': options.frontend_url},
-        'existing_inventory': {'records': record_count, 'record_versions': version_count, 'files': file_count, 'pending_migrations': pending_migrations},
-        'semantic_ownership_validation': 'NOT_RUN', 'business_validation': 'NOT_RUN',
+        'checker': {'python': platform.python_version(),
+            'node': subprocess.check_output(['node', '--version'], text=True).strip()},
+        'runtime': runtime, 'candidate_schema': candidate,
+        'candidate_artifact_matches_runtime': runtime['backend_artifact_sha256'] == candidate['backend_artifact_sha256'],
+        'ownership_validation': ownership, 'business_validation': 'NOT_RUN',
         'visual_validation': 'NOT_RUN', 'real_devices': 'NOT_RUN',
+        'task_responsibility': [{key: task[key] for key in ('id', 'acceptance_ids', 'depends_on', 'allowed_paths')}
+            for task in ledger['tasks']],
         'source_sha256': {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(sources)},
     }
     options.report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
-    print(json.dumps(report, ensure_ascii=False, indent=2))
+    print(json.dumps({'status': report['status'], 'capability': report['capability'], 'counts': report['counts'],
+        'ownership': ownership['counts'], 'runtime_migrations': runtime['inventory']['migrations'],
+        'candidate_migrations': candidate['inventory']['migrations'],
+        'candidate_artifact_matches_runtime': report['candidate_artifact_matches_runtime'],
+        'report_path': str(options.report_path)}, ensure_ascii=False))
 
 
 if __name__ == '__main__':

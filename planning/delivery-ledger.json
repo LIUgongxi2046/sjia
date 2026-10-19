@@ -968,8 +968,8 @@
         "check_id": "EXT-T33"
       }
     }
-    ,{"id":"V34","commitment_id":"OPS","scenario":"逐项接收PRD 2.0、UI 2.0、现有代码及证据","expected_result":"当前系统边界、版本、全部FR及未知输入均有维护责任和后续任务","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T34","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T34"],"consumer":{"required":false,"description":"设计接收；后续采用由T35—T38验证"}}
-    ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
+    ,{"id":"V34","commitment_id":"OPS","scenario":"逐项接收PRD 2.0、UI 2.0、现有代码及证据","expected_result":"当前系统边界、版本、全部FR及未知输入均有维护责任和后续任务","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T34","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T34"],"consumer":{"required":false,"description":"设计接收；后续采用由T35—T38验证"}}
+    ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
     ,{"id":"V36","commitment_id":"OPS","scenario":"核对家庭与受控API、任务、权限、结果未知和恢复","expected_result":"新增接口及全部调用方具有一致Schema、幂等语义和真实业务终态","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T36","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T36"],"consumer":{"required":false,"description":"接口设计；业务使用由各功能任务验证"}}
     ,{"id":"V37","commitment_id":"FR-06","scenario":"检查逐事实识别和N00—N11确定性编排设计","expected_result":"来源、输入资格、current/replay及失败状态完整，模型不授予专业资格","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T37","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T37"],"consumer":{"required":false,"description":"算法设计；实际采用由T41、T49、T50验证"}}
     ,{"id":"V38","commitment_id":"UI","scenario":"逐页接收39页、状态、正式类型、接口、角色及Token","expected_result":"全部页面有正式归属和接口状态，六个受控入口不增加家庭权限","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T38","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T38"],"consumer":{"required":false,"description":"前端设计；实际使用由T54和T56验证"}}
@@ -1703,7 +1703,7 @@
       ],
       "blockers": []
     }
-    ,{"id":"T34","acceptance_ids":["V34"],"depends_on":[],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台HLD.md","planning/","implementation-tasks.md","2.0迭代计划.md","docs/development/T34.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
+    ,{"id":"T34","acceptance_ids":["V34"],"depends_on":[],"state":"ACCEPTED","allowed_paths":["sJIA合并MAS预警平台HLD.md","planning/","implementation-tasks.md","2.0迭代计划.md","docs/development/T34.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T35","acceptance_ids":["V35"],"depends_on":["T34"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台数据LLD.md","data-design/","docs/development/T35.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T36","acceptance_ids":["V36"],"depends_on":["T35"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台后端LLD.md","backend-design/","docs/development/T36.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
     ,{"id":"T37","acceptance_ids":["V37"],"depends_on":["T36"],"state":"IMPLEMENTED","allowed_paths":["sJIA合并MAS预警平台预警编排LLD.md","alert-design/","docs/development/T37.md","docs/development/index.md","docs/knowledge/"],"blockers":[]}
@@ -1920,12 +1920,12 @@
     {
       "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",
       "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37/receipt.json",
-      "receipt_sha256": "51cffb7fc272073de562653c11d550041acfa686e68ba6ceecfaf2ee7502ba3b"
+      "receipt_sha256": "69f6d2552d76397bcfb3d9db3077001f371302f7e161ad94a497ddb25454b7cb"
     },
     {
       "id": "EVID-T34", "check_id": "CHECK-T34", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34-20261008T062701Z-25426/receipt.json",
-      "receipt_sha256": "09ed8f9f84d76601edf4a94f6ee6a992a9b806cf177e6dcc97a77ef9b4125046"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34/receipt.json",
+      "receipt_sha256": "d560a7b62dae3841b7898eff87b42af7be9a834894b9ed57378915e0f2816f32"
     },
     {
       "id": "EVID-T35", "check_id": "CHECK-T35", "kind": "STATIC",
@@ -2016,13 +2016,13 @@
       "T30",
       "T31",
       "T32",
-      "T33", "T34", "T35", "T36", "T37", "T38", "T39", "T40", "T41", "T42", "T43", "T44", "T45", "T46", "T47", "T48", "T49", "T50", "T51", "T52", "T53", "T54", "T55", "T56", "T57", "T58", "T59", "T60"
+      "T33", "T35", "T36", "T37", "T38", "T39", "T40", "T41", "T42", "T43", "T44", "T45", "T46", "T47", "T48", "T49", "T50", "T51", "T52", "T53", "T54", "T55", "T56", "T57", "T58", "T59", "T60"
     ],
-    "next_task_id": "T34",
+    "next_task_id": "T35",
     "constraints": [
       "2026-10-18用户要求持续完成全部功能，委托执行软件范围内的设计决策与配置批准；使用获准真实资料、真实账号和现有服务，保留独立临床答案、专业核对、真实接收及实际设备的证据要求。当前用户禁止模拟和主动视觉操作的规则持续有效。",
-      "2026-10-18用户要求北京时间2026-10-19 06:00 commit与push代码至LIUgongxi2046/sjia，并明确目标main；单次聊天自动任务sjia-main已创建。真实资料、凭据、本地数据库、模型响应及私有测试产物排除在提交范围。完整执行记录见docs/development/QA14-full-function-delivery.md。",
-      "全部60项模拟开发已经完成，开发剩余0项；T60最终37项源码与36项输入证据清单、当前页面数据库证明、当前构建交付和86项来源证据索引实际核验通过并保存重读。索引作为交付输出独立保存，全部输入文件的字节与摘要保持一致。T56当前通知与摘要页面四项、PostgreSQL逐项保存重读及正式前端修复已接收。开发完成与业务验收独立登记，验收剩余57项。next_task_id只表示所有前置任务完整验收后可直接验收的任务，T34验收资料待复验不影响已完成开发。",
+      "用户指定GitHub目标main；2026-10-19已发布提交f05dbcf，单次自动任务sjia-main保持PAUSED。当前QA44冻结候选0e6c79c和原运行环境分别维护，整组运行切换仍待明确批准。真实资料、凭据、本地数据库、模型响应及私有验收产物排除在提交范围。",
+      "当前独立设计分支codex/current-design-reception已完成T34设计接收，135项实际symbol、44项代表性持久字段、22项FR与D01至D10责任核验通过；39页及328项状态完整。T37当前77份Schema、2883项引用及29处实际登记通过正式检查。当前V34和V37为PASS，V35因当前HLD输入需要复验而保持STALE；30项承诺及60项任务均保留，58项验收尚未通过，59项任务等待完整接收。软件实现和业务验收分别管理，next_task_id为T35。",
       "2026-10-09用户更新：全部开发与联调使用模拟数据，截止北京时间2026-10-10 09:00；模拟资料、角色、批准和业务结果仅保存在sjia_simulation及独立文件、消息环境。模拟验收与真实验收分别记录，视觉限制继续有效。完成一项完整任务后报告开发与验收剩余数量，继续下一项。",
       "2026-10-08用户调整执行顺序：优先完成全部可开发功能，外部资料、授权及业务验收条件单独登记，继续实施其他任务；功能及必要运行检查完成登记IMPLEMENTED，业务验收通过登记ACCEPTED。每完成一项任务报告编号、完成内容和剩余未完成数量；已有有效证据无需重复捕获，视觉比对继续NOT_RUN。",
       "2026-10-07用户授权完成PRD 2.0全部功能、参赛优化、UI 2.0一比一还原和完整业务验收，连续实施全部已授权任务。工单为implementation-tasks.md，状态以本文件维护；原始未完成验收完整保留。指定外部发送和正式部署仍需准确目标与依据。",

@@ -6,7 +6,7 @@ separate supported backup/retry-window proof authorizes their disposal.
 from django.db import transaction
 from django.utils import timezone
 from retention.content_registry import digest
-from retention.content_schemas import ContentPolicyRules, ContentReviewAttestation, ContentLifecycle
+from retention.content_schemas import parse_policy_rules, ContentReviewAttestation, ContentLifecycle
 from retention.disposition import DispositionRejected
 from retention.models import ContentDispositionReview
 
@@ -44,7 +44,7 @@ def review_evidence_valid(plan,review):
 @transaction.atomic
 def lifecycle(plan, *, now=None):
     now=now or timezone.now()
-    rules=ContentPolicyRules.model_validate(plan.policy.rules)
+    rules=parse_policy_rules(plan.policy.rules)
     review=ContentDispositionReview.objects.filter(plan=plan).order_by('-version').first()
     valid=review_evidence_valid(plan,review) if review else None
     due=review.next_recheck_at if valid else rules.recheck_at

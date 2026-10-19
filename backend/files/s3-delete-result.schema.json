@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-delete-result-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation_id", "object_reference", "deleted_now", "provider_delete_request_id", "provider_delete_status", "absence_query_request_id", "verified_at"],
+  "properties": {
+    "schema_version": {"const": "s3-delete-result-1", "default": "s3-delete-result-1"},
+    "operation_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "object_reference": {"$ref": "urn:sjia:schema:s3-object-reference-1"},
+    "outcome": {"const": "absent", "default": "absent"},
+    "deleted_now": {"type": "boolean"},
+    "provider_delete_request_id": {"type": ["string", "null"], "minLength": 1},
+    "provider_delete_status": {"enum": [204, null]},
+    "absence_query_request_id": {"type": "string", "minLength": 1},
+    "verified_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"deleted_now": {"const": true}}, "required": ["deleted_now"]},
+      "then": {"properties": {"provider_delete_request_id": {"type": "string", "minLength": 1}, "provider_delete_status": {"const": 204}}},
+      "else": {"properties": {"provider_delete_request_id": {"type": "null"}, "provider_delete_status": {"type": "null"}}}
+    }
+  ]
+}

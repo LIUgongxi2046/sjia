@@ -1,5 +1,13 @@
 # Explicit backup and isolated restore
 
+当前工具支持本地完整备份与恢复，以及明确S3完整性检查、备份、恢复操作和已登记S3目标的内容重放回调。S3使用准确binding、独立控制目录及可信journal。真实备份、十一项来源拒绝、Linux隔离环境中的正式CLI恢复、63份原件完整读取、189处范围比较及15项目标拒绝已经通过，当前范围见[QA38](../docs/development/QA38-s3-operator-recovery.md)与[QA39](../docs/development/QA39-linux-recovery-isolation.md)。
+
+S3完整性检查要求明确DJANGO_SETTINGS_MODULE并安装应用锁定依赖，命令为`python deploy/recovery.py verify --source EXISTING_S3_BACKUP --backup-format s3-consistent-backup-1 --execute`。具有恢复历史的第二版备份明确选择`--backup-format s3-consistent-backup-2`。工具逐项核验真实数据库dump、对象、配置依据、完整历史及完成摘要，仅报告BACKUP_INTEGRITY_VERIFIED_ONLY。该参数仅适用于verify操作，不授予备份、恢复或运行采用权限。
+
+S3备份命令为`python deploy/recovery.py backup --storage-kind s3 --admission S3_BACKUP_APPROVAL.json --destination NEW_PRIVATE_BACKUP --evidence EXACT_EVIDENCE_ROOT --execute`。批准文档明确storage_kind、storage_binding_sha256、control_root、evidence_root及writer_control；Compose范围保留准确compose_project，isolated-native范围要求应用和Worker已经停止。实际SQL连接检查、SHARE锁、导出snapshot及独立journal锁共同覆盖完整dump和对象读取。WRITE_FREEZE记录位于备份目录同级，名称为备份目录名称加.WRITE_FREEZE.json。
+
+S3恢复命令使用`restore --storage-kind s3`，要求准确backup_manifest_sha256及预先准备的私有目标根，根目录只包含空s3-control目录。工具逐项检查不同数据库、物理集群、binding、空对象命名范围及空库，保存ADOPTION_BLOCKED之后恢复dump并建立准确映射。第二版备份与恢复要求操作文档明确backup_format和restore_lineage_sha256；完整历史同时核验SQL状态、原始映射及当前登记。旧结构dump在读取当前ORM字段之前执行向前迁移，存在迁移时必须明确schema_upgrade_approved及schema_release_reference。[QA40](../docs/development/QA40-s3-restore-lineage.md)已完成第一版和第二版备份的完整CLI恢复、对象映射、四项内容重放及逐份原件复验。完整Local流程、当前入口拒绝复验及独立运行采用继续归属QA38；恢复工具没有启动目标应用或Worker。
+
 `deploy/recovery.py` is an operator-triggered tool, not a scheduler. It performs no
 database access or service changes without `--execute`. The default command,
 `python deploy/recovery.py backup`, prints a plan only. Real execution needs an
@@ -123,8 +131,7 @@ configuration and separate release steps. A normal `restore` remains blocked;
 its marker is now consumed by API/Worker/Beat admission rather than being merely
 an operator reminder. No feature flag bypasses a restored database's requirement.
 
-Only synthetic file copies and mocked command/DB orchestration were run in this
-closeout. No real backup, dump, restore, outage or network change was executed.
+真实S3函数验证见[QA36](../docs/development/QA36-s3-backup-restore.md)：不同物理集群完成实际dump与恢复、64份对象准确映射及四项可信内容重放。备份后删除与新增对象、十五项SQL约束、两个重放进程、63份原件完整读取及189处范围比较分别通过。当前完整CLI恢复由QA40维护，第一版和第二版各自63份完整读取、189处范围及19项／22项SQL保护通过。运行采用、完整Local流程、当前入口拒绝复验和生产恢复目标继续按QA38及部署规范验收。内容证明没有启动任何服务或改变外发网络。
 
 Sources: PostgreSQL [pg_dump](https://www.postgresql.org/docs/17/app-pgdump.html),
 [pg_restore](https://www.postgresql.org/docs/17/app-pgrestore.html),

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-stored-object-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "reference", "status", "created_at", "disposed_at"],
+  "properties": {
+    "schema_version": {"const": "s3-stored-object-1", "default": "s3-stored-object-1"},
+    "id": {"type": "string", "format": "uuid"},
+    "reference": {"$ref": "urn:sjia:schema:s3-object-reference-1"},
+    "status": {"enum": ["available", "disposed"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "disposed_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "available"}}, "required": ["status"]},
+      "then": {"properties": {"disposed_at": {"type": "null"}}},
+      "else": {"properties": {"disposed_at": {"type": "string", "format": "date-time"}}}
+    }
+  ]
+}

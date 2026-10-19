@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-deletion-journal-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation_id", "registration_id", "object_reference", "prepared_at"],
+  "properties": {
+    "schema_version": {"const": "s3-deletion-journal-1", "default": "s3-deletion-journal-1"},
+    "operation_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "registration_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "object_reference": {"$ref": "urn:sjia:schema:s3-object-reference-1"},
+    "prepared_at": {"type": "string", "format": "date-time"}
+  }
+}

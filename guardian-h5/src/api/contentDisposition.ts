@@ -2,23 +2,39 @@ import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import schema from '../../../backend-design/content-disposition-plan-view.schema.json';
 import { fetchJson } from './client';
-export interface ContentTarget { kind: 'database' | 'local_object'; adapter?: string; object_id?: string; version?: string; file_id?: string; object_version?: string }
+export interface ContentTarget { kind: 'database' | 'local_object' | 's3_object'; adapter?: string; object_id?: string; version?: string; file_id?: string; object_version?: string }
+export interface ContentStorageReference {
+  schema_version?: 's3-object-reference-1'; binding_sha256: string; object_key: string;
+  version_id: string; etag: string; checksum: string; size_bytes: number; encryption?: 'AES256';
+}
+export interface ContentObjectProof extends ContentTarget {
+  object_key?: string; checksum?: string; size_bytes?: number; operation_id?: string;
+  storage_reference?: ContentStorageReference;
+}
 export interface ContentPlan {
   schema_version: 'content-disposition-plan-view-1'; plan_id: string; patient_id: string;
   status: 'preview' | 'approved' | 'retained' | 'access_revoked' | 'erasing' | 'logical_erasure_complete';
   manifest_sha256: string; runtime_execution_enabled: boolean;
-  manifest: { mode: 'retain' | 'revoke_access' | 'erase_selected_content'; patient_id: string;
+  manifest: { schema_version: 'content-disposition-manifest-1' | 'content-disposition-manifest-2';
+    storage_binding_sha256?: string; mode: 'retain' | 'revoke_access' | 'erase_selected_content'; patient_id: string;
     family_request_id?: string | null; policy_id: string; policy_version: number; policy_sha256: string; preservation_sha256: string;
-    roots: ContentTarget[]; items: ContentTarget[]; obligations: string[] };
+    roots: ContentTarget[]; items: ContentObjectProof[]; obligations: string[] };
   approved_at: string | null; completed_at: string | null;
   receipt: { logical_payload_erased: boolean; all_copies_erased: false; retained_until?: string;
-    recheck_at?: string; access_revoked?: boolean; unverified_copy_obligations?: string[] } | null;
+    recheck_at?: string; access_revoked?: boolean; unverified_copy_obligations?: string[];
+    storage_binding_sha256?: string; proof_scope?: string } | null;
 }
 const ajv = new Ajv2020({ strict: false, allowUnionTypes: true }); addFormats(ajv);
 const check = ajv.compile<ContentPlan>(schema);
 export function validateContentPlan(value: unknown): ContentPlan {
   if (!check(value)) throw new Error('内容处置响应未通过版本化契约校验。');
   if (value.patient_id !== value.manifest.patient_id) throw new Error('处置清单的患儿范围不一致。');
+  if (value.manifest.schema_version === 'content-disposition-manifest-2' && value.manifest.items.some(item =>
+    item.kind === 's3_object' && (!item.storage_reference || item.storage_reference.binding_sha256 !== value.manifest.storage_binding_sha256 ||
+      item.storage_reference.object_key !== item.object_key || item.storage_reference.checksum !== item.checksum ||
+      item.storage_reference.size_bytes !== item.size_bytes))) throw new Error('处置清单的对象版本引用不一致。');
+  if (value.receipt?.logical_payload_erased && value.manifest.schema_version === 'content-disposition-manifest-2' &&
+    value.receipt.storage_binding_sha256 !== value.manifest.storage_binding_sha256) throw new Error('处置凭证的存储范围不一致。');
   return value;
 }
 const base = '/api/v2/support/content-disposition/plans';

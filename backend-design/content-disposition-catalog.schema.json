@@ -70,7 +70,7 @@
       }
     },
     "proof_scope": {
-      "const": "logical_payload_and_controlled_local_path_absence"
+      "enum": ["logical_payload_and_controlled_local_path_absence", "logical_payload_and_controlled_s3_version_absence"]
     }
   }
 }

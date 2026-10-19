@@ -6,6 +6,7 @@ configuration qualification and external-effect reconciliation remain separate
 explicit release checks. Nothing here starts services or enables network access.
 """
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 from uuid import UUID
 
@@ -18,6 +19,9 @@ ADMITTED = 'ADOPTION_ADMITTED.json'
 
 
 def validate_target(target):
+    if isinstance(target, dict) and target.get('schema_version') == 's3-restore-target-1':
+        from .s3_recovery_schemas import S3RestoreTarget
+        return S3RestoreTarget.model_validate_json(json.dumps(target)).model_dump(mode='json')
     try:
         if set(target) != {'restore_id', 'database', 'cluster_id', 'object_root'}:
             raise ValueError()
@@ -34,7 +38,10 @@ def validate_target(target):
 def _marker(root, target):
     root = safe_path(root)
     validate_target(target)
-    if safe_path(target['object_root']) != root / 'objects':
+    if target.get('storage_kind') == 's3':
+        if safe_path(target['control_root']) != root / 's3-control':
+            reject('RESTORE_S3_CONTROL_ROOT_MISMATCH')
+    elif safe_path(target['object_root']) != root / 'objects':
         reject('RESTORE_OBJECT_ROOT_MISMATCH')
     marker = read_json(root / BLOCKED)
     if marker.get('state') != 'ADOPTION_BLOCKED' or marker.get('target') != target:
@@ -157,13 +164,35 @@ def assert_admission(journal, restore_root, target, *, verify=None):
 
 def configured_restore_root():
     from django.conf import settings
-    from .models import ContentRestoreState
+    from .models import ContentRestoreState, S3ContentRestoreState
     # Missing schema is deliberately not treated as a normal fresh deployment.
     # Management commands do not call this gate; serving processes must migrate.
     states = list(ContentRestoreState.objects.all()[:2])
     if len(states) > 1:
         reject('RESTORE_DATABASE_STATE_INVALID')
     state = states[0] if states else None
+    s3_states = S3ContentRestoreState.objects.exists()
+    if state is not None and s3_states:
+        reject('RESTORE_DATABASE_STATE_INVALID')
+    from files.storage_factory import storage_selection
+    if storage_selection.kind == 's3':
+        control_root = storage_selection.store.control_store.root
+        explicit = getattr(settings, 'SJIA_RESTORE_ROOT', None)
+        roots = {control_root.parent, safe_path(settings.FILE_OBJECT_ROOT).parent}
+        if explicit:
+            roots.add(safe_path(explicit))
+        if s3_states:
+            from .s3_restore import load_context
+            context = load_context()
+            root = safe_path(context.state.restore_root)
+            if explicit and safe_path(explicit) != root:
+                reject('RESTORE_RUNTIME_TARGET_MISMATCH')
+            return root
+        if state or explicit or any((root / BLOCKED).exists() or (root / ADMITTED).exists() for root in roots):
+            reject('RESTORE_S3_STORAGE_TARGET_REQUIRED')
+        return None
+    if s3_states:
+        reject('RESTORE_STORAGE_STATE_CONFLICT')
     object_root = safe_path(settings.FILE_OBJECT_ROOT)
     explicit = getattr(settings, 'SJIA_RESTORE_ROOT', None)
     root = safe_path(explicit) if explicit else safe_path(state.object_root).parent if state else object_root.parent
@@ -186,6 +215,12 @@ def configured_target(root):
     from django.db import connection
     marker = read_json(root / BLOCKED)
     target = validate_target(marker.get('target'))
+    if target.get('storage_kind') == 's3':
+        from .s3_restore import load_context, target_document
+        context = load_context()
+        if safe_path(context.state.restore_root) != safe_path(root) or target != target_document(context.state):
+            reject('RESTORE_RUNTIME_TARGET_MISMATCH')
+        return target
     with connection.cursor() as cursor:
         cursor.execute('SELECT current_database(), system_identifier::text FROM pg_control_system()')
         database, cluster = cursor.fetchone()

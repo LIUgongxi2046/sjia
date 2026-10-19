@@ -8,7 +8,7 @@ from files.purpose import runtime_environment
 from files.purpose_schemas import PurposeDispositionApprovalInput, PurposeDispositionExecuteInput, PurposeDispositionRetainInput, PurposeDispositionRetryInput, PurposeDispositionScope
 from requests.service import commit_intent
 from retention.disposition import DispositionRejected, approve_disposition_request, lock_environment, lock_request_access, locked_item, mark_item_retained, scope_sha256
-from retention.jobs import retry_local_disposition, submit_local_disposition, submit_simulated_provider_disposition, validate_refs
+from retention.jobs import disposition_tasks, retry_local_disposition, submit_local_disposition, submit_simulated_provider_disposition, validate_refs
 from retention.models import DispositionItem, DispositionRequest
 from tasks.models import Task
 from api.base import ApiError, handle
@@ -50,8 +50,7 @@ def support_disposition_read(request, disposition_id):
     disposition, policy, receipt_policy, rule, decision, file_grants, file_versions = lock_request_access(
         DispositionRequest.objects.get(id=disposition_id), principal, epoch, require_approval=False)
     parsed = PurposeDispositionScope.model_validate(disposition.scope)
-    tasks = Task.objects.filter(task_type='disposition', patient=disposition.patient, actor=principal,
-        input_refs__disposition_id=str(disposition.id)).order_by('created_at', 'id')
+    tasks = disposition_tasks(disposition).filter(actor=principal)
     items = DispositionItem.objects.filter(request=disposition).order_by('target_type', 'target_id', 'target_version')
     write_audit(actor=principal, patient=disposition.patient, action='disposition_read', object_type='disposition_request',
         object_id=disposition.id, object_version=scope_sha256(disposition.scope), outcome='allowed', retention_policy=receipt_policy)

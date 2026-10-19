@@ -34,6 +34,20 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| QA44 | 当前运行版本集成 | Python3.12；313份配置；当前制品；实际采用；main | FR-01—22；T28；T39；T57；QA14 | docs/development/QA44-current-runtime-integration.md | configurations；runtime_admission；文件响应；现有服务 | QA14；QA38；QA42；QA43 |
+| QA43 | 现有资料升级与完整性 | main集成；真实快照；PostgreSQL18／17；完整迁移；资料保持 | FR-01—22；T39；T57；QA14 | docs/development/QA43-existing-data-upgrade.md | 正式迁移；SourceManifest；文件响应 | QA14；QA28；QA38；QA42 |
+| QA42 | 恢复环境独立运行采用 | 当前权限；配置；TLS；63份原件；文件响应；真实处置与资源复核 | FR-02；FR-09；NFR-07／08／09；QA38-06 | docs/development/QA42-restored-runtime-adoption.md | config.runtime_admission；retention.content_recovery；files.http_content；tasks | QA38；QA40；QA41 |
+| QA41 | S3运行配置、HTTP与用途处置队列 | Session期限；任务引用；20项HTTPS；Outbox；Worker；撤权重试 | FR-02；FR-09；NFR-07／08／09；OPS | docs/development/QA41-s3-runtime-http-queue.md | config.runtime_admission；identity.session；disposition_tasks；tasks | QA34；QA35；QA38；QA40；T28；T57 |
+| QA40 | S3恢复历史引用链 | generation；父映射；原始引用；再次备份与恢复 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA40-s3-restore-lineage.md | S3RestoreGeneration；S3RestoreLineage；S3ContentRestoreState | QA36；QA38；QA39；T28；T39；T57 |
+| QA39 | Linux恢复隔离验证 | 官方Lima；内核网络规则；63份原件；189处范围；15项CLI拒绝 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA39-linux-recovery-isolation.md | QA38；恢复验证环境 | T28；T39；T57；QA36；QA38 |
+| QA38 | S3操作入口与恢复采用 | 明确存储类别；操作批准；实际CLI；恢复回调 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA38-s3-operator-recovery.md | deploy/recovery.py；restored_callbacks；S3BackupPackage | T28；T39；T57；QA36 |
+| QA36 | S3备份与独立恢复 | 完整备份；独立集群；准确映射；可信内容重放 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA36-s3-backup-restore.md | S3BackupSource；S3RestoreMapping；S3RestoreContext；S3ContentRestoreState | T28；T39；T40；T56；T57；QA35 |
+| QA35 | S3内容处置与前端传播 | 准确清单；实际批准；真实删除；用途限制；本地流程 | FR-09；NFR-07／09；OPS | docs/development/QA35-s3-content-disposition.md | S3ContentManifest；S3ObjectProof；content_storage；contentDisposition | T26；T28；T33；T40；T56；T57；QA34 |
+| QA34 | 应用存储选择与运行身份 | 全局文件服务；私有配置；Runtime声明；真实拒绝 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA34-storage-selection.md | storage_factory；CodedRuntimeError；runtime.schema.json | T12；T26；T28；T33；T40；T56；T57；QA33 |
+| QA33 | 真实业务对象与S3处置接入 | 实际业务键；物理引用；批准字段；任务事件；真实元数据 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA33-s3-business-disposition.md | PurposeS3DispositionObjectProof；disposition_storage；s3-delete-1 | T12；T26；T33；T40；T56；T57；QA32 |
+| QA32 | S3处置证明与真实并发 | 持久journal；准确receipt；事务终止；读取锁；真实删除 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA32-s3-deletion-proof.md | S3RegisteredDeletion；S3DeletionJournal；S3DeletionReceipt；正式Schema | T12；T26；T33；T40；T56；T57；QA31 |
+| QA31 | S3版本登记与持久性 | PostgreSQL17；实际版本；advisory锁；事务；准确处置 | FR-02；FR-09；NFR-07／09；OPS | docs/development/QA31-s3-version-registration.md | S3StoredObject；S3RegisteredStore；正式Schema | T12；T26；T33；T40；T56；T57；QA30 |
+| QA30 | 私有S3准确版本组件 | VersionId；ETag；SHA256；真实原件；独立分支 | FR-02；FR-09；NFR-07；OPS | docs/development/QA30-private-s3-storage.md | S3VersionedStore；S3ObjectReference；verify_s3_real_storage | T12；T33；T40；T46；T56；T57；QA14 |
 | QA29 | 真实原件范围与准确制品 | Range；内存；63份原件；完整API；当前采用 | FR-02；FR-09；NFR-07；OPS | docs/development/QA29-real-original-range-reads.md | file_content；get_range；backend_artifact_manifest；实际HTTP及Chrome | T12；T28；T33；T46；T56；T57；QA14 |
 | QA28 | 目标运行版本与空库迁移 | Python3.13；PostgreSQL17；正式迁移；结构；真实参数；设计回执 | OPS；V01；V02；V35；V39 | docs/development/QA28-target-runtime-compatibility.md | 正式migrations；data-design.check_v2；只读实际数据库 | T01；T02；T27；T35；T39；T57；QA14 |
 | QA27 | 真实临床入口权限范围 | 核对字段403；空病例目录；current；replay；整理 | FR-09；FR-10；AC-10 | docs/development/QA27-real-clinical-access-scope.md | verification.workflow；assessment；实际Chrome | T49；T50；T56；QA12；QA14 |

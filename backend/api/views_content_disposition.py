@@ -12,6 +12,7 @@ from retention.content_registry import REGISTRY, REGISTRY_SHA256, PRESERVATION_S
 from retention.content_schemas import Contract, ContentPlanInput, ContentPlanView, Digest
 from pydantic import Field
 from assessment.qualified_facts import QualificationRejected
+from retention.content_storage import file_target, storage_kind
 
 
 class PlanRequest(Contract):
@@ -52,7 +53,8 @@ def content_disposition_catalog(request):
             'preserved_fields':spec['preserved_fields']} for label,spec in sorted(REGISTRY.items())],
         'unsupported':['account_identity_and_sessions','shared_evaluation_output_partition_erasure',
             'ark_chat_completion_provider_copy_erasure','physical_database_pages_and_wal_erasure'],
-        'proof_scope':'logical_payload_and_controlled_local_path_absence'})
+        'proof_scope':'logical_payload_and_controlled_s3_version_absence' if storage_kind() == 's3'
+            else 'logical_payload_and_controlled_local_path_absence'})
 
 
 @api_view(['POST'])
@@ -186,8 +188,7 @@ def content_disposition_options(request,patient_id):
             'object_id':str(row.pk),'version':row_version(row)},'label':row._meta.verbose_name,
             'record_id':str(row.record_id) if getattr(row,'record_id',None) else None})
     for row in FileObject.objects.filter(patient=patient).exclude(status='disposed').order_by('id'):
-        targets.append({'target':{'kind':'local_object','file_id':str(row.id),'object_version':row.object_version},
-            'label':f'本地文件 · {row.purpose}','record_id':None})
+        targets.append({'target':file_target(row), 'label':f'文件 · {row.purpose}','record_id':None})
     if len(targets)>5000:
         raise ApiError('CONTENT_INVENTORY_LIMIT_EXCEEDED',409)
     return Response({'schema_version':'content-disposition-options-1','patient_id':str(patient.id),
@@ -243,7 +244,7 @@ def content_disposition_family_requests(request,patient_id):
     from retention.models import ContentDispositionFamilyRequest
     from retention.content_family import family_request_view
     from authorization.policy import Denied
-    from retention.content_schemas import ContentFamilyRequests,ContentPolicyRules
+    from retention.content_schemas import ContentFamilyRequests,parse_policy_rules
     actor,epoch=support_principal(request)
     patient=Patient.objects.select_for_update().get(id=patient_id)
     _permitted_patient(actor,epoch,patient)
@@ -253,7 +254,7 @@ def content_disposition_family_requests(request,patient_id):
     result=[]
     for row in rows:
         try:
-            rules=ContentPolicyRules.model_validate(row.policy.rules)
+            rules=parse_policy_rules(row.policy.rules)
             _identity(actor,epoch,patient,rules.access_purpose)
         except (Denied,QualificationRejected) as exc:
             if isinstance(exc,QualificationRejected) and exc.reason_code!='ASSESSMENT_FIELD_SCOPE_DENIED':

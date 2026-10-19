@@ -107,7 +107,7 @@ class RecognitionWorker(CeleryTask):
 
                 emit_static_completion(event.task_id)
             return
-        if event.event_type == 'disposition.local_requested':
+        if event.event_type in ('disposition.local_requested', 'disposition.s3_requested'):
             from retention.jobs import record_disposition_failure
 
             record_disposition_failure(event, task_id, getattr(exc, 'reason_code', 'DISPOSITION_EXECUTION_FAILED'))
@@ -188,7 +188,7 @@ def consume(self, event_id):
         from files.purpose_jobs import execute_copy
 
         execute_copy(event, self.request.id)
-    elif event.event_type == 'disposition.local_requested':
+    elif event.event_type in ('disposition.local_requested', 'disposition.s3_requested'):
         from retention.jobs import execute_disposition
 
         execute_disposition(event, self.request.id)

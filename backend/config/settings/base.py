@@ -13,6 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # 本地与集成环境的敏感值从 backend/.env 注入（该文件已 gitignore，不提交）。
 load_dotenv(BASE_DIR / ".env")
 FILE_OBJECT_ROOT = Path(os.environ.get('SJIA_FILE_OBJECT_ROOT') or BASE_DIR.parent / '.backend-work' / 'object-store')
+FILE_OBJECT_BACKEND = os.environ.get('SJIA_FILE_OBJECT_BACKEND', 'local')
+S3_STORAGE_CONFIGURATION_FILE = os.environ.get('SJIA_S3_STORAGE_CONFIGURATION_FILE')
 SJIA_DEMO_FONT_PATH = os.environ.get('SJIA_DEMO_FONT_PATH', '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc')
 # No production policy, retention period or automatic journal provisioning.
 SJIA_CONTENT_DISPOSITION_ENABLED = os.environ.get('SJIA_CONTENT_DISPOSITION_ENABLED') == '1'

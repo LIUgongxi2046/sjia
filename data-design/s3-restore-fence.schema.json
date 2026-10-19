@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-restore-fence-1",
+  "type": "object", "additionalProperties": false,
+  "required": ["restore_id", "operation_id", "manifest_sha256", "mapping_sha256", "file_id", "source_kind", "source_reference", "target_absence", "prepared_at"],
+  "properties": {
+    "schema_version": {"const": "s3-restore-fence-1", "default": "s3-restore-fence-1"},
+    "restore_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "operation_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "manifest_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "mapping_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "file_id": {"type": "string", "format": "uuid"},
+    "source_kind": {"enum": ["s3_object", "local_object"]},
+    "source_reference": {"oneOf": [{"type": "null"}, {"$ref": "urn:sjia:schema:s3-object-reference-1"}]},
+    "target_absence": {"$ref": "urn:sjia:schema:s3-object-absence-1"},
+    "prepared_at": {"type": "string", "format": "date-time"}
+  },
+  "oneOf": [
+    {"properties": {"source_kind": {"const": "s3_object"}, "source_reference": {"type": "object"}}},
+    {"properties": {"source_kind": {"const": "local_object"}, "source_reference": {"type": "null"}}}
+  ]
+}

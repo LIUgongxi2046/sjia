@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-deletion-receipt-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation_id", "registration_id", "journal_sha256", "prepared_at", "result"],
+  "properties": {
+    "schema_version": {"const": "s3-deletion-receipt-1", "default": "s3-deletion-receipt-1"},
+    "operation_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "registration_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "journal_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "prepared_at": {"type": "string", "format": "date-time"},
+    "result": {"$ref": "urn:sjia:schema:s3-delete-result-1"}
+  }
+}

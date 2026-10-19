@@ -17,7 +17,8 @@ def publish_task(event) -> str:
         "task_id": str(event.task_id) if event.task_id else None,
         "schema_version": event.schema_version,
     }
-    queue = ('purpose' if event.event_type in ('purpose_copy.requested', 'disposition.local_requested', 'disposition.provider_requested')
+    queue = ('purpose' if event.event_type in ('purpose_copy.requested', 'disposition.local_requested',
+        'disposition.s3_requested', 'disposition.provider_requested')
         else 'assessment' if event.event_type in ('assessment.requested', 'alert_evaluation.requested', 'evaluation_run.requested',
             'verification.changed', 'configuration.changed', 'clinical.context_changed', 'dynamic.timer',
             'alert_evaluation.trigger_requested', 'alert_evaluation.static_finished')

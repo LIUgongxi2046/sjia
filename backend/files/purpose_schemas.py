@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 from authorization.actions import CASE_ACTIONS, SERVICE_ACTIONS
+from files.s3_storage import S3ObjectReference
 
 
 Text = Annotated[str, Field(min_length=1, pattern=r'\S')]
@@ -115,6 +116,21 @@ class PurposeDispositionObjectProof(PurposeModel):
     retention_policy_id: UUID = Field(strict=False)
 
 
+class PurposeS3DispositionObjectProof(PurposeDispositionObjectProof):
+    storage_reference: S3ObjectReference
+
+    @model_validator(mode='after')
+    def storage_identity(self):
+        if (self.object_key != self.storage_reference.object_key
+                or self.checksum != self.storage_reference.checksum
+                or self.size_bytes != self.storage_reference.size_bytes):
+            raise ValueError('S3_DISPOSITION_OBJECT_MISMATCH')
+        return self
+
+
+PurposeDispositionProof = PurposeS3DispositionObjectProof | PurposeDispositionObjectProof
+
+
 class PurposeDispositionApprovalContext(PurposeModel):
     approver_id: UUID = Field(strict=False)
     auth_epoch: Annotated[int, Field(ge=0)]
@@ -125,7 +141,7 @@ class PurposeDispositionApprovalContext(PurposeModel):
     scope_sha256: Digest
     evidence_ref: Text
     file_grants: list[PurposeDispositionFileGrant]
-    file_versions: Annotated[list[PurposeDispositionObjectProof], Field(min_length=1)]
+    file_versions: Annotated[list[PurposeDispositionProof], Field(min_length=1)]
 
 
 class PurposeDispositionApprovalInput(PurposeModel):
@@ -159,7 +175,7 @@ class PurposeDispositionTaskRefs(PurposeModel):
     scope_sha256: Digest
     approval_sha256: Digest
     target_version: Text
-    file_identity: PurposeDispositionObjectProof
+    file_identity: PurposeDispositionProof
     previous_task_id: UUID | None = Field(strict=False)
 
 

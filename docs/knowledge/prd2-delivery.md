@@ -1,5 +1,27 @@
 # PRD 2.0 实施与验证依据
 
+2026-10-19的现有资料升级见[QA43](../development/QA43-existing-data-upgrade.md)。主项目全部135张表、419个文件对象共2135341897字节及1429个证据文件完成一致快照和独立复制，PostgreSQL18.4与17.11两处目标分别完整恢复、执行准确三项迁移至105项并通过重复执行。全部旧业务值和框架旧记录保持，ORM状态一致，两处各自63份原件完整读取968528634字节通过；专属PostgreSQL18正常停止，来源、原服务和未知OCR预留保持。当前修改继续保存在开发分支，main集成尚未完成。
+
+2026-10-19的独立恢复运行采用及完整文件响应见[QA42](../development/QA42-restored-runtime-adoption.md)。当前制品c65ed4d5b602906e7a2013e9704237d1164fa9db8ca16cf0bc0bc1a65e32ba93完成独立软件配置与正式CLI采用，21项HTTPS身份、63份原件及189处Range比较通过。真实HTTP、Outbox与Worker完成准确技术副本处置，双端读取一致；本地和S3的完整文件响应均通过摘要、资源关闭及内存范围验证。专项API、Worker、Redis与SSH已经停止，原有网络规则、六处数据库和主项目服务保持。
+
+2026-10-19的独立S3配置、HTTP与处置队列见[QA41](../development/QA41-s3-runtime-http-queue.md)。当前制品通过实际配置登记、软件批准及API／Worker运行采用，20项HTTPS认证检查通过；家庭申请、支持批准、真实Outbox、Worker、准确版本删除、撤权拒绝和重新授权重试均通过，两端读取保持各自任务范围。两份技术副本已处置，63份原件完整读取968528634字节，原项目事实及费用预留保持，新增模型调用为零。修改保存在开发分支，原main继续使用已发布版本。
+
+2026-10-19的S3操作入口见[QA38](../development/QA38-s3-operator-recovery.md)，实际Linux隔离见[QA39](../development/QA39-linux-recovery-isolation.md)。[QA40](../development/QA40-s3-restore-lineage.md)完成第一版和第二版备份的完整当前CLI恢复，来源在整个操作期间持有SQL SHARE锁与独立journal锁。旧结构明确升级至105项迁移，第二版保留完整父代历史；两处目标各自63份原件共968528634字节完整读取、189处范围比较、四项内容证明及两个重放进程通过，第一代19项、第二代22项SQL拒绝通过。六处实际数据库、原项目83项事实、249项事实版本、两项未知OCR与2 CNY预留保持。QA38已完成两种格式共37项当前CLI拒绝，QA42已完成第二版完整CLI目标的独立软件运行采用；完整Local流程继续归属QA38。
+
+2026-10-19的S3备份与独立恢复见[QA36](../development/QA36-s3-backup-restore.md)及[恢复规范](../../backend-design/s3-backup-recovery.md)。不同数据库、物理集群及binding完成真实dump、64份对象复制、准确缺失和四项处置重放；备份后删除与备份后新增对象分别通过，重复执行及两个实际进程保持epoch。目标63份原件完整读取968528634字节、189处范围比较、十五项SQL拒绝、九份Schema及十四项结构拒绝通过。当前完整CLI恢复由QA40维护，独立S3环境的HTTP和队列由QA41维护；恢复环境运行采用、完整Local流程、设备和临床继续保留完整验收条件。两笔未知OCR及2CNY预留保持。
+
+2026-10-19的S3内容处置检查见[QA35](../development/QA35-s3-content-disposition.md)及[准确清单规范](../../backend-design/s3-content-disposition.md)。政策明确允许的文件用途、准确S3版本清单、实际批准、独立journal、真实删除与凭证已经贯通，十五项拒绝通过；本地真实字节副本完成原有流程，正式前端正确读取保存结果并拒绝两项引用不一致输入。63份原件保持，当前完整恢复见QA40，独立S3配置、HTTP及队列验收见QA41，恢复环境独立采用继续归属QA38。
+
+2026-10-19 09:12的应用存储选择检查见[QA34](../development/QA34-storage-selection.md)及[运行身份规范](../../backend-design/s3-storage-selection.md)。现有全局文件服务接入明确的local或s3配置，运行声明保存准确物理、访问、控制目录及私有配置身份；真实63份原件的范围读取、实际业务读取、技术副本写入与准确删除、两项正常流程和十四项拒绝通过。382份来源元数据与103项迁移保持，完整Runtime采用、内容清除、S3恢复及实际队列仍需验证。用户暂时跳过两笔Ark供应商核对，2CNY及两个并发预留继续保持。
+
+2026-10-19 08:16的真实业务对象与S3处置接入见[QA33](../development/QA33-s3-business-disposition.md)及[后端规范](../../backend-design/s3-disposition-storage.md)。五个已授权资料分组的382份必要元数据准确保存重读；63份原件按实际业务键保存私有S3，批准及任务字段分别完整保留63份物理引用，九项拒绝、实际技术副本删除与凭证重读及189处范围检查通过。完整申请、批准、队列、恢复和应用采用继续实施，原main及原有权限、临床状态保持。
+
+2026-10-19 07:45的S3处置证明检查见[QA32](../development/QA32-s3-deletion-proof.md)及[证明规范](../../data-design/s3-deletion-proof.md)。真实journal、准确版本删除、持久receipt、事务终止恢复、两个实际删除进程、读取锁竞争和21项拒绝通过；63份原件完整重新读取及189处范围检查通过，五份新增技术副本均实际删除。原有应用、权限与临床状态保持，完整应用接入继续实施。
+
+2026-10-19 07:18的S3版本登记检查见[QA31](../development/QA31-s3-version-registration.md)及[数据规范](../../data-design/s3-storage-registration.md)。独立PostgreSQL17使用非超级用户通过103项迁移；63份真实对象完成登记和重新读取，事务恢复、两个实际进程并发及12项拒绝检查通过。已有应用和临床数据保持，完整应用接入继续实施。
+
+2026-10-19 06:52的独立S3组件检查见[QA30](../development/QA30-private-s3-storage.md)。codex/s3-private-storage分支使用63份授权原件，核验准确版本、完整读取、189处范围读取、13项拒绝及准确版本删除；应用接入继续实施。当前main和两套验收服务仍使用QA29记录的LocalFileStore及f406制品，完整业务和临床验收条件保持。
+
 2026-10-19当前实施与真实验证以[QA14](../development/QA14-full-function-delivery.md)、[QA29](../development/QA29-real-original-range-reads.md)及交付记录为准。当前测试使用用户已授权真实资料，不创建模拟临床资料、独立答案或外部回执。当前实际来源为63份原件及290个数据库页面，完整临床及业务验收继续保留原条件；下列2026-10-09记录按其明确时间和模拟范围保留。
 
 日期：2026-10-09。用户授权全部功能、参赛优化及完整业务验收，当前全部开发使用模拟数据，截止北京时间2026-10-10 09:00。实施任务和验收状态只维护于 [交付记录](../../planning/delivery-ledger.json)。[开发索引](../development/index.md)登记每项任务的唯一主记录。

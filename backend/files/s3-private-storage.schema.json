@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-private-storage-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "provider_id", "endpoint_url", "region", "bucket", "prefix", "owner_id", "access_key", "secret_key", "control_directory"],
+  "properties": {
+    "schema_version": {"const": "s3-private-storage-1"},
+    "provider_id": {"type": "string", "minLength": 1},
+    "endpoint_url": {"type": "string", "minLength": 1, "format": "uri", "pattern": "^https://"},
+    "region": {"type": "string", "minLength": 1},
+    "bucket": {"type": "string", "minLength": 1},
+    "prefix": {"type": "string", "minLength": 1, "format": "sjia-canonical-object-key"},
+    "owner_id": {"type": "string", "minLength": 1},
+    "access_key": {"type": "string", "minLength": 1, "writeOnly": true},
+    "secret_key": {"type": "string", "minLength": 1, "writeOnly": true},
+    "session_token": {"type": ["string", "null"], "writeOnly": true, "default": null},
+    "ca_bundle": {"type": ["string", "null"], "default": null},
+    "control_directory": {"type": "string", "minLength": 1},
+    "bucket_policy_sha256": {"oneOf": [{"const": "absent"}, {"type": "string", "pattern": "^[0-9a-f]{64}$"}], "default": "absent"},
+    "connect_timeout": {"type": "integer", "minimum": 1, "default": 5},
+    "read_timeout": {"type": "integer", "minimum": 1, "default": 120}
+  }
+}

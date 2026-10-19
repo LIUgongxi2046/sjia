@@ -1,5 +1,58 @@
 {
   "$defs": {
+    "S3ObjectReference": {"type": "object", "additionalProperties": false,
+      "required": ["binding_sha256", "object_key", "version_id", "etag", "checksum", "size_bytes"],
+      "properties": {"schema_version": {"const": "s3-object-reference-1"},
+        "binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "object_key": {"type": "string", "minLength": 1},
+        "version_id": {"type": "string", "minLength": 1, "not": {"const": "null"}},
+        "etag": {"type": "string", "minLength": 1}, "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0}, "encryption": {"const": "AES256"}}},
+    "S3ObjectTarget": {"type": "object", "additionalProperties": false,
+      "required": ["kind", "file_id", "object_version"], "properties": {
+        "kind": {"const": "s3_object"}, "file_id": {"type": "string", "format": "uuid"},
+        "object_version": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": ".*\\S.*"}}},
+    "S3ObjectProof": {"type": "object", "additionalProperties": false,
+      "required": ["kind", "file_id", "object_version", "object_key", "checksum", "size_bytes", "operation_id", "storage_reference"],
+      "properties": {"kind": {"const": "s3_object"}, "file_id": {"type": "string", "format": "uuid"},
+        "object_version": {"$ref": "#/$defs/LocalObjectProof/properties/object_version"},
+        "object_key": {"$ref": "#/$defs/LocalObjectProof/properties/object_key"},
+        "checksum": {"$ref": "#/$defs/LocalObjectProof/properties/checksum"},
+        "size_bytes": {"$ref": "#/$defs/LocalObjectProof/properties/size_bytes"},
+        "operation_id": {"type": "string", "format": "uuid"}, "storage_reference": {"$ref": "#/$defs/S3ObjectReference"}}},
+    "S3ContentManifest": {"type": "object", "additionalProperties": false,
+      "required": ["schema_version", "patient_id", "policy_id", "policy_version", "policy_sha256", "registry_sha256",
+        "preservation_sha256", "mode", "environment", "hold_id", "hold_version", "roots", "items", "obligations", "created_at", "storage_binding_sha256"],
+      "properties": {
+        "family_request_id": {"$ref": "#/$defs/ContentManifest/properties/family_request_id"},
+        "schema_version": {"const": "content-disposition-manifest-2"},
+        "patient_id": {"$ref": "#/$defs/ContentManifest/properties/patient_id"},
+        "policy_id": {"$ref": "#/$defs/ContentManifest/properties/policy_id"},
+        "policy_version": {"$ref": "#/$defs/ContentManifest/properties/policy_version"},
+        "policy_sha256": {"$ref": "#/$defs/ContentManifest/properties/policy_sha256"},
+        "registry_sha256": {"$ref": "#/$defs/ContentManifest/properties/registry_sha256"},
+        "preservation_sha256": {"$ref": "#/$defs/ContentManifest/properties/preservation_sha256"},
+        "mode": {"$ref": "#/$defs/ContentManifest/properties/mode"},
+        "environment": {"$ref": "#/$defs/ContentManifest/properties/environment"},
+        "hold_id": {"$ref": "#/$defs/ContentManifest/properties/hold_id"},
+        "hold_version": {"$ref": "#/$defs/ContentManifest/properties/hold_version"},
+        "roots": {"type": "array", "minItems": 1, "maxItems": 5000,
+          "items": {"oneOf": [{"$ref": "#/$defs/DatabaseTarget"}, {"$ref": "#/$defs/S3ObjectTarget"}]}},
+        "items": {"type": "array", "minItems": 1, "maxItems": 5000,
+          "items": {"oneOf": [{"$ref": "#/$defs/DatabaseProof"}, {"$ref": "#/$defs/S3ObjectProof"}]}},
+        "obligations": {"$ref": "#/$defs/ContentManifest/properties/obligations"},
+        "created_at": {"$ref": "#/$defs/ContentManifest/properties/created_at"},
+        "storage_binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+    "S3ErasedReceipt": {"type": "object", "additionalProperties": false,
+      "required": ["schema_version", "manifest_sha256", "journal_sequence", "logical_payload_erased", "all_copies_erased",
+        "unverified_copy_obligations", "proof_scope", "storage_binding_sha256"],
+      "properties": {"schema_version": {"const": "content-disposition-receipt-2"},
+        "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "journal_sequence": {"type": "integer", "minimum": 1}, "logical_payload_erased": {"const": true},
+        "all_copies_erased": {"const": false},
+        "unverified_copy_obligations": {"$ref": "#/$defs/ErasedReceipt/properties/unverified_copy_obligations"},
+        "proof_scope": {"const": "current_database_payload_and_controlled_s3_version_absence"},
+        "storage_binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
     "ContentManifest": {
       "additionalProperties": false,
       "properties": {
@@ -492,7 +545,7 @@
       "type": "string"
     },
     "manifest": {
-      "$ref": "#/$defs/ContentManifest"
+      "oneOf": [{"$ref": "#/$defs/ContentManifest"}, {"$ref": "#/$defs/S3ContentManifest"}]
     },
     "manifest_sha256": {
       "pattern": "^[0-9a-f]{64}$",
@@ -533,6 +586,9 @@
         },
         {
           "$ref": "#/$defs/ErasedReceipt"
+        },
+        {
+          "$ref": "#/$defs/S3ErasedReceipt"
         },
         {
           "type": "null"

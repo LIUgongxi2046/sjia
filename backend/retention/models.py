@@ -204,6 +204,42 @@ class ContentRestoreState(models.Model):
             name='content_restore_singleton_true')]
 
 
+class S3ContentRestoreState(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    generation = models.PositiveBigIntegerField(default=1, unique=True)
+    parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, related_name='+')
+    parent_mapping_sha256 = Sha256HexField(null=True)
+    ancestor_sha256 = Sha256HexField(null=True)
+    database_name = models.TextField()
+    cluster_id = models.TextField()
+    restore_root = models.TextField()
+    source_binding_sha256 = Sha256HexField()
+    target_binding_sha256 = Sha256HexField()
+    source_snapshot_sha256 = Sha256HexField()
+    backup_manifest_sha256 = Sha256HexField()
+    content_checkpoint = models.JSONField()
+    mapping_sha256 = Sha256HexField(null=True)
+    state = models.CharField(max_length=16, default='preparing')
+    created_at = models.DateTimeField()
+    mapped_at = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = 'sjia"."s3_content_restore_state'
+        constraints = [
+            models.CheckConstraint(condition=models.Q(generation__gte=1), name='s3_restore_generation_positive'),
+            models.CheckConstraint(condition=models.Q(generation=1, parent__isnull=True,
+                    parent_mapping_sha256__isnull=True, ancestor_sha256__isnull=True)
+                | models.Q(generation__gt=1, parent__isnull=False, parent_mapping_sha256__isnull=False,
+                    ancestor_sha256__isnull=False), name='s3_restore_parent_shape'),
+            models.UniqueConstraint(fields=['target_binding_sha256'], name='s3_restore_target_binding_once'),
+            models.CheckConstraint(condition=~models.Q(source_binding_sha256=models.F('target_binding_sha256')),
+                name='s3_restore_distinct_binding'),
+            models.CheckConstraint(condition=models.Q(state='preparing', mapping_sha256__isnull=True, mapped_at__isnull=True)
+                | models.Q(state='mapped', mapping_sha256__isnull=False, mapped_at__isnull=False,
+                    mapped_at__gte=models.F('created_at')), name='s3_restore_mapping_state'),
+        ]
+
+
 class ContentAccessRevocation(models.Model):
     """Read/production fence without altering or relabeling retained payload."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)

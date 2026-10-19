@@ -13,6 +13,7 @@
   --action-primary-border:color-mix(in srgb,var(--blue) 83%,#0b2549);
   --action-primary-shadow:0 5px 12px #164e9538,inset 0 1px #ffffff75,inset 0 -2px #092f6654;
   --action-radius:18px;
+  --input-min-height:52px;
   color:var(--ink); font-size:16px; line-height:1.5; color-scheme:light;
   /* Original artwork permits synthetic weights on platforms without a CJK bold face.
      The legacy app root disables synthesis; explicitly restore it inside this system. */
@@ -43,7 +44,7 @@
 .button.secondary{background:linear-gradient(155deg,color-mix(in srgb,var(--tint) 55%,white),var(--tint));color:var(--link);border:1px solid color-mix(in srgb,var(--link) 22%,transparent);box-shadow:var(--dim-tile-shadow)}
 .button:disabled{background:var(--page);color:var(--muted);border:1px solid var(--line);box-shadow:none;opacity:1}
 .field{gap:9px}.field>span{font-size:13px;font-weight:500;color:var(--ink)}
-.field input,.field select,.field textarea,.search-field{font-size:15px;min-height:48px;border-radius:11px;background:color-mix(in srgb,var(--card) 86%,var(--page));border:1px solid color-mix(in srgb,var(--line) 78%,var(--link));color:var(--ink);box-shadow:inset 0 2px 5px #1b456512,0 1px #ffffff9c}
+.field input,.field select,.field textarea,.search-field{font-size:15px;min-height:var(--input-min-height);border-radius:11px;background:color-mix(in srgb,var(--card) 86%,var(--page));border:1px solid color-mix(in srgb,var(--line) 78%,var(--link));color:var(--ink);box-shadow:inset 0 2px 5px #1b456512,0 1px #ffffff9c}
 .field input,.field select,.field textarea{padding:12px}.field textarea{line-height:1.7}
 .pair{font-size:13px;line-height:1.7;padding:10px 0;border-color:color-mix(in srgb,var(--line) 40%,transparent)}
 .pair>span,.muted,.footnote{color:var(--muted)}.pair>strong{color:var(--ink);font-size:13px;font-weight:500}

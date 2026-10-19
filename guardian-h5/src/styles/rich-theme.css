@@ -114,7 +114,7 @@
 /* Appearance is an ordinary, keyboard-operable account setting. */
 .rich-theme-preference { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; color:var(--ink); font-size:14px; }
 .rich-theme-preference label { font-weight:600; }
-.rich-theme-preference select { min-height:44px; max-width:100%; padding:8px 12px; border:1px solid var(--control); border-radius:12px; background:var(--card); color:var(--ink); }
+.rich-theme-preference select { min-height:var(--input-min-height); max-width:100%; padding:8px 12px; border:1px solid var(--control); border-radius:12px; background:var(--card); color:var(--ink); }
 .device :focus-visible { outline:3px solid var(--link); outline-offset:4px; }
 .device[data-theme=dark] ::selection { color:#fff; background:#1b70e0; }
 /* Contrast preferences flatten decoration without discarding text or selected semantics. */

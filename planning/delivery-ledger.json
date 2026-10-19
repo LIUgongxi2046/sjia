@@ -1914,8 +1914,8 @@
     },
     {
       "id": "EVID-T38", "check_id": "CHECK-T38", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA52/receipt.json",
-      "receipt_sha256": "442fd6fc86de52768fabd7a7ef0b29075305d8fc95e734ad1151bc3e259c6042"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA58/receipt.json",
+      "receipt_sha256": "8eb60aae7854e0778051233b89264c1cc01aa631d79be1fc5324bcec9dca77f3"
     },
     {
       "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",

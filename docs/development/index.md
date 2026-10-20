@@ -36,6 +36,7 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| QA60 | 原件显示与会话清理验证 | ArrayBuffer；Blob URL；真实原件；后台；实际字节 | FR-02；FR-09；AC-H5-05 | docs/development/QA60-original-lifecycle.md | api/client；ArchiveOriginals；PrivateSourceGallery；PrivateDocumentSource；SourceGallery | T12；T27；T45；T54；QA59 |
 | QA59 | 共享会话与跨窗口资料清理 | Web Locks；storage；SessionBoundary；会话版本；受限内存 | AC-H5-05；T08；T09；T54 | docs/development/QA59-shared-session.md | api/sessionBoundary；state/SessionBoundary；AccessProvider；SupportApp | T08；T09；T38；T54 |
 | QA44 | 当前运行版本集成 | Python3.12；313份配置；当前制品；实际采用；main | FR-01—22；T28；T39；T57；QA14 | docs/development/QA44-current-runtime-integration.md | configurations；runtime_admission；文件响应；现有服务 | QA14；QA38；QA42；QA43 |
 | QA43 | 现有资料升级与完整性 | main集成；真实快照；PostgreSQL18／17；完整迁移；资料保持 | FR-01—22；T39；T57；QA14 | docs/development/QA43-existing-data-upgrade.md | 正式迁移；SourceManifest；文件响应 | QA14；QA28；QA38；QA42 |

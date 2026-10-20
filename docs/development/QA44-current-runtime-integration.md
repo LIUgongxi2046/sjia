@@ -24,7 +24,7 @@ task_id为QA44，唯一状态来源为本记录，状态IN_PROGRESS，文档CURR
 
 ## 证据与继续
 
-原始结果、实际进程身份和中间文件保存在原项目忽略目录.qa-work/QA44。current-python-inspected.json记录准确解释器、依赖、313份配置、当前制品、Django和迁移状态，current-python-file-response.json记录当前Python3.12的实际完整文件响应。两项均使用只读真实副本，没有修改原服务、配置或调用模型。现有服务尚未采用开发分支代码，本任务尚未提交或推送。06:00单次发布已经由QA14完成，保持其准确提交与时间。
+原始结果、实际进程身份和中间文件保存在原项目忽略目录.qa-work/QA44。current-python-inspected.json记录准确解释器、依赖、313份配置、当前制品、Django和迁移状态，current-python-file-response.json记录当前Python3.12的实际完整文件响应。两项均使用只读真实副本，没有修改原服务、配置或调用模型。现有服务尚未采用开发分支代码；Git交付目标为main，保存当前源码进度，运行采用及完整页面验收继续保持原状态。06:00单次发布已经由QA14完成，保持其准确提交与时间。
 
 qualification-exact-source-inspected.json使用与原项目准确一致的证据目录、10 MiB读取上限和原环境名称，仅在真实副本读取既有批准与验证。290份purpose-processing-2配置继续QUALIFIED，23份其他配置返回CONFIG_VALIDATION_UNAVAILABLE，当前制品的软件验证需要逐项登记。该检查没有修改配置、批准或验证记录，主项目全部135张表继续与QA43快照一致，原API保持ready、admitted_current，两个前端入口正常。
 

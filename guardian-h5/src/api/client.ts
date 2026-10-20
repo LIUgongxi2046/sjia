@@ -146,9 +146,9 @@ export async function fetchPrivateDocument(path: string, mediaType: string, sign
   assertSessionEpoch(epoch);
   if (!response.ok) throw await parseError(response);
   if (response.headers.get('Content-Type') !== mediaType) throw new Error('原件内容类型与准确文件版本不一致。');
-  const value = await response.blob();
+  const value = await response.arrayBuffer();
   signal.throwIfAborted(); assertSessionEpoch(epoch);
-  return value;
+  return new Blob([value], { type: mediaType });
 }
 
 export async function postAudio(path: string, audio: Blob, signal: AbortSignal): Promise<{ text: string; duration_seconds: number }> {

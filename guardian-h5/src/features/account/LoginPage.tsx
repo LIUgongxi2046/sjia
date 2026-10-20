@@ -34,7 +34,7 @@ export function LoginPage() {
     } finally { submittingRef.current = false; setPassword(''); setSubmitting(false); }
   }
 
-  return <UI2FamilyFrame title={loggedIn ? "登录身份" : mode === "register" ? "注册账号" : "登录"} screenId="UI2-17" note="使用账号和密码完成身份核验。登录后仍需取得患儿关联与相应授权，才能访问患儿资料。" backTo="/account"
+  return <UI2FamilyFrame title={loggedIn ? "登录身份" : mode === "register" ? "注册账号" : "登录"} screenId="UI2-17" note="使用账号和密码完成身份核验。登录后仍需取得患儿关联与相应授权，才能访问患儿资料。" backTo={loggedIn ? '/account' : undefined}
     kicker={!loggedIn && !accessError ? null : undefined} subtitle={!loggedIn && !accessError ? null : undefined}>
     <div className="login-brand"><img src={logo} alt="sJIA 守护者联盟标志" /><h2>sJIA 守护者联盟</h2><p>儿童健康记录</p></div>
     {accessError ? <section className="card form-card" role="alert"><h3>{errorSource === 'relations' ? '当前账号已登录' : '账号会话暂未核验'}</h3>

@@ -2,7 +2,7 @@ import { createContext, Fragment, useCallback, useContext, useEffect, useRef, us
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import * as api from '../api/endpoints';
-import { ApiError, setSessionCsrfToken } from '../api/client';
+import { ApiError, setSessionCsrfToken, subscribeSessionUnauthorized } from '../api/client';
 import { assertSessionEpoch, isSessionEpochCurrent, runSessionMutation, runSessionRead } from '../api/sessionBoundary';
 import type { SessionEpoch, SessionMutationResult } from '../api/sessionBoundary';
 import { clearNavigationMemory } from './navigation';
@@ -208,6 +208,12 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     }
   }, [adoptPatient, adoptToken, clearIdentity, suspendPatientAccess]);
 
+  useEffect(() => subscribeSessionUnauthorized(() => {
+    if (mutation.current || logoutRequired.current) return;
+    generation.current += 1;
+    clearIdentity(); setError(null); setErrorSource(null); setLoading(false); setInitialized(true);
+  }), [clearIdentity]);
+
   const refresh = useCallback(async () => {
     // A background pageshow/visibility event must not supersede sign-in/out.
     if (mutation.current || logoutRequired.current) return;
@@ -362,7 +368,9 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     if (forceClear || !principalId || !patientId || changed) params.delete('draft');
     previousUrlScope.current = { principal: principalId, patient: patientId };
     const search = params.toString();
-    if (search !== new URLSearchParams(location.search).toString()) {
+    // 当前页面已经导航时，旧页面的参数清理不能重新进入原来的业务路径。
+    if (search !== new URLSearchParams(location.search).toString()
+      && window.location.pathname === location.pathname && window.location.search === location.search) {
       void navigate({ pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash }, { replace: true });
     }
   }, [error, loading, location.hash, location.pathname, location.search, navigate, patientId, principalId]);

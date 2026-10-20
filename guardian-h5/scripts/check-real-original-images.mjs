@@ -185,10 +185,11 @@ async function peerWindow() {
 async function logout(peer, file) {
   const response = peer.waitForResponse(item => new URL(item.url()).pathname === '/api/session/logout' && item.request().method() === 'POST');
   await peer.getByRole('button', { name: '退出登录', exact: true }).click(); assert.equal((await response).status(), 200);
-  await peer.waitForURL('**/home'); await waitNoBlobs();
+  await peer.waitForURL('**/login'); await waitNoBlobs();
   assert.equal((await api('GET', '/api/session', 401)).code, 'AUTH_REQUIRED');
   assert.equal((await api('GET', `/api/files/${file.file_id}/content`, 401)).code, 'AUTH_REQUIRED');
-  await main.locator('.rich-record-patient strong').filter({ hasText: '选择患儿' }).waitFor();
+  await main.waitForURL('**/login');
+  await main.getByRole('form', { name: '登录', exact: true }).waitFor();
 }
 try {
   const index = await context.request.get(origin + '/home'); assert.equal(index.status(), 200);

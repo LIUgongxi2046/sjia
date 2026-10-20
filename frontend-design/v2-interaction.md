@@ -24,6 +24,8 @@ React18.3.1、React Router7.18.4、Vite8.3.1及TypeScript7.0.2继续采用锁定
 
 家庭与支持共用 Cookie 时，SessionBoundary 统一接收同源 storage 事件。登录、注册、退出和患儿选择使用 Web Locks 处理会话操作；其他窗口卸载全部页面，重新读取实际身份和权限。固定键 sjia.session.boundary.v1 只保存随机 version、随机 owner 和 changing/settled 状态，不能用于授权。传输结果在请求开始和正文完成时核验同一版本；JSON、文书、图片及语音均适用。操作窗口关闭后通过已释放的浏览器锁及实际 Session 请求确认状态，网络失败显示重新核验入口。
 
+家庭业务路由由 RequireFamilySession 检查身份，匿名访问统一进入独立 /login；/account/data-use 保持公开。登录页没有家庭导航，匿名状态没有返回账号页面的操作。退出成功或当前资料请求返回 401 时，清除身份及患儿页面状态并进入 /login。会话服务无法核验时保留重新核验操作。URL 参数清理只处理仍与浏览器当前地址相符的页面。实际登录及预警状态验证见 [QA61](../docs/development/QA61-login-alert-flow.md)。
+
 ## 3. UI2 Token、组件数值与资产
 
 [当前 Token 映射](v2-token-map.json)引用 [tokens.json](../ui-delivery/v2/tokens.json)、[tokens.css](../ui-delivery/v2/src/tokens.css)与 [styles.css](../ui-delivery/v2/src/styles.css)。颜色、字体、字号、间距、圆角、阴影、渐变、比例、图标及状态依次继承源文件中的选择器、顺序和媒体条件。JSON Token 与专用组件 CSS 同时接收，组件最终值以设计源码的级联结果为准，不能用统一 Token 覆盖专用数值。

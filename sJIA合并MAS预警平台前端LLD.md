@@ -119,6 +119,8 @@ C01通过同源HTTPS访问C03。App对/support/*使用React.lazy加载SupportApp
 
 SessionBoundary 在 RouterProvider 外维护同源跨窗口清理。家庭与支持的登录、注册、退出及患儿选择通过 Web Locks 执行会话操作；其他窗口卸载受限组件及当前内存。localStorage 的 sjia.session.boundary.v1 仅包含随机 version、随机 owner 和 changing/settled 状态，任何账号、患儿、凭据和资料均不能进入该记录。版本变化使旧 JSON、Blob 和语音结果失效；重新挂载后读取实际 Session 与访问范围。操作窗口关闭后取得已释放的浏览器锁，通过实际服务核验恢复，不能将记录状态作为已登录证明。
 
+RequireFamilySession 为家庭业务路由检查当前身份，公开保留 /login 和 /account/data-use。匿名登录页独立呈现账号表单，没有家庭导航及返回账号页面的操作。退出成功及当前资料请求返回 401 后，AccessProvider 清除身份、患儿范围和私有内容，路由进入 /login；会话服务暂时无法核验时展示准确错误与重新核验操作。client 的 subscribeSessionUnauthorized 接收已通过请求取消及会话版本检查的 401，认证请求由原认证流程处理。旧地址的参数清理不能覆盖已经完成的页面导航。专项证据见 [QA61](docs/development/QA61-login-alert-flow.md)。
+
 HTTP 非 2xx、业务不足和能力未配置保留各自准确状态。网络及协议失败由 Router errorElement 和提交状态协调器接收明确失败事件；缺少响应的写入进入 uncertain。正式保存、OCR 完成与临床核对分别显示，不以 Toast 作为唯一结果。不使用自动替换服务、补齐数值或历史成功内容。
 
 ## 3. 设计系统与 Token 资产

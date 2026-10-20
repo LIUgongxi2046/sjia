@@ -6,6 +6,20 @@ let sessionCsrfToken: string | null = null;
 export function setSessionCsrfToken(token: string | null) { sessionCsrfToken = token; }
 export function getSessionCsrfToken() { return sessionCsrfToken; }
 
+const unauthorizedListeners = new Set<() => void>();
+export function subscribeSessionUnauthorized(listener: () => void): () => void {
+  unauthorizedListeners.add(listener);
+  return () => { unauthorizedListeners.delete(listener); };
+}
+
+async function responseFailure(response: Response, check: () => void, sessionControl = false): Promise<ApiError> {
+  const failure = await parseError(response);
+  check();
+  // 会话管理请求由各自的认证流程处理，资料请求立即通知当前身份管理器。
+  if (response.status === 401 && !sessionControl) unauthorizedListeners.forEach(listener => listener());
+  return failure;
+}
+
 export interface FieldError {
   path: string;
   code: string;
@@ -116,9 +130,7 @@ export async function fetchJson<T>(path: string, options: RequestOptions = {}): 
 
   check();
   if (!response.ok) {
-    const failure = await parseError(response);
-    check();
-    throw failure;
+    throw await responseFailure(response, check, options.sessionControl);
   }
   if (response.status === 204) return undefined as T;
   const value = await readJsonObject(response, options.signal) as T;
@@ -128,10 +140,11 @@ export async function fetchJson<T>(path: string, options: RequestOptions = {}): 
 
 export async function fetchPrivateImage(path: string, signal: AbortSignal): Promise<Blob> {
   const epoch = captureSessionEpoch();
+  const check = () => { signal.throwIfAborted(); assertSessionEpoch(epoch); };
   const response = await fetch(path, { headers: { Accept: 'image/png,image/jpeg,image/webp,application/json' },
     signal, credentials: 'same-origin', cache: 'no-store' });
-  assertSessionEpoch(epoch);
-  if (!response.ok) throw await parseError(response);
+  check();
+  if (!response.ok) throw await responseFailure(response, check);
   const mediaType = response.headers.get('Content-Type');
   if (!mediaType || !['image/png', 'image/jpeg', 'image/webp'].includes(mediaType)) throw new Error('资料内容类型与图片读取要求不一致。');
   const value = await response.blob();
@@ -141,10 +154,11 @@ export async function fetchPrivateImage(path: string, signal: AbortSignal): Prom
 
 export async function fetchPrivateDocument(path: string, mediaType: string, signal: AbortSignal): Promise<Blob> {
   const epoch = captureSessionEpoch();
+  const check = () => { signal.throwIfAborted(); assertSessionEpoch(epoch); };
   if (!['image/png', 'image/jpeg', 'image/webp', 'application/pdf', 'text/plain'].includes(mediaType)) throw new Error('当前原件媒体类型没有登记查看方式。');
   const response = await fetch(path, { headers: { Accept: `${mediaType},application/json` }, signal, credentials: 'same-origin', cache: 'no-store' });
-  assertSessionEpoch(epoch);
-  if (!response.ok) throw await parseError(response);
+  check();
+  if (!response.ok) throw await responseFailure(response, check);
   if (response.headers.get('Content-Type') !== mediaType) throw new Error('原件内容类型与准确文件版本不一致。');
   const value = await response.arrayBuffer();
   signal.throwIfAborted(); assertSessionEpoch(epoch);
@@ -153,11 +167,12 @@ export async function fetchPrivateDocument(path: string, mediaType: string, sign
 
 export async function postAudio(path: string, audio: Blob, signal: AbortSignal): Promise<{ text: string; duration_seconds: number }> {
   const epoch = captureSessionEpoch();
+  const check = () => { signal.throwIfAborted(); assertSessionEpoch(epoch); };
   const headers: Record<string, string> = { Accept: 'application/json', 'Content-Type': audio.type };
   if (sessionCsrfToken) headers['X-CSRFToken'] = sessionCsrfToken;
   const response = await fetch(path, { method: 'POST', body: audio, headers, signal, credentials: 'same-origin' });
-  assertSessionEpoch(epoch);
-  if (!response.ok) throw await parseError(response);
+  check();
+  if (!response.ok) throw await responseFailure(response, check);
   const value = await response.json();
   signal.throwIfAborted(); assertSessionEpoch(epoch);
   return value;

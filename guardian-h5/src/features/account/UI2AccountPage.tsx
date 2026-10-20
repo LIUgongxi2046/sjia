@@ -22,7 +22,7 @@ export function UI2AccountPage() {
   async function signOut() {
     if (submitting) return;
     setSubmitting(true); setError(null);
-    try { await logout(); navigate('/home', { replace: true }); }
+    try { await logout(); navigate('/login', { replace: true }); }
     catch (error) { if (!(error instanceof Error)) throw error; setError(error.message); }
     finally { setSubmitting(false); }
   }

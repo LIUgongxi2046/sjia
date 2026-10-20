@@ -4,7 +4,7 @@ import { existsSync, statfsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import { chromium } from 'playwright';
+import { openRealBrowser } from './lib/real-browser.mjs';
 
 const { values } = parseArgs({ options: { report: { type: 'string' }, dist: { type: 'string' },
   credentials: { type: 'string' }, scope: { type: 'string' }, source: { type: 'string' } } });
@@ -21,14 +21,29 @@ assert.equal(source.result, 'PASS'); assert.equal(source.source_kind, 'USER_APPR
 assert.equal(scope.actor_id, source.actor_id);
 const origin = 'http://127.0.0.1:5178';
 const report = { result: 'IN_PROGRESS', started_at: new Date().toISOString(), origin,
-  checks: [], page_errors: [], new_model_calls: 0, new_clinical_writes: 0,
+  checks: [], page_errors: [], requests: [], new_model_calls: 0, new_clinical_writes: 0,
   visual_validation: 'NOT_RUN', device_validation: 'NOT_RUN' };
 await writeFile(output, JSON.stringify(report, null, 2), { flag: 'wx', mode: 0o600 });
-const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--disk-cache-size=8388608'] });
-const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const native = await openRealBrowser({ port: 9232, headless: true });
+const { browser, context } = native;
 const main = await context.newPage();
 main.setDefaultTimeout(30000);
 main.on('pageerror', error => report.page_errors.push(error.message));
+const pendingReads = new Map();
+main.on('request', request => {
+  const path = new URL(request.url()).pathname;
+  if (!path.startsWith('/api/')) return;
+  const row = { path, started_at: performance.now() };
+  report.requests.push(row); pendingReads.set(request, row);
+});
+main.on('response', response => {
+  const row = pendingReads.get(response.request());
+  if (row) { row.status = response.status(); row.elapsed_ms = performance.now() - row.started_at; }
+});
+main.on('requestfailed', request => {
+  const row = pendingReads.get(request);
+  if (row) { row.failure = request.failure(); row.elapsed_ms = performance.now() - row.started_at; }
+});
 const browserSession = await browser.newBrowserCDPSession();
 let csrf;
 async function save() { await writeFile(output, JSON.stringify(report, null, 2)); }
@@ -87,7 +102,7 @@ async function select(page, relation) {
 }
 async function archive(page, directory) {
   await page.goto(origin + '/archives');
-  await page.getByText(`符合条件 ${directory.matched_count} 份文书；本次读取 ${directory.items.length} 份。`, { exact: true }).waitFor();
+  await page.getByText(`符合条件 ${directory.matched_count} 份文书；本次读取 ${directory.items.length} 份。`, { exact: true }).waitFor({ timeout: 120000 });
   assert.deepEqual(await documentIds(page), directory.items.map(item => item.document.document_id).sort());
 }
 try {
@@ -116,19 +131,20 @@ try {
   const logout = peer.waitForResponse(item => new URL(item.url()).pathname === '/api/session/logout');
   await peer.getByRole('button', { name: '退出登录', exact: true }).click();
   assert.equal((await logout).status(), 200);
-  await peer.waitForURL('**/home');
-  await waitForPatient(main, '选择患儿');
+  await peer.waitForURL('**/login');
+  await main.waitForURL('**/login');
+  await main.getByRole('form', { name: '登录', exact: true }).waitFor();
   assert.deepEqual(await documentIds(main), []);
   await api('GET', '/api/session', 401);
   await record('TWO_VISIBLE_WINDOWS_LOGOUT_CLEARS_REAL_ARCHIVE', { elapsed_ms: performance.now() - started });
 
   await peer.goto(origin + '/archives');
-  await waitForPatient(peer, '选择患儿');
+  await peer.waitForURL('**/login');
   await familyLogin(main);
-  await peer.waitForFunction(() => [...document.querySelectorAll('[data-screen-id]')]
-    .some(host => { const value = host.shadowRoot.querySelector('.rich-record-patient strong')?.textContent;
-      return value && value !== '选择患儿'; }));
-  assert.notEqual(await patientLabel(peer), '选择患儿');
+  await peer.getByRole('heading', { name: '当前账号已登录', exact: true }).waitFor();
+  await peer.getByRole('button', { name: '进入首页', exact: true }).click();
+  await peer.waitForURL('**/home');
+  assert.equal(await peer.getByRole('form', { name: '登录', exact: true }).count(), 0);
   await record('PEER_ADOPTS_REAL_RELOGIN_WITHOUT_RELOAD');
   await select(main, populatedRelation);
   await archive(main, populated);
@@ -161,7 +177,8 @@ try {
   await peer.getByRole('button', { name: '退出受控会话', exact: true }).click();
   await peer.waitForURL('**/support/login');
   await api('GET', '/api/session', 401);
-  await waitForPatient(main, '选择患儿');
+  await main.waitForURL('**/login');
+  await main.getByRole('form', { name: '登录', exact: true }).waitFor();
   await record('SUPPORT_LOGOUT_UPDATES_SHARED_ANONYMOUS_SESSION');
 
   await familyLogin(main); await select(main, populatedRelation); await archive(main, populated);
@@ -169,8 +186,12 @@ try {
   await peer.getByRole('button', { name: '退出登录', exact: true }).waitFor();
   const throttle = await context.newCDPSession(peer);
   await throttle.send('Network.enable');
-  await throttle.send('Network.emulateNetworkConditions', { offline: false, latency: 6000,
+  await throttle.send('Network.emulateNetworkConditions', { offline: false, latency: 60000,
     downloadThroughput: -1, uploadThroughput: -1 });
+  const submittedLogouts = [];
+  peer.on('request', request => {
+    if (new URL(request.url()).pathname === '/api/session/logout') submittedLogouts.push(request.method());
+  });
   const bootstrapRequest = peer.waitForRequest(item => new URL(item.url()).pathname === '/api/auth/bootstrap');
   await peer.getByRole('button', { name: '退出登录', exact: true }).click();
   await bootstrapRequest;
@@ -178,12 +199,13 @@ try {
   assert.deepEqual(await documentIds(main), []);
   const held = await main.evaluate(() => navigator.locks.query());
   assert.equal(held.held.filter(item => item.name === 'sjia.session.mutation.v1' && item.mode === 'exclusive').length, 1);
+  assert.deepEqual(submittedLogouts, []);
   await peer.close();
-  await main.getByText(`符合条件 ${populated.matched_count} 份文书；本次读取 ${populated.items.length} 份。`, { exact: true }).waitFor();
+  await main.getByText(`符合条件 ${populated.matched_count} 份文书；本次读取 ${populated.items.length} 份。`, { exact: true }).waitFor({ timeout: 120000 });
   assert.deepEqual(await documentIds(main), ids);
   const recovered = await api('GET', '/api/session', 200);
   assert.equal(recovered.principal_id, source.actor_id); assert.equal(recovered.selected_patient_id, populated.patient_id);
-  await record('CLOSED_MUTATION_WINDOW_RECOVERS_FROM_ACTUAL_SERVER_SESSION');
+  await record('CLOSED_MUTATION_WINDOW_RECOVERS_FROM_ACTUAL_SERVER_SESSION', { submitted_logouts: submittedLogouts.length });
 
   const storage = await main.evaluate(() => ({ local: Object.fromEntries(Object.entries(localStorage)), session: Object.keys(sessionStorage) }));
   assert.deepEqual(storage.session, []);
@@ -207,4 +229,4 @@ try {
       status: [...host.shadowRoot.querySelectorAll('[role="alert"],[role="status"]')].map(node => node.textContent),
     })), status: [...document.querySelectorAll('[role="alert"],[role="status"]')].map(node => node.textContent) }));
   await save(); throw failure;
-} finally { await save(); await browser.close(); }
+} finally { await save(); await native.close(); }

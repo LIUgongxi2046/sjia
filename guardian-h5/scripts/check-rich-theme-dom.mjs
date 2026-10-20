@@ -63,8 +63,8 @@ const root = createRoot(document.getElementById('root'));
 const host = () => document.querySelector('[data-screen-id]');
 const page = () => host().shadowRoot;
 const accountPage = () => document.querySelector('[data-screen-id="UI2-15"]').shadowRoot;
-const selector = () => accountPage().querySelector('.rich-theme-preference select');
-const choose = async value => { await act(async () => { selector().value=value; selector().dispatchEvent(new Event('change', {bubbles:true})); }); };
+const selector = () => accountPage().querySelector('.rich-theme-preference');
+const choose = async value => { await act(async () => { selector().querySelector(`input[value="${value}"]`).click(); }); };
 const system = async dark => { await act(async () => { media.matches=dark; for (const listener of mediaListeners) listener({matches:dark}); }); };
 // Keep a registration-like form mounted beside the actual account page so
 // changing the real setting must update both roots without remounting the form.
@@ -77,8 +77,8 @@ try {
   assert.equal(host().dataset.themePreference, 'system'); assert.equal(host().dataset.theme, 'light');
   assert.equal(writes.length, 0); assert.equal(mediaListeners.size, 3);
   const select = selector();
-  assert.equal(accountPage().querySelector(`label[for="${select.id}"]`).textContent, '外观');
-  assert.deepEqual([...select.options].map(option=>option.value), ['system','light','dark']);
+  assert.equal(select.querySelector('legend').textContent, '外观设置');
+  assert.deepEqual([...select.querySelectorAll('input[type="radio"]')].map(option=>option.value), ['system','light','dark']);
   assert.equal(select.disabled, false, 'appearance remains available without login or clinical access');
   assert.equal(select.getAttribute('aria-describedby'), null);
   assert.equal(accountPage().querySelectorAll('.rich-theme-preference').length, 1);

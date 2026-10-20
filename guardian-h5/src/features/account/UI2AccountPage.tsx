@@ -39,7 +39,7 @@ export function UI2AccountPage() {
       <button className="list-row" onClick={() => navigate('/login')}><span className="row-icon"><UserRound size={30} /></span><span className="row-text"><strong>账号与登录</strong><small>查看当前登录身份</small></span><ChevronRight size={17} /></button>
     </section>
     {canSelectPreset && <section className="card"><button className="list-row" onClick={() => navigate('/alert-presets')}><span className="row-icon"><Bell size={30} /></span><span className="row-text"><strong>提醒方案</strong><small>选择当前获准的提醒方案</small></span><ChevronRight size={17} /></button></section>}
-    <section className="card" aria-label="外观设置"><RichThemePreference value={preference} onChange={changePreference} /></section>
+    <section className="card form-card" aria-label="外观设置"><RichThemePreference value={preference} onChange={changePreference} /></section>
     <div className="brand-footer rich-brand-footer"><img src={logo} alt="sJIA 守护者联盟标志" /><span>sJIA 守护者联盟<small>儿童健康记录</small></span></div>
     {error && <section className="status-panel error" role="alert"><h2>退出登录未完成</h2><p>{error}</p></section>}
     {loggedIn && <button className="button secondary" disabled={submitting} onClick={() => void signOut()}><LogOut size={24} />{submitting ? '正在退出登录' : '退出登录'}</button>}

@@ -69,6 +69,7 @@
 .login-ready .login-success-icon{width:64px;height:64px;border-radius:22px;background:#e5f3f0;display:grid;place-items:center}
 .login-ready h2{font-size:22px}.login-ready p{font-size:14px;color:var(--muted)}
 .local-test-account .pair{align-items:flex-start;gap:16px}.local-test-account .pair>strong{min-width:0;overflow-wrap:anywhere;user-select:text}
+.simulation-data-label{padding:9px 14px;border:1px solid var(--line);border-radius:14px;background:var(--tint);color:var(--link);font-size:12px;text-align:center}
 /* Home mother page: exact reference geometry at 390px, content-driven height. */
 .device[data-primary=home] .app-header{padding:12px 20px 14px}
 .device[data-primary=home] .header-kicker{margin-bottom:9px;line-height:16px}
@@ -76,7 +77,7 @@
 .device[data-primary=home] .page-content{padding-top:10px;padding-bottom:14px;gap:10px}
 .home-alert{padding:12px 14px 8px;border-radius:18px;border:1px solid #8194aa;border-left-width:4px;background:linear-gradient(155deg,#f0f4f9,#eaf0f7);color:#34495f;box-shadow:0 3px 3px #19395b0c,0 13px 25px #19395b20,inset 0 1px #ffffffbb}
 .home-alert .eyebrow{color:inherit;font-size:10px;gap:6px}.home-alert h2{font-size:18px;line-height:1.45;margin-top:8px;color:inherit}.page-content .home-alert p{font-size:13px;line-height:1.6;color:inherit;margin:5px 0 0}.home-alert .home-alert-title{display:block}
-.home-alert .alert-link{width:100%;margin:7px 0 0;min-height:36px;padding:3px 0 0;background:none;border-top:1px solid #8194aa66;font-size:11px;color:inherit}
+.home-alert .alert-link{display:flex;justify-content:center;align-items:center;gap:6px;width:100%;margin:7px 0 0;min-height:44px;padding:8px 0;background:none;border-top:1px solid #8194aa66;font-size:11px;color:inherit}
 .home-twin{--home-companion-height:clamp(232px,64vw,300px);padding:12px;border-radius:24px;background:linear-gradient(153deg,var(--dim-surface-top),var(--dim-surface-bottom));border:1px solid var(--line);box-shadow:var(--dim-shadow)}
 .home-twin-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}.home-twin-heading>button{font-size:11px;min-height:44px;color:var(--link);display:flex;align-items:center;gap:5px}
 .home-patient{min-width:0;max-width:67%;padding:0;border:0}.home-patient summary{padding:0 6px;cursor:pointer;min-height:44px;display:flex;align-items:center;gap:5px;list-style:none}.home-patient summary::-webkit-details-marker{display:none}.home-patient strong{font-size:16px;color:var(--ink);overflow-wrap:anywhere}.home-patient summary .three-d-icon{flex-shrink:0}

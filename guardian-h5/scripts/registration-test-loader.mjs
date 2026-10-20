@@ -22,7 +22,8 @@ registerHooks({
       if (url.includes('.css')) return { format: 'module', source: 'export default "";', shortCircuit: true };
       if (/\.json$/.test(path)) return { format: 'module', source: `export default ${readFileSync(path, 'utf8')};`, shortCircuit: true };
       if (/\.tsx?$/.test(path) && existsSync(path)) {
-        const result = transformSync(path, readFileSync(path, 'utf8'), { jsx: { runtime: 'automatic' } });
+        const result = transformSync(path, readFileSync(path, 'utf8'), { jsx: { runtime: 'automatic' },
+          define: { __SJIA_LOCAL_TEST_ACCOUNT__: 'null' } });
         if (result.errors.length) throw new Error(JSON.stringify(result.errors));
         return { format: 'module', source: result.code, shortCircuit: true };
       }

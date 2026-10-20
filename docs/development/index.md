@@ -36,6 +36,10 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| QA67 | 家庭资料与方案目录并发读取 | 方案目录；观察时段；资料关系；审计；共享锁 | QA67-01—04 | docs/development/QA67-preset-directory-concurrency.md | alerting.presets；assessment.service；records.periods；requests.archive_relations | QA65；QA66 |
+| QA66 | 有效预警的首页读取 | 只读快照；发布核验；首页 | QA66-01—03 | docs/development/QA66-current-alert-read-snapshot.md | alerting.presets；api.family_home | QA65；QA64 |
+| QA65 | 测试账号完整模拟资料 | 模拟资料；家庭全部功能；持久化；隔离 | FR-01—22；QA65-01—09 | docs/development/QA65-complete-simulation-account.md | 示例资料入口；家庭路由；实际业务接口 | QA06；QA63；QA64 |
+| QA64 | 账号外观与按钮布局 | 外观设置；主题；居中；共享操作 | AC-H5-05；QA64-01—04 | docs/development/QA64-account-appearance-controls.md | RichThemePreference；rich-theme；rich-ui | QA05；QA63；QA65 |
 | QA63 | 本地测试登录与患儿资料 | 登录凭据；local-validation；真实患儿；记录重读 | FR-01；FR-09；QA63-01—06 | docs/development/QA63-local-test-account.md | LoginPage；Vite；真实浏览器验收 | QA61；QA62 |
 | QA62 | 文献规则采用与真实预警运行 | AI 文献核查；版本配置；执行范围；真实 Chrome；运行采用；不足状态；提示展示 | FR-06；AC-DYN-01—05 | docs/development/QA62-literature-alert-runtime.md | assessment；alerting；configurations；check-real-warning-flow；现有评估及家庭提示页面 | T49；T50；T51；QA61 |
 | QA61 | 独立登录与预警流程验收 | /login；401；会话恢复；预警计算；提示展示 | FR-01；FR-06；FR-09；AC-H5-05 | docs/development/QA61-login-alert-flow.md | App；LoginPage；AccessProvider；client；alerting；家庭提示 | T08；T09；T50；T51；QA27；QA59 |

@@ -14,19 +14,21 @@ from audit.models import AuditEvent
 from authorization.models import AccessGrant
 from files.purpose_schemas import PurposeWriteHeaders
 from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from identity.models import Patient
 from relations.models import Relation
 from requests.models import WriteIntent, WriteRequest
 from requests.service import prepare_intent, compute_digest, fail_intent, retry_intent
 
 
-def relation_identity(request):
+def relation_identity(request, *, writing=True):
     actor, epoch, audience = current_principal(request)
     if actor is None:
         raise ApiError('AUTH_REQUIRED', 401)
     if audience not in ('family', 'support'):
         raise ApiError('AUDIENCE_INVALID', 403)
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+    gate = (EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+        if writing else read_environment_gate_shared(settings.SJIA_ENVIRONMENT))
     if not gate.enabled:
         raise ApiError('ENVIRONMENT_DISABLED', 403)
     return actor, epoch, audience

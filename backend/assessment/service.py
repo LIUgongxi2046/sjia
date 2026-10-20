@@ -49,8 +49,9 @@ def assessment_payload(payload):
 
 def lock_actor(patient_id, actor, auth_epoch, environment, action):
     gate = read_environment_gate_shared(environment)
-    patient = Patient.objects.select_for_update().get(id=patient_id)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
+    # 授权与病例修改仍然串行，引用身份的审计记录可以并发保存。
+    patient = Patient.objects.select_for_update(no_key=True).get(id=patient_id)
+    actor = Principal.objects.select_for_update(no_key=True).get(id=actor.id)
     check_principal_session(actor, auth_epoch)
     if not gate.enabled or patient.status != 'active':
         raise QualificationRejected('ASSESSMENT_ENVIRONMENT_UNAVAILABLE')

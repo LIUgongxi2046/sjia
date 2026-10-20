@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router';
 import { navigationMemory } from '../state/navigation';
 import { readReturnContext } from './ContextLink';
 import { UI2Frame } from './UI2Frame';
+import { localTestAccount } from '../localTestAccount';
 
 export function UI2FamilyFrame({ title, screenId, note, backTo, primary, children, overlay, kicker, subtitle }: {
   title: string; screenId: string; note: string; backTo?: string; children: ReactNode;
@@ -19,5 +20,5 @@ export function UI2FamilyFrame({ title, screenId, note, backTo, primary, childre
     onNavigate={path => navigate(path)} onBack={backTo ? () => {
       if (origin) { navigationMemory.rememberScroll(origin.key, origin.scroll); navigate(-1); }
       else navigate(backTo);
-    } : undefined}>{children}</UI2Frame>;
+    } : undefined}>{localTestAccount?.dataMode === 'simulation' && <aside className="simulation-data-label" role="note">模拟数据 · 仅用于功能体验</aside>}{children}</UI2Frame>;
 }

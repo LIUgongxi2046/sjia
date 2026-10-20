@@ -20,6 +20,7 @@ from configurations.models import ConfigVersion
 from configurations.qualification import configuration_qualification_reason
 from configurations.service import compute_checksum
 from family_content.models import EnvironmentGate
+from family_content.gate_locks import read_environment_gate_shared
 from files.models import FileGroup, FileObject
 from files.purpose import lock_use_authorization
 from files.purpose_dependencies import connect, invalidate_resource, resource_node
@@ -40,9 +41,10 @@ def current_period(patient, actor):
 
 
 def period_scope(request, actor, patient_id, *, writing=False):
-    gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+    gate = (EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
+        if writing else read_environment_gate_shared(settings.SJIA_ENVIRONMENT))
     runtime = batch_runtime()
-    patient = Patient.objects.select_for_update().get(id=get_patient(patient_id).id)
+    patient = Patient.objects.select_for_update(no_key=not writing).get(id=get_patient(patient_id).id)
     if patient.status != 'active':
         raise ApiError('PATIENT_INACTIVE', 403)
     if not directory_grants(actor, patient):

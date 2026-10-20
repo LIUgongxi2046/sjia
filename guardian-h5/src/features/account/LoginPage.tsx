@@ -65,7 +65,7 @@ export function LoginPage() {
     </form>}
     {!loggedIn && !accessError && mode === 'login' && localTestAccount && <section className="card form-card local-test-account" aria-labelledby="local-test-title">
       <h3 id="local-test-title">本地测试账号</h3>
-      <p className="muted">登录后可查看已授权的脱敏患儿资料。</p>
+      <p className="muted">登录后可查看已授权的{localTestAccount.dataMode === 'simulation' ? '模拟' : '脱敏'}患儿资料。</p>
       <div className="pair"><span>账号</span><strong data-testid="test-username">{localTestAccount.username}</strong></div>
       <div className="pair"><span>密码</span><strong data-testid="test-password">{localTestAccount.password}</strong></div>
       <button type="button" className="button secondary" disabled={submitting || loading} onClick={() => {

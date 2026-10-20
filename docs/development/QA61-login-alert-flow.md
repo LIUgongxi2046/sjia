@@ -36,7 +36,7 @@
 
 独立登录及会话处理范围已通过：真实 Chrome 六项登录检查与七项共享会话检查，共十三项，运行错误为零。匿名五个入口没有发起患儿读取；实际账号登录、刷新、两个窗口退出、当前资料请求 401、患儿切换、支持受众切换、退出请求发出前关闭窗口及实际会话恢复均已验证。原件文书的关闭、后台及跨窗口退出后，Blob URL 与服务端访问分别核验。原件专项完成四项后触发 2 GiB 空间检查，其余原件专项继续待验收，不计入本专项十三项通过结果。
 
-当前未启用预警状态完成七项真实 Chrome 检查，运行错误为零：五个病例首页与详情匹配服务端 configuration_pending，提示列表准确显示权限拒绝，评估页面保留岗位限制。正向计算与家庭提示的采用继续由 [QA62](QA62-literature-alert-runtime.md) 执行。
+五个病例首页与详情的 configuration_pending 状态完成真实 Chrome 检查。当前岗位、提示权限及目标配置状态由 [QA62](QA62-literature-alert-runtime.md) 维护，QA61 的 alert-display.json 不用于当前岗位范围的通过结论。实际计算与家庭提示采用继续由 QA62 执行。
 
 TypeScript、生产构建、四份专项脚本语法及 git diff --check 通过。实际路由归属为家庭 39 条、支持 13 条，Rolldown AST 检查通过。构建核验 227 份源文件，index SHA256 为 f0f92724f90584ff9773b161dcc27f2d033c3ad2df15a721beeece4732bbcf08。
 
@@ -44,6 +44,6 @@ TypeScript、生产构建、四份专项脚本语法及 git diff --check 通过�
 
 ## 真实预警条件
 
-.qa-work/QA61/alert-readiness.json 已从当前数据库与 8003 实际服务读取五个获准病例。83 项 ArchiveFact 保持；Verification、Assessment、AlertEvaluation、AlertEvent 和评估任务数量均为零，启用的 ReleaseBundle 数量为零。当前账号的 execute_assessment 入口返回 403 SERVICE_ACTION_DENIED，五个病例的 current／replay 预警创建选项均返回相同拒绝。五个首页均为 configuration_pending，家庭提示列表返回 403 CASE_ACTION_DENIED。
+.qa-work/QA62/staged-audit.json 从当前数据库与实际服务核验，83 项 ArchiveFact 与十张临床表的摘要保持；Verification、Assessment、AlertEvaluation、AlertEvent 和评估任务数量均为零，启用的 ReleaseBundle 数量为零。QA62 的 execution-scope-green.json 核验当前账号能够从真实接口选择一个获准病例；对应执行与提示权限已经登记。
 
-正向预警计算与家庭事件展示保持 NOT_RUN。当前缺少执行岗位、专业核对证明与有效发布记录。依据用户最新授权，采用 [2016 原始研究与 2024 指南核查记录](QA61-guideline-review.md) 开展 AI 规则判断，保留病例字段的实际核对状态。当前没有增加岗位、字段权限、专业证明、发布记录、模型调用或临床记录。提示页面继续验证当前真实状态的准确展示。
+实际预警任务与家庭结果展示保持 NOT_RUN。依据用户最新授权，采用 [2016 原始研究与 2024 指南核查记录](QA61-guideline-review.md) 开展 AI 规则判断，保留病例字段的实际核对状态。十九份目标配置已经登记为 approved，尚未启用；采用操作等待明确批准。没有增加专业证明、启用发布记录、模型调用或临床原值更新。

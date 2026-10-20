@@ -36,7 +36,7 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
-| QA62 | 文献规则采用与真实预警运行 | AI 文献核查；版本配置；执行范围；运行采用；不足状态；提示展示 | FR-06；AC-DYN-01—05 | docs/development/QA62-literature-alert-runtime.md | assessment；alerting；configurations；现有评估及家庭提示页面 | T49；T50；T51；QA61 |
+| QA62 | 文献规则采用与真实预警运行 | AI 文献核查；版本配置；执行范围；真实 Chrome；运行采用；不足状态；提示展示 | FR-06；AC-DYN-01—05 | docs/development/QA62-literature-alert-runtime.md | assessment；alerting；configurations；check-real-warning-flow；现有评估及家庭提示页面 | T49；T50；T51；QA61 |
 | QA61 | 独立登录与预警流程验收 | /login；401；会话恢复；预警计算；提示展示 | FR-01；FR-06；FR-09；AC-H5-05 | docs/development/QA61-login-alert-flow.md | App；LoginPage；AccessProvider；client；alerting；家庭提示 | T08；T09；T50；T51；QA27；QA59 |
 | QA60 | 原件显示与会话清理验证 | ArrayBuffer；Blob URL；真实原件；后台；实际字节 | FR-02；FR-09；AC-H5-05 | docs/development/QA60-original-lifecycle.md | api/client；ArchiveOriginals；PrivateSourceGallery；PrivateDocumentSource；SourceGallery | T12；T27；T45；T54；QA59 |
 | QA59 | 共享会话与跨窗口资料清理 | Web Locks；storage；SessionBoundary；会话版本；受限内存 | AC-H5-05；T08；T09；T54 | docs/development/QA59-shared-session.md | api/sessionBoundary；state/SessionBoundary；AccessProvider；SupportApp | T08；T09；T38；T54 |

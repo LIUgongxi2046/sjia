@@ -41,6 +41,9 @@ AI 文献核查记录实际方法和依据，不登记不存在的专业人员�
 | QA62-06 | 当前授权和配置变化后的结果重读 | NOT_RUN：待实际任务保存后验证 |
 | QA62-R01 | prepare_activation.py；activation-prepared.json；before-activation.dump | PASS：五个准确进程身份、四个空闲队列及实际数据库备份；备份 3453063 字节 |
 | QA62-R02 | audit_staged.py；staged-audit.json | PASS：十张临床表与原任务摘要保持，gate 为 325／324，8002／8003 ready 且 admitted_current，5176／5177／5178 可访问 |
+| QA62-R03 | check-real-warning-flow.mjs；warning-flow-current.json | Red：真实 Chrome 登录与单病例范围通过，创建弹窗实际返回零个获准规则组合；在 CLASSIFICATION_OPTIONS 终止，没有创建任务，页面错误为零；报告绑定准确脚本及构建摘要 |
+
+浏览器验收脚本位于 guardian-h5/scripts/check-real-warning-flow.mjs，使用实际账号、获准病例、当前构建与版本配置清单。完整断言包含现有页面创建静态及动态任务、真实 worker 完成、服务端结果重读、动态计算保留静态输入资格不足、家庭首页及提示详情刷新读取同一不足状态。预期依据 PRD BR-D05／BR-D07 以及 T49／T50：静态分类的内部状态为 insufficient 时，分类依赖保持 unknown，不能作为已完成的合格依据。当前仅运行至实际配置选择，后续断言尚未运行，不登记整个脚本通过。DOM 控件检查限定当前创建弹窗及准确标签标题；没有替代响应、固定可见状态或视觉检查。检查后 staged-audit-browser.json 确认十张临床表、原任务数量、gate 与服务进程保持。
 
 采用脚本为本地忽略目录 .qa-work/QA62/activate_and_adopt.py，准确制品为 f40674cd99096eeb58bb4c506745f0b50bcf125800c87178d9bdd78861f8d023。操作范围为启用十九份配置及家庭发布记录，由现有 8003 API、三个 worker 和 dispatcher 加载同一源码的新配置，新增仅处理 assessment 队列的 worker 与 dispatcher。源码切换、数据库迁移、临床原值更新和新模型调用均不在本次操作范围。
 

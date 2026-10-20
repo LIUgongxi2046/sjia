@@ -108,9 +108,9 @@ export async function readSession(): Promise<SessionView> {
   return validateSession(await fetchJson<unknown>('/api/session', { sessionControl: true }));
 }
 
-export async function savePatientSelection(patientId: string): Promise<void> {
+export async function savePatientSelection(patientId: string, csrfToken?: string): Promise<void> {
   const saved = validateLegacyResponse<{ selected_patient_id: string }>('PatientSelection', await fetchJson<unknown>('/api/patient-selection', {
-    method: 'POST', body: { patient_id: patientId }, sessionControl: true,
+    method: 'POST', body: { patient_id: patientId }, csrfToken, sessionControl: true,
   }));
   if (saved.selected_patient_id !== patientId) throw new Error('保存的患儿选择与当前操作不一致。');
 }

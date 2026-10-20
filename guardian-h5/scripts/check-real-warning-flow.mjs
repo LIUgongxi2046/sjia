@@ -33,7 +33,7 @@ page.on('pageerror', failure => report.page_errors.push(failure.message));
 async function save() { await writeFile(output, JSON.stringify(report, null, 2)); }
 async function record(name, details = {}) { report.checks.push({ name, result: 'PASS', ...details }); await save(); }
 async function responseJson(path) {
-  const response = await context.request.get(origin + path);
+  const response = await context.request.get(origin + path, { timeout: 60000 });
   assert.equal(response.status(), 200, path);
   return response.json();
 }
@@ -209,6 +209,9 @@ try {
   await page.getByRole('heading', { name: '评估资料不足', exact: true }).waitFor();
   assert.equal(await page.getByRole('heading', { name: '有当前提示', exact: true }).count(), 0);
   await record('FAMILY_DETAIL_PRESERVES_UNKNOWN_WITHOUT_DEFINITE_RISK');
+  const forbidden = await context.request.get(origin + `/api/v2/support/alert-evaluations/${dynamic.evaluation_id}`);
+  assert.equal(forbidden.status(), 403);
+  await record('FAMILY_SESSION_CANNOT_READ_SUPPORT_EVALUATION');
   assert.deepEqual(report.page_errors, []);
   report.stage = 'COMPLETE'; report.result = 'PASS';
 } finally {

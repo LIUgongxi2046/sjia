@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { Check, ChevronRight } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { useAccess } from '../../state/access';
+import { localTestAccount } from '../../localTestAccount';
 import logo from '../../../../ui-delivery/identity/2x/logo-embrace@2x.png';
 
 export function LoginPage() {
@@ -27,7 +28,8 @@ export function LoginPage() {
     const submittedPassword = password;
     setPassword(''); setError(null); setSubmitting(true);
     try {
-      const ready = mode === 'login' ? await login(username, submittedPassword) : await register(username, submittedPassword);
+      const preferredPatient = localTestAccount?.username === username ? localTestAccount.patientId : undefined;
+      const ready = mode === 'login' ? await login(username, submittedPassword, preferredPatient) : await register(username, submittedPassword);
       if (ready) navigate('/home', { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : '暂时无法完成身份核验，请重试。');
@@ -61,6 +63,16 @@ export function LoginPage() {
         setMode(mode === 'login' ? 'register' : 'login'); setPassword(''); setError(null);
       }}>{mode === 'login' ? '没有账号，去注册' : '已有账号，去登录'}</button>
     </form>}
+    {!loggedIn && !accessError && mode === 'login' && localTestAccount && <section className="card form-card local-test-account" aria-labelledby="local-test-title">
+      <h3 id="local-test-title">本地测试账号</h3>
+      <p className="muted">登录后可查看已授权的脱敏患儿资料。</p>
+      <div className="pair"><span>账号</span><strong data-testid="test-username">{localTestAccount.username}</strong></div>
+      <div className="pair"><span>密码</span><strong data-testid="test-password">{localTestAccount.password}</strong></div>
+      <button type="button" className="button secondary" disabled={submitting || loading} onClick={() => {
+        if (!localTestAccount) throw new Error('本地测试账号尚未配置。');
+        setUsername(localTestAccount.username); setPassword(localTestAccount.password); setError(null);
+      }}>填入测试账号</button>
+    </section>}
     <button className="text-action center" onClick={() => navigate('/account/data-use')}>了解资料如何使用<ChevronRight size={15} /></button>
   </UI2FamilyFrame>;
 }

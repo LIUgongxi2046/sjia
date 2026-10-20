@@ -22,7 +22,7 @@ export interface AccessContextValue {
   scopeVersion: number;
   hasCurrentAccess: (principal?: string | null, patient?: string | null, scope?: number) => boolean;
   /** False means access recovery is needed or a newer operation superseded this one. */
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string, preferredPatient?: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -256,7 +256,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
-  const authenticate = useCallback(async (mode: 'login' | 'register', username: string, password: string) => {
+  const authenticate = useCallback(async (mode: 'login' | 'register', username: string, password: string, preferredPatient?: string) => {
     if (mutation.current || logoutRequired.current) throw new Error('请先完成当前账号操作。');
     mutation.current = 'authenticate';
     const requestGeneration = ++generation.current;
@@ -264,13 +264,18 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     const pending = runSessionMutation(async () => {
       const bootstrap = await api.bootstrap();
       if (requestGeneration !== generation.current) return null;
-      return api[mode](username, password, bootstrap.csrf_token);
+      const session = await api[mode](username, password, bootstrap.csrf_token);
+      if (!preferredPatient) return session;
+      if (requestGeneration !== generation.current) return null;
+      await api.savePatientSelection(preferredPatient, session.csrf_token);
+      if (requestGeneration !== generation.current) return null;
+      return api.readSession();
     });
     authentication.current = pending;
     try {
       const { value: session, epoch } = await pending;
       if (!session || requestGeneration !== generation.current) return false;
-      return await applySession(session, requestGeneration, epoch);
+      return await applySession(session, requestGeneration, epoch, preferredPatient);
     } catch (failure) {
       if (requestGeneration !== generation.current) return false;
       throw failure;
@@ -281,7 +286,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [applySession, clearIdentity]);
-  const login = useCallback((username: string, password: string) => authenticate('login', username, password), [authenticate]);
+  const login = useCallback((username: string, password: string, preferredPatient?: string) => authenticate('login', username, password, preferredPatient), [authenticate]);
   const register = useCallback((username: string, password: string) => authenticate('register', username, password), [authenticate]);
 
   const logout = useCallback(async () => {

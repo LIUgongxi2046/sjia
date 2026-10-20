@@ -7,7 +7,7 @@
     "Version": {"type": "string", "pattern": "^[1-9][0-9]*$"},
     "Timestamp": {"type": "string", "format": "date-time"},
     "NullableTimestamp": {"anyOf": [{"$ref": "#/$defs/Timestamp"}, {"type": "null"}]},
-    "Action": {"enum": ["read_raw", "write_record", "correct_record", "read_history", "read_file", "view_request", "manage_draft", "receive_alert", "select_alert_preset", "create_summary", "read_summary", "request_correction", "request_disposition", "read_case"]},
+    "Action": {"enum": ["read_raw", "write_record", "correct_record", "read_history", "read_file", "view_request", "manage_draft", "receive_alert", "select_alert_preset", "create_summary", "read_summary", "request_correction", "request_disposition", "read_case", "execute_assessment", "read_assessment"]},
     "RelationItem": {
       "type": "object", "additionalProperties": false,
       "required": ["relation_id", "patient_id", "display_id", "status", "version", "valid_from", "valid_until", "actions"],

@@ -47,7 +47,7 @@ export function SupportReadStatus({ state, error, onRefresh }: {
   </section>;
 }
 
-export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: SupportSessionView) => void }) {
+export function SupportLogin({ onAuthenticated, checkingSession }: { onAuthenticated: (session: SupportSessionView) => void; checkingSession: boolean }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -58,7 +58,7 @@ export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: S
   useEffect(() => () => controller.current?.abort(), []);
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (pending || composing.current || controller.current && !controller.current.signal.aborted) return;
+    if (pending || checkingSession || composing.current || controller.current && !controller.current.signal.aborted) return;
     const submittedPassword = password;
     setPassword(''); setPending(true); setError(null);
     const current = new AbortController();
@@ -88,10 +88,10 @@ export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: S
     <form className="card form-card" onSubmit={event => void submit(event)}
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}>
       <h3>登录后访问本人获准资料</h3>
-      <label className="field"><span>账号</span><input required disabled={pending} autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} /></label>
-      <label className="field"><span>密码</span><input required disabled={pending} type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
+      <label className="field"><span>账号</span><input required disabled={pending || checkingSession} autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} /></label>
+      <label className="field"><span>密码</span><input required disabled={pending || checkingSession} type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
       {error && <p role="alert">{error}</p>}
-      <button className="button" disabled={pending} type="submit">{pending ? '正在核验身份' : '登录账号'}</button>
+      <button className="button" disabled={pending || checkingSession} type="submit">{pending ? '正在核验身份' : checkingSession ? '正在核验会话' : '登录账号'}</button>
     </form>
     <div className="note"><LockKeyhole size={17} /><p>知道患儿标识不代表已取得资料访问权。</p></div>
   </UI2Frame>;
@@ -147,7 +147,7 @@ export default function SupportApp() {
     }
   }
   return <Routes>
-    <Route path="login" element={<SupportLogin onAuthenticated={authenticated} />} />
+    <Route path="login" element={<SupportLogin onAuthenticated={authenticated} checkingSession={state === 'loading'} />} />
     <Route path="data-use" element={<PurposeCopyPage key={session ? `${session.principal_id}:${session.capabilities.map(item => item.capability_id).sort().join(',')}:${parameters.get('copy_id') ?? 'none'}:${parameters.get('file_id') ?? 'none'}` : 'anonymous'}
       session={session} accessState={state} accessError={error} onRefresh={refresh} onLogout={() => void signOut()} />} />
     <Route path="datasets" element={<DatasetPage session={session} accessState={state} accessError={error} onRefresh={refresh} />} />

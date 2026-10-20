@@ -68,6 +68,7 @@
 .login-ready{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:30px 22px;background:#fff;border-radius:24px}
 .login-ready .login-success-icon{width:64px;height:64px;border-radius:22px;background:#e5f3f0;display:grid;place-items:center}
 .login-ready h2{font-size:22px}.login-ready p{font-size:14px;color:var(--muted)}
+.local-test-account .pair{align-items:flex-start;gap:16px}.local-test-account .pair>strong{min-width:0;overflow-wrap:anywhere;user-select:text}
 /* Home mother page: exact reference geometry at 390px, content-driven height. */
 .device[data-primary=home] .app-header{padding:12px 20px 14px}
 .device[data-primary=home] .header-kicker{margin-bottom:9px;line-height:16px}

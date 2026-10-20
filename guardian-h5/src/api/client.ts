@@ -1,4 +1,5 @@
 // 同源 Fetch 客户端：CSRF、幂等头、AbortController 与稳定错误映射。
+import { assertSessionEpoch, captureSessionEpoch } from './sessionBoundary';
 export type RecoveryAction = 'none' | 'reauthenticate' | 'reload' | 'query_request' | 'query_task' | 'retry_after' | 'review_input';
 
 let sessionCsrfToken: string | null = null;
@@ -49,6 +50,7 @@ export function checkRequestGuard(guard: RequestGuard = {}) {
 }
 
 export interface RequestOptions extends RequestGuard {
+  sessionControl?: boolean;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   csrfToken?: string;
@@ -92,8 +94,10 @@ export async function readJsonObject(response: Response, signal?: AbortSignal): 
 }
 
 export async function fetchJson<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const epoch = captureSessionEpoch(options.sessionControl);
+  const check = () => { checkRequestGuard(options); assertSessionEpoch(epoch, options.sessionControl); };
   await Promise.resolve();
-  checkRequestGuard(options);
+  check();
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   const csrfToken = options.csrfToken ?? sessionCsrfToken;
@@ -110,39 +114,51 @@ export async function fetchJson<T>(path: string, options: RequestOptions = {}): 
     credentials: 'same-origin',
   });
 
-  checkRequestGuard(options);
+  check();
   if (!response.ok) {
     const failure = await parseError(response);
-    checkRequestGuard(options);
+    check();
     throw failure;
   }
   if (response.status === 204) return undefined as T;
   const value = await readJsonObject(response, options.signal) as T;
-  checkRequestGuard(options);
+  check();
   return value;
 }
 
 export async function fetchPrivateImage(path: string, signal: AbortSignal): Promise<Blob> {
+  const epoch = captureSessionEpoch();
   const response = await fetch(path, { headers: { Accept: 'image/png,image/jpeg,image/webp,application/json' },
     signal, credentials: 'same-origin', cache: 'no-store' });
+  assertSessionEpoch(epoch);
   if (!response.ok) throw await parseError(response);
   const mediaType = response.headers.get('Content-Type');
   if (!mediaType || !['image/png', 'image/jpeg', 'image/webp'].includes(mediaType)) throw new Error('资料内容类型与图片读取要求不一致。');
-  return response.blob();
+  const value = await response.blob();
+  signal.throwIfAborted(); assertSessionEpoch(epoch);
+  return value;
 }
 
 export async function fetchPrivateDocument(path: string, mediaType: string, signal: AbortSignal): Promise<Blob> {
+  const epoch = captureSessionEpoch();
   if (!['image/png', 'image/jpeg', 'image/webp', 'application/pdf', 'text/plain'].includes(mediaType)) throw new Error('当前原件媒体类型没有登记查看方式。');
   const response = await fetch(path, { headers: { Accept: `${mediaType},application/json` }, signal, credentials: 'same-origin', cache: 'no-store' });
+  assertSessionEpoch(epoch);
   if (!response.ok) throw await parseError(response);
   if (response.headers.get('Content-Type') !== mediaType) throw new Error('原件内容类型与准确文件版本不一致。');
-  return response.blob();
+  const value = await response.blob();
+  signal.throwIfAborted(); assertSessionEpoch(epoch);
+  return value;
 }
 
 export async function postAudio(path: string, audio: Blob, signal: AbortSignal): Promise<{ text: string; duration_seconds: number }> {
+  const epoch = captureSessionEpoch();
   const headers: Record<string, string> = { Accept: 'application/json', 'Content-Type': audio.type };
   if (sessionCsrfToken) headers['X-CSRFToken'] = sessionCsrfToken;
   const response = await fetch(path, { method: 'POST', body: audio, headers, signal, credentials: 'same-origin' });
+  assertSessionEpoch(epoch);
   if (!response.ok) throw await parseError(response);
-  return await response.json();
+  const value = await response.json();
+  signal.throwIfAborted(); assertSessionEpoch(epoch);
+  return value;
 }

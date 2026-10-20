@@ -6,6 +6,7 @@ import { UI2Frame } from '../../components/UI2Frame';
 import { ApiError, setSessionCsrfToken } from '../../api/client';
 import { bootstrap, logout } from '../../api/endpoints';
 import { loginSupport, readSupportSession } from '../../api/purpose';
+import { assertSessionEpoch, runSessionMutation, runSessionRead } from '../../api/sessionBoundary';
 import type { SupportSessionView } from '../../../../frontend-design/v2-types';
 import { PurposeCopyPage } from './PurposeCopyPage';
 import { DatasetPage } from './DatasetPage';
@@ -63,11 +64,14 @@ export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: S
     const current = new AbortController();
     controller.current = current;
     try {
-      const token = await bootstrap();
+      const { value: session, epoch } = await runSessionMutation(async () => {
+        const token = await bootstrap();
+        current.signal.throwIfAborted();
+        setSessionCsrfToken(token.csrf_token);
+        return loginSupport({ username, password: submittedPassword }, current.signal);
+      });
       current.signal.throwIfAborted();
-      setSessionCsrfToken(token.csrf_token);
-      const session = await loginSupport({ username, password: submittedPassword }, current.signal);
-      current.signal.throwIfAborted();
+      assertSessionEpoch(epoch);
       setPassword(''); onAuthenticated(session); navigate(session.capabilities.some(item => item.capability_id === 'write_professional' && item.state === 'available') ? '/support/professional-records' : '/support/data-use', { replace: true });
     } catch (failure) {
       if (!current.signal.aborted) setError(failure instanceof Error ? failure.message : '登录服务读取失败。');
@@ -103,14 +107,16 @@ export default function SupportApp() {
   const controller = useRef<AbortController>();
   const refresh = useCallback(async () => {
     const current = ++sequence.current;
-    controller.current?.abort(); controller.current = new AbortController();
+    controller.current?.abort();
+    const requestController = new AbortController(); controller.current = requestController;
     setState('loading'); setError(null);
     try {
-      const result = await readSupportSession(controller.current.signal);
+      const { value: result, epoch } = await runSessionRead(() => readSupportSession(requestController.signal));
       if (current !== sequence.current || document.visibilityState !== 'visible') return;
+      assertSessionEpoch(epoch);
       setSession(result); setSessionCsrfToken(result.csrf_token); setState('default');
     } catch (failure) {
-      if (current !== sequence.current || controller.current.signal.aborted) return;
+      if (current !== sequence.current || requestController.signal.aborted) return;
       setSession(null); setSessionCsrfToken(null);
       setState(failure instanceof ApiError && [401, 403].includes(failure.status) ? 'permission' : navigator.onLine ? 'error' : 'offline');
       setError(failure instanceof Error ? failure.message : '访问权限读取失败。');
@@ -127,8 +133,18 @@ export default function SupportApp() {
   }, [refresh]);
   function authenticated(result: SupportSessionView) { setSession(result); setState('default'); setError(null); }
   async function signOut() {
-    await logout(); sequence.current += 1; controller.current?.abort();
-    setSession(null); setSessionCsrfToken(null); setState('permission'); navigate('/support/login', { replace: true });
+    sequence.current += 1; controller.current?.abort();
+    setSession(null); setSessionCsrfToken(null); setState('loading'); setError(null);
+    try {
+      await runSessionMutation(async () => {
+        const token = await bootstrap();
+        await logout(token.csrf_token);
+      });
+      setState('permission'); navigate('/support/login', { replace: true });
+    } catch (failure) {
+      setState(navigator.onLine ? 'error' : 'offline');
+      setError(failure instanceof Error ? failure.message : '退出登录未完成，请重新核验会话。');
+    }
   }
   return <Routes>
     <Route path="login" element={<SupportLogin onAuthenticated={authenticated} />} />

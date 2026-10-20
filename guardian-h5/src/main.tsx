@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { ConfigProvider } from 'antd-mobile';
 import { App } from './app/App';
+import { SessionBoundary } from './state/SessionBoundary';
 import './styles/globals.css';
 import './styles/forms.css';
 
@@ -13,7 +14,7 @@ const router = createBrowserRouter([{ path: '*', element: <App /> }]);
 createRoot(container).render(
   <StrictMode>
     <ConfigProvider>
-      <RouterProvider router={router} />
+      <SessionBoundary><RouterProvider router={router} /></SessionBoundary>
     </ConfigProvider>
   </StrictMode>,
 );

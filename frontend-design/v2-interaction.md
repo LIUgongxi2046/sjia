@@ -22,6 +22,8 @@ React18.3.1、React Router7.18.4、Vite8.3.1及TypeScript7.0.2继续采用锁定
 
 服务端草稿是刷新恢复来源。localStorage、sessionStorage、IndexedDB、Cache Storage、history.state 不保存病例、原图、转写、草稿或凭证。公开资产可以使用内容摘要缓存，服务端资料响应使用 no-store/private。同源 Fetch 保持 Cookie 与 CSRF，正文及敏感路径不写 console 或遥测。用户和模型文字由 React 纯文本渲染。
 
+家庭与支持共用 Cookie 时，SessionBoundary 统一接收同源 storage 事件。登录、注册、退出和患儿选择使用 Web Locks 处理会话操作；其他窗口卸载全部页面，重新读取实际身份和权限。固定键 sjia.session.boundary.v1 只保存随机 version、随机 owner 和 changing/settled 状态，不能用于授权。传输结果在请求开始和正文完成时核验同一版本；JSON、文书、图片及语音均适用。操作窗口关闭后通过已释放的浏览器锁及实际 Session 请求确认状态，网络失败显示重新核验入口。
+
 ## 3. UI2 Token、组件数值与资产
 
 [当前 Token 映射](v2-token-map.json)引用 [tokens.json](../ui-delivery/v2/tokens.json)、[tokens.css](../ui-delivery/v2/src/tokens.css)与 [styles.css](../ui-delivery/v2/src/styles.css)。颜色、字体、字号、间距、圆角、阴影、渐变、比例、图标及状态依次继承源文件中的选择器、顺序和媒体条件。JSON Token 与专用组件 CSS 同时接收，组件最终值以设计源码的级联结果为准，不能用统一 Token 覆盖专用数值。

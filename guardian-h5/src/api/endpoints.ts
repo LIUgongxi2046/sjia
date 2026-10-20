@@ -101,30 +101,30 @@ export interface ApplicationItem extends ApplicationDeclarationRead {
 export interface ApplicationView extends ApplicationItem { evidence_ref: string; created_at: string }
 
 export async function bootstrap(): Promise<AuthBootstrap> {
-  return validateBootstrap(await fetchJson<unknown>('/api/auth/bootstrap'));
+  return validateBootstrap(await fetchJson<unknown>('/api/auth/bootstrap', { sessionControl: true }));
 }
 
 export async function readSession(): Promise<SessionView> {
-  return validateSession(await fetchJson<unknown>('/api/session'));
+  return validateSession(await fetchJson<unknown>('/api/session', { sessionControl: true }));
 }
 
 export async function savePatientSelection(patientId: string): Promise<void> {
   const saved = validateLegacyResponse<{ selected_patient_id: string }>('PatientSelection', await fetchJson<unknown>('/api/patient-selection', {
-    method: 'POST', body: { patient_id: patientId },
+    method: 'POST', body: { patient_id: patientId }, sessionControl: true,
   }));
   if (saved.selected_patient_id !== patientId) throw new Error('保存的患儿选择与当前操作不一致。');
 }
 
 export async function login(username: string, password: string, csrfToken?: string): Promise<SessionView> {
-  return validateSession(await fetchJson<unknown>('/api/auth/login', { method: 'POST', body: { username, password }, csrfToken }), 'family');
+  return validateSession(await fetchJson<unknown>('/api/auth/login', { method: 'POST', body: { username, password }, csrfToken, sessionControl: true }), 'family');
 }
 
 export async function register(username: string, password: string, csrfToken?: string): Promise<SessionView> {
-  return validateSession(await fetchJson<unknown>('/api/auth/register', { method: 'POST', body: { username, password }, csrfToken }), 'family');
+  return validateSession(await fetchJson<unknown>('/api/auth/register', { method: 'POST', body: { username, password }, csrfToken, sessionControl: true }), 'family');
 }
 
 export async function logout(csrfToken?: string): Promise<Record<string, never>> {
-  return validateLegacyResponse('Empty', await fetchJson<unknown>('/api/session/logout', { method: 'POST', body: {}, csrfToken }));
+  return validateLegacyResponse('Empty', await fetchJson<unknown>('/api/session/logout', { method: 'POST', body: {}, csrfToken, sessionControl: true }));
 }
 
 export async function listRelations(signal?: AbortSignal): Promise<{ relations: RelationItem[] }> {

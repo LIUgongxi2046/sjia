@@ -21,6 +21,7 @@ backend/__pycache__/
 backend/runtime.json
 backend/.env
 .qa-work/
+.docs-work/
 .simulation-work/
 模拟数据，不上传github/
 .DS_Store

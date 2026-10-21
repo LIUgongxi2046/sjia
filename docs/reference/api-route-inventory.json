@@ -1,0 +1,2718 @@
+{
+  "doc_id": "SJIA-API-ROUTE-INVENTORY",
+  "source_commit": "f05dbcf106e70d890a5574385fd63b3ddd502146",
+  "last_verified": "2026-10-21",
+  "scope": "Django URLResolver 与 DRF 允许的 HTTP 方法；请求响应规范继续查阅 API 目录及对应 Schema",
+  "routes": [
+    {
+      "path": "/internal/liveness",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "observability.views.internal_liveness"
+    },
+    {
+      "path": "/internal/readiness",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "observability.views.internal_readiness"
+    },
+    {
+      "path": "/internal/capabilities",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "observability.views.internal_capabilities"
+    },
+    {
+      "path": "/internal/metrics",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "observability.views.internal_metrics"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/content-disposition/options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family_content_disposition.family_content_disposition_options"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/content-disposition/requests",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family_content_disposition.family_content_disposition_requests"
+    },
+    {
+      "path": "/api/v2/content-disposition/requests/<uuid:request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family_content_disposition.family_content_disposition_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/content-disposition/requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_family_requests"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/patients",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_patients"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/content-disposition/options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_options"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/content-disposition/history",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_history"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/plans/<uuid:plan_id>/review",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_review"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/catalog",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_catalog"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/content-disposition/plans",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_preview"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/plans/<uuid:plan_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_read"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/plans/<uuid:plan_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_approve"
+    },
+    {
+      "path": "/api/v2/support/content-disposition/plans/<uuid:plan_id>/execute",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_content_disposition.content_disposition_execute"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-document-regroupings",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_regrouping.archive_documents_regroup"
+    },
+    {
+      "path": "/api/v2/archive-batches/<uuid:batch_id>/regroup-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_regrouping.archive_regroup_options"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-inputs",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_voice_inputs.voice_inputs"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-input-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_voice_inputs.voice_input_options"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-inputs/<uuid:voice_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_voice_inputs.voice_input_read"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-inputs/<uuid:voice_id>/process",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_voice_inputs.voice_input_process"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-inputs/<uuid:voice_id>/adopt",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_voice_inputs.voice_input_adopt"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/voice-inputs/<uuid:voice_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_voice_inputs.voice_input_cancel"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-upload-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.archive_upload_options"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/observation-period",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_observation_periods.observation_period_read"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/observation-period/versions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_observation_periods.observation_period_change"
+    },
+    {
+      "path": "/api/v2/observation-period-versions/<uuid:version_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_observation_periods.observation_period_version_read"
+    },
+    {
+      "path": "/api/v2/archive-document-versions/<uuid:version_id>/source",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_delta.archive_document_version_source"
+    },
+    {
+      "path": "/api/v2/archive-batches/<uuid:batch_id>/delta-summaries",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_delta.archive_delta_create"
+    },
+    {
+      "path": "/api/v2/archive-delta-summaries/<uuid:delta_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_delta.archive_delta_read"
+    },
+    {
+      "path": "/api/v2/archive-delta-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_delta.archive_delta_task"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archives/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_search.archive_directory_search"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-relations/search",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_relations.archive_relation_search"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-relations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_relations.archive_relation_create"
+    },
+    {
+      "path": "/api/v2/archive-relations/<uuid:relation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_relations.archive_relation_read"
+    },
+    {
+      "path": "/api/v2/archive-relations/<uuid:relation_id>/relationships",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_relations.archive_relation_update"
+    },
+    {
+      "path": "/api/v2/support/archive-relations/<uuid:relation_id>/verification",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_relations.archive_relation_verify"
+    },
+    {
+      "path": "/api/v2/support/notification-scopes",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.notification_case_directory"
+    },
+    {
+      "path": "/api/v2/support/notification-intents/<uuid:intent_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_v2_requests.v2_notification_intent_cancel"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/notification-records",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.family_notification_history"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/notification-records",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.support_notification_history"
+    },
+    {
+      "path": "/api/v2/notification-records/<uuid:recipient_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.family_notification_record"
+    },
+    {
+      "path": "/api/v2/support/notification-records/<uuid:recipient_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.support_notification_record"
+    },
+    {
+      "path": "/api/v2/support/notification-records/<uuid:recipient_id>/send",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_notifications.notification_send"
+    },
+    {
+      "path": "/api/v2/notification-records/<uuid:recipient_id>/message",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.family_notification_message"
+    },
+    {
+      "path": "/api/v2/notification-records/<uuid:recipient_id>/delivered",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_notifications.family_notification_delivered"
+    },
+    {
+      "path": "/api/v2/alerts/<uuid:alert_id>/notification",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_notifications.family_notification_alert"
+    },
+    {
+      "path": "/api/v2/support/publication-directory",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_publication.publication_directory_read"
+    },
+    {
+      "path": "/api/v2/support/publication-configs/<uuid:config_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_publication.publication_config_read"
+    },
+    {
+      "path": "/api/v2/support/publication-contacts/<uuid:contact_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_publication.publication_contact_read"
+    },
+    {
+      "path": "/api/v2/support/publication-releases/<uuid:release_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_publication.publication_release_read"
+    },
+    {
+      "path": "/api/v2/support/publication-approvals/<uuid:approval_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_publication.publication_approval_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/alert-evaluation-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_dynamic.dynamic_options_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/alert-evaluation-triggers",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_dynamic.dynamic_triggers_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/alert-evaluations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_dynamic.dynamic_create"
+    },
+    {
+      "path": "/api/v2/support/alert-evaluations/<uuid:evaluation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_dynamic.dynamic_read"
+    },
+    {
+      "path": "/api/v2/support/alert-evaluation-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_dynamic.dynamic_task_read"
+    },
+    {
+      "path": "/api/v2/support/clinical-scopes",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_assessments.clinical_directory_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/assessment-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_assessments.assessment_creation_options_read"
+    },
+    {
+      "path": "/api/v2/support/verification-resources/<str:resource_kind>/<uuid:resource_id>/originals",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_originals_read"
+    },
+    {
+      "path": "/api/v2/support/verification-resources/<str:resource_kind>/<uuid:resource_id>/originals/<uuid:file_id>/content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_original_content_read"
+    },
+    {
+      "path": "/api/v2/support/record-versions/<uuid:record_version_id>/verification-scope",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_creation_scope_read"
+    },
+    {
+      "path": "/api/v2/support/verification-requests",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_verifications.verification_request_create"
+    },
+    {
+      "path": "/api/v2/support/verification-requests/<uuid:verification_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_request_read"
+    },
+    {
+      "path": "/api/v2/support/verification-requests/<uuid:verification_request_id>/options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_options_read"
+    },
+    {
+      "path": "/api/v2/support/verifications",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_verifications.verification_submit"
+    },
+    {
+      "path": "/api/v2/support/verifications/<uuid:verification_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_verifications.verification_read"
+    },
+    {
+      "path": "/api/v2/support/verifications/<uuid:verification_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_verifications.verification_revoke"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/assessments",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_assessments.assessment_create"
+    },
+    {
+      "path": "/api/v2/support/assessments/<uuid:assessment_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_assessments.assessment_read"
+    },
+    {
+      "path": "/api/v2/support/assessment-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_assessments.assessment_task_read"
+    },
+    {
+      "path": "/api/v2/support/datasets/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_search"
+    },
+    {
+      "path": "/api/v2/support/datasets",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_create"
+    },
+    {
+      "path": "/api/v2/support/datasets/<uuid:dataset_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_read"
+    },
+    {
+      "path": "/api/v2/support/datasets/<uuid:dataset_id>/partitions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_partition"
+    },
+    {
+      "path": "/api/v2/support/datasets/<uuid:dataset_id>/labels",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_label"
+    },
+    {
+      "path": "/api/v2/support/datasets/<uuid:dataset_id>/freeze",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_datasets.dataset_freeze"
+    },
+    {
+      "path": "/api/v2/support/datasets/<uuid:dataset_id>/runs",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_evaluation_runs.dataset_run_create"
+    },
+    {
+      "path": "/api/v2/support/evaluation-runs/<uuid:run_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_evaluation_runs.dataset_run_read"
+    },
+    {
+      "path": "/api/v2/support/evaluation-runs/<uuid:run_id>/denominators",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_evaluation_runs.dataset_run_denominators"
+    },
+    {
+      "path": "/api/v2/support/evaluation-runs/<uuid:run_id>/results",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_evaluation_runs.dataset_run_results"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-batches",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_batch_writes.archive_batch_create"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-batches/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_batches.archive_batch_search"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-batch-inputs",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_batches.archive_batch_inputs"
+    },
+    {
+      "path": "/api/v2/archive-batches/<uuid:batch_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_batches.archive_batch_read"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_batches.archive_page_read"
+    },
+    {
+      "path": "/api/v2/archive-batches/<uuid:batch_id>/process",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_page_actions.archive_batch_process"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_page_actions.archive_page_retry"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_page_actions.archive_page_cancel"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/candidates",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_fact_writes.archive_candidates_read"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/facts",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_fact_writes.archive_page_facts_read"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/original",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_fact_writes.archive_page_original_read"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/original/content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_fact_writes.archive_page_original_content"
+    },
+    {
+      "path": "/api/v2/archive-pages/<uuid:page_id>/confirm",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_fact_writes.archive_candidates_confirm"
+    },
+    {
+      "path": "/api/v2/archive-facts/<uuid:fact_id>/corrections",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_fact_writes.archive_fact_correct"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/personal-record-tasks",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_create"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/personal-record-tasks/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_search"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/personal-record-task-retention",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_retention"
+    },
+    {
+      "path": "/api/v2/personal-record-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_read"
+    },
+    {
+      "path": "/api/v2/personal-record-tasks/<uuid:task_id>/status",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_change"
+    },
+    {
+      "path": "/api/v2/personal-record-task-intents/<uuid:intent_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_personal_record_tasks.personal_record_task_intent_cancel"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/material-reminder-targets/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_reminders.material_reminder_target_search"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/material-reminder-notices/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_material_notices.material_notice_search"
+    },
+    {
+      "path": "/api/v2/material-reminder-notices/<uuid:notice_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_material_notices.material_notice_read"
+    },
+    {
+      "path": "/api/v2/material-reminder-notices/<uuid:notice_id>/message",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_material_notices.material_notice_message"
+    },
+    {
+      "path": "/api/v2/material-reminder-notices/<uuid:notice_id>/delivered",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_material_notices.material_notice_delivered"
+    },
+    {
+      "path": "/api/v2/material-reminder-notices/<uuid:notice_id>/read",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_material_notices.material_notice_mark_read"
+    },
+    {
+      "path": "/api/v2/material-reminder-notices/<uuid:notice_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_material_notices.material_notice_retry"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/material-reminders",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_reminder_writes.material_reminder_create"
+    },
+    {
+      "path": "/api/v2/material-reminders/<uuid:reminder_id>/settings",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_reminder_writes.material_reminder_change"
+    },
+    {
+      "path": "/api/v2/material-reminder-intents/<uuid:intent_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_reminder_writes.material_reminder_intent_cancel"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/material-reminders/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_reminders.material_reminder_search"
+    },
+    {
+      "path": "/api/v2/material-reminders/<uuid:reminder_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_reminders.material_reminder_read"
+    },
+    {
+      "path": "/api/v2/integrations/<str:provider_id>/receipts",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.provider_callback"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/archive-documents",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_writes.archive_document_create"
+    },
+    {
+      "path": "/api/v2/archive-batches/<uuid:batch_id>/document-inputs",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_document_inputs.archive_document_inputs"
+    },
+    {
+      "path": "/api/v2/archive-documents/<uuid:document_id>/grouping",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_archive_writes.archive_document_group"
+    },
+    {
+      "path": "/api/v2/archive-documents/<uuid:document_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_documents.archive_document_read"
+    },
+    {
+      "path": "/api/v2/archive-documents/<uuid:document_id>/versions",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_documents.archive_document_history"
+    },
+    {
+      "path": "/api/v2/archive-facts/<uuid:fact_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_facts.archive_fact_read"
+    },
+    {
+      "path": "/api/v2/archive-facts/<uuid:fact_id>/versions",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_archive_facts.archive_fact_history"
+    },
+    {
+      "path": "/api/v2/support/session",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support_session.support_session_read"
+    },
+    {
+      "path": "/api/v2/support/session/login",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support_session.support_login"
+    },
+    {
+      "path": "/api/v2/write-intents",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_v2_requests.v2_intent_prepare"
+    },
+    {
+      "path": "/api/v2/write-intents/<uuid:intent_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_v2_requests.v2_intent_retry"
+    },
+    {
+      "path": "/api/v2/requests/<uuid:intent_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_v2_requests.v2_request_read"
+    },
+    {
+      "path": "/api/v2/support/files/<uuid:file_id>/purpose-copies",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_create"
+    },
+    {
+      "path": "/api/v2/support/files/<uuid:file_id>/purposes/<str:purpose>/options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_options"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_read"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/reviews",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_review"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_revoke"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/simulation-provider-copy",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_purpose.simulation_provider_copy_create"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_content"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/review-content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_review_content"
+    },
+    {
+      "path": "/api/v2/support/purpose-copies/<uuid:copy_id>/evidence",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_copy_evidence"
+    },
+    {
+      "path": "/api/v2/tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_purpose.purpose_task_read"
+    },
+    {
+      "path": "/api/v2/support/patients/<uuid:patient_id>/disposition-coverage",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_disposition.support_disposition_coverage"
+    },
+    {
+      "path": "/api/v2/support/dispositions/<uuid:disposition_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_disposition.support_disposition_read"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/disposition-options",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family_dispositions.family_disposition_options"
+    },
+    {
+      "path": "/api/v2/patients/<uuid:patient_id>/dispositions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family_dispositions.family_disposition_create"
+    },
+    {
+      "path": "/api/v2/dispositions/<uuid:disposition_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family_dispositions.family_disposition_read"
+    },
+    {
+      "path": "/api/v2/support/dispositions/<uuid:disposition_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_disposition.disposition_approve"
+    },
+    {
+      "path": "/api/v2/support/dispositions/<uuid:disposition_id>/items/<uuid:item_id>/execute",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_disposition.disposition_execute"
+    },
+    {
+      "path": "/api/v2/support/dispositions/<uuid:disposition_id>/items/<uuid:item_id>/retain",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_disposition.disposition_retain"
+    },
+    {
+      "path": "/api/v2/support/disposition-tasks/<uuid:task_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_disposition.disposition_retry"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/alert-presets",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_alert_presets.alert_preset_directory"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/alert-preset-selection",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_alert_presets.alert_preset_select"
+    },
+    {
+      "path": "/api/v1/record-versions/<uuid:record_version_id>/originals",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_originals.record_originals_read"
+    },
+    {
+      "path": "/api/v1/auth/bootstrap",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.auth_bootstrap"
+    },
+    {
+      "path": "/api/v1/auth/start",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_start"
+    },
+    {
+      "path": "/api/v1/auth/complete",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_complete"
+    },
+    {
+      "path": "/api/v1/auth/register",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_register"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_login"
+    },
+    {
+      "path": "/api/v1/session",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.session_read"
+    },
+    {
+      "path": "/api/v1/patient-selection",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.patient_selection.patient_selection_write"
+    },
+    {
+      "path": "/api/v1/session/logout",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.session_logout"
+    },
+    {
+      "path": "/api/v1/capabilities",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.capabilities_read"
+    },
+    {
+      "path": "/api/v1/relations",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.relation_list"
+    },
+    {
+      "path": "/api/v1/relations/<uuid:relation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.relation_read"
+    },
+    {
+      "path": "/api/v1/relation-applications",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family.application_list"
+    },
+    {
+      "path": "/api/v1/relation-applications/<uuid:application_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.application_read"
+    },
+    {
+      "path": "/api/v1/relation-applications/<uuid:application_id>/withdraw",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.application_withdraw"
+    },
+    {
+      "path": "/api/v1/support/relation-applications/<uuid:application_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.application_review"
+    },
+    {
+      "path": "/api/v1/support/relation-applications/<uuid:application_id>/decide",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.application_decide"
+    },
+    {
+      "path": "/api/v1/support/relations/<uuid:relation_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.relation_revoke"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/records",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_create"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/records/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_search"
+    },
+    {
+      "path": "/api/v1/records/<uuid:record_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_read"
+    },
+    {
+      "path": "/api/v1/records/<uuid:record_id>/history",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_history"
+    },
+    {
+      "path": "/api/v1/records/<uuid:record_id>/corrections",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_correct"
+    },
+    {
+      "path": "/api/v1/record-versions/<uuid:record_version_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_version_read_view"
+    },
+    {
+      "path": "/api/v1/record-versions/<uuid:record_version_id>/fields/<uuid:field_id>/source",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.source_resolve_view"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/history/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.history_search_view"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/analytes/<str:concept_code>/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.analyte_search_view"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/field-config",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.field_config_read_view"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/drafts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family2.draft_collection"
+    },
+    {
+      "path": "/api/v1/drafts/<uuid:draft_id>",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "identifier": "api.views_family2.draft_detail"
+    },
+    {
+      "path": "/api/v1/drafts/<uuid:draft_id>/abandon",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.draft_abandon"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/summaries",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family2.summary_collection"
+    },
+    {
+      "path": "/api/v1/summaries/<uuid:summary_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.summary_read"
+    },
+    {
+      "path": "/api/v1/write-intents",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_prepare"
+    },
+    {
+      "path": "/api/v1/write-intents/<uuid:intent_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_retry"
+    },
+    {
+      "path": "/api/v1/write-intents/<uuid:intent_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_cancel"
+    },
+    {
+      "path": "/api/v1/requests/<uuid:intent_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_query"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_recent"
+    },
+    {
+      "path": "/api/v1/requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_recent_account"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/home",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.home_read"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/alerts",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.alert_list"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/alerts/stats",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.alert_stats"
+    },
+    {
+      "path": "/api/v1/alerts/<uuid:alert_id>/read",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.alert_mark_read"
+    },
+    {
+      "path": "/api/v1/tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.task_read"
+    },
+    {
+      "path": "/api/v1/tasks/<uuid:task_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.task_cancel"
+    },
+    {
+      "path": "/api/v1/tasks/<uuid:task_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.task_retry"
+    },
+    {
+      "path": "/api/v1/support/tasks/<uuid:task_id>/reconcile",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.task_reconcile"
+    },
+    {
+      "path": "/api/v1/support/reconciliation-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.task_reconcile_read"
+    },
+    {
+      "path": "/api/v1/support/access-grants",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.grant_create"
+    },
+    {
+      "path": "/api/v1/support/access-grants/<uuid:grant_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.grant_revoke"
+    },
+    {
+      "path": "/api/v1/support/role-grants",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.role_grant_create"
+    },
+    {
+      "path": "/api/v1/support/role-grants/<uuid:grant_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.role_grant_revoke"
+    },
+    {
+      "path": "/api/v1/support/principals/<uuid:principal_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.principal_disable"
+    },
+    {
+      "path": "/api/v1/support/configs",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_create"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_configs.config_read"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>/submit",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_submit"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>/approvals",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_approve"
+    },
+    {
+      "path": "/api/v1/support/config-approvals/<uuid:approval_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_approval_revoke"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>/validations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_validate"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>/enable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_enable"
+    },
+    {
+      "path": "/api/v1/support/configs/<uuid:config_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_disable"
+    },
+    {
+      "path": "/api/v1/support/environments/<str:environment>/runtime",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.runtime_activate"
+    },
+    {
+      "path": "/api/v1/support/sources",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_register"
+    },
+    {
+      "path": "/api/v1/support/sources/<uuid:source_id>/revisions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_register"
+    },
+    {
+      "path": "/api/v1/support/source-revisions/<uuid:source_revision_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_approve"
+    },
+    {
+      "path": "/api/v1/support/source-revisions/<uuid:source_revision_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_revoke"
+    },
+    {
+      "path": "/api/v1/support/retention-policies",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_sources.retention_policy_create"
+    },
+    {
+      "path": "/api/v1/support/retention-policies/<uuid:policy_id>/activate",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.retention_policy_activate"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/use-authorizations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.use_authorization_create"
+    },
+    {
+      "path": "/api/v1/support/use-authorizations/<uuid:authorization_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.use_authorization_revoke"
+    },
+    {
+      "path": "/api/v1/support/verification-requests",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_request_create"
+    },
+    {
+      "path": "/api/v1/support/verification-requests/<uuid:verification_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.verification_request_read"
+    },
+    {
+      "path": "/api/v1/support/verifications",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_submit"
+    },
+    {
+      "path": "/api/v1/support/verifications/<uuid:verification_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.verification_read"
+    },
+    {
+      "path": "/api/v1/support/verifications/<uuid:verification_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_revoke"
+    },
+    {
+      "path": "/api/v1/support/contacts",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_create"
+    },
+    {
+      "path": "/api/v1/support/contacts/<uuid:contact_version_id>/activate",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_activate"
+    },
+    {
+      "path": "/api/v1/support/contacts/<uuid:contact_version_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_disable"
+    },
+    {
+      "path": "/api/v1/support/releases",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_create"
+    },
+    {
+      "path": "/api/v1/support/releases/<uuid:release_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_releases.release_read"
+    },
+    {
+      "path": "/api/v1/support/releases/<uuid:release_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_approve"
+    },
+    {
+      "path": "/api/v1/support/releases/<uuid:release_id>/enable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_enable"
+    },
+    {
+      "path": "/api/v1/support/releases/<uuid:release_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_disable"
+    },
+    {
+      "path": "/api/v1/support/dispositions/<uuid:disposition_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.disposition_approve"
+    },
+    {
+      "path": "/api/v1/support/dispositions/<uuid:disposition_id>/execute",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.disposition_execute"
+    },
+    {
+      "path": "/api/v1/support/audit/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.audit_search"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/uploads",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_create"
+    },
+    {
+      "path": "/api/v1/uploads/<uuid:group_id>/files/<uuid:upload_id>",
+      "methods": [
+        "PUT"
+      ],
+      "identifier": "api.views_family3.file_upload"
+    },
+    {
+      "path": "/api/v1/uploads/<uuid:group_id>/complete",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_complete"
+    },
+    {
+      "path": "/api/v1/uploads/<uuid:group_id>/revisions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_revise"
+    },
+    {
+      "path": "/api/v1/uploads/<uuid:group_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.file_group_read"
+    },
+    {
+      "path": "/api/v1/files/<uuid:file_id>/content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.file_content"
+    },
+    {
+      "path": "/api/v1/recognition-jobs",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.recognition_create"
+    },
+    {
+      "path": "/api/v1/recognition/voice-structure",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.voice_structure"
+    },
+    {
+      "path": "/api/v1/recognition/report-ocr",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.report_ocr"
+    },
+    {
+      "path": "/api/v1/recognition/therapy-ocr",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.therapy_ocr"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/voice-transcription",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.voice_transcription"
+    },
+    {
+      "path": "/api/v1/candidate-sets/<uuid:candidate_set_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.candidate_read"
+    },
+    {
+      "path": "/api/v1/dictionaries/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.dictionary_search"
+    },
+    {
+      "path": "/api/v1/records/<uuid:record_id>/correction-requests",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.correction_request_create"
+    },
+    {
+      "path": "/api/v1/correction-requests/<uuid:correction_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.correction_request_read"
+    },
+    {
+      "path": "/api/v1/support/correction-requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_corrections.correction_review_queue"
+    },
+    {
+      "path": "/api/v1/support/correction-requests/<uuid:correction_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_corrections.correction_review_read"
+    },
+    {
+      "path": "/api/v1/support/correction-requests/<uuid:correction_request_id>/resolve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.correction_request_resolve"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/dispositions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.disposition_create"
+    },
+    {
+      "path": "/api/v1/dispositions/<uuid:disposition_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.disposition_read"
+    },
+    {
+      "path": "/api/v1/patients/<uuid:patient_id>/contact",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.contact_read"
+    },
+    {
+      "path": "/api/v1/alerts/<uuid:alert_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.alert_read"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/assessments",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.assessment_create"
+    },
+    {
+      "path": "/api/v1/support/assessments/<uuid:assessment_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.assessment_read"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/alert-evaluations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.alert_evaluation_create"
+    },
+    {
+      "path": "/api/v1/support/alert-evaluations/<uuid:evaluation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.alert_evaluation_read"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/case/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.case_search"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/case/import",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.case_import"
+    },
+    {
+      "path": "/api/v1/support/patients/<uuid:patient_id>/records",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.professional_record_create"
+    },
+    {
+      "path": "/api/v1/support/records/<uuid:record_id>/corrections",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.professional_record_correct"
+    },
+    {
+      "path": "/api/v1/integrations/<str:provider_id>/receipts",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.provider_callback"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/alert-presets",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_alert_presets.alert_preset_directory"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/alert-preset-selection",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_alert_presets.alert_preset_select"
+    },
+    {
+      "path": "/api/record-versions/<uuid:record_version_id>/originals",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_originals.record_originals_read"
+    },
+    {
+      "path": "/api/auth/bootstrap",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.auth_bootstrap"
+    },
+    {
+      "path": "/api/auth/start",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_start"
+    },
+    {
+      "path": "/api/auth/complete",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_complete"
+    },
+    {
+      "path": "/api/auth/register",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_register"
+    },
+    {
+      "path": "/api/auth/login",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.auth_login"
+    },
+    {
+      "path": "/api/session",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.session_read"
+    },
+    {
+      "path": "/api/patient-selection",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.patient_selection.patient_selection_write"
+    },
+    {
+      "path": "/api/session/logout",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.session_logout"
+    },
+    {
+      "path": "/api/capabilities",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.capabilities_read"
+    },
+    {
+      "path": "/api/relations",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.relation_list"
+    },
+    {
+      "path": "/api/relations/<uuid:relation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.relation_read"
+    },
+    {
+      "path": "/api/relation-applications",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family.application_list"
+    },
+    {
+      "path": "/api/relation-applications/<uuid:application_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.application_read"
+    },
+    {
+      "path": "/api/relation-applications/<uuid:application_id>/withdraw",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.application_withdraw"
+    },
+    {
+      "path": "/api/support/relation-applications/<uuid:application_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.application_review"
+    },
+    {
+      "path": "/api/support/relation-applications/<uuid:application_id>/decide",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.application_decide"
+    },
+    {
+      "path": "/api/support/relations/<uuid:relation_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.relation_revoke"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/records",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_create"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/records/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_search"
+    },
+    {
+      "path": "/api/records/<uuid:record_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_read"
+    },
+    {
+      "path": "/api/records/<uuid:record_id>/history",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_history"
+    },
+    {
+      "path": "/api/records/<uuid:record_id>/corrections",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.record_correct"
+    },
+    {
+      "path": "/api/record-versions/<uuid:record_version_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.record_version_read_view"
+    },
+    {
+      "path": "/api/record-versions/<uuid:record_version_id>/fields/<uuid:field_id>/source",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.source_resolve_view"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/history/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.history_search_view"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/analytes/<str:concept_code>/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.analyte_search_view"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/field-config",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.field_config_read_view"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/drafts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family2.draft_collection"
+    },
+    {
+      "path": "/api/drafts/<uuid:draft_id>",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "identifier": "api.views_family2.draft_detail"
+    },
+    {
+      "path": "/api/drafts/<uuid:draft_id>/abandon",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.draft_abandon"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/summaries",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_family2.summary_collection"
+    },
+    {
+      "path": "/api/summaries/<uuid:summary_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.summary_read"
+    },
+    {
+      "path": "/api/write-intents",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_prepare"
+    },
+    {
+      "path": "/api/write-intents/<uuid:intent_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_retry"
+    },
+    {
+      "path": "/api/write-intents/<uuid:intent_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family2.intent_cancel"
+    },
+    {
+      "path": "/api/requests/<uuid:intent_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_query"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_recent"
+    },
+    {
+      "path": "/api/requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family2.request_recent_account"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/home",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.home_read"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/alerts",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.alert_list"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/alerts/stats",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.alert_stats"
+    },
+    {
+      "path": "/api/alerts/<uuid:alert_id>/read",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.alert_mark_read"
+    },
+    {
+      "path": "/api/tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family.task_read"
+    },
+    {
+      "path": "/api/tasks/<uuid:task_id>/cancel",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family.task_cancel"
+    },
+    {
+      "path": "/api/tasks/<uuid:task_id>/retry",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.task_retry"
+    },
+    {
+      "path": "/api/support/tasks/<uuid:task_id>/reconcile",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.task_reconcile"
+    },
+    {
+      "path": "/api/support/reconciliation-tasks/<uuid:task_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.task_reconcile_read"
+    },
+    {
+      "path": "/api/support/access-grants",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.grant_create"
+    },
+    {
+      "path": "/api/support/access-grants/<uuid:grant_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.grant_revoke"
+    },
+    {
+      "path": "/api/support/role-grants",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.role_grant_create"
+    },
+    {
+      "path": "/api/support/role-grants/<uuid:grant_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.role_grant_revoke"
+    },
+    {
+      "path": "/api/support/principals/<uuid:principal_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.principal_disable"
+    },
+    {
+      "path": "/api/support/configs",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_create"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_configs.config_read"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>/submit",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_submit"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>/approvals",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_approve"
+    },
+    {
+      "path": "/api/support/config-approvals/<uuid:approval_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_approval_revoke"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>/validations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_validate"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>/enable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_enable"
+    },
+    {
+      "path": "/api/support/configs/<uuid:config_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_configs.config_disable"
+    },
+    {
+      "path": "/api/support/environments/<str:environment>/runtime",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.runtime_activate"
+    },
+    {
+      "path": "/api/support/sources",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_register"
+    },
+    {
+      "path": "/api/support/sources/<uuid:source_id>/revisions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_register"
+    },
+    {
+      "path": "/api/support/source-revisions/<uuid:source_revision_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_approve"
+    },
+    {
+      "path": "/api/support/source-revisions/<uuid:source_revision_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.source_revision_revoke"
+    },
+    {
+      "path": "/api/support/retention-policies",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "identifier": "api.views_sources.retention_policy_create"
+    },
+    {
+      "path": "/api/support/retention-policies/<uuid:policy_id>/activate",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_sources.retention_policy_activate"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/use-authorizations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.use_authorization_create"
+    },
+    {
+      "path": "/api/support/use-authorizations/<uuid:authorization_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.use_authorization_revoke"
+    },
+    {
+      "path": "/api/support/verification-requests",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_request_create"
+    },
+    {
+      "path": "/api/support/verification-requests/<uuid:verification_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.verification_request_read"
+    },
+    {
+      "path": "/api/support/verifications",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_submit"
+    },
+    {
+      "path": "/api/support/verifications/<uuid:verification_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support.verification_read"
+    },
+    {
+      "path": "/api/support/verifications/<uuid:verification_id>/revoke",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.verification_revoke"
+    },
+    {
+      "path": "/api/support/contacts",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_create"
+    },
+    {
+      "path": "/api/support/contacts/<uuid:contact_version_id>/activate",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_activate"
+    },
+    {
+      "path": "/api/support/contacts/<uuid:contact_version_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_contacts.contact_disable"
+    },
+    {
+      "path": "/api/support/releases",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_create"
+    },
+    {
+      "path": "/api/support/releases/<uuid:release_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_releases.release_read"
+    },
+    {
+      "path": "/api/support/releases/<uuid:release_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_approve"
+    },
+    {
+      "path": "/api/support/releases/<uuid:release_id>/enable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_enable"
+    },
+    {
+      "path": "/api/support/releases/<uuid:release_id>/disable",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_releases.release_disable"
+    },
+    {
+      "path": "/api/support/dispositions/<uuid:disposition_id>/approve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.disposition_approve"
+    },
+    {
+      "path": "/api/support/dispositions/<uuid:disposition_id>/execute",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.disposition_execute"
+    },
+    {
+      "path": "/api/support/audit/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support.audit_search"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/uploads",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_create"
+    },
+    {
+      "path": "/api/uploads/<uuid:group_id>/files/<uuid:upload_id>",
+      "methods": [
+        "PUT"
+      ],
+      "identifier": "api.views_family3.file_upload"
+    },
+    {
+      "path": "/api/uploads/<uuid:group_id>/complete",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_complete"
+    },
+    {
+      "path": "/api/uploads/<uuid:group_id>/revisions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.file_group_revise"
+    },
+    {
+      "path": "/api/uploads/<uuid:group_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.file_group_read"
+    },
+    {
+      "path": "/api/files/<uuid:file_id>/content",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.file_content"
+    },
+    {
+      "path": "/api/recognition-jobs",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.recognition_create"
+    },
+    {
+      "path": "/api/recognition/voice-structure",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.voice_structure"
+    },
+    {
+      "path": "/api/recognition/report-ocr",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.report_ocr"
+    },
+    {
+      "path": "/api/recognition/therapy-ocr",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.therapy_ocr"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/voice-transcription",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.voice_transcription"
+    },
+    {
+      "path": "/api/candidate-sets/<uuid:candidate_set_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.candidate_read"
+    },
+    {
+      "path": "/api/dictionaries/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.dictionary_search"
+    },
+    {
+      "path": "/api/records/<uuid:record_id>/correction-requests",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.correction_request_create"
+    },
+    {
+      "path": "/api/correction-requests/<uuid:correction_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.correction_request_read"
+    },
+    {
+      "path": "/api/support/correction-requests",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_corrections.correction_review_queue"
+    },
+    {
+      "path": "/api/support/correction-requests/<uuid:correction_request_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_corrections.correction_review_read"
+    },
+    {
+      "path": "/api/support/correction-requests/<uuid:correction_request_id>/resolve",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.correction_request_resolve"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/dispositions",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_family3.disposition_create"
+    },
+    {
+      "path": "/api/dispositions/<uuid:disposition_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.disposition_read"
+    },
+    {
+      "path": "/api/patients/<uuid:patient_id>/contact",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.contact_read"
+    },
+    {
+      "path": "/api/alerts/<uuid:alert_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_family3.alert_read"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/assessments",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.assessment_create"
+    },
+    {
+      "path": "/api/support/assessments/<uuid:assessment_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.assessment_read"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/alert-evaluations",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.alert_evaluation_create"
+    },
+    {
+      "path": "/api/support/alert-evaluations/<uuid:evaluation_id>",
+      "methods": [
+        "GET"
+      ],
+      "identifier": "api.views_support2.alert_evaluation_read"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/case/search",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.case_search"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/case/import",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.case_import"
+    },
+    {
+      "path": "/api/support/patients/<uuid:patient_id>/records",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.professional_record_create"
+    },
+    {
+      "path": "/api/support/records/<uuid:record_id>/corrections",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.professional_record_correct"
+    },
+    {
+      "path": "/api/integrations/<str:provider_id>/receipts",
+      "methods": [
+        "POST"
+      ],
+      "identifier": "api.views_support2.provider_callback"
+    }
+  ]
+}

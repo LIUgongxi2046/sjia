@@ -1,0 +1,172 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sJIA 家庭与支持身份及原件读取 API",
+    "version": "0.1.0-docs.20261021",
+    "description": "依据 f05dbcf 的七个路径核查；范围包含会话和原件内容。完整业务目录另见 api-route-inventory.json、领域 Schema 及 api-integration.md。"
+  },
+  "servers": [{"url": "/api"}],
+  "security": [{"ProductionSession": []}, {"DevelopmentSession": []}],
+  "paths": {
+    "/auth/bootstrap": {
+      "get": {
+        "operationId": "auth_bootstrap",
+        "summary": "取得同源匿名会话 CSRF token",
+        "security": [],
+        "responses": {
+          "200": {"description": "保存响应 Cookie 并在写入时使用 csrf_token", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Bootstrap"}}}}
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "auth_login",
+        "summary": "登录家庭账号并轮换会话与 CSRF",
+        "security": [{"CsrfToken": []}],
+        "description": "需要 bootstrap 所建立的同源 Cookie；使用成功响应的新 csrf_token。家庭凭据通过 identity.service.authenticate_account 核验。",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FamilyCredentials"}}}},
+        "responses": {
+          "200": {"description": "家庭会话", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FamilySession"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/session": {
+      "get": {
+        "operationId": "session_read",
+        "summary": "读取当前家庭或支持会话的公共投影",
+        "responses": {
+          "200": {"description": "公共会话结构，支持受众的 selected_patient_id 为 null", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FamilySession"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"}
+        }
+      }
+    },
+    "/session/logout": {
+      "post": {
+        "operationId": "session_logout",
+        "summary": "清理当前会话",
+        "description": "已登录写入需要 CSRF；匿名请求允许清理当前会话。",
+        "security": [{"ProductionSession": [], "CsrfToken": []}, {"DevelopmentSession": [], "CsrfToken": []}, {}],
+        "responses": {
+          "200": {"description": "空 JSON 对象", "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false}}}},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/v2/support/session/login": {
+      "post": {
+        "operationId": "support_login",
+        "summary": "核验支持岗位并建立支持会话",
+        "security": [{"CsrfToken": []}],
+        "description": "需要 bootstrap Cookie；岗位能力为空时拒绝登录。",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SupportCredentials"}}}},
+        "responses": {
+          "200": {"description": "支持会话与岗位能力", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SupportSession"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "422": {"$ref": "#/components/responses/InputInvalid"}
+        }
+      }
+    },
+    "/v2/support/session": {
+      "get": {
+        "operationId": "support_session_read",
+        "summary": "读取当前支持受众及岗位能力",
+        "responses": {
+          "200": {"description": "当前支持会话", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SupportSession"}}}},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"}
+        }
+      }
+    },
+    "/files/{file_id}/content": {
+      "get": {
+        "operationId": "file_content",
+        "summary": "读取获准原件的全部字节或单个 bytes 范围",
+        "description": "每次读取要求完整原件权限；用途副本使用对应用途接口。支持范围结束省略及后缀范围，多范围返回 416。",
+        "parameters": [
+          {"name": "file_id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}},
+          {"name": "Range", "in": "header", "required": false, "schema": {"type": "string"}, "description": "HTTP bytes 单个范围；非法或无法满足的范围返回 416"}
+        ],
+        "responses": {
+          "200": {
+            "description": "没有 Range 时返回完整原件；Content-Type 使用登记媒体类型",
+            "headers": {"Accept-Ranges": {"schema": {"type": "string", "enum": ["bytes"]}}, "Cache-Control": {"schema": {"type": "string", "enum": ["no-store, private"]}}},
+            "content": {"*/*": {"schema": {"type": "string", "format": "binary"}}}
+          },
+          "206": {
+            "description": "准确部分字节；返回长度必须与范围一致",
+            "headers": {"Accept-Ranges": {"schema": {"type": "string", "enum": ["bytes"]}}, "Content-Range": {"schema": {"type": "string"}}, "Cache-Control": {"schema": {"type": "string", "enum": ["no-store, private"]}}},
+            "content": {"*/*": {"schema": {"type": "string", "format": "binary"}}}
+          },
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "403": {"$ref": "#/components/responses/Forbidden"},
+          "404": {"description": "原件或上传组不存在", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "409": {"description": "FILE_NOT_AVAILABLE、FILE_OBJECT_UNAVAILABLE 或 FILE_OBJECT_SIZE_MISMATCH", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "410": {"description": "CONTENT_DISPOSED", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+          "416": {
+            "description": "范围无效或无法满足，正文为空",
+            "headers": {"Accept-Ranges": {"schema": {"type": "string", "enum": ["bytes"]}}, "Content-Range": {"schema": {"type": "string"}, "description": "bytes */{登记大小}"}, "Cache-Control": {"schema": {"type": "string", "enum": ["no-store, private"]}}}
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ProductionSession": {"type": "apiKey", "in": "cookie", "name": "__Host-sjia_session"},
+      "DevelopmentSession": {"type": "apiKey", "in": "cookie", "name": "sjia_session", "description": "仅明确的本地 DEBUG 配置使用"},
+      "CsrfToken": {"type": "apiKey", "in": "header", "name": "X-CSRFToken"}
+    },
+    "responses": {
+      "Unauthorized": {"description": "需要有效身份或账号凭据", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Forbidden": {"description": "受众、岗位、病例、完整原件权限或 CSRF 核验失败", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "InputInvalid": {"description": "请求结构校验失败", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    },
+    "schemas": {
+      "Bootstrap": {
+        "type": "object", "required": ["csrf_token", "return_paths", "schema_version"], "additionalProperties": false,
+        "properties": {"csrf_token": {"type": "string"}, "return_paths": {"type": "array", "items": {"type": "string"}}, "schema_version": {"type": "string", "enum": ["1.0.0"]}}
+      },
+      "FamilyCredentials": {
+        "type": "object", "required": ["username", "password"],
+        "properties": {"username": {"type": "string"}, "password": {"type": "string", "format": "password"}}
+      },
+      "SupportCredentials": {
+        "type": "object", "required": ["username", "password"], "additionalProperties": false,
+        "properties": {"username": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "\\S"}, "password": {"type": "string", "format": "password", "minLength": 1, "maxLength": 4096}}
+      },
+      "FamilySession": {
+        "type": "object", "additionalProperties": false,
+        "required": ["principal_id", "account_status", "session_binding", "expires_at", "audience", "capabilities", "csrf_token", "selected_patient_id"],
+        "properties": {
+          "principal_id": {"type": "string", "format": "uuid"}, "account_status": {"type": "string"},
+          "session_binding": {"type": "string", "nullable": true}, "expires_at": {"type": "string", "format": "date-time"},
+          "audience": {"type": "string", "enum": ["family", "support"]}, "capabilities": {"type": "array", "items": {"$ref": "#/components/schemas/SupportCapability"}},
+          "csrf_token": {"type": "string"}, "selected_patient_id": {"type": "string", "format": "uuid", "nullable": true}
+        }
+      },
+      "SupportSession": {
+        "type": "object", "additionalProperties": false,
+        "required": ["principal_id", "account_status", "expires_at", "audience", "capabilities", "csrf_token"],
+        "properties": {
+          "principal_id": {"type": "string", "format": "uuid"}, "account_status": {"type": "string"}, "expires_at": {"type": "string", "format": "date-time"},
+          "audience": {"type": "string", "enum": ["support"]}, "capabilities": {"type": "array", "items": {"$ref": "#/components/schemas/SupportCapability"}}, "csrf_token": {"type": "string"}
+        }
+      },
+      "SupportCapability": {
+        "type": "object", "additionalProperties": false,
+        "required": ["capability_id", "state", "reason_code", "config_version"],
+        "properties": {"capability_id": {"type": "string"}, "state": {"type": "string", "enum": ["available"]}, "reason_code": {"type": "string", "nullable": true}, "config_version": {"type": "string", "nullable": true}}
+      },
+      "Error": {
+        "type": "object", "required": ["code", "message", "retryable", "recovery", "field_errors"],
+        "properties": {
+          "code": {"type": "string"}, "message": {"type": "string"}, "retryable": {"type": "boolean"}, "recovery": {"type": "string"},
+          "field_errors": {"type": "array", "items": {"type": "object", "properties": {"path": {"type": "string"}, "code": {"type": "string"}, "message": {"type": "string"}}}}
+        }
+      }
+    }
+  }
+}

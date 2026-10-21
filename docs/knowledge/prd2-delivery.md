@@ -1,41 +1,43 @@
 # PRD 2.0 实施与验证依据
 
-2026-10-19当前实施与真实验证以[QA14](../development/QA14-full-function-delivery.md)、[QA29](../development/QA29-real-original-range-reads.md)及交付记录为准。当前测试使用用户已授权真实资料，不创建模拟临床资料、独立答案或外部回执。当前实际来源为63份原件及290个数据库页面，完整临床及业务验收继续保留原条件；下列2026-10-09记录按其明确时间和模拟范围保留。
+doc_id：SJIA-PRD2-DELIVERY；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。受众：产品、研发、测试与交接人员。维护责任：需求、代码、权限及验证变化时由当前执行者同步关联资料。
 
-日期：2026-10-09。用户授权全部功能、参赛优化及完整业务验收，当前全部开发使用模拟数据，截止北京时间2026-10-10 09:00。实施任务和验收状态只维护于 [交付记录](../../planning/delivery-ledger.json)。[开发索引](../development/index.md)登记每项任务的唯一主记录。
+## 需求与状态来源
 
-全部60项模拟开发已完成，开发剩余0项；验收剩余57项。T29的scope04来源、分类、MS、动态评估、唯一通知送达及本人阅读、30项Summary已实际保存重读，14项来源组合通过。T56通知与摘要页面四项、PostgreSQL逐项交叉读取及正式前端修复已经通过并接收，见 [共享运行记录](../development/T56-shared-integration.md)。T55语音辅助更正保留旧版本并保存版本2，未产生独立新Record，见 [共享运行记录](../development/T55-shared-integration.md)。T60最终37份源码与36份输入证据清单核验通过，86项来源索引作为交付输出独立生成并保存重读，全部输入的字节与摘要保持一致，见 [最终清单](../../.planning-work/parallel/window1/t60-delivery-manifest-verification-main-final-delivery-03.json)及 [证据索引](../../.planning-work/parallel/window1/t60-simulation-evidence-index.json)。当前构建11项及39页入口交付检查通过。V34、V36、V38、V39当前输入需要复验，开发保持完成。集合外患儿不能计入冻结集合临床分母，临床指标NOT_MEASURED。共享Worker/Beat未启动；共享授权撤销、实际提供方账单、临床、真实家庭、设备、微信及39页视觉继续NOT_RUN。
+[PRD](../../sJIA合并MAS预警平台PRD.md)维护 FR-01—FR-22、对应 AC／GRAC 及非功能要求；[交付记录](../../planning/delivery-ledger.json)为 T01—T60 的唯一状态来源。[开发索引](../development/index.md)登记主记录与 identifier；专项检查引用各自 QA 记录。
 
-系统边界使用 [HLD V2.0](../../sJIA合并MAS预警平台HLD.md)；22 项功能接收位置见 [reception-v2.csv](../../planning/reception-v2.csv)。数据规范使用 [DATA V2.0](../../data-design/v2-data-specification.md)及 [新增 SQL](../../data-design/v2-schema.sql)。T35 完成独立空结构校验；T39 已验证真实备份恢复、迁移与逐项回读，22 个新增实体进入本地 sjia_dev，121 个旧字段建立准确历史引用。原有内容、原件与核对保持，未知语境与可得时间保留 unknown。后端采用 [BACK V2.0](../../backend-design/v2-service-behavior.md)与准确字段映射；编排和前端由 T37／T38 维护。继承已有框架、账号体系、Ark、站内消息与本地语音选择。未经批准的临床规则不创建家庭事件。
+2026-10-21 读取交付记录：30 项承诺、60 项任务均保留范围，60 项任务为 IMPLEMENTED；验收 PASS 2 项、STALE 9 项、NOT_RUN 49 项。完整剩余项与环境见[当前交接](../../CURRENT-DELIVERY-20261021.md)。本次核实源码与文档，历史业务证据保留原始日期、输入及环境。
 
-UI 2.0 的设计依据为 [39 页清单](../../ui-delivery/v2/screen-design-map.csv)、[Token](../../ui-delivery/v2/tokens.json)、[资产清单](../../ui-delivery/v2/asset-manifest.csv)和 [页面原稿](../../ui-delivery/v2/src/main.jsx)。T37 已接收完整 [ALERT V2.0](../../alert-design/v2-orchestration.md)，T38 已检查 [FRONT V2.0](../../frontend-design/v2-interaction.md)的 39 路由、328 状态、准确类型及资产。正式页面连接实际接口、当前权限、任务和持久结果；专用 CSS 与 Token 同时继承。六项受控页面按岗位进入独立导航。设计检查不表示实际业务或视觉验收通过。
+系统职责由 [HLD](../../sJIA合并MAS预警平台HLD.md)描述；当前实现与需求之间的差距继续引用原任务，文档更新不关闭业务验收。
 
-2026-10-09用户授权全部开发与联调使用模拟数据，截止北京时间2026-10-10上午9:00。模拟资料、账号、政策和批准使用独立sjia_simulation及文件、会话、签名和消息环境；运行证明来自实际接口、权限、任务及持久结果，标记SIMULATION。真实验收继续采用获准真实资料与服务，视觉操作限制持续有效。已有QA证据保持原输入和环境范围，不能证明新增真实业务验收通过。
+## 业务、页面、接口与实体
 
-T42 的批次、页面及目录读取使用当前身份和只读快照，核验准确患儿、原件版本、页与上传组、完整家庭资料及原件权限。批次接收、处理、重试、取消与原请求恢复使用实际服务，页面顺序、状态和全部历史尝试持续保存。执行及采用复核当前配置、权限和准确用途副本；完整模型回执保留实际字节及请求标识，取消内容没有进入候选。严格archive-quota-1核查预算、并发、等待、执行和期限；未知外部结果保持未知，禁止自动再次调用。独立模拟正常执行、撤权后失败、明确重试、在途取消和重新读取已经验证；11项Schema及153次实际响应、当前Chrome及五种宽度200%文字复验通过，TypeScript与构建通过。视觉、真实业务及设备继续按 [T42 主记录](../development/T42.md)验收；全文提取与正式采用继续T41，PDF与文本原页继续T40。
+| 业务与验收 | 页面或调用入口 | API 与权限 | 实现、查询与保存 | 最终使用方及验证 |
+| --- | --- | --- | --- | --- |
+| 登录与访问；FR-01、FR-09、AC-H5-05 | `/login`、`/associations`、`/support/*` | `/api/session`、`/api/v2/support/session`；家庭关联、支持受众与岗位分别核查 | `identity/session.py`、`identity/support_session.py`、`authorization/policy.py`；Session 与当前授权读取 | `AccessProvider`、`SupportApp`、`UI2ReadState`；[QA26](../development/QA26-support-access-recovery.md)、[QA27](../development/QA27-real-clinical-access-scope.md) |
+| 本人候选确认；FR-02、FR-13、GRAC-01 | 三类登记、`/archives/confirm` | v2 逐事实与采用接口；准确用途副本、本人字段与写入权限 | `recognition`、`records`、`archives`；RecordVersion／RecordField 与 ArchiveFactVersion 保存，专业状态独立 | 家庭记录、时间轴、后续专业核对；[T41](../development/T41.md)、[QA12](../development/QA12-real-ocr-validation.md) |
+| 批次与文书；FR-14、FR-15、GRAC-02／03 | `/archives/batches`、`/archives/grouping`、`/archives/regroup` | v2 文书与批次接口；当前原件、用途、配额与请求身份 | `archives/documents.py`、`archives/grouping.py`、`requests/archive_documents.py`；文书与事实版本、页序、原请求及回执保存 | 档案目录、准确来源与受控评估；[T42](../development/T42.md)、[T43](../development/T43.md)、[QA22](../development/QA22-real-native-pdf-document.md) |
+| 重复资料；FR-16、GRAC-04 | `/archives/duplicates` | v2 archive-relations；本人文件关系与专业采样分别授权 | `archives/relations.py`、`archives/relation_queries.py`；保存关系新版本与解除历史，来源完整保留 | 档案关系与评估来源；[T44](../development/T44.md)、[QA23](../development/QA23-real-duplicate-files.md)、[QA24](../development/QA24-real-relation-read-performance.md) |
+| 目录与原件；FR-17、GRAC-05 | `/archives`、`/archives/source` | v2 archives/search、archive-document-versions/{version_id}/source；原 files/{file_id}/content | `views_archive_delta.archive_document_version_source` 固定读取快照并核查历史与原文；`views_family3.file_content` 核查完整原件权限及处置，再读取准确范围 | `useDocumentSource` 与原文页面；[T45](../development/T45.md)、[QA16](../development/QA16-document-source-entry.md)、[QA29](../development/QA29-real-original-range-reads.md) |
+| 新增内容整理；FR-18、GRAC-06 | `/archives/changes` | v2 archive-batches/{batch_id}/delta-summaries、archive-delta-summaries/{delta_id}；本人身份、当前来源与可见字段 | `summaries/delta.py`、`requests/archive_delta.py`；保存准确输入、Task、原回执和 DeltaSummary；变更后保留历史并核查 validity | 本人整理正文与准确来源；[T46](../development/T46.md)、[QA19](../development/QA19-real-archive-delta.md) |
+| 观察范围；FR-19、GRAC-07 | `/records/period` | v2 observation-period 与 versions；明确可见字段、本人权限及准确保留策略 | `records/periods.py`、`requests/observation_periods.py`；读取医学时间，保存 ObservationPeriodVersion 和依赖失效 | 观察资料与后续采样判断；[T47](../development/T47.md)、[QA20](../development/QA20-real-observation-period.md)、[QA21](../development/QA21-real-observation-period-save.md) |
+| 专业核对与评估；AC-04／05／10、AC-DYN | 支持端核对、静态与动态页面 | v2 support/verification、assessment、dynamic 相关接口；专业岗位及准确字段资格 | `verification`、`assessment`、`alerting`；核对、current／replay、来源、任务与采用分别执行 | 当前家庭提示与独立 replay；[T49](../development/T49.md)、[T50](../development/T50.md)、[QA27](../development/QA27-real-clinical-access-scope.md) |
+| 真实评价；FR-20、GRAC-08、AC-EVAL-01 | 支持端评价目录与运行 | v2 evaluation-datasets／evaluation-runs；准确用途、固定集合与独立标签 | `case_details/evaluation_inventory.py` 与评价领域；来源清单和临床统计分别管理 | T55 格式评价与 T59 临床效果；[T48](../development/T48.md)、[T59](../development/T59.md)、[QA25](../development/QA25-real-evaluation-source-inventory.md) |
+| 用途与内容处置；FR-21、GRAC-09 | `/account/data-use` 与支持用途页面 | purpose-copies、content-disposition 与 disposition 接口；准确用途、复核、批准与原件权限 | `files/purpose.py`、`retention`；独立副本、复核、处置计划与逐项回执 | 获准识别、评价、家庭资料与恢复采用；[T40](../development/T40.md)、[处置恢复](../../deploy/content-disposition-recovery.md) |
+| 提醒与发布；FR-22、GRAC-10、AC-12 | `/account/reminders`、`/alerts`、`/summaries` 与支持发布页面 | 原生通知、本人资料提醒与发布接口；本人目标、签名许可、当前内容与联系资格 | `notifications/material_scheduler.py`、`notifications/native.py`、`family_content`；设置、实际送达、阅读与发布各自保存 | 家庭提醒、提示与摘要；[T51](../development/T51.md)、[T52](../development/T52.md)、[T53](../development/T53.md)、[QA15](../development/QA15-real-material-reminders.md) |
 
-T48已经完成非空模拟集合保存、独立标签、患儿分组、冻结、准确任务执行及九类单位结果回读。30项业务、10项权限与版本、11项Chrome检查通过；21项Schema与80次实际响应、TypeScript及生产构建通过。三种用途分别固定集合版本；临床集合三段不重叠观察范围共六个人时，positive、negative、unknown各一项，未知标签保留局限。临床指标计算归属T59，当前运行明确insufficient与clinical_metrics_not_run。真实来源清单5份文件、3,166,708字节已经核验，其数据库原件与页面映射、真实批准和完整V48仍待验收。准确实现与证据见 [T48主记录](../development/T48.md)，共同接口及恢复见 [集成记录](../development/T48-shared-integration.md)。
+## 资料语义与采用条件
 
-T40已接入图片、PDF及UTF-8文本的完整原件、成熟分页、准确页序、来源授权、幂等保存及上传恢复；用途方案绑定明确原页、目标及处理证明，实际生成独立副本并保存准确复核与撤销结果。PDF第一页实际模型调用保存候选、计量及耗时；撤销专用外部用途授权后，对应副本停止使用，家庭原件仍按独立权限读取。家庭与支持页面接通处置申请、批准、逐项执行、继续保存及原任务重试。65项模拟业务、18项Chrome及8项解析检查通过；输入与权限5项、21项Schema与68次响应、TypeScript和生产构建通过。隔离提供方适配器9项、申请绑定3项、失效复核拒绝、正向模拟处置7项与准确保存重读8项分别通过。模拟提供方对象实际删除，原件、用途副本与派生文件保留，任务和回执准确重读。T40／V40登记IMPLEMENTED／NOT_RUN；真实提供方、临床、设备和视觉继续待验收。
+每个事实版本通过 `field_id` 引用准确 RecordField。原文、数值、限定符、单位、医学时间、平台取得时间、专业核对与本人确认分别保存。未知时间和未核对状态继续保留，查询范围和上传时间不补充缺失的医学时间。
 
-用户限制主动视觉操作，全部视觉比对保持 NOT_RUN；构建、Token、DOM、布局边界及键盘检查分别保存证据，不代表一比一还原通过。真实手机、文字放大、后台恢复及微信浏览器分别按 AC-H5 与 T58 验收。官方要求、独立临床答案、准确容量及运行责任未知时保留对应待验收。
+原件与用途副本固定准确版本、checksum、原页、用途、环境和复核。家庭读取、外部识别与专业核对使用各自权限。模型调用只产生候选，正式记录由本人确认或获准专业操作保存；分类、MS、HLH 与动态规则使用确定性计算，发布仍需当前配置及内容资格。
 
-T54 的二十七个家庭页面采用 UI2 原稿，范围包含首页、三类登记、检验、更正、预警、记录与版本、摘要、账号与关联、草稿、原始资料、文书归组、资料补充提醒和系统状态；支持用途页使用共享容器。五种宽度的150项匿名 DOM、HTTP、原生日期和月份及已有来源检查独立保存证据，结果以绑定当前输入的正式回执为依据，完整真实业务和视觉保持待验收。资料提醒查询准确本人目标和当前设置，同一次保存启用状态、时间、时区与安静时段，查询原请求、重试和重读结果；六项时间处理工程检查通过。原始资料接口核验家庭身份、有效关联、记录与原件权限；页面绑定患儿、准确记录版本、文书标识、附图标识和顺序。36个版本及12次原件、页面引用通过只读检查；文书分类和副本复核缺少当前记录，不能由其他时间或状态补充。原件字节在本人主动查看时核验 SHA256，采用内存 Blob，后台及退出清理内容。
+请求保存固定 operation、target、正文、request ID 与 generation。响应不明时查询原请求，任务和最终资源分别重新读取。外部处理结果未知时保留计量与并发预留；历史依据失效后停止作为当前结果使用。
 
-更正页面严格核验输入、回执、草稿及重新读取，121 项字段、60 项原时间引用与 61 项空引用保持，真实更正和依赖使用见 [T24 主记录](../development/T24.md)。历次检验保留六项项目、原值、时间、机构、核对与来源，获准字典和观察时段继续实施。治疗保留原药名、三项状态、独立日期、出处确认、候选、草稿和登记，实际日期采用 date，未知保持 unknown，完整事件见 [T14 主记录](../development/T14.md)。报告、体温症状与语音按实际字段权限处理，原文、字符串原值及每项医学时间分别保存；四项来源字段、四项缺少原文拒绝、62 项已有原值和 60 项原生日期通过只读技术检查。月份只保存 local_year、local_month 和原文，不产生日期、时刻或时区；更正时间选择随草稿保留。
+## 设计与实际验证
 
-申请和撤回保存严格正文、意图、状态、版本、原始回执及本人恢复，新增字段保持旧资料未知。摘要按准确范围、任务、原件和固定版本读取，并核查当前配置批准、来源、验证报告及制品。20 个投影通过技术检查；五份资格不足的摘要返回空正文，一份任务摘要不一致时拒绝，178 个原始项目完整保存。真实生成和异步恢复继续验收。111 个业务表原有字段与 29 份原件保持；导航上下文只使用内存和不透明标识。全部 39 页、328 项状态、真实身份、保存、后台、文字放大、手机、微信和视觉验收继续执行。准确范围见 [T54 主记录](../development/T54.md)，T54／V54 保持 IMPLEMENTED／NOT_RUN。
+设计资产由 [数据规范](../../data-design/v2-data-specification.md)、[后端服务行为](../../backend-design/v2-service-behavior.md)、[预警编排](../../alert-design/v2-orchestration.md)、[前端交互](../../frontend-design/v2-interaction.md)、[39 页清单](../../ui-delivery/v2/screen-design-map.csv)和[状态采用表](../../frontend-design/v2-state-adoption.csv)维护。
 
-摘要准备及详情保留原稿的范围输入、四项资料选择、说明、摘要纸面和返回入口。资料类别与来源说明选择实际保存；生成使用当前环境、模板批准和可见字段，摘要、Task 与 WriteRequest 在同一事务完成。前端核验原请求、完成任务、保存范围和重新读取的摘要，刷新后查询本人及患儿的原始请求目录。摘要读取核验原任务、范围、字段及来源版本，历史缺少的环境、配置校验值、本人确认和原件页码保持未知。当前20个实际摘要、任务及请求目录投影通过只读 JSON Schema／AJV 检查；五份资格不足摘要返回空正文，一份任务校验失败摘要拒绝，178个原始项目完整保存。正向生成、并发恢复、字段撤权、联系失效及全部医学时间组合继续待验收，见 [T25 主记录](../development/T25.md)。当前生成在事务内完成，完整异步任务及取消规范仍需相关任务验证。
+本地模拟开发的既有结果按 [T01—T60 主记录](../development/index.md)各自日期和环境查询。当前真实专项采用获准真实资料；63 份原件、290 个数据库页面和 83 项本人保存事实的证据见 QA12、QA25、QA29。文件数量、资料分组与患者分母分别登记。临床专业核对和独立答案尚未形成完整证据，临床指标保持 NOT_MEASURED。
 
-数据库既有 64 个家庭、草稿、关联、申请及请求目录投影、102 个记录、历史及历次投影、121 项字段来源、30 条有效记录和 40 次实际查询分别通过结构检查。两个已有项目的九个字段保持原值、单位、方法与字段范围；空范围准确返回空集合。当前检查不创建业务资料或认证 Session，已有 QA 元数据不能证明独立批准或真实人员操作。真实账号、申请提交与撤回、并发恢复、受控核验、字段授权、原件操作、临床批准、阅读、编辑、放弃、摘要生成及后台恢复继续实施和验收。完整 39 页、328 项状态、一比一视觉比较与完整业务验收均保持待验收。
-
-摘要生成采用相交治疗区间的获准原始字段，药名、起止日期及说明保持来源内容。当前 30 条记录、六份保存摘要及治疗原始日期形成 176 次只读范围检查，其中 75 次治疗区间相交，50 次采用范围外日期字段；178 个保存项目保持一致。证据为 CHECK-T25-SCOPE，允许字段为空时始终返回空集合。完整真实生成、权限撤销及医学时间组合继续按 V25 验收。
-
-T41完成整页模型提取、完整回执、逐项候选原文、独立医学时间、五种语境、否定、本人决定和修订、正式保存、更正、历史及准确原件。本人确认保持unverified，未知时间保留未知，月份没有自动日期。实际模拟业务28项检查通过，Chrome完成保存、更正及键盘检查，保存后7项复验覆盖原请求正文、版本、来源、五种宽度与实际200%文字、私人存储和请求结束。12项Schema和实际响应通过AJV，Django check、TypeScript与构建通过。页面后台清理私人内容，切换患儿及原页建立相应状态；原请求持续保存，撤权后停止读取。开发登记IMPLEMENTED；完整真实V41、手机、微信、后台原生恢复和视觉继续NOT_RUN，见[T41主记录](../development/T41.md)。
-
-T43完成实际文书创建、八类分类、多页顺序、多个本人就诊说明、已有就诊来源选择、逐事实来源、归组更正、历史及准确回执。归组保存新的记录与事实版本，原值、字典、医学时间和历史出处保持，旧依赖失效；本人说明没有授予专业资格。UI2-28保存后可以刷新读取原请求正文，并分别显示原回执和当前文书。35项模拟接口业务检查、8项Chrome检查、15项Schema与41次实际响应通过，Django、TypeScript及构建通过。开发登记IMPLEMENTED，真实V43、全部状态、手机、微信、原生后台恢复和视觉继续NOT_RUN，见 [T43 主记录](../development/T43.md)。
-
-T51 的联系人、配置及发布接口接入实际保存服务和岗位权限。未核验联系草稿允许空白 verified_at，approved／active 必须保留核验时间；contacts.0003_contact_verification 已完成实际备份和迁移，111个业务表内容摘要一致。联系、发布、提交恢复、配置登记及配置采用共29个测试方法通过，五份正式证据分别绑定当前输入。15条配置、10条批准和10条验证保持原有内容。配置采用核验当前批准、来源、验证报告、制品、环境及权限；失效字段配置不返回字段，失效摘要不返回正文，原始项目继续保存。请求恢复协议提供 controlled_input，查询和提交仍核查当前岗位及目标。联系创建与激活、正向发布、配置批准与报告登记、提交恢复和全部家庭出口仍待完整验收，见 [T51 主记录](../development/T51.md)，V51 保持 NOT_RUN。
-
-T52 完成原生站内通知的当前资格、许可、任务、消息持久保存、签名回执、原请求恢复、管理记录及家庭提示详情集成，独立开发登记 IMPLEMENTED；真实接收、发送授权、并发、设备及视觉验收继续待验收，见 [T52 主记录](../development/T52.md)。T53 已接入本人 record_task、默认关闭与明确启用、计划及安静时段、原请求恢复、到期调度、独立签名许可、站内消息、受理与送达回执、阅读、停止及撤权。独立模拟实际HTTP流程40项检查通过，真实资料保持，完整V53继续NOT_RUN，见 [T53 主记录](../development/T53.md)。
+真实手机、微信、音频、完整适用状态、视觉、正式容量、对象存储与生产恢复继续执行原验收条件。文档结构、DOM、类型检查、构建和目标版本空库迁移只证明其明确范围。准确当前待办见[交接文件](../../CURRENT-DELIVERY-20261021.md)，本次检查见 [DOCS01](../development/DOCS01-current-documentation.md)。

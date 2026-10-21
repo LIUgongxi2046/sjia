@@ -1,0 +1,17 @@
+doc_id,audience,path,purpose,source_of_truth,version_or_commit,generation,owner,status,last_verified
+SJIA-README,项目人员,README.md,项目与开发入口,guardian-h5/package.json;backend/config/settings;planning/delivery-ledger.json,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-H5-README,前端开发,guardian-h5/README.md,运行与页面,guardian-h5/src/app/App.tsx;guardian-h5/vite.config.ts,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-CURRENT-DELIVERY,交接人员,CURRENT-DELIVERY-20261021.md,版本环境与完整剩余项,planning/delivery-ledger.json;docs/development/QA29-real-original-range-reads.md,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-KNOWLEDGE-INDEX,项目人员,docs/knowledge/index.md,文档检索,docs/document-inventory.csv;docs/development/index.md,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-PRD2-DELIVERY,研发与测试,docs/knowledge/prd2-delivery.md,业务页面接口与实体关系,sJIA合并MAS预警平台PRD.md;backend;guardian-h5/src,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-API-INTEGRATION,接口开发,docs/reference/api-integration.md,身份权限与接口使用,backend/api;backend/identity;backend-design,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-OPENAPI-IDENTITY-FILES,接口开发,docs/reference/openapi.json,七个身份及原件路径,backend/api/views_family.py;backend/api/views_support_session.py;backend/api/views_family3.py,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-API-ROUTE-INVENTORY,接口开发,docs/reference/api-route-inventory.json,全部注册路径与方法,backend/config/urls.py;backend/api/urls.py;backend/api/urls_v2.py;backend/observability/views.py,f05dbcf106e70d890a5574385fd63b3ddd502146,DJANGO_METADATA,S012,CURRENT,2026-10-21
+SJIA-DATA-DICTIONARY,数据开发,docs/reference/data-dictionary.md,实体含义与约束来源,backend/records/models.py;backend/files/models.py;backend/archives/models.py;data-design;正式migrations,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-ORM-DICTIONARY,数据开发,docs/reference/orm-data-dictionary.md,126个模型与1498个字段,当前已注册Django业务Model元数据,f05dbcf106e70d890a5574385fd63b3ddd502146,DJANGO_METADATA,S012,CURRENT,2026-10-21
+SJIA-OPERATIONS,运维与使用者,docs/operations.md,运行操作与FAQ,backend/config;deploy;guardian-h5/src;docs/development/QA15-real-material-reminders.md,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-RELEASE-NOTES,项目人员,docs/release-notes.md,行为测量与迁移,Git f05dbcf相对8ca48b9;docs/development/QA28-target-runtime-compatibility.md;docs/development/QA29-real-original-range-reads.md,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-LOCAL-SPEECH,语音开发,docs/knowledge/local-speech.md,即时转写与持久VoiceInput,backend/recognition/speech.py;backend/api/views_voice_inputs.py,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-DEVELOPMENT-INDEX,研发与测试,docs/development/index.md,任务身份与主记录,planning/delivery-ledger.json;docs/development/T01.md至T60.md,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT_NAVIGATION,2026-10-21
+SJIA-DOCS01,交接人员,docs/development/DOCS01-current-documentation.md,文档任务与检查结果,本次真实命令和.docs-work检查结果,f05dbcf106e70d890a5574385fd63b3ddd502146,MANUAL,S012,CURRENT,2026-10-21
+SJIA-QA02-MATRIX,测试人员,docs/testing/acceptance-matrix.md,历史QA02验收范围,docs/testing/QA02-report.md,2026-10-04,MANUAL,S009,HISTORICAL,2026-10-21导航核查

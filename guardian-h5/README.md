@@ -1,53 +1,47 @@
-> 当前组合候选请先阅读[2026-10-14交付说明](../CURRENT-DELIVERY-20261014.md)。以下内容为历史记录；旧端口、演示账号及seed命令不作为当前启动或登录依据，历史测试不代表本组合版通过。
+# 监护人 H5 与支持页面
 
-# 监护人 H5
+doc_id：SJIA-H5-README；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：前端路由、请求与运行配置变化时更新。
 
-2026-10-04。React、TypeScript、Vite、antd-mobile；同源/api由本地Django处理。本地模拟功能验收通过，范围与证据见 [QA02报告](../docs/testing/QA02-report.md)。
+使用 React 18.3.1、TypeScript 7.0.2、Vite 8.3.1、antd-mobile 5.43.0 与 React Router 7.18.4，准确依赖见 [package.json](package.json) 与 [package-lock.json](package-lock.json)。完整交接见 [当前交付说明](../CURRENT-DELIVERY-20261021.md)，任务与验收继续引用 [交付记录](../planning/delivery-ledger.json)。
 
-## 本地验收
+## 安装与构建
 
-测试账号须通过正常注册流程创建，密码由使用者自行设置；不在仓库提供共享登录凭据。
-
-照片测试原件由scripts/create_simulation_report.py生成，没有患者信息。全部业务使用真实本地接口和数据库，OCR调用项目配置的Ark。模拟配置与提示明确标注用途。
-
-## 运行与检查
-
-后端在8000，前端在5173。数据库为本地PostgreSQL5433，Redis6379。项目根目录运行：
+Node.js `>=22.12.0`。在本目录执行：
 
 ```bash
-backend/.venv/bin/python guardian-h5/scripts/create_simulation_report.py
-backend/.venv/bin/python backend/manage.py seed_local_acceptance
-backend/.venv/bin/python backend/manage.py runserver 127.0.0.1:8000
-```
-
-本目录运行：
-
-```bash
+npm ci
 npm run dev
+npm run typecheck
 npm run build
-TMPDIR="$PWD/../.qa-work/tmp" node scripts/acceptance-local.mjs
-TMPDIR="$PWD/../.qa-work/tmp" node scripts/acceptance-photos.mjs
-TMPDIR="$PWD/../.qa-work/tmp" node scripts/acceptance-design.mjs
 ```
 
-每次重跑acceptance-local.mjs前刷新模拟种子。脚本会提交模拟资料。临时产物位于项目已忽略的.qa-work，固定证据位于docs/testing/evidence/QA02。
+`dev` 使用 `127.0.0.1:5173`，`preview` 使用 `127.0.0.1:4173`，均设置 `strictPort` 与 `Cache-Control: no-store`。`/api` 默认代理至 `127.0.0.1:8000`；连接准确后端时设置 `SJIA_API_TARGET`。启动命令不能证明账号、患儿关联或业务配置已经可用。
 
-## 当前功能
+后端依赖与环境准备见 [项目 README](../README.md)及[操作说明](../docs/operations.md)。账号通过正常注册和授权流程取得，凭据由实际使用者管理。
 
-QA04 预览入口为 http://127.0.0.1:5174/home，对应 Django8001 和独立数据库 sjia_qa03。语音通过 MediaRecorder 与项目本地 faster-whisper 服务转写，再由 Ark 提取候选。报告、治疗照片直接展示缩略图和逐页识别状态，支持重新识别。治疗可选择原药名及对应原文，实际使用情况由本人确认。部署配置见 [本地语音服务](../docs/knowledge/local-speech.md)，验收见 [QA04报告](../docs/testing/QA04-report.md)。
+## 页面与使用关系
 
-健康档案读取四类资料与医学时间。观察表单保存有效结构化症状、原始体温、单位、测量方式及未知状态。报告和治疗支持多照片整理、原图回读、来源确认和草稿恢复。报告逐项保存数值、限定符、单位、方法、参考区间和原图页级来源。
+| 功能 | 路由入口 | 实现与验证依据 |
+| --- | --- | --- |
+| 首页、观察、报告与治疗登记 | `/home`、`/register/observations`、`/register/reports`、`/register/therapies` | `src/app/App.tsx`；[T10—T15](../docs/development/index.md)、[T41](../docs/development/T41.md) |
+| 长期档案、批次、逐项确认、文书与重复关系 | `/archives`、`/archives/batches`、`/archives/confirm`、`/archives/grouping`、`/archives/duplicates`、`/archives/regroup` | `src/features/archives/`；[QA16—QA24](../docs/development/index.md) |
+| 新增内容、来源与观察范围 | `/archives/changes`、`/archives/source`、`/records/period` | [QA19](../docs/development/QA19-real-archive-delta.md)、[QA21](../docs/development/QA21-real-observation-period-save.md)、[QA29](../docs/development/QA29-real-original-range-reads.md) |
+| 记录、历史、更正与摘要 | `/records`、`/records/:recordId/history`、`/records/:recordId/correct`、`/summaries` | [T24](../docs/development/T24.md)、[T25](../docs/development/T25.md) |
+| 关联、预警方案与提醒 | `/associations`、`/alert-presets`、`/account/reminders` | [T09](../docs/development/T09.md)、[方案选择](../docs/development/ORIGINAL-PRESET-SELECTION.md)、[QA15](../docs/development/QA15-real-material-reminders.md) |
+| 支持端登录与受控业务 | `/support/*` | `src/features/support/SupportApp.tsx`；[QA26](../docs/development/QA26-support-access-recovery.md)、[QA27](../docs/development/QA27-real-clinical-access-scope.md) |
 
-四类表单连接服务端草稿；未保存导航、后退及页面关闭受保护。记录按医学时间和签名游标查询，逐字段显示专业核对状态。历史版本保留全部字段、原图和更正原因。摘要固定原始字段快照，治疗范围保留未知时间。提示仅显示当前有效正文、获准来源和联系，并保存首次阅读。
+UI2 设计范围为 39 页、328 项状态；正式路由还包括已批准方案选择与文书重新分组。页面数量须依据实际路由与设计目录分别查询。
 
-## 验证范围
+## 请求、保存与恢复
 
-244项后端测试、16项登录后的模拟业务及照片检查、190项匿名页面检查、106项接口安全检查通过，TypeScript与构建通过。实际手机、微信浏览器、录音设备、真实患者、临床Gold、通知送达、容量及生产交付保持未验收；没有主动视觉检查。全部条件见 [验收矩阵](../docs/testing/acceptance-matrix.md)。
+`src/api/client.ts` 使用同源 Cookie、`X-CSRFToken`、`X-Write-Intent`、`Idempotency-Key` 与 `X-Intent-Generation`。当前会话、患儿选择、字段与原件权限由后端核验。家庭登录与支持登录具有各自受众，支持岗位能力须经当前接口核实。
 
-## 登记回归测试
+保存结果未知时保留原始正文和请求身份，通过页面提供的查询与恢复操作核对原请求。各流程的恢复范围由对应实现决定；文书创建、观察范围、资料关系与批次分别引用其请求规范。跨刷新恢复、取消与后台恢复仍需按照具体任务验收。
 
-`npm run test:registration` 使用 Node 24+（本次验证版本 24.19.0），在 jsdom 中挂载实际 React 表单与草稿/提交逻辑，只使用合成数据和模拟 fetch，不连接后端或模型服务。覆盖治疗候选 A→B→A 的分项清空、双击、提交成功但回执丢失、10 秒自动草稿、同一请求重试、300 秒意图过期、明确校验失败后的编辑，以及患儿/账号切换。
+资料读取使用准确版本、来源与当前权限。本人确认后的字段保持独立专业状态。原件和候选属于私人内容，后台清理、原件校验与权限变更处理见对应主记录。
 
-`npm run test:registration:browser` 为同类 Playwright 浏览器检查，需要先启动 Vite（默认 127.0.0.1:5173，可用 `SJIA_TEST_URL` 覆盖）及可运行的 Chromium（可用 `SJIA_CHROMIUM_PATH` 指定）。DOM 测试通过不代表浏览器或视觉检查已通过。
+## 检查入口
 
-提交结果不明时，表单暂停编辑和草稿保存，并提供“重试本次保存”。请求正文和幂等键只保留在当前表单内存；跨刷新/关闭的恢复尚未实现。离开提示要求先核对已有记录，不能把重新打开表单视为原请求重试。
+本次文档更新仅执行真实源码、结构与构建检查，结果见 [DOCS01](../docs/development/DOCS01-current-documentation.md)。已有业务证据的日期、来源、输入和运行环境见 QA12、QA15—QA29。完整 39 页状态、实际手机、微信、真实音频、视觉、临床及生产验收继续由 T54、T56—T60 维护。
+
+`scripts/` 中包含历史模拟与浏览器检查脚本。使用前读取其数据来源、账号要求、写入行为及适用环境；当前用户禁止模拟资料与主动视觉操作，本次没有运行此类检查。构建结果仅证明前端能够通过类型检查并生成制品。

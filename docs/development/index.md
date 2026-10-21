@@ -1,5 +1,7 @@
 # 开发记录索引
 
+文档导航核实日期：2026-10-21（Asia/Shanghai）；适用源码 `f05dbcf106e70d890a5574385fd63b3ddd502146`。当前交接见 [CURRENT-DELIVERY-20261021](../../CURRENT-DELIVERY-20261021.md)，业务与代码关系见[知识索引](../knowledge/index.md)，本次文档检查见 [DOCS01](DOCS01-current-documentation.md)。以下带有日期或模拟范围的执行描述仅适用于对应记录；当前状态继续从唯一来源读取。
+
 本索引登记稳定任务身份和主记录路径。T01—T60 状态以 [交付记录](../../planning/delivery-ledger.json) 为准，专项 QA 状态以各自主记录为准；工单内容见 [实施计划](../../implementation-tasks.md)。已有主记录持续更新；尚无正文的路径在执行对应任务时创建。T34 的工程接收与 HLD 2.0 依据见 [主记录](T34.md)，T35 的数据规范与 SQL 校验见 [主记录](T35.md)，T36 的接口、字段与任务规范见 [主记录](T36.md)，本期实施要求见 [知识说明](../knowledge/prd2-delivery.md)。路径登记不代表实现或验收完成。当前顺序见 [2.0 迭代计划](../../2.0迭代计划.md)。
 
 检索规则：按 task_id、需求/验收 ID、模块或 identifier 查询；同时阅读实际代码与当前设计。每项验收前核对唯一主记录、有效引用、真实证据及受影响记录。关联记录为该任务 depends_on 的主记录以及第七列的消费方记录。
@@ -34,6 +36,7 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| DOCS01 | 当前项目文档维护 | OpenAPI；ORM；路由；来源；FAQ；完整待办 | 用户2026-10-21文档更新；S012 | docs/development/DOCS01-current-documentation.md | README；docs/reference；docs/knowledge；docs/operations.md | QA14；QA28；QA29；T01—T60 |
 | QA29 | 真实原件范围与准确制品 | Range；内存；63份原件；完整API；当前采用 | FR-02；FR-09；NFR-07；OPS | docs/development/QA29-real-original-range-reads.md | file_content；get_range；backend_artifact_manifest；实际HTTP及Chrome | T12；T28；T33；T46；T56；T57；QA14 |
 | QA28 | 目标运行版本与空库迁移 | Python3.13；PostgreSQL17；正式迁移；结构；真实参数；设计回执 | OPS；V01；V02；V35；V39 | docs/development/QA28-target-runtime-compatibility.md | 正式migrations；data-design.check_v2；只读实际数据库 | T01；T02；T27；T35；T39；T57；QA14 |
 | QA27 | 真实临床入口权限范围 | 核对字段403；空病例目录；current；replay；整理 | FR-09；FR-10；AC-10 | docs/development/QA27-real-clinical-access-scope.md | verification.workflow；assessment；实际Chrome | T49；T50；T56；QA12；QA14 |

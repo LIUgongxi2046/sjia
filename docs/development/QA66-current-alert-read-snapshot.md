@@ -1,6 +1,6 @@
 # QA66 有效预警的首页读取
 
-状态为 ACCEPTED，文档有效性 CURRENT，last_verified 为 2026-10-21。本记录为唯一状态来源，关联 QA65 与首页实际业务验收。
+状态为 ACCEPTED，文档有效性 CURRENT，last_verified 为 2026-10-21。本记录为唯一状态来源，关联 QA65、[QA68](QA68-historical-data-calculated-alerts.md) 与首页实际业务验收。当前计算提示的浏览器读取及已读保存由 .qa-work/QA68/browser-5.json 验证，送达核验持有行锁时的首页与详情读取由 concurrent-reads.json 验证，全部返回 HTTP 200。
 
 ## 需求与依据
 

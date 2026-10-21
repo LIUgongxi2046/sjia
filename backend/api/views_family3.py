@@ -460,6 +460,7 @@ def contact_read(request, patient_id):
 
 @api_view(["GET"])
 @handle
+@record_read_snapshot
 def alert_read(request, alert_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -467,7 +468,7 @@ def alert_read(request, alert_id):
     event = AlertEvent.objects.filter(id=alert_id).first()
     if event is None:
         raise ApiError("ALERT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    decision = authorize_case(request, principal, event.patient, 'receive_alert')
+    decision = authorize_case(request, principal, event.patient, 'receive_alert', lock=False)
     from relations.models import Relation
 
     relation_ids = Relation.objects.filter(patient=event.patient, guardian=principal, status='active').values('id')

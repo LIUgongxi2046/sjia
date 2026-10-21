@@ -31,7 +31,7 @@ def notification_identity(request, support):
     if audience != ('support' if support else 'family'):
         raise ApiError('NOTIFICATION_AUDIENCE_REQUIRED', 403)
     gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
+    actor = Principal.objects.select_for_update(no_key=True).get(id=actor.id)
     if not gate.enabled:
         raise ApiError('ENVIRONMENT_DISABLED', 403)
     service = authorize_service(request, actor, 'manage_notifications').service_grant if support else None
@@ -39,7 +39,7 @@ def notification_identity(request, support):
 
 
 def notification_scope(request, patient_id, support, actor, service):
-    patient = Patient.objects.select_for_update().get(id=patient_id)
+    patient = Patient.objects.select_for_update(no_key=True).get(id=patient_id)
     grant = authorize_case(request, actor, patient, 'read_case' if support else 'receive_alert',
         whole_resource=support, require_relation=not support).grant
     if not grant.evidence_ref.strip():

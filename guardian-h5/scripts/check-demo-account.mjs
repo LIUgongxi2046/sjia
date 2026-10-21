@@ -57,11 +57,12 @@ try {
   assert.equal(await page.getByRole('note').filter({ hasText: '模拟数据 · 仅用于功能体验' }).count(), 1);
   let home = await get(`/api/patients/${dataset.patient_id}/home`);
   assert.equal(home.current_alert_id, presets.event_id);
-  assert.equal(home.clinical.approved_text.includes('模拟演示'), true);
+  assert.equal(presets.calculation_source, 'dynamic-evaluation-task-2');
+  assert.equal(home.clinical.approved_text.includes('模拟演示'), false);
   await page.reload();
   await page.locator('.home-alert').waitFor();
   assert.equal((await get(`/api/patients/${dataset.patient_id}/home`)).current_alert_id, presets.event_id);
-  await check('CURRENT_PRESENTATION_ALERT_SURVIVES_READ_ONLY_HOME_AND_RELOAD');
+  await check('CURRENT_CALCULATED_ALERT_SURVIVES_READ_ONLY_HOME_AND_RELOAD');
   const detail = await get(`/api/alerts/${presets.event_id}`);
   const reading = detail.read_at ? null : page.waitForResponse(response =>
     new URL(response.url()).pathname === `/api/alerts/${presets.event_id}/read` && response.request().method() === 'POST');

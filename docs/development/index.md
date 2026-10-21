@@ -36,6 +36,7 @@ PRD 2.0 需求：参见 [当前 PRD](../../sJIA合并MAS预警平台PRD.md) 第 
 
 | task_id | 业务名称／模块 | 关键词与 identifier | 需求／验收 ID | development_record | 主要实现路径 | 关联任务 |
 | --- | --- | --- | --- | --- | --- | --- |
+| QA68 | 历史资料与计算提示 | 北京时间；采样；出具；动态计算；输入资格；家庭提示 | QA68-01—05 | docs/development/QA68-historical-data-calculated-alerts.md | simulation_inputs；alerting.inputs；records.correction；check-history-alerts | QA65；QA66；T41；T50 |
 | QA67 | 家庭资料与方案目录并发读取 | 方案目录；观察时段；资料关系；审计；共享锁 | QA67-01—04 | docs/development/QA67-preset-directory-concurrency.md | alerting.presets；assessment.service；records.periods；requests.archive_relations | QA65；QA66 |
 | QA66 | 有效预警的首页读取 | 只读快照；发布核验；首页 | QA66-01—03 | docs/development/QA66-current-alert-read-snapshot.md | alerting.presets；api.family_home | QA65；QA64 |
 | QA65 | 测试账号完整模拟资料 | 模拟资料；家庭全部功能；持久化；隔离 | FR-01—22；QA65-01—09 | docs/development/QA65-complete-simulation-account.md | 示例资料入口；家庭路由；实际业务接口 | QA06；QA63；QA64 |

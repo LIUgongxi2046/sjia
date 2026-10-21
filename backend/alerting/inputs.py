@@ -4,6 +4,7 @@ from datetime import timezone as datetime_timezone
 from uuid import UUID
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from archives.models import ArchiveFactVersion
@@ -234,15 +235,27 @@ def collect_dynamic_inputs(*, patient_id, actor, auth_epoch, environment, payloa
         choices[key] = {key: value for key, value in choice.items() if key != 'input_role'}
     candidates, selected, baselines, series, relation_sets, candidate_refs, exclusions, relation_refs, proofs = {}, {}, {}, {}, {}, [], [], {}, []
     relation_proofs = {}
+    from assessment.simulation_inputs import collect_simulation_fact, simulation_scope
+
+    simulated_scope = simulation_scope(environment=environment, patient_id=patient.id, actor_id=actor.id,
+        rule_id=input_rule.id, source_id=authorization.source_revision_id)
     for code, variable in variables.items():
         values = []
         fields = RecordField.objects.filter(patient=patient, concept_code=variable.concept_code)
+        if simulated_scope:
+            fields = RecordField.objects.filter(patient=patient).filter(Q(concept_code=variable.concept_code)
+                | Q(concept_code__isnull=True, field_code=variable.concept_code))
         for fact in ArchiveFactVersion.objects.select_for_update().filter(patient_id=patient.id, field_id__in=fields.values('id')).order_by('id'):
-            value = qualify_fact(fact_id=fact.id, patient=patient, actor=actor, auth_epoch=auth_epoch,
-                rule_id=input_rule.id, window_policy_id=window.id, verification_policy_id=policies_by_code[code], variable_code=code,
-                environment=environment, known_at=known_at, assessment_at=assessment_at, mode=payload['mode'],
-                context_policy_id=context_by_code.get(code), input_role='series' if variable.value_type == 'decimal' else 'context',
-                rule_schema='dynamic-input-policy-2')
+            if simulated_scope:
+                value = collect_simulation_fact(fact=fact, patient=patient, actor=actor, rule_config=input_rule,
+                    variable=variable, window=windows[code], environment=environment, known_at=known_at,
+                    assessment_at=assessment_at, mode=payload['mode'], purpose=qualification.purpose, input_role='context')
+            else:
+                value = qualify_fact(fact_id=fact.id, patient=patient, actor=actor, auth_epoch=auth_epoch,
+                    rule_id=input_rule.id, window_policy_id=window.id, verification_policy_id=policies_by_code[code], variable_code=code,
+                    environment=environment, known_at=known_at, assessment_at=assessment_at, mode=payload['mode'],
+                    context_policy_id=context_by_code.get(code), input_role='series' if variable.value_type == 'decimal' else 'context',
+                    rule_schema='dynamic-input-policy-2')
             if value.eligible and period is not None and (value.interval.lower < period['lower'] or value.interval.upper > period['upper']
                     or value.interval.upper == period['upper'] and value.interval.upper_inclusive and not period['upper_inclusive']):
                 value = replace(value, reasons=('FACT_OUTSIDE_OBSERVATION_PERIOD',))

@@ -14,15 +14,14 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
 from configurations.evidence import artifact_verification_scope
+from core.errors import CodedRuntimeError
 
 _LOCK = RLock()
 _ADMITTED = None
 
 
-class RuntimeAdmissionRejected(RuntimeError):
-    def __init__(self, reason_code):
-        self.reason_code = reason_code
-        super().__init__(reason_code)
+class RuntimeAdmissionRejected(CodedRuntimeError):
+    pass
 
 
 def _reject(code):
@@ -216,6 +215,9 @@ def inspect_runtime(environment=None):
     reason = _platform_reason(payload)
     if reason:
         _reject(reason)
+    from files.storage_factory import inspect_storage_configuration, storage_selection
+    storage_identity = inspect_storage_configuration(payload.get('object_storage'))
+    file_store_available = storage_selection.writable()
     task_types = {row['task_type'] for row in payload['tasks']}
     if any(row['enabled'] and row['kind'] in ('ocr','voice') for row in payload['providers']):
         reason = configuration_qualification_reason(runtime, environment, audience='family')
@@ -256,21 +258,22 @@ def inspect_runtime(environment=None):
     policy_ids, reasons = _capability_policies(task_types, environment)
     for task in task_types - {'ocr','notification'}:
         reason = reasons.get(task)
-        if task == 'file_validation' and (not _local_directory(settings.FILE_OBJECT_ROOT, writable=True) or 'file' not in classes):
+        if task == 'file_validation' and (not file_store_available or 'file' not in classes):
             reason = 'RUNTIME_FILE_STORE_UNAVAILABLE'
         capabilities[task] = {'state':'not_configured' if reason else
             ('configured' if task in ('summary','assessment','alert_evaluation') else 'budget_configured'),
             'reason_code':reason,'requires_request_authorization':True,'required_for_startup':False}
     for kind in ('ocr','voice','notification'):
         capabilities.setdefault(kind, {'state':'disabled','reason_code':'CAPABILITY_NOT_ENABLED'})
-    if any(entry['enabled'] and entry['kind'] in ('ocr','voice') for entry in payload['providers']) and not _local_directory(settings.FILE_OBJECT_ROOT, writable=True):
+    if any(entry['enabled'] and entry['kind'] in ('ocr','voice') for entry in payload['providers']) and not file_store_available:
         _reject('RUNTIME_FILE_STORE_UNAVAILABLE')
     identity = {**desired_identity(gate), 'runtime_checksum':runtime.checksum,
         'runtime_version':str(runtime.version),
         'dependency_checksum':compute_checksum({'providers':sorted(providers,key=lambda x:x['id']),
             'policies':sorted(policy_ids,key=lambda x:x['id']),
             'retention':[{'id':str(row.id),'version':str(row.version),'rules':row.rules}
-                for row in sorted(policies,key=lambda row:str(row.id))]})}
+                for row in sorted(policies,key=lambda row:str(row.id))],
+            **({'object_storage': storage_identity} if storage_identity is not None else {})})}
     return {'desired':identity,'capabilities':capabilities,'runtime_payload':deepcopy(payload)}
 
 
@@ -287,7 +290,7 @@ def admission_status(environment=None):
             result['reason_code'] = 'PROCESS_RUNTIME_NOT_ADMITTED'
         elif loaded['identity'] != current['desired']:
             result['reason_code'] = 'PROCESS_RUNTIME_CONFIGURATION_DRIFT'
-    except RuntimeAdmissionRejected as exc:
+    except CodedRuntimeError as exc:
         result['reason_code'] = exc.reason_code
     except Exception:
         result['reason_code'] = 'RUNTIME_CONFIGURATION_UNAVAILABLE'
@@ -327,7 +330,7 @@ def admit_configured_process(process_kind):
     if getattr(settings,'REQUIRE_PROCESS_RUNTIME_ADMISSION',False):
         try:
             return admit_process_runtime(process_kind)
-        except RuntimeAdmissionRejected as exc:
+        except CodedRuntimeError as exc:
             raise RuntimeAdmissionRejected(exc.reason_code) from None
         except Exception:
             raise RuntimeAdmissionRejected('RUNTIME_PROCESS_ADMISSION_FAILED') from None

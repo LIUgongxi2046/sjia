@@ -14,8 +14,8 @@ from requests.archive_documents import family_identity
 from requests.dispositions import disposition_receipt, submitted_disposition_intent
 from requests.service import commit_intent
 from retention.disposition import approved_policy, create_disposition_request, local_rule, scope_sha256
+from retention.jobs import disposition_tasks
 from retention.models import DispositionItem, DispositionRequest, RetentionPolicy, SimulatedProviderCopy
-from tasks.models import Task
 
 
 def read_identity(request, patient_id):
@@ -84,8 +84,7 @@ def family_disposition_read(request, disposition_id):
     row = DispositionRequest.objects.select_for_update().get(id=disposition_id, requested_by=actor)
     read_identity(request, row.patient_id)
     items = DispositionItem.objects.filter(request=row).order_by('target_type', 'target_id', 'target_version')
-    task_ids = Task.objects.filter(task_type='disposition', patient=row.patient,
-        input_refs__disposition_ref__disposition_id=str(row.id)).order_by('created_at', 'id').values_list('id', flat=True)
+    task_ids = disposition_tasks(row).values_list('id', flat=True)
     return Response({'disposition_id': str(row.id), 'patient_id': str(row.patient_id), 'status': row.status,
         'policy_id': str(row.policy_id), 'policy_version': str(row.policy.version), 'scope_sha256': scope_sha256(row.scope),
         'targets': [PurposeDispositionTarget.model_validate(target).model_dump(mode='json') for target in row.scope['targets']],

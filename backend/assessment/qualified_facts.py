@@ -42,6 +42,7 @@ class QualifiedFact:
     interval: MedicalInterval | None
     value: Decimal | str | None
     reasons: tuple[str, ...]
+    simulation_qualified: bool = False
 
     @property
     def eligible(self):

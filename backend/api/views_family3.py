@@ -321,8 +321,8 @@ def file_content(request, file_id):
     assert_content_available('files.fileobject', file_object.id)
     range_header = request.headers.get("Range")
     if range_header is None:
-        data = object_store.get(file_object.object_key)
-        return HttpResponse(data, content_type=file_object.media_type, headers={'Accept-Ranges': 'bytes'})
+        from files.http_content import verified_file_response
+        return verified_file_response(file_object)
     size = file_object.size_bytes
     start, end = parse_range(range_header, size)
     data = object_store.get_range(file_object.object_key, start, end)
@@ -460,6 +460,7 @@ def contact_read(request, patient_id):
 
 @api_view(["GET"])
 @handle
+@record_read_snapshot
 def alert_read(request, alert_id):
     principal, _, _ = current_principal(request)
     if principal is None:
@@ -467,7 +468,7 @@ def alert_read(request, alert_id):
     event = AlertEvent.objects.filter(id=alert_id).first()
     if event is None:
         raise ApiError("ALERT_NOT_FOUND", status.HTTP_404_NOT_FOUND)
-    decision = authorize_case(request, principal, event.patient, 'receive_alert')
+    decision = authorize_case(request, principal, event.patient, 'receive_alert', lock=False)
     from relations.models import Relation
 
     relation_ids = Relation.objects.filter(patient=event.patient, guardian=principal, status='active').values('id')

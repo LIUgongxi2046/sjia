@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-mapped-absence-fence-1",
+  "type": "object", "additionalProperties": false,
+  "required": ["restore_id", "mapping_sha256", "source_registration_id", "source_reference", "source_file", "target_absence", "prepared_at"],
+  "properties": {
+    "schema_version": {"const": "s3-mapped-absence-fence-1", "default": "s3-mapped-absence-fence-1"},
+    "restore_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "mapping_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "source_registration_id": {"type": ["string", "null"], "format": "uuid"},
+    "source_reference": {"oneOf": [{"type": "null"}, {"$ref": "urn:sjia:schema:s3-object-reference-1"}]},
+    "source_file": {"oneOf": [{"type": "null"}, {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/file"}]},
+    "target_absence": {"$ref": "urn:sjia:schema:s3-object-absence-1"},
+    "prepared_at": {"type": "string", "format": "date-time"}
+  },
+  "oneOf": [
+    {"properties": {"source_registration_id": {"type": "string"}, "source_reference": {"type": "object"}, "source_file": {"type": "null"}}},
+    {"properties": {"source_registration_id": {"type": "null"}, "source_reference": {"type": "null"}, "source_file": {"type": "object", "properties": {"status": {"const": "disposed"}}}}}
+  ]
+}

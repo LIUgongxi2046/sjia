@@ -54,7 +54,7 @@ export function UI2AlertDetailPage() {
   const [reading, setReading] = useState(false), [attempt, setAttempt] = useState(0), [clock, setClock] = useState(Date.now());
   const data = resource.data;
   const contentRef = useRef<HTMLElement>(null);
-  const notification = useNotificationDelivery(data, access.patientId, contentRef, attempt);
+  const notification = useNotificationDelivery(data && (data.read_at || readAt) ? data : null, access.patientId, contentRef, attempt);
   const contact = data?.content?.contact;
   useEffect(() => {
     if (contact?.state !== 'available' || !contact.valid_until) return;

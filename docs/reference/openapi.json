@@ -3,7 +3,7 @@
   "info": {
     "title": "sJIA 家庭与支持身份及原件读取 API",
     "version": "0.1.0-docs.20261021",
-    "description": "依据 f05dbcf 的七个路径核查；范围包含会话和原件内容。完整业务目录另见 api-route-inventory.json、领域 Schema 及 api-integration.md。"
+    "description": "依据 b094448 的七个路径核查；范围包含会话和原件内容。完整业务目录另见 api-route-inventory.json、领域 Schema 及 api-integration.md。"
   },
   "servers": [{"url": "/api"}],
   "security": [{"ProductionSession": []}, {"DevelopmentSession": []}],

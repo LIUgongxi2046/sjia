@@ -2,7 +2,9 @@ import { createContext, Fragment, useCallback, useContext, useEffect, useRef, us
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import * as api from '../api/endpoints';
-import { ApiError, setSessionCsrfToken } from '../api/client';
+import { ApiError, setSessionCsrfToken, subscribeSessionUnauthorized } from '../api/client';
+import { assertSessionEpoch, isSessionEpochCurrent, runSessionMutation, runSessionRead } from '../api/sessionBoundary';
+import type { SessionEpoch, SessionMutationResult } from '../api/sessionBoundary';
 import { clearNavigationMemory } from './navigation';
 
 export interface AccessContextValue {
@@ -20,7 +22,7 @@ export interface AccessContextValue {
   scopeVersion: number;
   hasCurrentAccess: (principal?: string | null, patient?: string | null, scope?: number) => boolean;
   /** False means access recovery is needed or a newer operation superseded this one. */
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string, preferredPatient?: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -61,7 +63,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   const generation = useRef(0);
   const identity = useRef<{ principal: string | null; patient: string | null }>({ principal: null, patient: null });
   const mutation = useRef<'authenticate' | 'logout' | null>(null);
-  const authentication = useRef<Promise<api.SessionView | null> | null>(null);
+  const authentication = useRef<Promise<SessionMutationResult<api.SessionView | null>> | null>(null);
   const logoutRequired = useRef(false);
   const discardScopedUrl = useRef(false);
   const expiresAt = useRef(0);
@@ -69,6 +71,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   const authorizedGeneration = useRef<number | null>(null);
   const verifiedRelation = useRef<api.RelationItem | null>(null);
   const verifiedSession = useRef('');
+  const verifiedEpoch = useRef<SessionEpoch>(null);
   const scope = useRef<{ version: number; fingerprint: string | null }>({ version: 0, fingerprint: null });
   const changeScope = useCallback((fingerprint: string | null) => {
     if (scope.current.fingerprint === fingerprint) return;
@@ -76,7 +79,8 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     setScopeVersion(scope.current.version);
     clearNavigationMemory(); api.clearPendingRecordRequests();
   }, []);
-  const hasCurrentAccess = useCallback((principal?: string | null, patient?: string | null, expectedScope?: number) => authorizedGeneration.current === generation.current
+  const hasCurrentAccess = useCallback((principal?: string | null, patient?: string | null, expectedScope?: number) => isSessionEpochCurrent(verifiedEpoch.current)
+    && authorizedGeneration.current === generation.current
     && (expectedScope === undefined || expectedScope === scope.current.version)
     && (principal === undefined || principal === identity.current.principal) && (patient === undefined || patient === identity.current.patient)
     && expiresAt.current > Date.now() && Boolean(verifiedRelation.current && canSelectPatient(verifiedRelation.current)), []);
@@ -149,8 +153,9 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     setPatientId(value);
   }, [changeScope]);
 
-  const applySession = useCallback(async (session: api.SessionView, requestGeneration: number, requiredPatient?: string): Promise<boolean> => {
+  const applySession = useCallback(async (session: api.SessionView, requestGeneration: number, epoch: SessionEpoch, requiredPatient?: string): Promise<boolean> => {
     if (requestGeneration !== generation.current) return false;
+    assertSessionEpoch(epoch);
     if (Date.parse(session.expires_at) <= Date.now()) { clearIdentity(); setError(null); setErrorSource(null); return false; }
     if (identity.current.principal !== session.principal_id) clearIdentity();
     identity.current.principal = session.principal_id;
@@ -173,6 +178,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     try {
       const result = await api.listRelations();
       if (requestGeneration !== generation.current) return false;
+      assertSessionEpoch(epoch);
       if (expiresAt.current <= Date.now()) { clearIdentity(); setError(null); setErrorSource(null); return false; }
       const selected = result.relations.find(relation => relation.patient_id === session.selected_patient_id && canSelectPatient(relation));
       if (requiredPatient && (!selected || selected.patient_id !== requiredPatient)) {
@@ -182,6 +188,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       }
       const first = result.relations.find(canSelectPatient);
       verifiedRelation.current = selected ?? first ?? null;
+      verifiedEpoch.current = epoch;
       authorizedGeneration.current = requestGeneration;
       setRelations(result.relations);
       setCapabilities(session.capabilities);
@@ -201,18 +208,28 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     }
   }, [adoptPatient, adoptToken, clearIdentity, suspendPatientAccess]);
 
+  useEffect(() => subscribeSessionUnauthorized(() => {
+    if (mutation.current || logoutRequired.current) return;
+    generation.current += 1;
+    clearIdentity(); setError(null); setErrorSource(null); setLoading(false); setInitialized(true);
+  }), [clearIdentity]);
+
   const refresh = useCallback(async () => {
     // A background pageshow/visibility event must not supersede sign-in/out.
     if (mutation.current || logoutRequired.current) return;
     const requestGeneration = ++generation.current;
     setLoading(true);
     try {
-      const bootstrap = await api.bootstrap();
+      const { value: session, epoch } = await runSessionRead(async () => {
+        const bootstrap = await api.bootstrap();
+        if (requestGeneration !== generation.current) return null;
+        adoptToken(bootstrap.csrf_token);
+        return api.readSession();
+      });
       if (requestGeneration !== generation.current) return;
-      adoptToken(bootstrap.csrf_token);
-      const session = await api.readSession();
-      if (requestGeneration !== generation.current) return;
-      await applySession(session, requestGeneration);
+      if (!session) return;
+      assertSessionEpoch(epoch);
+      await applySession(session, requestGeneration, epoch);
     } catch (failure) {
       if (requestGeneration !== generation.current) return;
       if (failure instanceof ApiError && failure.status === 401) {
@@ -239,21 +256,26 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
-  const authenticate = useCallback(async (mode: 'login' | 'register', username: string, password: string) => {
+  const authenticate = useCallback(async (mode: 'login' | 'register', username: string, password: string, preferredPatient?: string) => {
     if (mutation.current || logoutRequired.current) throw new Error('请先完成当前账号操作。');
     mutation.current = 'authenticate';
     const requestGeneration = ++generation.current;
     clearIdentity(); setError(null); setErrorSource(null); setLoading(true);
-    const pending = (async () => {
+    const pending = runSessionMutation(async () => {
       const bootstrap = await api.bootstrap();
       if (requestGeneration !== generation.current) return null;
-      return api[mode](username, password, bootstrap.csrf_token);
-    })();
+      const session = await api[mode](username, password, bootstrap.csrf_token);
+      if (!preferredPatient) return session;
+      if (requestGeneration !== generation.current) return null;
+      await api.savePatientSelection(preferredPatient, session.csrf_token);
+      if (requestGeneration !== generation.current) return null;
+      return api.readSession();
+    });
     authentication.current = pending;
     try {
-      const session = await pending;
+      const { value: session, epoch } = await pending;
       if (!session || requestGeneration !== generation.current) return false;
-      return await applySession(session, requestGeneration);
+      return await applySession(session, requestGeneration, epoch, preferredPatient);
     } catch (failure) {
       if (requestGeneration !== generation.current) return false;
       throw failure;
@@ -264,7 +286,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [applySession, clearIdentity]);
-  const login = useCallback((username: string, password: string) => authenticate('login', username, password), [authenticate]);
+  const login = useCallback((username: string, password: string, preferredPatient?: string) => authenticate('login', username, password, preferredPatient), [authenticate]);
   const register = useCallback((username: string, password: string) => authenticate('register', username, password), [authenticate]);
 
   const logout = useCallback(async () => {
@@ -279,9 +301,10 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       // rotation rather than letting a late sign-in restore the server session.
       if (pendingAuthentication) await pendingAuthentication.catch(() => null);
       if (requestGeneration !== generation.current) return;
-      const bootstrap = await api.bootstrap();
-      if (requestGeneration !== generation.current) return;
-      await api.logout(bootstrap.csrf_token);
+      await runSessionMutation(async () => {
+        const bootstrap = await api.bootstrap();
+        await api.logout(bootstrap.csrf_token);
+      });
       if (requestGeneration !== generation.current) return;
       logoutRequired.current = false;
     } catch (failure) {
@@ -305,13 +328,15 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     let phase: 'session' | 'relations' = 'relations';
     let validationStarted = false;
     try {
-      await api.savePatientSelection(id);
+      const { value: session, epoch } = await runSessionMutation(async () => {
+        await api.savePatientSelection(id);
+        return api.readSession();
+      });
       if (requestGeneration !== generation.current) throw new Error('登录身份或当前患儿已改变，请重新核验。');
       // Selection receipt proves only the saved ID. Read current session and
       // grants before exposing this patient's clinical state or write actions.
       phase = 'session';
-      const session = await api.readSession();
-      if (requestGeneration !== generation.current) throw new Error('登录身份或当前患儿已改变，请重新核验。');
+      assertSessionEpoch(epoch);
       if (session.principal_id !== principalId) {
         clearIdentity();
         throw new Error('当前账号已改变，请重新核验访问权限。');
@@ -322,7 +347,7 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       phase = 'relations';
       if (session.selected_patient_id !== id) throw new Error('当前患儿选择已改变，请重新核验访问权限。');
       validationStarted = true;
-      if (!await applySession(session, requestGeneration, id)) throw new Error('患儿选择已保存，访问权限尚未完成核验。');
+      if (!await applySession(session, requestGeneration, epoch, id)) throw new Error('患儿选择已保存，访问权限尚未完成核验。');
     } catch (failure) {
       if (requestGeneration === generation.current && !validationStarted) {
         if (failure instanceof ApiError && failure.status === 401) { clearIdentity(); setError(null); setErrorSource(null); }
@@ -348,7 +373,9 @@ export function AccessProvider({ children }: { children: ReactNode }) {
     if (forceClear || !principalId || !patientId || changed) params.delete('draft');
     previousUrlScope.current = { principal: principalId, patient: patientId };
     const search = params.toString();
-    if (search !== new URLSearchParams(location.search).toString()) {
+    // 当前页面已经导航时，旧页面的参数清理不能重新进入原来的业务路径。
+    if (search !== new URLSearchParams(location.search).toString()
+      && window.location.pathname === location.pathname && window.location.search === location.search) {
       void navigate({ pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash }, { replace: true });
     }
   }, [error, loading, location.hash, location.pathname, location.search, navigate, patientId, principalId]);

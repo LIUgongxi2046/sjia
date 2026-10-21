@@ -1,6 +1,6 @@
 # 监护人 H5 与支持页面
 
-doc_id：SJIA-H5-README；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：前端路由、请求与运行配置变化时更新。
+doc_id：SJIA-H5-README；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43` 及当前文档、测试资料。维护责任：前端路由、请求与运行配置变化时更新。
 
 使用 React 18.3.1、TypeScript 7.0.2、Vite 8.3.1、antd-mobile 5.43.0 与 React Router 7.18.4，准确依赖见 [package.json](package.json) 与 [package-lock.json](package-lock.json)。完整交接见 [当前交付说明](../CURRENT-DELIVERY-20261021.md)，任务与验收继续引用 [交付记录](../planning/delivery-ledger.json)。
 
@@ -18,6 +18,8 @@ npm run build
 `dev` 使用 `127.0.0.1:5173`，`preview` 使用 `127.0.0.1:4173`，均设置 `strictPort` 与 `Cache-Control: no-store`。`/api` 默认代理至 `127.0.0.1:8000`；连接准确后端时设置 `SJIA_API_TARGET`。启动命令不能证明账号、患儿关联或业务配置已经可用。
 
 后端依赖与环境准备见 [项目 README](../README.md)及[操作说明](../docs/operations.md)。账号通过正常注册和授权流程取得，凭据由实际使用者管理。
+
+`local-validation` 构建从四项显式环境变量读取测试账号，配置与验证见 [QA63](../docs/development/QA63-local-test-account.md)。普通 production 构建中的测试凭据为 null。已授权提交的模拟资料见[测试账号资料快照](../test-data/README.md)，现有本地模拟入口与功能范围见 [QA65](../docs/development/QA65-complete-simulation-account.md)、[QA68](../docs/development/QA68-historical-data-calculated-alerts.md)。
 
 ## 页面与使用关系
 

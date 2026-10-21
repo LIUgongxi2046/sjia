@@ -12,8 +12,10 @@ from django.utils import timezone
 
 from retention.content_registry import (REGISTRY, REGISTRY_SHA256, PRESERVATION_SHA256,
     adapter, digest, owned_references, patient_rows, row_digest, row_references, row_version)
-from retention.content_schemas import (ContentApproval, ContentManifest, ContentPlanInput,
-    ContentPolicyRules, ContentPolicyAttestation, ContentHoldAttestation, DatabaseProof, LocalObjectProof)
+from retention.content_schemas import (ContentApproval, ContentManifest, S3ContentManifest, S3ContentPolicyRules, ContentPlanInput,
+    parse_manifest, parse_policy_rules, ContentPolicyAttestation, ContentHoldAttestation, DatabaseProof)
+from retention.content_storage import (assert_current_s3_proof, assert_manifest_storage,
+    assert_s3_exclusive_keys, assert_target_storage, delete_s3_proof, file_proof, storage_kind, verify_s3_proof)
 from retention.disposition import DispositionRejected
 from retention.models import (ContentDispositionHold, ContentDispositionPlan,
     ContentDispositionPolicy, ContentErasure, ContentAccessRevocation)
@@ -53,7 +55,7 @@ def _policy(policy_id, *, execution=False):
     from configurations.evidence import inspect_approved_evidence
     from identity.models import Principal
     policy = ContentDispositionPolicy.objects.select_for_update().get(id=policy_id)
-    rules = ContentPolicyRules.model_validate(policy.rules)
+    rules = parse_policy_rules(policy.rules)
     now = timezone.now()
     if (policy.environment != settings.SJIA_ENVIRONMENT or policy.checksum != digest(policy.rules)
             or rules.registry_sha256 != REGISTRY_SHA256 or rules.preservation_sha256 != PRESERVATION_SHA256
@@ -120,6 +122,9 @@ def _assert_exclusive_paths(items):
         return
     from files.deletion import object_path,LocalDeletionRejected
     from files.service import object_store
+    if storage_kind() == 's3':
+        assert_s3_exclusive_keys(items)
+        return
     ids = {identity for identity, _ in items}
     try:
         paths = [object_path(object_store,key) for _,key in items]
@@ -257,6 +262,7 @@ def _obligations(rows, files):
 def preview_plan(*, actor, auth_epoch, patient_id, policy_id, data, family_request_id=None):
     from identity.models import Patient
     request = ContentPlanInput.model_validate(data)
+    assert_target_storage(request.targets)
     write_barrier(exclusive=True)
     patient = Patient.objects.select_for_update().get(id=patient_id)
     policy, rules = _policy(policy_id)
@@ -270,8 +276,13 @@ def preview_plan(*, actor, auth_epoch, patient_id, policy_id, data, family_reque
     rows, files = _closure(patient.id, request.targets)
     if any(row._meta.label_lower not in rules.allowed_adapters for row in rows):
         reject('CONTENT_CLOSURE_OUTSIDE_POLICY')
-    if files and not rules.local_objects:
-        reject('CONTENT_LOCAL_OBJECT_POLICY_REQUIRED')
+    if files:
+        if storage_kind() == 'local' and not rules.local_objects:
+            reject('CONTENT_LOCAL_OBJECT_POLICY_REQUIRED')
+        if storage_kind() == 's3' and (not isinstance(rules, S3ContentPolicyRules) or not rules.s3_objects):
+            reject('CONTENT_S3_OBJECT_POLICY_REQUIRED')
+        if storage_kind() == 's3' and any(file.purpose not in rules.allowed_file_purposes for file in files):
+            reject('CONTENT_S3_OBJECT_PURPOSE_OUTSIDE_POLICY')
     now = timezone.now()
     # Clock applies to explicit source targets; mirrors inherit their source's
     # eligibility, not an invented age based on their later copying time.
@@ -290,13 +301,20 @@ def preview_plan(*, actor, auth_epoch, patient_id, policy_id, data, family_reque
             reject('CONTENT_RETENTION_NOT_DUE')
     items = [DatabaseProof(kind='database', adapter=row._meta.label_lower, object_id=row.pk,
         version=row_version(row), row_sha256=row_digest(row)) for row in rows]
-    items.extend(LocalObjectProof(kind='local_object', file_id=file.id, object_version=file.object_version,
-        object_key=file.object_key, checksum=file.checksum, size_bytes=file.size_bytes, operation_id=uuid4()) for file in files)
-    manifest = ContentManifest(family_request_id=family_request_id,schema_version='content-disposition-manifest-1', patient_id=patient.id,
+    items.extend(file_proof(file) for file in files)
+    manifest_type = ContentManifest
+    storage_fields = {}
+    if storage_kind() == 's3':
+        from files.service import object_store
+        manifest_type = S3ContentManifest
+        storage_fields = {'storage_binding_sha256': object_store.driver.configuration.binding_sha256}
+    manifest = manifest_type(family_request_id=family_request_id,
+        schema_version='content-disposition-manifest-2' if storage_fields else 'content-disposition-manifest-1', patient_id=patient.id,
         policy_id=policy.id, policy_version=policy.version, policy_sha256=policy.checksum,
         registry_sha256=REGISTRY_SHA256, preservation_sha256=PRESERVATION_SHA256, mode=rules.mode,
         environment=policy.environment, hold_id=request.hold_id, hold_version=request.hold_version,
-        roots=request.targets, items=items, obligations=_obligations(rows, files), created_at=now).model_dump(mode='json')
+        roots=request.targets, items=items, obligations=_obligations(rows, files), created_at=now,
+        **storage_fields).model_dump(mode='json')
     if rules.all_copies_required and manifest['obligations']:
         reject('CONTENT_ALL_COPIES_PROTOCOL_UNAVAILABLE')
     return ContentDispositionPlan.objects.create(family_request_id=family_request_id,patient=patient, policy=policy, requested_by=actor,
@@ -309,7 +327,8 @@ def _current_plan(plan_id, actor, auth_epoch, *, execution):
     patient = Patient.objects.select_for_update().get(id=plan.patient_id)
     policy, rules = _policy(plan.policy_id, execution=execution)
     actor, service, grants = _identity(actor, auth_epoch, patient, rules.access_purpose)
-    manifest = ContentManifest.model_validate(plan.manifest)
+    manifest = parse_manifest(plan.manifest)
+    assert_manifest_storage(manifest)
     if (digest(plan.manifest) != plan.manifest_sha256 or manifest.patient_id != plan.patient_id
             or manifest.policy_id != policy.id or manifest.policy_version != policy.version
             or manifest.policy_sha256 != policy.checksum or manifest.registry_sha256 != REGISTRY_SHA256
@@ -327,6 +346,7 @@ def _current_plan(plan_id, actor, auth_epoch, *, execution):
 
 def _verify_unchanged(manifest):
     from files.models import FileObject
+    assert_manifest_storage(manifest)
     for item in manifest.items:
         if item.kind == 'database':
             model, _ = adapter(item.adapter)
@@ -338,12 +358,14 @@ def _verify_unchanged(manifest):
             if (file.object_version != item.object_version or file.object_key != item.object_key
                     or file.checksum != item.checksum or file.size_bytes != item.size_bytes or file.status == 'disposed'):
                 reject('CONTENT_MANIFEST_CHANGED')
+            if item.kind == 's3_object':
+                assert_current_s3_proof(item)
     # Detect late mirrored snapshots and new dependents created after preview.
     roots = manifest.roots
     rows, files = _closure(manifest.patient_id, roots)
     actual = {(row._meta.label_lower, str(row.pk)) for row in rows}
     expected = {(item.adapter, str(item.object_id)) for item in manifest.items if item.kind == 'database'}
-    if actual != expected or {str(row.id) for row in files} != {str(item.file_id) for item in manifest.items if item.kind == 'local_object'}:
+    if actual != expected or {str(row.id) for row in files} != {str(item.file_id) for item in manifest.items if item.kind != 'database'}:
         reject('CONTENT_CLOSURE_CHANGED')
 
 
@@ -377,6 +399,8 @@ def approve_plan(*, plan_id, actor, auth_epoch, expected_manifest_sha256, source
 def _approval(plan, manifest, policy, rules):
     from configurations.evidence import inspect_approved_evidence
     from identity.models import Principal
+    if plan.approval is None:
+        reject('CONTENT_APPROVAL_UNAVAILABLE')
     approval = ContentApproval.model_validate(plan.approval)
     if (approval.manifest_sha256 != plan.manifest_sha256 or approval.policy_sha256 != policy.checksum
             or approval.approver_id != plan.approved_by_id or approval.approved_at != plan.approved_at
@@ -415,42 +439,53 @@ def _invalidate_consumers(manifest):
 
 
 def _apply_revocation(envelope):
-    manifest = ContentManifest.model_validate(envelope['manifest'])
-    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind=='local_object'])
+    manifest = parse_manifest(envelope['manifest'])
+    assert_manifest_storage(manifest)
+    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind != 'database'])
+    changed = False
     for item in manifest.items:
         label = item.adapter if item.kind == 'database' else 'files.fileobject'
         identity = item.object_id if item.kind == 'database' else item.file_id
         version = item.version if item.kind == 'database' else item.object_version
         existing = ContentAccessRevocation.objects.filter(adapter=label, object_id=identity).first()
         if existing:
-            if str(existing.plan_id) != envelope['plan_id'] or existing.object_version != version:
+            if (str(existing.plan_id) != envelope['plan_id'] or existing.object_version != version
+                    or existing.patient_id != manifest.patient_id
+                    or existing.proof_sha256 != digest(item.model_dump(mode='json'))):
                 reject('CONTENT_REVOCATION_IDENTITY_CONFLICT')
             continue
         ContentAccessRevocation.objects.create(plan_id=envelope['plan_id'], patient_id=manifest.patient_id,
             adapter=label, object_id=identity, object_version=version, revoked_at=timezone.now(),
             proof_sha256=digest(item.model_dump(mode='json')))
-    _invalidate_consumers(manifest)
+        changed = True
+    if changed:
+        _invalidate_consumers(manifest)
 
 
 def _apply_database(envelope, *, replay=False, generation=1):
     """Only callable inside the exclusive transaction after durable approval."""
     from files.models import FileObject
-    manifest = ContentManifest.model_validate(envelope['manifest'])
-    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind=='local_object'])
+    manifest = parse_manifest(envelope['manifest'])
+    assert_manifest_storage(manifest)
+    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind != 'database'])
     plan_id = UUID(envelope['plan_id'])
     now = timezone.now()
     scoped_keys = {(row._meta.label_lower, str(row.pk)) for row in patient_rows(manifest.patient_id)}
+    changed = False
     for item in manifest.items:
         label = item.adapter if item.kind == 'database' else 'files.fileobject'
         identity = item.object_id if item.kind == 'database' else item.file_id
         version = item.version if item.kind == 'database' else item.object_version
         existing = ContentErasure.objects.filter(adapter=label, object_id=identity).first()
-        if existing and (existing.plan_id != plan_id or existing.object_version != version):
+        if existing and (existing.plan_id != plan_id or existing.object_version != version
+                or existing.patient_id != manifest.patient_id
+                or existing.proof_sha256 != digest(item.model_dump(mode='json'))):
             reject('CONTENT_ERASURE_IDENTITY_CONFLICT')
         if not existing:
             ContentErasure.objects.create(plan_id=plan_id, patient_id=manifest.patient_id, adapter=label,
                 object_id=identity, object_version=version, generation=generation,
                 erased_at=now, proof_sha256=digest(item.model_dump(mode='json')))
+            changed = True
     for item in manifest.items:
         if item.kind == 'database':
             model, spec = adapter(item.adapter)
@@ -476,6 +511,7 @@ def _apply_database(envelope, *, replay=False, generation=1):
             values = {name:None for name in spec['payload_fields']}
             values.update(content_erased_at=now, content_disposition_id=plan_id)
             model.all_objects.filter(pk=row.pk).update(**values)
+            changed = True
         else:
             file = FileObject.objects.select_for_update().filter(id=item.file_id).first()
             if file is None:
@@ -484,16 +520,27 @@ def _apply_database(envelope, *, replay=False, generation=1):
             if (file.patient_id != manifest.patient_id or file.object_version != item.object_version
                     or file.object_key != item.object_key or file.checksum != item.checksum or file.size_bytes != item.size_bytes):
                 reject('CONTENT_RESTORE_FILE_IDENTITY_CONFLICT')
-            FileObject.objects.filter(id=file.id).update(status='disposed')
-    _invalidate_consumers(manifest)
+            if file.status != 'disposed':
+                FileObject.objects.filter(id=file.id).update(status='disposed')
+                changed = True
+    if changed:
+        _invalidate_consumers(manifest)
 
 
-def _apply_local_objects(envelope, *, replay=False):
+def _apply_file_objects(envelope, *, replay=False):
     from files.deletion import delete_local_object, object_path
     from files.service import object_store
-    manifest=ContentManifest.model_validate(envelope['manifest'])
-    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind=='local_object'])
+    manifest=parse_manifest(envelope['manifest'])
+    restore_context = assert_manifest_storage(manifest, replay=replay)
+    _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind != 'database'])
+    if restore_context is not None:
+        for item in manifest.items:
+            if item.kind != 'database':
+                restore_context.apply_item(item, envelope['manifest_sha256'])
+        return
     for item in manifest.items:
+        if item.kind == 's3_object':
+            delete_s3_proof(item)
         if item.kind == 'local_object':
             if replay and not object_path(object_store, item.object_key).exists():
                 # A pre-creation backup can legitimately lack this exact object.
@@ -548,7 +595,7 @@ def execute_plan(*, plan_id, actor, auth_epoch, expected_manifest_sha256):
         plan.save(update_fields=['status','journal_sequence'])
     # DB payload and API/producer fences commit before irreversible object I/O.
     # A crash here resumes by exact plan/journal/operation ID, never recreates body.
-    _apply_local_objects(envelope)
+    _apply_file_objects(envelope)
     with transaction.atomic():
         write_barrier(exclusive=True)
         plan=ContentDispositionPlan.objects.select_for_update().get(id=plan_id)
@@ -560,6 +607,10 @@ def execute_plan(*, plan_id, actor, auth_epoch, expected_manifest_sha256):
             'logical_payload_erased':True,'all_copies_erased':False,
             'unverified_copy_obligations':plan.manifest['obligations'],
             'proof_scope':'current_database_payload_and_controlled_local_path_absence'}
+        if manifest.schema_version == 'content-disposition-manifest-2':
+            plan.receipt.update(schema_version='content-disposition-receipt-2',
+                storage_binding_sha256=manifest.storage_binding_sha256,
+                proof_scope='current_database_payload_and_controlled_s3_version_absence')
         plan.save(update_fields=['status','completed_at','receipt'])
         return plan
 
@@ -572,7 +623,8 @@ def replay_manifest(envelope):
     journal_entry = next((entry for entry in entries if entry['envelope'] == envelope), None)
     if journal_entry is None:
         reject('CONTENT_REPLAY_NOT_JOURNALED')
-    manifest=ContentManifest.model_validate(envelope['manifest'])
+    manifest=parse_manifest(envelope['manifest'])
+    assert_manifest_storage(manifest, replay=True)
     if manifest.registry_sha256 != REGISTRY_SHA256 or manifest.preservation_sha256 != PRESERVATION_SHA256:
         reject('CONTENT_RESTORE_ADAPTER_VERSION_UNAVAILABLE')
     if manifest.mode not in ('erase_selected_content','revoke_access'):
@@ -584,7 +636,7 @@ def replay_manifest(envelope):
         else:
             _apply_database(envelope,replay=True,generation=journal_entry['sequence'])
     if manifest.mode == 'erase_selected_content':
-        _apply_local_objects(envelope,replay=True)
+        _apply_file_objects(envelope,replay=True)
     return verify_manifest(envelope)
 
 
@@ -592,9 +644,10 @@ def verify_manifest(envelope):
     from files.deletion import object_path
     from files.models import FileObject
     from files.service import object_store
-    manifest=ContentManifest.model_validate(envelope['manifest'])
+    manifest=parse_manifest(envelope['manifest'])
+    restore_context = assert_manifest_storage(manifest)
     try:
-        _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind=='local_object'])
+        _assert_exclusive_paths([(item.file_id,item.object_key) for item in manifest.items if item.kind != 'database'])
     except DispositionRejected:
         return False
     if manifest.mode == 'revoke_access':
@@ -619,6 +672,14 @@ def verify_manifest(envelope):
             if file is not None and (file.status!='disposed' or file.object_version!=item.object_version
                     or file.object_key!=item.object_key or file.checksum!=item.checksum or file.size_bytes!=item.size_bytes):
                 return False
+            if restore_context is not None:
+                if not restore_context.verify_item(item, envelope['manifest_sha256']):
+                    return False
+                continue
+            if item.kind == 's3_object':
+                if not verify_s3_proof(item):
+                    return False
+                continue
             if object_path(object_store,item.object_key).exists():
                 return False
             if file is not None:
@@ -641,6 +702,6 @@ def verify_manifest(envelope):
 @transaction.atomic
 def read_plan(*, plan_id, actor, auth_epoch):
     plan = ContentDispositionPlan.objects.select_for_update().get(id=plan_id)
-    rules = ContentPolicyRules.model_validate(plan.policy.rules)
+    rules = parse_policy_rules(plan.policy.rules)
     _identity(actor, auth_epoch, plan.patient, rules.access_purpose)
     return plan

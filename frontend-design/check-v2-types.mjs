@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import * as ts from '../guardian-h5/node_modules/typescript/dist/api/sync/api.js';
 import * as ast from '../guardian-h5/node_modules/typescript/dist/ast/is.js';
 import postcss from '../guardian-h5/node_modules/postcss/lib/postcss.mjs';
@@ -135,6 +136,7 @@ export function checkUnion(binding, branches, name) {
 }
 
 export const explicitBindings = {
+  Page: { module: 'frontend-design/types.ts', name: 'Page' },
   ...Object.fromEntries(['UploadFileReceipt', 'UploadError', 'UploadGroupView'].map(name => [name, {
     module: 'guardian-h5/src/api/archiveUploads.ts', callSchema: `v2-protocol.schema.json#/$defs/${name}`,
   }])),
@@ -159,7 +161,7 @@ export const explicitBindings = {
   RegroupRequestView: { module: 'frontend-design/archive-regroup-types.ts', name: 'RegroupRequest' },
 };
 
-export function runChecks(root) {
+export function runChecks(root, descriptionPath) {
   const api = new ts.API({ cwd: root });
   const projects = ['frontend-design/tsconfig.json', 'guardian-h5/tsconfig.json'].map(name => path.join(root, name));
   const snapshot = api.updateSnapshot({ openProjects: projects });
@@ -174,31 +176,20 @@ export function runChecks(root) {
       const module = mapping.module ?? 'frontend-design/v2-types.ts';
       let selected = project;
       if (!selected.program.getSourceFile(path.join(root, module))) selected = application;
-      let binding;
-      try { binding = mapping.callSchema
+      const binding = mapping.callSchema
         ? schemaCallType(selected.program, selected.checker, path.join(root, module), mapping.callSchema, path.join(root, 'guardian-h5/src/api/schema.ts'))
-        : exportedType(selected.program, selected.checker, path.join(root, module), mapping.name); }
-      catch (error) {
-        if (mapping.module || explicitBindings[name]) throw error;
-        binding = exportedType(project.program, project.checker, path.join(root, 'frontend-design/types.ts'), name);
-        selected = project;
-      }
+        : exportedType(selected.program, selected.checker, path.join(root, module), mapping.name);
       return { ...selectType(binding, mapping.steps, selected.checker), checker: selected.checker, mapping };
     };
-    const descriptions = JSON.parse(fs.readFileSync(path.join(root, '.planning-work/t38-types-description.json'), 'utf8'));
+    const descriptions = JSON.parse(fs.readFileSync(descriptionPath, 'utf8'));
     let propertiesChecked = 0;
-    const failures = [];
     const checked = [];
     for (const [name, schema] of Object.entries(descriptions)) {
-      try {
-        const binding = resolve(name);
-        if (schema.union_refs) checkUnion(binding, schema.union_refs.map(resolve), name);
-        else propertiesChecked += checkObject(binding, schema, binding.checker, name, binding.mapping.omit);
-        checked.push(name);
-      } catch (error) { failures.push({ name, error: error.message }); }
+      const binding = resolve(name);
+      if (schema.union_refs) checkUnion(binding, schema.union_refs.map(resolve), name);
+      else propertiesChecked += checkObject(binding, schema, binding.checker, name, binding.mapping.omit);
+      checked.push(name);
     }
-    if (failures.length) return { status: 'FAIL', checked_types: checked, properties: propertiesChecked, failures,
-      runtime_validation: 'NOT_RUN', visual_validation: 'NOT_RUN' };
 const tokenMap = JSON.parse(fs.readFileSync(path.join(root, 'frontend-design/v2-token-map.json'), 'utf8'));
 const tokens = JSON.parse(fs.readFileSync(path.join(root, tokenMap.source), 'utf8'));
 const tokenCss = postcss.parse(fs.readFileSync(path.join(root, tokenMap.cssTokenSource), 'utf8'));
@@ -223,7 +214,9 @@ css.walkDecls(() => declarationsCount += 1);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const report = runChecks(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
+  const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+  const { values } = parseArgs({ options: { 'description-path': { type: 'string', default: path.join(root, '.planning-work/t38-types-description.json') } } });
+  const report = runChecks(root, values['description-path']);
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   if (report.status !== 'PASS') process.exitCode = 1;
 }

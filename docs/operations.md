@@ -1,10 +1,10 @@
 # 运行、业务操作与 FAQ
 
-doc_id：SJIA-OPERATIONS；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：运行、权限、配置及操作入口变化时核查。
+doc_id：SJIA-OPERATIONS；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43` 及当前文档。维护责任：运行、权限、配置及操作入口变化时核查。
 
 ## 环境与启动
 
-开发入口见[项目 README](../README.md)及 [H5 说明](../guardian-h5/README.md)。部署配置见[存储与运行](../deploy/runtime-storage.md)、[Compose](../deploy/compose.yaml)和[可观测性](../deploy/observability/README.md)。当前使用 Django、PostgreSQL、Redis、Celery 与共享本地文件目录。目标 Python／PostgreSQL 兼容证据见 [QA28](development/QA28-target-runtime-compatibility.md)。
+开发入口见[项目 README](../README.md)及 [H5 说明](../guardian-h5/README.md)。部署配置见[存储与运行](../deploy/runtime-storage.md)、[Compose](../deploy/compose.yaml)和[可观测性](../deploy/observability/README.md)。当前使用 Django、PostgreSQL、Redis、Celery，文件服务按准确配置选择 local 或私有 S3，见[存储选择](../backend-design/s3-storage-selection.md)。目标 Python／PostgreSQL 兼容证据见 [QA28](development/QA28-target-runtime-compatibility.md)，105 项迁移及既有资料升级见 [QA43](development/QA43-existing-data-upgrade.md)。
 
 | 配置类别 | 变量与核查内容 |
 | --- | --- |

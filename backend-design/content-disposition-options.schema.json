@@ -1,5 +1,9 @@
 {
   "$defs": {
+    "S3ObjectTarget": {"type": "object", "additionalProperties": false,
+      "required": ["kind", "file_id", "object_version"], "properties": {
+        "kind": {"const": "s3_object"}, "file_id": {"type": "string", "format": "uuid"},
+        "object_version": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": ".*\\S.*"}}},
     "ContentHoldChoice": {
       "additionalProperties": false,
       "properties": {
@@ -128,7 +132,8 @@
           "discriminator": {
             "mapping": {
               "database": "#/$defs/DatabaseTarget",
-              "local_object": "#/$defs/LocalObjectTarget"
+              "local_object": "#/$defs/LocalObjectTarget",
+              "s3_object": "#/$defs/S3ObjectTarget"
             },
             "propertyName": "kind"
           },
@@ -138,6 +143,9 @@
             },
             {
               "$ref": "#/$defs/LocalObjectTarget"
+            },
+            {
+              "$ref": "#/$defs/S3ObjectTarget"
             }
           ],
           "title": "Target"

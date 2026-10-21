@@ -969,9 +969,9 @@
       }
     }
     ,{"id":"V34","commitment_id":"OPS","scenario":"逐项接收PRD 2.0、UI 2.0、现有代码及证据","expected_result":"当前系统边界、版本、全部FR及未知输入均有维护责任和后续任务","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T34","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T34"],"consumer":{"required":false,"description":"设计接收；后续采用由T35—T38验证"}}
-    ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
+    ,{"id":"V35","commitment_id":"OPS","scenario":"核对新增字段、实体、时间、关系和迁移说明","expected_result":"FD-01—71均有持久位置及消费方，旧资料未知状态和证明范围保持","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T35","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T35"],"consumer":{"required":false,"description":"数据设计；实际迁移由T39验证"}}
     ,{"id":"V36","commitment_id":"OPS","scenario":"核对家庭与受控API、任务、权限、结果未知和恢复","expected_result":"新增接口及全部调用方具有一致Schema、幂等语义和真实业务终态","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T36","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T36"],"consumer":{"required":false,"description":"接口设计；业务使用由各功能任务验证"}}
-    ,{"id":"V37","commitment_id":"FR-06","scenario":"检查逐事实识别和N00—N11确定性编排设计","expected_result":"来源、输入资格、current/replay及失败状态完整，模型不授予专业资格","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T37","kind":"STATIC"}],"status":"PASS","evidence_ids":["EVID-T37"],"consumer":{"required":false,"description":"算法设计；实际采用由T41、T49、T50验证"}}
+    ,{"id":"V37","commitment_id":"FR-06","scenario":"检查逐事实识别和N00—N11确定性编排设计","expected_result":"来源、输入资格、current/replay及失败状态完整，模型不授予专业资格","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T37","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T37"],"consumer":{"required":false,"description":"算法设计；实际采用由T41、T49、T50验证"}}
     ,{"id":"V38","commitment_id":"UI","scenario":"逐页接收39页、状态、正式类型、接口、角色及Token","expected_result":"全部页面有正式归属和接口状态，六个受控入口不增加家庭权限","outcome_type":"DESIGN","capability":"DESIGN","required_checks":[{"id":"CHECK-T38","kind":"STATIC"}],"status":"STALE","evidence_ids":["EVID-T38"],"consumer":{"required":false,"description":"前端设计；实际使用由T54和T56验证"}}
     ,{"id":"V39","commitment_id":"CASE","scenario":"在获准隔离数据库迁移真实旧资料并恢复和重新读取","expected_result":"数量、原值、来源、核对范围一致，未知时间不补造，重复执行不增加事实","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T39","kind":"INTEGRATION"}],"status":"STALE","evidence_ids":["EVID-T39"],"consumer":{"required":true,"description":"新旧读取服务使用准确迁移后版本","check_id":"CHECK-T39"}}
     ,{"id":"V40","commitment_id":"FR-21","scenario":"GRAC-09：实际原件生成并复核用途副本，外发、撤销及删除后回读","expected_result":"每次外发具有准确用途、原件、副本与人工复核版本；无效动作拒绝；外部删除有真实结果","outcome_type":"BUSINESS","capability":"REAL","required_checks":[{"id":"CHECK-T40-STRUCTURE","kind":"INTEGRATION"},{"id":"CHECK-T40-FRONTEND","kind":"STATIC"},{"id":"CHECK-T40-BROWSER","kind":"INTEGRATION"},{"id":"CHECK-T40-LOCAL-DISPOSITION","kind":"INTEGRATION"},{"id":"CHECK-T40","kind":"INTEGRATION"},{"id":"EXT-T40","kind":"EXTERNAL"}],"status":"NOT_RUN","evidence_ids":["EVID-T40-STRUCTURE","EVID-T40-FRONTEND","EVID-T40-BROWSER","EVID-T40-LOCAL-DISPOSITION"],"consumer":{"required":true,"description":"模型或获准导出实际使用正确用途副本","check_id":"EXT-T40"}}
@@ -1914,28 +1914,28 @@
     },
     {
       "id": "EVID-T38", "check_id": "CHECK-T38", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-20261008T062531Z-25037/receipt.json",
-      "receipt_sha256": "baef7aa395338f9d2c33a4cb586f4f0019cec4bfc4c7408fc1d03fcbbcea7445"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T38-QA59-VERIFIED/receipt.json",
+      "receipt_sha256": "cc1b0e0ee0674fdb269466dd1f9e1c6b4eadd7281cebeb9b3ce49bb769704dd2"
     },
     {
       "id": "EVID-T37", "check_id": "CHECK-T37", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37/receipt.json",
-      "receipt_sha256": "51cffb7fc272073de562653c11d550041acfa686e68ba6ceecfaf2ee7502ba3b"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T37-QA59/receipt.json",
+      "receipt_sha256": "7c0b9220c9eb64962cb06ba5cc19692d0c2a8ff5d9bad35e6c1b1b1862916d29"
     },
     {
       "id": "EVID-T34", "check_id": "CHECK-T34", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34-20261008T062701Z-25426/receipt.json",
-      "receipt_sha256": "09ed8f9f84d76601edf4a94f6ee6a992a9b806cf177e6dcc97a77ef9b4125046"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T34-QA59/receipt.json",
+      "receipt_sha256": "0577d6e16eae35ff45d9adf0f8564e50dedbf73b0effa43882f7a2a24a8cde72"
     },
     {
       "id": "EVID-T35", "check_id": "CHECK-T35", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../.qa-work/QA28/check-t35/receipt.json",
-      "receipt_sha256": "478f32484bd6b60348291eed791df768d08b4d4dbe97c06eaca0d747f25f97d3"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T35-QA59/receipt.json",
+      "receipt_sha256": "58df5567354d33442dc306a5055bed9f6a3a25cdfc4d81ac0b8e03ad826c742d"
     },
     {
       "id": "EVID-T36", "check_id": "CHECK-T36", "kind": "STATIC",
-      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-20261008T062531Z-25034/receipt.json",
-      "receipt_sha256": "5041c53c8c693ce55330466c8877938c585d7acd8e73a1c1825552d5649d59aa"
+      "baseline_id": "PLAN-20261001-01", "receipt_path": "../docs/evidence/CHECK-T36-QA59/receipt.json",
+      "receipt_sha256": "fc69558b55e6e1486429fb296adb0d466b7495f3cc16b2ae8dd7373076b51616"
     },
     {
       "id": "EVID-T39", "check_id": "CHECK-T39", "kind": "INTEGRATION",
@@ -2021,8 +2021,8 @@
     "next_task_id": "T34",
     "constraints": [
       "2026-10-18用户要求持续完成全部功能，委托执行软件范围内的设计决策与配置批准；使用获准真实资料、真实账号和现有服务，保留独立临床答案、专业核对、真实接收及实际设备的证据要求。当前用户禁止模拟和主动视觉操作的规则持续有效。",
-      "2026-10-18用户要求北京时间2026-10-19 06:00 commit与push代码至LIUgongxi2046/sjia，并明确目标main；单次聊天自动任务sjia-main已创建。真实资料、凭据、本地数据库、模型响应及私有测试产物排除在提交范围。完整执行记录见docs/development/QA14-full-function-delivery.md。",
-      "全部60项模拟开发已经完成，开发剩余0项；T60最终37项源码与36项输入证据清单、当前页面数据库证明、当前构建交付和86项来源证据索引实际核验通过并保存重读。索引作为交付输出独立保存，全部输入文件的字节与摘要保持一致。T56当前通知与摘要页面四项、PostgreSQL逐项保存重读及正式前端修复已接收。开发完成与业务验收独立登记，验收剩余57项。next_task_id只表示所有前置任务完整验收后可直接验收的任务，T34验收资料待复验不影响已完成开发。",
+      "GitHub交付目标为main，当前提交保存开发进度；单次自动任务sjia-main保持PAUSED。QA44当前运行版本采用继续单独核验，整组服务与数据库切换仍待明确批准。真实资料、凭据、本地数据库、模型响应及私有验收产物排除在提交范围。",
+      "当前原件客户端、依赖锁文件和开发索引需要重新核验设计证据，V34—V38保持STALE，T34—T38保持IMPLEMENTED。全部30项承诺、60项任务和60项验收继续保留，当前PASS为0、STALE为11、NOT_RUN为49；next_task_id为T34。既有收据保留准确历史输入，QA60当前为IN_PROGRESS，PDF完整字节通过，页面阅读仍待完成。",
       "2026-10-09用户更新：全部开发与联调使用模拟数据，截止北京时间2026-10-10 09:00；模拟资料、角色、批准和业务结果仅保存在sjia_simulation及独立文件、消息环境。模拟验收与真实验收分别记录，视觉限制继续有效。完成一项完整任务后报告开发与验收剩余数量，继续下一项。",
       "2026-10-08用户调整执行顺序：优先完成全部可开发功能，外部资料、授权及业务验收条件单独登记，继续实施其他任务；功能及必要运行检查完成登记IMPLEMENTED，业务验收通过登记ACCEPTED。每完成一项任务报告编号、完成内容和剩余未完成数量；已有有效证据无需重复捕获，视觉比对继续NOT_RUN。",
       "2026-10-07用户授权完成PRD 2.0全部功能、参赛优化、UI 2.0一比一还原和完整业务验收，连续实施全部已授权任务。工单为implementation-tasks.md，状态以本文件维护；原始未完成验收完整保留。指定外部发送和正式部署仍需准确目标与依据。",
@@ -2039,6 +2039,8 @@
       "2026-10-04本地模拟范围验收通过：健康档案四类资料、结构化症状、多照片整理、治疗来源与照片、四类草稿及离页保护、医学时间签名分页、完整更正历史、提示正文来源联系和治疗范围摘要均已实现。244项后端测试、16项浏览器模拟业务及照片检查、190项匿名页面检查、106项接口安全检查通过；模拟图片真实Ark识别及逐项目原图来源保存通过。证据位于docs/testing/evidence/QA02，当前记录为docs/development/QA02-local-completion.md。自建账号、站内消息、语音结构化和报告识别保持接入真实本地服务；T30—T33的实际设备、独立临床Gold、专业核对、容量与生产交付继续按真实条件验收。"
     ],
     "authorization_refs": [
+      "2026-10-20用户：先commit并push代码到main；当前开发进度按该目标提交",
+      "2026-10-20用户：专业核对方法、规则和家庭可见字段等按照建议推进；工程选择继续执行既有委托",
       "2026-10-18用户：接下来继续推进全部功能开发完，所有需要决策批准的你帮我审批，然后在北京时间凌晨6点commit并push代码到LIUgongxi2046/sjia；补充明确main",
       "2026-10-18用户：已完成63份原件隐私复核，允许现有Ark处理；允许本地测试账号读取三个字段并验证确认保存",
       "2026-10-09用户：全部先用模拟数据，明天上午9点前完成全部开发任务；按当前北京时间日期登记2026-10-10 09:00",

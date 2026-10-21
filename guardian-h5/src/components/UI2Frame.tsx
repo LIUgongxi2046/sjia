@@ -22,7 +22,7 @@ const designStyle: CSSProperties = {
 
 export function UI2Frame({ title, screenId, note, onBack, children, audience = 'support', primary,
   onNavigate, scrollKey, scrollPosition = 0, onScroll, overlay, heading, kicker, subtitle }: {
-  title: string; screenId: string; note: string; onBack: () => void; children: ReactNode;
+  title: string; screenId: string; note: string; onBack?: () => void; children: ReactNode;
   audience?: 'family' | 'support'; primary?: 'home' | 'records' | 'account';
   heading?: string; kicker?: string | null; subtitle?: string | null;
   onNavigate?: (path: string) => void; scrollKey?: string; scrollPosition?: number; onScroll?: (position: number) => void;
@@ -79,7 +79,7 @@ export function UI2Frame({ title, screenId, note, onBack, children, audience = '
         <header className={`app-header${primary ? ' root-header' : ''}`}>
           {kicker !== null && <span className="header-kicker">{kicker ?? (primary === 'home' ? new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date()) : audience === 'support' ? '授权工作空间' : '家庭记录')}</span>}
           <div className="app-title-row">
-            {!primary && <button className="header-icon" aria-label="返回上级页面" onClick={onBack}><ArrowLeft size={22} /></button>}
+            {!primary && onBack && <button className="header-icon" aria-label="返回上级页面" onClick={onBack}><ArrowLeft size={22} /></button>}
             <div><h1 tabIndex={-1}>{heading ?? (primary === 'home' ? '陪伴孩子，健康成长' : title)}</h1>
               {primary !== 'home' && subtitle !== null && <p className="header-subtitle">{subtitle ?? richPageSubtitles[screenId] ?? (audience === 'support' ? '按当前岗位与授权范围操作' : '保留准确的资料')}</p>}</div>
             {primary === 'home' && <button className="header-icon" aria-label="查看预警记录" onClick={() => navigate('/alerts')}><Bell size={22} /></button>}

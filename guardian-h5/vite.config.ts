@@ -2,7 +2,19 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  let localTestAccount: { username: string; password: string; patientId: string; dataMode: 'simulation' | 'deidentified' } | null = null;
+  if (mode === 'local-validation') {
+    const username = process.env.VITE_LOCAL_TEST_USERNAME;
+    const password = process.env.VITE_LOCAL_TEST_PASSWORD;
+    const patientId = process.env.VITE_LOCAL_TEST_PATIENT_ID;
+    const dataMode = process.env.VITE_LOCAL_TEST_DATA_MODE;
+    if (!username?.trim() || !password || !patientId || !/^[0-9a-f-]{36}$/.test(patientId)) throw new Error('本地验收需要提供测试账号、密码和已授权患儿标识。');
+    if (dataMode !== 'simulation' && dataMode !== 'deidentified') throw new Error('本地验收需要明确资料类型。');
+    localTestAccount = { username, password, patientId, dataMode };
+  }
+  return {
+  define: { __SJIA_LOCAL_TEST_ACCOUNT__: JSON.stringify(localTestAccount) },
   plugins: [react(), tailwindcss()],
   server: {
     host: '127.0.0.1',
@@ -22,4 +34,5 @@ export default defineConfig({
       '/api': { target: process.env.SJIA_API_TARGET || 'http://127.0.0.1:8000', changeOrigin: false },
     },
   },
+  };
 });

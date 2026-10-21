@@ -328,8 +328,8 @@ export function PurposeCopyPage({ session, accessState, accessError, onRefresh, 
         <button className="text-action" onClick={() => void refreshCopy()}>重新读取版本与证明</button>
         {copy.allowed_actions.includes('revoke') && <button className="text-action" disabled={phase === 'pending'} onClick={() => { setDialogError(null); setMode('revoke'); }}>撤销用途副本</button>}
       </section>}
-      <button className="text-action center" onClick={onLogout}>退出受控会话</button>
     </>}
+    {session && <button className="text-action center" onClick={onLogout}>退出受控会话</button>}
     {error && state === 'default' && <p role="alert">{error}</p>}
     {available && readState === 'default' && selected && !stale && imageUrl && <dialog ref={imageDialog} className="design-dialog" aria-label="用途副本内容" onClose={releaseImage}>
       <h2>用途副本内容</h2><img src={imageUrl} alt="当前获准用途副本" style={{ width: '100%', objectFit: 'contain' }} />

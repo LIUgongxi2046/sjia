@@ -122,7 +122,7 @@ def durable_replace(path, value):
 
 
 def validate_envelope(envelope):
-    from .content_schemas import ContentApproval, ContentManifest
+    from .content_schemas import ContentApproval, parse_manifest
     required = {'schema_version', 'plan_id', 'manifest_sha256', 'manifest', 'approval'}
     try:
         if not isinstance(envelope, dict) or set(envelope) != required:
@@ -130,7 +130,7 @@ def validate_envelope(envelope):
         if envelope['schema_version'] != 'content-disposition-journal-1':
             raise ValueError()
         UUID(envelope['plan_id'])
-        manifest = ContentManifest.model_validate(envelope['manifest'])
+        manifest = parse_manifest(envelope['manifest'])
         approval = ContentApproval.model_validate(envelope['approval'])
         digest = checksum(envelope['manifest'])
         if (envelope['manifest_sha256'] != digest or approval.manifest_sha256 != digest
@@ -302,11 +302,13 @@ class ContentJournal:
 
 def configured_journal():
     from django.conf import settings
+    from files.storage_factory import storage_selection
+    control_root = storage_selection.store.control_store.root if storage_selection.kind == 's3' else None
     return ContentJournal(getattr(settings, 'SJIA_CONTENT_JOURNAL_ROOT', None),
         getattr(settings, 'SJIA_CONTENT_CHECKPOINT_PATH', None),
         forbidden_roots=(getattr(settings, 'FILE_OBJECT_ROOT', None),
             getattr(settings, 'CONFIG_EVIDENCE_ROOT', None),
-            getattr(settings, 'SJIA_RESTORE_ROOT', None)))
+            getattr(settings, 'SJIA_RESTORE_ROOT', None), control_root))
 
 
 def append_manifest(envelope):

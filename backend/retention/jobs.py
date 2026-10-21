@@ -2,12 +2,14 @@ import json
 from uuid import NAMESPACE_URL, uuid5
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from audit.service import write_audit
 from configurations.service import compute_checksum
 from config.celery import app
-from files.deletion import deletion_keys
+from files.disposition_storage import (DISPOSITION_EVENTS, deletion_evidence_state,
+    disposition_object_proof, disposition_task_schema)
 from files.purpose import runtime_environment
 from files.purpose_dependencies import invalidate_resource
 from files.purpose_schemas import PurposeDispositionTaskRefs
@@ -19,19 +21,29 @@ from tasks.outbox import emit_event, record_receipt
 from tasks.service import acquire_lease, create_attempt, finish_attempt, input_digest, register_task
 
 
+def disposition_tasks(request):
+    from retention.external_deletion import SIMULATION_DELETE_TASK_SCHEMA
+
+    return Task.objects.filter(task_type='disposition', patient_id=request.patient_id).filter(
+        Q(schema_version__in=DISPOSITION_EVENTS, input_refs__disposition_id=str(request.id))
+        | Q(schema_version=SIMULATION_DELETE_TASK_SCHEMA,
+            input_refs__disposition_ref__disposition_id=str(request.id))).order_by('created_at', 'id')
+
+
 def task_refs(request, item, policy, actor_epoch, previous_task_id=None):
     file, authority_file, copy = target_file(item, request.patient_id)
     return PurposeDispositionTaskRefs(disposition_id=request.id, item_id=item.id, environment=runtime_environment(),
         auth_epoch=actor_epoch, policy_version=str(policy.version), policy_sha256=compute_checksum(policy.rules),
         scope_sha256=scope_sha256(request.scope), approval_sha256=compute_checksum(request.scope['approval_context']),
-        target_version=item.target_version, file_identity={'file_id': file.id, 'object_version': file.object_version,
-            'object_key': file.object_key, 'checksum': file.checksum, 'size_bytes': file.size_bytes,
-            'retention_policy_id': file.retention_policy_id}, previous_task_id=previous_task_id)
+        target_version=item.target_version, file_identity=disposition_object_proof(object_store, file),
+        previous_task_id=previous_task_id)
 
 
 def validate_refs(task, actor, epoch, *, require_actor_epoch):
     refs = PurposeDispositionTaskRefs.model_validate(task.input_refs)
-    if task.task_type != 'disposition' or task.schema_version != 'local-delete-2' or input_digest(task.input_refs) != task.input_sha256:
+    if (task.task_type != 'disposition' or task.schema_version not in DISPOSITION_EVENTS
+            or disposition_task_schema(object_store, refs.file_identity) != task.schema_version
+            or input_digest(task.input_refs) != task.input_sha256):
         raise DispositionRejected('DISPOSITION_TASK_INPUT_CHANGED')
     item, request = locked_item(DispositionItem.objects.get(id=refs.item_id, request_id=refs.disposition_id))
     request, policy, receipt_policy, rule, decision, file_grants, file_versions = lock_request_access(
@@ -169,8 +181,9 @@ def submit_local_disposition(*, item, actor, auth_epoch, payload, previous_task=
     item.status = 'pending'
     item.save(update_fields=['status', 'reason'])
     refs = task_refs(request, item, policy, auth_epoch, previous_task.id if previous_task is not None else None)
+    task_schema = disposition_task_schema(object_store, refs.file_identity)
     task = register_task(actor=actor, patient=request.patient, task_type=Task.TaskType.DISPOSITION,
-        schema_version='local-delete-2', input_refs=refs.model_dump(mode='json'))
+        schema_version=task_schema, input_refs=refs.model_dump(mode='json'))
     file, authority_file, copy = target_file(item, request.patient_id)
     file.status = 'quarantined'
     file.save(update_fields=['status'])
@@ -179,7 +192,7 @@ def submit_local_disposition(*, item, actor, auth_epoch, payload, previous_task=
         invalidate_resource('purpose_copy', copy.id, str(copy.version))
     request.status = 'running'
     request.save(update_fields=['status'])
-    emit_event(event_type='disposition.local_requested', schema_version='local-delete-2', aggregate_id=request.id,
+    emit_event(event_type=DISPOSITION_EVENTS[task_schema], schema_version=task_schema, aggregate_id=request.id,
         aggregate_version=policy.version, correlation_id=task.id, resource_refs={'task_id': str(task.id)}, task=task)
     write_audit(actor=actor, patient=request.patient, action='disposition_task_accepted', object_type='task', object_id=task.id,
         object_version=task.input_sha256, outcome='allowed', retention_policy=receipt_policy)
@@ -190,7 +203,9 @@ def execute_disposition(event, owner):
     with transaction.atomic():
         lock_environment(require_enabled=False)
         task = Task.objects.select_for_update().get(id=event.task_id)
-        if task.task_type != 'disposition' or task.schema_version != 'local-delete-2' or event.schema_version != task.schema_version:
+        if (task.task_type != 'disposition' or task.schema_version not in DISPOSITION_EVENTS
+                or event.event_type != DISPOSITION_EVENTS[task.schema_version]
+                or event.schema_version != task.schema_version):
             raise DispositionRejected('DISPOSITION_TASK_TYPE_MISMATCH')
         if ConsumerReceipt.objects.filter(consumer='disposition', event=event).exists():
             return
@@ -222,7 +237,7 @@ def execute_disposition(event, owner):
         task.save(update_fields=['status', 'status_version', 'lease_until'])
         finish_attempt(attempt, TaskAttempt.Status.COMPLETED, usage_evidence={'input_sha256': task.input_sha256,
             'item_id': str(item.id), 'receipt_sha256': item.receipt_sha256, 'receipt_ref': item.receipt_ref,
-            'request_status': request.status, 'provider_called': False})
+            'request_status': request.status, 'provider_called': task.schema_version == 's3-delete-1'})
         record_receipt('disposition', event, request.id)
 
 
@@ -235,9 +250,14 @@ def record_disposition_failure(event, owner, error_code):
     refs = PurposeDispositionTaskRefs.model_validate(task.input_refs)
     request = DispositionRequest.objects.select_for_update().get(id=refs.disposition_id)
     item = DispositionItem.objects.select_for_update().get(id=refs.item_id, request=request)
-    journal_key, receipt_key = deletion_keys(item.id)
-    prepared = object_store.exists(journal_key)
-    receipt_present = object_store.exists(receipt_key)
+    if (task.schema_version not in DISPOSITION_EVENTS
+            or event.event_type != DISPOSITION_EVENTS[task.schema_version]
+            or event.schema_version != task.schema_version
+            or disposition_task_schema(object_store, refs.file_identity) != task.schema_version):
+        raise DispositionRejected('DISPOSITION_TASK_INPUT_CHANGED')
+    evidence = deletion_evidence_state(object_store, proof=refs.file_identity, operation_id=item.id)
+    prepared = evidence['journal_present']
+    receipt_present = evidence['receipt_present']
     task.status = 'awaiting_resolution' if prepared or receipt_present else 'failed'
     task.status_version += 1
     task.lease_until = timezone.now()
@@ -246,7 +266,9 @@ def record_disposition_failure(event, owner, error_code):
     for attempt in attempts:
         finish_attempt(attempt, 'uncertain' if prepared or receipt_present else 'failed', error_code=error_code,
             usage_evidence={'input_sha256': task.input_sha256, 'journal_present': prepared,
-                'receipt_present': receipt_present, 'provider_called': False, 'execution_owner': owner})
+                'receipt_present': receipt_present, 'execution_owner': owner,
+                **({'storage_kind': 's3', 'provider_call_state': 'unknown'} if task.schema_version == 's3-delete-1'
+                    else {'provider_called': False})})
     if item.status in ('pending', 'failed', 'blocked'):
         item.status = 'failed'
         item.reason = error_code
@@ -256,7 +278,7 @@ def record_disposition_failure(event, owner, error_code):
 @app.task(name='retention.jobs.reconcile_local_dispositions')
 def reconcile_local_dispositions():
     count = 0
-    unstarted = Task.objects.filter(task_type='disposition', schema_version='local-delete-2', status__in=['accepted', 'queued'],
+    unstarted = Task.objects.filter(task_type='disposition', schema_version__in=DISPOSITION_EVENTS, status__in=['accepted', 'queued'],
         deadline_at__lte=timezone.now()).values_list('id', flat=True)
     for identity in unstarted:
         with transaction.atomic():
@@ -272,7 +294,7 @@ def reconcile_local_dispositions():
             create_attempt(task, task.lease_generation)
             record_disposition_failure(task_event(task), task.lease_owner, 'DISPOSITION_QUEUE_DEADLINE_EXCEEDED')
             count += 1
-    identities = Task.objects.filter(task_type='disposition', schema_version='local-delete-2', status='running',
+    identities = Task.objects.filter(task_type='disposition', schema_version__in=DISPOSITION_EVENTS, status='running',
         lease_until__lte=timezone.now(), deadline_at__lte=timezone.now()).values_list('id', flat=True)
     for identity in identities:
         task = Task.objects.get(id=identity)
@@ -283,7 +305,7 @@ def reconcile_local_dispositions():
 
 
 def task_event(task):
-    return OutboxEvent.objects.get(task=task, event_type='disposition.local_requested')
+    return OutboxEvent.objects.get(task=task, event_type=DISPOSITION_EVENTS[task.schema_version])
 
 
 @transaction.atomic

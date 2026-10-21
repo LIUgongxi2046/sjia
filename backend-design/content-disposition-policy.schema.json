@@ -2,7 +2,7 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "content-disposition-policy-1",
+      "enum": ["content-disposition-policy-1", "content-disposition-policy-2"],
       "title": "Schema Version",
       "type": "string"
     },
@@ -85,6 +85,9 @@
       "title": "Local Objects",
       "type": "boolean"
     },
+    "s3_objects": {"type": "boolean"},
+    "allowed_file_purposes": {"type": "array", "minItems": 1, "maxItems": 4, "uniqueItems": true,
+      "items": {"enum": ["original", "thumbnail", "deidentified", "ocr_response"]}},
     "all_copies_required": {
       "title": "All Copies Required",
       "type": "boolean"
@@ -105,6 +108,12 @@
     "recheck_at",
     "local_objects",
     "all_copies_required"
+  ],
+  "allOf": [
+    {"if": {"properties": {"schema_version": {"const": "content-disposition-policy-1"}}},
+      "then": {"not": {"anyOf": [{"required": ["s3_objects"]}, {"required": ["allowed_file_purposes"]}]}}},
+    {"if": {"properties": {"schema_version": {"const": "content-disposition-policy-2"}}},
+      "then": {"required": ["s3_objects", "allowed_file_purposes"], "properties": {"local_objects": {"const": false}}}}
   ],
   "title": "ContentPolicyRules",
   "type": "object",

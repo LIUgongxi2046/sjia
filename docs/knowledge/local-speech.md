@@ -1,6 +1,6 @@
 # 本地语音服务
 
-doc_id：SJIA-LOCAL-SPEECH；status：CURRENT，限于本次源码核查；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：语音接口、模型或配置变化时更新。真实音频、设备和当前能力验收继续按 T55／T58 执行。
+doc_id：SJIA-LOCAL-SPEECH；status：CURRENT，限于本次源码核查；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43`。维护责任：语音接口、模型或配置变化时更新。真实音频、设备和当前能力验收继续按 T55／T58 执行。
 
 语音入口通过 MediaRecorder 采集音频，使用同源接口 `/api/patients/{patient_id}/voice-transcription`。请求验证会话、CSRF 和患儿 write_record 权限，返回真实转写文字。原始声音只在内存处理；文字由本人核对后发送到 Ark 提取候选，确认后才进入正式记录。
 

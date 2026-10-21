@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-object-absence-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_sha256", "object_key", "provider_request_id", "verified_at", "versions", "delete_markers"],
+  "properties": {
+    "schema_version": {"const": "s3-object-absence-1", "default": "s3-object-absence-1"},
+    "binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "object_key": {"type": "string", "minLength": 1, "format": "sjia-canonical-object-key"},
+    "provider_request_id": {"type": "string", "minLength": 1},
+    "verified_at": {"type": "string", "format": "date-time"},
+    "versions": {"type": "integer", "const": 0},
+    "delete_markers": {"type": "integer", "const": 0}
+  }
+}

@@ -3,6 +3,7 @@ import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { UI2ReadState } from '../../components/UI2ReadState';
 import { useAccess } from '../../state/access';
 import { alertPresetAccessKey, useAlertPresetSelection } from '../../state/useAlertPresetSelection';
+import { localTestAccount } from '../../localTestAccount';
 
 export function AlertPresetsPage() {
   const access = useAccess();
@@ -11,18 +12,19 @@ export function AlertPresetsPage() {
 function AlertPresetsContent() {
   const state = useAlertPresetSelection();
   const { data, original } = state;
+  const simulation = localTestAccount?.dataMode === 'simulation';
   const superseded = original?.state === 'failed' && !original.may_retry && original.error_code === 'PRESET_SELECTION_SUPERSEDED';
   const retryable = original && (original.may_retry || original.state === 'pending' && Date.parse(original.expires_at) > Date.now());
   return <UI2FamilyFrame title="预警方案" screenId="UI2-ALERT-PRESETS" note="专业人员维护并审批预警参数，家属仅能选择当前患儿已批准的方案。" backTo="/account">
-    <section className="privacy-intro"><ShieldCheck size={34} aria-hidden="true" /><h2>选择已批准的方案</h2>
-      <p>方案由专业人员配置并审核。请结合专业人员的说明选择，医学阈值与权重由专业人员维护。</p></section>
+    <section className="privacy-intro"><ShieldCheck size={34} aria-hidden="true" /><h2>{simulation ? '选择模拟方案' : '选择已批准的方案'}</h2>
+      <p>{simulation ? '模拟方案用于体验资料变化检查与方案保存，参数不表示临床风险标准。' : '方案由专业人员配置并审核。请结合专业人员的说明选择，医学阈值与权重由专业人员维护。'}</p></section>
     <UI2ReadState loading={state.access.loading || state.canAccess && state.loading} error={state.readError} onRetry={state.refresh} />
     {!state.access.loading && !state.access.error && state.access.principalId && state.access.patientId && !state.canAccess &&
       <section className="status-panel permission" role="status"><h2>当前没有方案选择权限</h2><p>患儿关联或授权已到期、尚未核验，或未包含方案选择权限。重新核验后才能操作。</p>
         <button className="text-action" onClick={() => void state.access.refresh()}>重新核验访问权限</button></section>}
     {state.canAccess && state.readError && <section className="note"><p>当前未取得可用的已批准方案。请重新读取；若仍不可用，请联系专业人员核对方案审批与有效期。</p></section>}
-    {data && <><section className="card form-card"><div className="section-heading"><h2>{data.display_name}</h2><span className="badge blue">专业审核</span></div>
-      <p className="footnote">{data.selection_state === 'professional_default' ? '当前采用专业人员指定的默认方案。' : data.selection_state === 'selected' ? '当前已保存你的方案选择。' : '原方案或授权已变更，请重新选择当前已批准的方案。'}</p>
+    {data && <><section className="card form-card"><div className="section-heading"><h2>{data.display_name}</h2><span className="badge blue">{simulation ? '模拟配置' : '专业审核'}</span></div>
+      <p className="footnote">{data.selection_state === 'professional_default' ? (simulation ? '当前采用模拟默认方案。' : '当前采用专业人员指定的默认方案。') : data.selection_state === 'selected' ? '当前已保存你的方案选择。' : '原方案或授权已变更，请重新选择当前已批准的方案。'}</p>
       {data.options.length === 0 ? <div className="empty" role="status"><h3>暂无可选方案</h3><p>专业人员完成方案审批后，才能在这里选择。</p></div> :
         <fieldset disabled={!state.canAccess || state.locked || state.busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
           <legend className="eyebrow" style={{ marginBottom: 12 }}>可选预警方案</legend>
@@ -30,7 +32,7 @@ function AlertPresetsContent() {
             <input type="radio" name="approved-alert-preset" value={option.schedule_config_id} checked={state.selection === option.schedule_config_id}
               onChange={() => state.select(option.schedule_config_id)} aria-describedby={`preset-description-${option.schedule_config_id}`} style={{ flexShrink: 0, marginTop: 3 }} />
             <span style={{ display: 'grid', gap: 7 }}><strong>{option.label}</strong><span id={`preset-description-${option.schedule_config_id}`} style={{ color: 'var(--muted)', lineHeight: 1.75 }}>{option.description}</span>
-              {data.selected_schedule_config_id === option.schedule_config_id && <span className="badge blue" style={{ justifySelf: 'start' }}>{data.selection_state === 'professional_default' ? '专业默认' : '当前方案'}</span>}</span>
+              {data.selected_schedule_config_id === option.schedule_config_id && <span className="badge blue" style={{ justifySelf: 'start' }}>{data.selection_state === 'professional_default' ? (simulation ? '模拟默认' : '专业默认') : '当前方案'}</span>}</span>
           </label>)}
         </fieldset>}
     </section><button className="button" disabled={!state.canSave} onClick={() => void state.choose()}><SlidersHorizontal size={20} aria-hidden="true" />{state.busy ? '正在核对本次选择' : '保存方案选择'}</button></>}

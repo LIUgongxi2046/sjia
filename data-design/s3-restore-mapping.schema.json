@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-restore-mapping-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["restore_id", "database", "cluster_id", "backup_manifest_sha256", "source_snapshot", "target_binding_sha256", "target_control_directory_sha256", "objects", "legacy_file_absences", "completed_at"],
+  "properties": {
+    "schema_version": {"const": "s3-restore-mapping-1", "default": "s3-restore-mapping-1"},
+    "restore_id": {"type": "string", "format": "uuid", "not": {"const": "00000000-0000-0000-0000-000000000000"}},
+    "database": {"type": "string", "minLength": 1},
+    "cluster_id": {"type": "string", "minLength": 1},
+    "backup_manifest_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "source_snapshot": {"$ref": "urn:sjia:schema:s3-backup-source-1"},
+    "target_binding_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "target_control_directory_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "objects": {"type": "array", "items": {"oneOf": [{"$ref": "#/$defs/copied"}, {"$ref": "#/$defs/absent"}]}},
+    "legacy_file_absences": {"type": "array", "items": {"$ref": "#/$defs/legacy"}},
+    "completed_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "copied": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "source", "target"],
+      "properties": {
+        "kind": {"const": "copied"},
+        "source": {"allOf": [{"$ref": "urn:sjia:schema:s3-stored-object-1"}, {"properties": {"status": {"const": "available"}}}]},
+        "target": {"allOf": [{"$ref": "urn:sjia:schema:s3-stored-object-1"}, {"properties": {"status": {"const": "available"}}}]}
+      }
+    },
+    "absent": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "source", "target_absence"],
+      "properties": {
+        "kind": {"const": "absent"},
+        "source": {"allOf": [{"$ref": "urn:sjia:schema:s3-stored-object-1"}, {"properties": {"status": {"const": "disposed"}}}]},
+        "target_absence": {"$ref": "urn:sjia:schema:s3-object-absence-1"}
+      }
+    },
+    "legacy": {
+      "type": "object", "additionalProperties": false, "required": ["source", "target_absence"],
+      "properties": {
+        "source": {"allOf": [{"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/file"}, {"properties": {"status": {"const": "disposed"}}}]},
+        "target_absence": {"$ref": "urn:sjia:schema:s3-object-absence-1"}
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # API 与集成指南
 
-doc_id：SJIA-API-INTEGRATION；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：路由、Schema、身份、错误或请求恢复变化时同步。
+doc_id：SJIA-API-INTEGRATION；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43` 及当前文档。维护责任：路由、Schema、身份、错误或请求恢复变化时同步。
 
 ## 接口依据与覆盖
 
@@ -54,7 +54,7 @@ doc_id：SJIA-API-INTEGRATION；status：CURRENT；last_verified：2026-10-21（
 | 未登录或权限不足 | 401／403；Range 继续要求完整原件权限 |
 | 已按批准范围处置 | 410，`CONTENT_DISPOSED` |
 
-正常响应包含 `Accept-Ranges: bytes`，私人响应设置 `Cache-Control: no-store, private`。Range 使用登记的不可变大小与 `LocalFileStore.get_range`，长度不符返回 `FILE_OBJECT_SIZE_MISMATCH`。QA29 的内存和字节检查范围见 [主记录](../development/QA29-real-original-range-reads.md)。本地存储与对象存储能力以 [存储说明](../../deploy/runtime-storage.md)为准。
+正常响应包含 `Accept-Ranges: bytes`，私人响应设置 `Cache-Control: no-store, private`。Range 使用登记的不可变大小与当前获准存储的 `get_range`，长度不符返回 `FILE_OBJECT_SIZE_MISMATCH`。完整内容使用 `verified_file_response`，核验准确字节并以 FileResponse 发送。本地与 S3 选择见 [storage selection](../../backend-design/s3-storage-selection.md)，实际文件响应范围见 [QA42](../development/QA42-restored-runtime-adoption.md)。QA29 的原范围测量继续按其准确日期引用。
 
 ## 错误与接入边界
 

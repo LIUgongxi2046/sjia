@@ -1,0 +1,369 @@
+{
+  "mode": "SIMULATION_ONLY",
+  "dataset_id": "qa65-test-account-20261021",
+  "exported_at": "2026-10-21T03:39:54.152883+00:00",
+  "source_database": "test_sjia_demo_20261020",
+  "account": {
+    "principal_id": "0de4802e-1b16-4ad0-8d61-25963db013fb",
+    "username": "local-real-data-validation"
+  },
+  "patient_ids": [
+    "6b5b9129-ef89-4c53-96c0-9c8f09b220fc",
+    "6343fd2c-0830-4f9f-85be-960ffd080619"
+  ],
+  "provenance": [
+    "QA65 独立虚构资料",
+    "QA68 历史时间及确定性计算"
+  ],
+  "format": "按 PostgreSQL 表保存的只读资料快照；配置、权限与登录凭据由目标环境独立管理",
+  "tables": [
+    {
+      "path": "tables/patient.json",
+      "rows": 2,
+      "bytes": 686,
+      "sha256": "ca6eea8741b5d39e2bb31b6d942ad494a10cc4836a26c58804c36f7eaee1e45e"
+    },
+    {
+      "path": "tables/relation.json",
+      "rows": 2,
+      "bytes": 1209,
+      "sha256": "6e5c1058ef8c4b14aa9f9b8a02aaf78bdb78788b1274887b3542d298d21f0b05"
+    },
+    {
+      "path": "tables/record.json",
+      "rows": 36,
+      "bytes": 9265,
+      "sha256": "c8d5467802ca3c19533bce55a466a62febea0aa68ec491a8773ca2ba90b02cdf"
+    },
+    {
+      "path": "tables/record_version.json",
+      "rows": 71,
+      "bytes": 72250,
+      "sha256": "dbb9fe5d2a58fe96555359e3154133c68ebbcec62af9d40391d5c7b1b000f7e9"
+    },
+    {
+      "path": "tables/record_field.json",
+      "rows": 294,
+      "bytes": 264588,
+      "sha256": "889daf404b3b598c8213dffa70ea63d53ae7b892848317b8c8c0378539204864"
+    },
+    {
+      "path": "tables/record_attachment.json",
+      "rows": 10,
+      "bytes": 2780,
+      "sha256": "30b164cfef0fed981bdc5f21e14f62edf29e58abbb393d9c40d1eb676f89f132"
+    },
+    {
+      "path": "tables/report.json",
+      "rows": 24,
+      "bytes": 15975,
+      "sha256": "8dae30d67e2fddf625397657836173b49afa39f7a08bbf09de40d635d8afe4ee"
+    },
+    {
+      "path": "tables/medical_time.json",
+      "rows": 264,
+      "bytes": 161635,
+      "sha256": "c585296801952e53ff9a0dc2a295511c4081cded5ee71c995dcbd9817b19187a"
+    },
+    {
+      "path": "tables/medication_event.json",
+      "rows": 8,
+      "bytes": 4895,
+      "sha256": "9ae1f83d585f000c96162239a9ee756ca8ed14186071768714b4cc4e2bcbdd9e"
+    },
+    {
+      "path": "tables/medication_event_item.json",
+      "rows": 8,
+      "bytes": 5846,
+      "sha256": "ee3cb93d36e21594d725e9ca2860114d15b5ab229e4256d9453d2283182acb5d"
+    },
+    {
+      "path": "tables/normalized_measurement.json",
+      "rows": 0,
+      "bytes": 103,
+      "sha256": "20c5092a97de548d3cc300d0d7625cedbd6f221ec5995a1fbbff06de948279f9"
+    },
+    {
+      "path": "tables/source_anchor.json",
+      "rows": 15,
+      "bytes": 9321,
+      "sha256": "e603845c745de64852c7cae5e5eb440e915afada166480ce677c549e2e18b733"
+    },
+    {
+      "path": "tables/archive.json",
+      "rows": 2,
+      "bytes": 444,
+      "sha256": "753a98b53c63bffd9932c3358832352df87978732ede7dd655a518b7caf44b9f"
+    },
+    {
+      "path": "tables/archive_batch.json",
+      "rows": 6,
+      "bytes": 3174,
+      "sha256": "ff92e8d295d59b9c6d74d6145e81f035678b166ef79fa4252c115699b1784af1"
+    },
+    {
+      "path": "tables/archive_document.json",
+      "rows": 6,
+      "bytes": 2439,
+      "sha256": "c8413516e8dac53ab15679ea9a74d7f356cddd15f866efa708df6c8745c52a5e"
+    },
+    {
+      "path": "tables/archive_document_version.json",
+      "rows": 6,
+      "bytes": 6476,
+      "sha256": "ed6c8b9d4fa4af39d14ef3d9a3e22e8f1c2d930a3adb940e33dfd224e3eff9bd"
+    },
+    {
+      "path": "tables/archive_document_page.json",
+      "rows": 6,
+      "bytes": 1742,
+      "sha256": "1f13b68b1adf7eee8f5147ebef9f3645de0cde51df3d86afdb4302f483a02e2e"
+    },
+    {
+      "path": "tables/archive_document_episode.json",
+      "rows": 0,
+      "bytes": 105,
+      "sha256": "3d64f08c1ee0969fc31b958430dded7629e7a96e7c160292d9aceb7787600d4c"
+    },
+    {
+      "path": "tables/archive_page.json",
+      "rows": 6,
+      "bytes": 4085,
+      "sha256": "ef1f08ce84b0323fda5be3eef1808d0e059d94afce44703b8861481e8359f203"
+    },
+    {
+      "path": "tables/archive_fact.json",
+      "rows": 147,
+      "bytes": 30230,
+      "sha256": "1b16dc4f3f5e1e7063a6ad92916fb63b119e99bbfc6f42a2961786b908115ee2"
+    },
+    {
+      "path": "tables/archive_fact_version.json",
+      "rows": 294,
+      "bytes": 299709,
+      "sha256": "854134b51f33f8ec8d6ec71b678240cddc2f69506a8d8cad278b7ae94d4d7d8f"
+    },
+    {
+      "path": "tables/archive_relation_version.json",
+      "rows": 0,
+      "bytes": 105,
+      "sha256": "389a98e01eafada96552c8a5bd26c8f9829f11fce22516fd638bdf38452eadf2"
+    },
+    {
+      "path": "tables/clinical_episode.json",
+      "rows": 0,
+      "bytes": 97,
+      "sha256": "a0a9d776576725a7c70abfdf16ff56a6fe47c0a6c31595d389778db105f0775d"
+    },
+    {
+      "path": "tables/observation_period_version.json",
+      "rows": 2,
+      "bytes": 1419,
+      "sha256": "490628a98751ea36ab3902c0f25ecd18200490d78e9974fc17a8154cf26421ef"
+    },
+    {
+      "path": "tables/delta_summary.json",
+      "rows": 0,
+      "bytes": 94,
+      "sha256": "d04a1ee7ac860469bc003a14c74d3e07e1feb29f1d526a03f8c5c0e3d4ed89e7"
+    },
+    {
+      "path": "tables/delta_summary_item.json",
+      "rows": 0,
+      "bytes": 99,
+      "sha256": "d80c25a80435e84e635feed058394c7988c1ff5c344568cde82e84d890495a35"
+    },
+    {
+      "path": "tables/draft.json",
+      "rows": 15,
+      "bytes": 20299,
+      "sha256": "07e745aa36043fcd3bf6ed36063ae29189dab2c454ecfbc282b10fbb2fca97de"
+    },
+    {
+      "path": "tables/summary.json",
+      "rows": 27,
+      "bytes": 2616068,
+      "sha256": "5d135c0d9c1a7435f06dc891f178acbe9199a5bbcf954bafdd47c7642c6b19ca"
+    },
+    {
+      "path": "tables/summary_item.json",
+      "rows": 1518,
+      "bytes": 2945632,
+      "sha256": "1a6c6235ff456a7f8f1747f73e0b249185e8986e38b373b3cedbd6314d545250"
+    },
+    {
+      "path": "tables/personal_record_task.json",
+      "rows": 4,
+      "bytes": 2578,
+      "sha256": "9025a2169524443e9f8b40620f0c1de258f6a80b0cf71226aaebec84cff7efaa"
+    },
+    {
+      "path": "tables/material_reminder.json",
+      "rows": 2,
+      "bytes": 1474,
+      "sha256": "cfd46168addb880902eae2961841fc90f94e005fed0f72b8f03322738f75b001"
+    },
+    {
+      "path": "tables/material_reminder_notice.json",
+      "rows": 0,
+      "bytes": 105,
+      "sha256": "8c3fca519cd10dc8230d0e9143259ce92fbd914aea5a2165974f30a11ed3436f"
+    },
+    {
+      "path": "tables/alert_evaluation.json",
+      "rows": 75,
+      "bytes": 102122,
+      "sha256": "be25db897b9035d97edc1851d330f2b1099340c41ba5818aed536195f2f5adb1"
+    },
+    {
+      "path": "tables/alert_evaluation_input.json",
+      "rows": 0,
+      "bytes": 103,
+      "sha256": "7f43a920d59cbdf806660686a3a099a61d30acc33b820860d7c0d7e0bbac29a9"
+    },
+    {
+      "path": "tables/alert_evaluation_assessment.json",
+      "rows": 0,
+      "bytes": 108,
+      "sha256": "2023524e92fbac2e12f60a86e13c5a037f382e8b6934a835bccf645b77df27d3"
+    },
+    {
+      "path": "tables/alert_episode.json",
+      "rows": 14,
+      "bytes": 8601,
+      "sha256": "4c422c95eb151b1ef8e019f61899a71b8a6f64aaf355efa59c7b943789006f93"
+    },
+    {
+      "path": "tables/alert_event.json",
+      "rows": 14,
+      "bytes": 20734,
+      "sha256": "c090a065a19f0e7c5b1e0a61359f9fd6ddd5523394c2fbce6af1c03d84b240e4"
+    },
+    {
+      "path": "tables/alert_recipient.json",
+      "rows": 14,
+      "bytes": 6009,
+      "sha256": "95ccaa6972531fabe7778690b87ab33c6eb5562977cab61aef2a39c13c7b3291"
+    },
+    {
+      "path": "tables/alert_decision.json",
+      "rows": 63,
+      "bytes": 34179,
+      "sha256": "8843a56085a955964d8ae43e27155e6f55bc15e753718fb885697fb65468faf1"
+    },
+    {
+      "path": "tables/alert_signal_result.json",
+      "rows": 189,
+      "bytes": 100434,
+      "sha256": "7d4a34ec48dee6c39f11c874ea9f405140f0d18589c3064a3552349db55500bf"
+    },
+    {
+      "path": "tables/alert_preset_choice.json",
+      "rows": 39,
+      "bytes": 52929,
+      "sha256": "334cc460f6f2becd385a055bd1bacc2baf86838ef9822a8c67190f7abdabf0a0"
+    },
+    {
+      "path": "tables/assessment.json",
+      "rows": 0,
+      "bytes": 91,
+      "sha256": "596e19e0dfebf5697d1f0d9ba9834b14cb8c8891f7f3398e215d4366918120a7"
+    },
+    {
+      "path": "tables/assessment_input.json",
+      "rows": 0,
+      "bytes": 97,
+      "sha256": "8d84025152711cda00bc83653ee6349717a3cd3a57838263d98cf2268408fd1a"
+    },
+    {
+      "path": "tables/assessment_output.json",
+      "rows": 0,
+      "bytes": 98,
+      "sha256": "1069ca30674a3ac0839bf8ffbb2da40df0fb5c4d5298899c676baac661cec4cb"
+    },
+    {
+      "path": "tables/file_group.json",
+      "rows": 6,
+      "bytes": 2769,
+      "sha256": "fe35d3285a125c0e19e1acf88a9669408be6a0c310b5136da46bd6025d4bb4a3"
+    },
+    {
+      "path": "tables/file_object.json",
+      "rows": 6,
+      "bytes": 4804,
+      "sha256": "54eb9703db8d1af8f29b0c0a29f16fc0d71d774179be7447a322d57087cff103"
+    },
+    {
+      "path": "tables/file_page.json",
+      "rows": 6,
+      "bytes": 2054,
+      "sha256": "e2c3b5d9ea28ccbd24f541efce9e01ec8ac5d7332b7ee19a22eb7a6ed794a280"
+    }
+  ],
+  "objects": [
+    {
+      "file_id": "1e491b5f-4cfd-463f-9446-c52850c412f9",
+      "patient_id": "6b5b9129-ef89-4c53-96c0-9c8f09b220fc",
+      "path": "objects/1e491b5f-4cfd-463f-9446-c52850c412f9.png",
+      "media_type": "image/png",
+      "bytes": 41311,
+      "sha256": "febcd493982355b471df6c306a11caab0a738e513814c1750f2b68985fa697a0"
+    },
+    {
+      "file_id": "346a6e2b-4bbb-47bd-8433-4ae30f45d657",
+      "patient_id": "6b5b9129-ef89-4c53-96c0-9c8f09b220fc",
+      "path": "objects/346a6e2b-4bbb-47bd-8433-4ae30f45d657.png",
+      "media_type": "image/png",
+      "bytes": 41311,
+      "sha256": "febcd493982355b471df6c306a11caab0a738e513814c1750f2b68985fa697a0"
+    },
+    {
+      "file_id": "4302219a-c6b6-4774-b93c-9a7020559ba4",
+      "patient_id": "6343fd2c-0830-4f9f-85be-960ffd080619",
+      "path": "objects/4302219a-c6b6-4774-b93c-9a7020559ba4.png",
+      "media_type": "image/png",
+      "bytes": 42697,
+      "sha256": "206c0b14711f768dddcfd48e76956b63b9d83896b3692d62c7fe973ba1a04cb5"
+    },
+    {
+      "file_id": "8956df7e-4a5f-4932-8524-a975f90d1d78",
+      "patient_id": "6343fd2c-0830-4f9f-85be-960ffd080619",
+      "path": "objects/8956df7e-4a5f-4932-8524-a975f90d1d78.png",
+      "media_type": "image/png",
+      "bytes": 41903,
+      "sha256": "84fb88c563c6051203c0f3d6a45d6c7baa120332eda46dc1f47c6430bf0296eb"
+    },
+    {
+      "file_id": "c4f44cd0-75ef-482f-8752-52e37aafbff4",
+      "patient_id": "6b5b9129-ef89-4c53-96c0-9c8f09b220fc",
+      "path": "objects/c4f44cd0-75ef-482f-8752-52e37aafbff4.png",
+      "media_type": "image/png",
+      "bytes": 41370,
+      "sha256": "7013dec84952105ec147097c87cfd8b115f2efb042ab88ee4bef0c935ab884ac"
+    },
+    {
+      "file_id": "d3bc6334-90ac-49d2-9faf-40e5d65ff5ee",
+      "patient_id": "6b5b9129-ef89-4c53-96c0-9c8f09b220fc",
+      "path": "objects/d3bc6334-90ac-49d2-9faf-40e5d65ff5ee.png",
+      "media_type": "image/png",
+      "bytes": 40805,
+      "sha256": "95104476c9fede2ff9fee2c422e93dfe1c0663f1a4027f6da2f8ad8af710dbec"
+    }
+  ],
+  "real_data_included": false,
+  "credentials_included": false,
+  "sessions_included": false,
+  "runtime_configuration_included": false,
+  "archive": {
+    "path": "qa65-snapshot.zip",
+    "bytes": 761900,
+    "sha256": "ffbdce5b84b30b7c720da5bec959621e8e6c4aa328c962c040ea242ccff54864"
+  },
+  "verification": {
+    "patient_scope": "PASS",
+    "all_member_checksums": "PASS",
+    "real_original_overlap": 0,
+    "real_original_count_compared": 63,
+    "database_writes": 0
+  }
+}

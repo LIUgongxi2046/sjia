@@ -1,0 +1,37 @@
+# S3恢复历史引用链
+
+关联[QA40](../docs/development/QA40-s3-restore-lineage.md)、FR-02、FR-09、NFR-07／09及OPS。操作者使用既有明确备份和隔离恢复入口；每次恢复仍要求不同数据库、物理集群和binding，服务保持停止，运行采用继续独立检查。
+
+## 文档与身份
+
+S3RestoreGeneration保存generation、parent_restore_id、parent_mapping_sha256、ancestor_sha256、restore_root、完整S3RestoreMapping、mapping_sha256、content_checkpoint、created_at和mapped_at。第一代没有父引用与ancestor_sha256。后续每代的父ID与父映射摘要必须准确指向上一代，ancestor_sha256绑定此前全部代次文档的规范JSON摘要。generation从1连续增加，restore_id与binding不重复。
+
+S3RestoreLineage保存按先后顺序排列的完整代次。每代保留真实来源和目标VersionId、ETag、SHA256、大小、文件身份、准确映射及原始处置来源。每代来源必须等于上一代目标的数据库、集群和binding；来源采样时间不得早于父代完成时间。checkpoint保持相同journal_id及单调sequence，相同sequence要求相同entry_sha256。
+
+后续来源必须保留全部已知文件身份、patient_id、object_key、object_version、checksum与size_bytes，已处置文件不能恢复为可用状态。父映射复制后的登记允许从available转为disposed，登记ID、完整reference和created_at保持；父映射已经确认缺失的对象不得重新登记。当前SQL全部历史登记与链中文档、当前来源快照逐项比较。
+
+## 数据库与查询
+
+S3ContentRestoreState保存有序恢复记录。generation为正整数且唯一，parent关联同表上一代并限制删除，parent_mapping_sha256与ancestor_sha256明确可空语义。第一代parent与两个摘要为空，后续三者均存在。保留现有ID、源目标身份、来源快照摘要、备份摘要、checkpoint、状态、创建与完成时间；数据库迁移保持既有业务字段和全部旧映射。
+
+数据库限制记录删除、固定身份变化和mapped记录变化，插入后续记录时核验准确父代、来源binding及时间关系。preparing仅允许空mapping_sha256与mapped_at，mapped要求完整摘要和有效完成时间。当前环境根据实际数据库、物理集群及准确binding选择唯一末代，历史路径只作为历史字段，不能成为当前文件访问位置。本地恢复状态与S3历史状态不能共存。
+
+## 完整备份与恢复
+
+没有恢复历史的来源继续使用s3-consistent-backup-1。具有恢复历史的来源使用s3-consistent-backup-2，新增必需restore_lineage文档。完整性读取使用明确格式与严格判别联合，分别验证全部来源、dump、当前原件和配置依据。来源SQL冻结及独立journal锁覆盖历史读取、备份和最终核验；可信checkpoint继续由独立目录提供。SQL锁在首次来源查询之前取得，REPEATABLE READ与锁的读取顺序依据[PostgreSQL17说明](https://www.postgresql.org/docs/17/sql-lock.html)。
+
+恢复第二版备份时，实际SQL中的历史状态与登记必须逐项符合已验证文档。完整历史文档保存在当前私有恢复根，摘要绑定新状态记录。随后追加preparing记录，实际复制当前可用原件、确认当前缺失、保存当前映射并转换为mapped；旧记录与旧映射保持。失败保留未完成目标，禁止覆盖、清理或自动启动。
+
+## 内容重放与运行采用
+
+原始清单按照准确来源binding定位历史映射，核验原始file_id、patient_id、对象版本和完整原始reference。逐代关系通过后，当前映射负责定位当前对象登记或准确缺失证明。备份后新增对象仅在各代快照、当前SQL、当前登记及对象范围均无身份冲突时使用独立缺失证明。处置operation_id关联原始操作与当前restore_id，重复和并发执行保持一致。
+
+内容重放继续使用固定应用函数和独立可信journal，证明绑定当前目标、完整备份摘要、当前checkpoint及全部实际内容核验。历史链完整性不能替代权限撤销、配置停用、外部影响、发布资格或独立运行采用条件。当前任务不新增API、SSE、Agent工具、调度器或外部服务。
+
+## 验收与故障
+
+使用真实恢复文档和SQL保存结果验证结构、摘要、父引用、完整登记与单调checkpoint；错误输入在读取位置明确拒绝。实际再次备份与再次恢复分别记录环境、角色、来源许可、准确SHA256、真实字节、运行命令及后续内容重放。超时沿用现有明确操作期限；发生错误立即终止，不执行自动重试、替代响应、服务启动或网络放行。
+
+完整性、SQL、真实备份、真实再次恢复和运行采用分别统计。缺少实际第二代证据时，不登记连续恢复已经通过。
+
+QA40已通过第一版和第二版备份的完整当前CLI恢复，各自核验63份原件、189处范围、两个重放进程及当前SQL保护。verify_s3_restore_lineage_runtime.py通过明确expected-generations分别验证第一版根历史和第二版完整父代历史；原始映射、版本、时间和checkpoint保持。完整Local流程和恢复环境独立运行采用继续由QA38维护。

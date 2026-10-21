@@ -1,4 +1,4 @@
-# 本模块四张表均为单列 uuid 主键。
+# 本模块的数据表均使用单列 uuid 主键。
 # 复合外键（patient_id 与其它列成对出现）无法由 Django 表达，由原生 SQL 集中建立。
 import uuid
 
@@ -116,4 +116,35 @@ class UploadPart(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["file_group_id", "ordinal"], name="upload_part_group_ordinal_uniq"),
             models.UniqueConstraint(fields=["file_group_id", "client_upload_id"], name="upload_part_group_client_upload_uniq"),
+        ]
+
+
+class S3StoredObject(models.Model):
+    class Status(models.TextChoices):
+        AVAILABLE = "available", "available"
+        DISPOSED = "disposed", "disposed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    binding_sha256 = Sha256HexField()
+    object_key = models.TextField()
+    version_id = models.TextField()
+    etag = models.TextField()
+    checksum = Sha256HexField()
+    size_bytes = models.PositiveBigIntegerField()
+    status = models.CharField(max_length=16, choices=Status.choices)
+    created_at = models.DateTimeField()
+    disposed_at = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = 'sjia"."s3_stored_object'
+        constraints = [
+            models.UniqueConstraint(fields=["binding_sha256", "object_key"], name="s3_stored_object_binding_key_uniq"),
+            models.CheckConstraint(condition=~models.Q(object_key="") & ~models.Q(object_key__startswith="/")
+                & ~models.Q(object_key__endswith="/") & ~models.Q(object_key__contains="//")
+                & ~models.Q(object_key__regex=r"(^|/)\.{1,2}(/|$)"), name="s3_stored_object_key_check"),
+            models.CheckConstraint(condition=~models.Q(version_id="") & ~models.Q(version_id="null")
+                & ~models.Q(etag=""), name="s3_stored_object_version_check"),
+            models.CheckConstraint(condition=models.Q(status="available", disposed_at__isnull=True)
+                | models.Q(status="disposed", disposed_at__isnull=False, disposed_at__gte=models.F("created_at")),
+                name="s3_stored_object_state_check"),
         ]

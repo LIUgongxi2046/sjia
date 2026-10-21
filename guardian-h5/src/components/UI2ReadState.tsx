@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { ChevronRight as ArrowRight, CircleAlert, LoaderCircle, LockKeyhole, WifiOff } from './ThreeDIcon';
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import { ApiError } from '../api/client';
 import { useAccess } from '../state/access';
 
@@ -31,13 +31,7 @@ export function UI2ReadState({ loading = false, error, onRetry, requirePatient =
     <div className="status-top">{navigator.onLine ? <CircleAlert size={22} /> : <WifiOff size={22} />}<span>页面状态</span></div><h2>{navigator.onLine ? (access.errorSource === 'relations' ? '患儿关联暂未读取' : '身份服务读取失败') : '网络连接已中断'}</h2>{access.errorSource === 'relations' && <p>账号已登录，无需重复注册。关联核验成功前不能访问患儿资料。</p>}<p>{access.error}</p>
     <button className="text-action" onClick={() => void access.refresh()}>重新核验访问权限<ArrowRight size={16} /></button>
   </section>;
-  if (sessionRequired) return <section className="status-panel permission rich-read-state" role="status">
-    <div className="status-top"><LockKeyhole size={22} /><span>登录状态</span></div>
-    <h2>{access.principalId ? '登录状态已失效' : '请先登录账号'}</h2>
-    <p>{access.principalId ? '请重新登录，继续查看本人获准的资料。' : '登录后可以查看和管理本人获准的患儿资料。'}</p>
-    <button className="text-action" onClick={() => navigate('/login')}>登录账号<ArrowRight size={16} /></button>
-    <button className="text-action" disabled={access.loading} onClick={() => void recheckAccess()}>检查登录状态<ArrowRight size={16} /></button>
-  </section>;
+  if (sessionRequired) return <Navigate to="/login" replace />;
   if (requirePatient && !access.patientId) return <section className="status-panel permission rich-read-state" role="status">
     <div className="status-top"><LockKeyhole size={22} /><span>患儿关联</span></div><h2>尚无可访问的患儿记录</h2>
     <p>当前账号已登录。请查看患儿关联及申请状态，取得有效关联后即可访问资料。</p>

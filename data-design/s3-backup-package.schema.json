@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-consistent-backup-1",
+  "type": "object", "additionalProperties": false,
+  "required": ["environment", "source_snapshot", "database_sha256", "payloads", "evidence_source_root", "config_evidence", "content_checkpoint", "completed_at"],
+  "properties": {
+    "schema_version": {"const": "s3-consistent-backup-1", "default": "s3-consistent-backup-1"},
+    "state": {"const": "COMPLETE", "default": "COMPLETE"},
+    "environment": {"type": "string", "minLength": 1},
+    "source_snapshot": {"$ref": "urn:sjia:schema:s3-backup-source-1"},
+    "database_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "payloads": {"type": "array", "items": {"$ref": "#/$defs/payload"}},
+    "evidence_source_root": {"type": "string", "minLength": 1},
+    "config_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "content_checkpoint": {"$ref": "#/$defs/checkpoint"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "automatic_restart": {"const": false, "default": false}
+  },
+  "$defs": {
+    "payload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["registration_id", "filename", "checksum", "size_bytes"],
+      "properties": {
+        "registration_id": {"type": "string", "format": "uuid"},
+        "filename": {"type": "string", "minLength": 1},
+        "checksum": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false, "required": ["path", "checksum", "size_bytes"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "format": "sjia-canonical-object-key"},
+        "checksum": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "checkpoint": {
+      "type": "object", "additionalProperties": false, "required": ["schema_version", "journal_id", "sequence", "entry_sha256"],
+      "properties": {
+        "schema_version": {"const": "content-journal-checkpoint-1"},
+        "journal_id": {"type": "string", "format": "uuid"},
+        "sequence": {"type": "integer", "minimum": 0},
+        "entry_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"}
+      },
+      "allOf": [{"if": {"properties": {"sequence": {"const": 0}}, "required": ["sequence"]},
+        "then": {"properties": {"entry_sha256": {"const": "0000000000000000000000000000000000000000000000000000000000000000"}}}}]
+    }
+  }
+}

@@ -7,9 +7,10 @@ from audit.service import write_audit
 from authorization.models import AccessGrant
 from authorization.policy import evaluate
 from configurations.service import compute_checksum
-from files.deletion import delete_local_object, digest, read_deletion_receipt
+from files.deletion import digest
+from files.disposition_storage import delete_disposition_object, disposition_object_proof, read_disposition_receipt
 from files.purpose_dependencies import invalidate_resource
-from files.purpose_schemas import PurposeDispositionApprovalContext, PurposeDispositionObjectProof, PurposeDispositionScope, PurposeLocalDispositionRule
+from files.purpose_schemas import PurposeDispositionApprovalContext, PurposeDispositionScope, PurposeLocalDispositionRule
 from files.purpose import current_file_grants, lock_file_access, runtime_environment
 from files.models import FileObject
 from files.service import object_store
@@ -134,8 +135,7 @@ def lock_request_access(request, actor, auth_epoch, *, require_approval):
         if file.id in target_files:
             raise DispositionRejected('DISPOSITION_TARGET_ALIAS')
         target_files.add(file.id)
-        file_versions.append(PurposeDispositionObjectProof(file_id=file.id, object_version=file.object_version,
-            object_key=file.object_key, checksum=file.checksum, size_bytes=file.size_bytes, retention_policy_id=file.retention_policy_id))
+        file_versions.append(disposition_object_proof(object_store, file))
         if file.retention_policy_id != policy.id or authority_file.retention_policy_id != policy.id:
             raise DispositionRejected('DISPOSITION_POLICY_SCOPE_DENIED')
         actor, patient, gate, group = lock_file_access(authority_file, actor, auth_epoch,
@@ -214,8 +214,8 @@ def finish_request(request):
                         or provider_copy.receipt_sha256 != receipt['evidence_sha256']):
                     raise DispositionRejected('EXTERNAL_DELETE_NOT_VERIFIED')
             else:
-                key, data, proof = read_deletion_receipt(object_store, operation_id=item.id,
-                    object_key=file.object_key, checksum=file.checksum, size_bytes=file.size_bytes)
+                key, data, proof = read_disposition_receipt(object_store, operation_id=item.id,
+                    proof=disposition_object_proof(object_store, file))
                 if file.status != 'disposed' or (copy is not None and copy.status != 'disposed') or key != item.receipt_ref or digest(data) != item.receipt_sha256:
                     raise DispositionRejected('DELETION_NOT_VERIFIED')
         else:
@@ -370,8 +370,8 @@ def mark_item_deleted(*, item, receipt_ref, receipt_sha256, executed_by, auth_ep
     else:
         if item.target_type in ('external_copy',):
             raise DispositionRejected('EXTERNAL_DELETE_RESULT_REQUIRED')
-        key, data, proof = read_deletion_receipt(object_store, operation_id=item.id,
-            object_key=file.object_key, checksum=file.checksum, size_bytes=file.size_bytes)
+        key, data, proof = read_disposition_receipt(object_store, operation_id=item.id,
+            proof=disposition_object_proof(object_store, file))
         if key != receipt_ref or digest(data) != receipt_sha256 or file.status != 'disposed' or (copy is not None and copy.status != 'disposed'):
             raise DispositionRejected('DELETION_NOT_VERIFIED')
     if item.status == 'deleted':
@@ -405,8 +405,8 @@ def execute_local_item(*, item, expected_target_version, policy_version, execute
         raise DispositionRejected('DISPOSITION_ITEM_NOT_PENDING')
     file, authority_file, copy = target_file(item, request.patient_id)
     # 文件准备证明先持久保存；实际字节删除及确认回执各自核验。
-    key, data, proof = delete_local_object(object_store, operation_id=item.id,
-        object_key=file.object_key, checksum=file.checksum, size_bytes=file.size_bytes)
+    key, data, proof = delete_disposition_object(object_store, operation_id=item.id,
+        proof=disposition_object_proof(object_store, file))
     file.status = 'disposed'
     file.save(update_fields=['status'])
     invalidate_resource('file_object', file.id, file.object_version)

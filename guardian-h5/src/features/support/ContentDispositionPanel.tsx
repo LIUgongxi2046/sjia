@@ -5,7 +5,7 @@ import { approveContentPlan, executeContentPlan, previewContentPlan, readContent
 import type { ContentPlan } from '../../api/contentDisposition';
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const modes = { retain: '继续保留', revoke_access: '撤销访问并保留内容', erase_selected_content: '擦除选定内容' };
-const states = { preview: '清单待批准', approved: '准确清单已批准', retained: '已记录保留', access_revoked: '访问已撤销', erasing: '正在处理，需查询原结果', logical_erasure_complete: '当前数据库载荷及受控本地路径处置完成' };
+const states = { preview: '清单待批准', approved: '准确清单已批准', retained: '已记录保留', access_revoked: '访问已撤销', erasing: '正在处理，需查询原结果', logical_erasure_complete: '当前数据库内容及受控文件处置完成' };
 export function ContentDispositionPanel({ active, onPermission }: { active: boolean; onPermission: () => void }) {
   const [patient, setPatient] = useState(''), [policy, setPolicy] = useState(''), [hold, setHold] = useState('');
   const [holdVersion, setHoldVersion] = useState(''), [targets, setTargets] = useState(''), [source, setSource] = useState('');
@@ -44,15 +44,15 @@ export function ContentDispositionPanel({ active, onPermission }: { active: bool
     <label className="field"><span>已批准的内容政策 UUID</span><input value={policy} disabled={busy} onChange={event => setPolicy(event.target.value.trim())} /></label>
     <label className="field"><span>保留例外审查 UUID</span><input value={hold} disabled={busy} onChange={event => setHold(event.target.value.trim())} /></label>
     <label className="field"><span>保留例外审查版本</span><input value={holdVersion} disabled={busy} inputMode="numeric" onChange={event => setHoldVersion(event.target.value)} /></label>
-    <label className="field"><span>准确目标数组（数据库 adapter、object_id、version，或本地 file_id、object_version）</span><textarea value={targets} disabled={busy} onChange={event => setTargets(event.target.value)} /></label>
+    <label className="field"><span>准确目标数组（数据库 adapter、object_id、version，或文件 file_id、object_version）</span><textarea value={targets} disabled={busy} onChange={event => setTargets(event.target.value)} /></label>
     </details>
     <button className="button secondary" disabled={busy || !uuid.test(patient) || !uuid.test(policy) || !uuid.test(hold) || !/^[1-9][0-9]*$/.test(holdVersion) || !targets.trim()} onClick={preview}>只生成处置清单</button>
     {error && <p role="alert">{error}</p>}
     {plan && <><p>申请 {plan.plan_id}</p><p>本次准确处置患儿：{plan.patient_id}</p>{plan.manifest.family_request_id && <p>本人申请：{plan.manifest.family_request_id}</p>}<p>状态：{states[plan.status]}。模式：{modes[plan.manifest.mode]}。</p>
       {!plan.runtime_execution_enabled && <p role="status">当前运行环境未启用内容处置执行。</p>}
-      <p>批准范围指纹：{plan.manifest_sha256}</p><p>保留关系及元数据契约：{plan.manifest.preservation_sha256}</p>
+      <p>批准范围指纹：{plan.manifest_sha256}</p><p>保留关系及元数据规范：{plan.manifest.preservation_sha256}</p>
       <p>清单包含 {plan.manifest.items.length} 个准确对象。复制载荷可能让清单大于最初选定范围。</p>
-      <details><summary>逐项核对目标与版本</summary>{plan.manifest.items.map((item, index) => <p key={index}>{item.adapter ?? 'local_object'} · {item.object_id ?? item.file_id} · {item.version ?? item.object_version}</p>)}</details>
+      <details><summary>逐项核对目标与版本</summary>{plan.manifest.items.map((item, index) => <p key={index}>{item.adapter ?? '文件'} · {item.object_id ?? item.file_id} · {item.version ?? item.object_version}</p>)}</details>
       <p>未获全副本清除证明：{plan.manifest.obligations.join('、')}。</p>
       {plan.status === 'preview' && <><label className="field"><span>与准确清单摘要匹配的 SourceRevision UUID</span><input value={source} onChange={event => setSource(event.target.value.trim())} /></label>
         <label><input type="checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} />已核对全部对象、版本、保留元数据和未完成副本义务</label>

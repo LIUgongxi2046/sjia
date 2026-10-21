@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import connection, transaction
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -15,7 +15,9 @@ from requests.service import commit_intent
 @handle
 @transaction.atomic
 def archive_relation_search(request, patient_id):
-    actor, epoch, audience = relation_identity(request)
+    with connection.cursor() as cursor:
+        cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+    actor, epoch, audience = relation_identity(request, writing=False)
     patient = get_patient(patient_id)
     if audience == 'support':
         authorize_service(request, actor, 'verify_field')
@@ -29,12 +31,14 @@ def archive_relation_search(request, patient_id):
 @handle
 @transaction.atomic
 def archive_relation_read(request, relation_id):
-    actor, _, audience = relation_identity(request)
+    with connection.cursor() as cursor:
+        cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+    actor, _, audience = relation_identity(request, writing=False)
     initial = ArchiveRelationVersion.objects.get(relation_id=relation_id, version=1)
     patient = get_patient(initial.patient_id)
     if audience == 'support':
         authorize_service(request, actor, 'verify_field')
-    current = current_relation(patient, relation_id)
+    current = current_relation(patient, relation_id, lock=False)
     if set(request.query_params) - {'version'} or any(len(request.query_params.getlist(key)) != 1 for key in request.query_params):
         raise ApiError('ARCHIVE_RELATION_QUERY_INVALID', 422)
     raw = request.query_params.get('version')

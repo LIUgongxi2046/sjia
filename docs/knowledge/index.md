@@ -1,6 +1,6 @@
 # 项目知识与文档索引
 
-doc_id：SJIA-KNOWLEDGE-INDEX；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：S012；需求、源码、运行或证据变化时核查关联页面。
+doc_id：SJIA-KNOWLEDGE-INDEX；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43` 及当前文档。维护责任：S012；需求、源码、运行或证据变化时核查关联页面。
 
 文档 ID、路径、受众、来源、生成方式、维护责任与有效性见[文档资产索引](../document-inventory.csv)。
 
@@ -10,6 +10,7 @@ doc_id：SJIA-KNOWLEDGE-INDEX；status：CURRENT；last_verified：2026-10-21（
 | --- | --- | --- |
 | [项目 README](../../README.md) | 项目组成、开发命令与入口 | 当前源码、package.json 与本地检查；2026-10-21 |
 | [当前交接](../../CURRENT-DELIVERY-20261021.md) | 版本、全部剩余验收、运行身份与证据 | Git、交付记录、QA12—QA29；历史证据日期单独标明 |
+| [测试账号资料](../../test-data/README.md) | 两位模拟患儿的记录、历史与生成附件 | QA65／QA68 的既有测试资料及用户明确提交授权；排除真实资料与秘密 |
 | [PRD 2.0 实施依据](prd2-delivery.md) | 业务概念、前端入口、API、数据与任务关系 | 当前需求、领域代码及对应主记录；2026-10-21 |
 | [API 指南](../reference/api-integration.md) | 会话、权限、原请求、原件范围及接口目录 | Django 路由、具体 handler、JSON Schema；2026-10-21 |
 | [OpenAPI](../reference/openapi.json) | 七个身份及原件路径 | SJIA-API-INTEGRATION 的明确覆盖范围；2026-10-21 |

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { Check, ChevronRight } from '../../components/ThreeDIcon';
 import { UI2FamilyFrame } from '../../components/UI2FamilyFrame';
 import { useAccess } from '../../state/access';
+import { localTestAccount } from '../../localTestAccount';
 import logo from '../../../../ui-delivery/identity/2x/logo-embrace@2x.png';
 
 export function LoginPage() {
@@ -27,14 +28,15 @@ export function LoginPage() {
     const submittedPassword = password;
     setPassword(''); setError(null); setSubmitting(true);
     try {
-      const ready = mode === 'login' ? await login(username, submittedPassword) : await register(username, submittedPassword);
+      const preferredPatient = localTestAccount?.username === username ? localTestAccount.patientId : undefined;
+      const ready = mode === 'login' ? await login(username, submittedPassword, preferredPatient) : await register(username, submittedPassword);
       if (ready) navigate('/home', { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : '暂时无法完成身份核验，请重试。');
     } finally { submittingRef.current = false; setPassword(''); setSubmitting(false); }
   }
 
-  return <UI2FamilyFrame title={loggedIn ? "登录身份" : mode === "register" ? "注册账号" : "登录"} screenId="UI2-17" note="使用账号和密码完成身份核验。登录后仍需取得患儿关联与相应授权，才能访问患儿资料。" backTo="/account"
+  return <UI2FamilyFrame title={loggedIn ? "登录身份" : mode === "register" ? "注册账号" : "登录"} screenId="UI2-17" note="使用账号和密码完成身份核验。登录后仍需取得患儿关联与相应授权，才能访问患儿资料。" backTo={loggedIn ? '/account' : undefined}
     kicker={!loggedIn && !accessError ? null : undefined} subtitle={!loggedIn && !accessError ? null : undefined}>
     <div className="login-brand"><img src={logo} alt="sJIA 守护者联盟标志" /><h2>sJIA 守护者联盟</h2><p>儿童健康记录</p></div>
     {accessError ? <section className="card form-card" role="alert"><h3>{errorSource === 'relations' ? '当前账号已登录' : '账号会话暂未核验'}</h3>
@@ -61,6 +63,16 @@ export function LoginPage() {
         setMode(mode === 'login' ? 'register' : 'login'); setPassword(''); setError(null);
       }}>{mode === 'login' ? '没有账号，去注册' : '已有账号，去登录'}</button>
     </form>}
+    {!loggedIn && !accessError && mode === 'login' && localTestAccount && <section className="card form-card local-test-account" aria-labelledby="local-test-title">
+      <h3 id="local-test-title">本地测试账号</h3>
+      <p className="muted">登录后可查看已授权的{localTestAccount.dataMode === 'simulation' ? '模拟' : '脱敏'}患儿资料。</p>
+      <div className="pair"><span>账号</span><strong data-testid="test-username">{localTestAccount.username}</strong></div>
+      <div className="pair"><span>密码</span><strong data-testid="test-password">{localTestAccount.password}</strong></div>
+      <button type="button" className="button secondary" disabled={submitting || loading} onClick={() => {
+        if (!localTestAccount) throw new Error('本地测试账号尚未配置。');
+        setUsername(localTestAccount.username); setPassword(localTestAccount.password); setError(null);
+      }}>填入测试账号</button>
+    </section>}
     <button className="text-action center" onClick={() => navigate('/account/data-use')}>了解资料如何使用<ChevronRight size={15} /></button>
   </UI2FamilyFrame>;
 }

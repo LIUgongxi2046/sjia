@@ -84,7 +84,8 @@ def fanout_dynamic_change(event):
         if not source_matches(source, config, policy):
             continue
         try:
-            binding = schedule_binding(config, policy)
+            # 环境共享行锁保护配置与方案选择，任务分发使用完整读取核验。
+            binding = schedule_binding(config, policy, lock=False)
         except QualificationRejected:
             continue  # Ineligible or stale plans never create a new clinical task.
         patient = Patient.objects.get(id=policy.patient_id)

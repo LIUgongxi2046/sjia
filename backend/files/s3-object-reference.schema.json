@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-object-reference-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_sha256", "object_key", "version_id", "etag", "checksum", "size_bytes"],
+  "properties": {
+    "schema_version": {"const": "s3-object-reference-1", "default": "s3-object-reference-1"},
+    "binding_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "object_key": {"type": "string", "minLength": 1, "format": "sjia-canonical-object-key"},
+    "version_id": {"type": "string", "minLength": 1, "not": {"const": "null"}},
+    "etag": {"type": "string", "minLength": 1},
+    "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "size_bytes": {"type": "integer", "minimum": 0},
+    "encryption": {"const": "AES256", "default": "AES256"}
+  }
+}

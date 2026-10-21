@@ -126,7 +126,8 @@ def independent_samples(facts, relations):
         raise QualificationRejected('ASSESSMENT_CANDIDATE_DUPLICATE')
     exclusions = [selection_exclusion(item, item.reasons) for item in facts if not item.eligible]
     available = {item.reference['fact_version_id']: item for item in facts if item.eligible}
-    if any(item.interval is None or item.value is None or item.reference['verification_id'] is None for item in available.values()):
+    if any(item.interval is None or item.value is None
+            or item.reference['verification_id'] is None and not item.simulation_qualified for item in available.values()):
         raise QualificationRejected('ASSESSMENT_QUALIFIED_INPUT_INCOMPLETE')
     related_refs = tuple(item.reference for item in relations)
     blocked = {}

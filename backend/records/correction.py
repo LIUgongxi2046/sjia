@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import F
 
 from identity.models import Patient
-from records.models import Record, RecordField, RecordVersion, RecordAttachment
+from records.models import Record, RecordField, RecordVersion, RecordAttachment, Report
 from records.service import _create_medical_time, _validate_field_input, medical_time_view
 from medical_time.models import MedicalTime
 from archives.record_facts import correct_record_facts
@@ -61,6 +61,7 @@ def correct_record(
     capture_method="manual",
     source_revision=None,
     origin_type=None,
+    report_metadata=None,
 ) -> dict:
     if type(expected_version) is not int or not 1 <= expected_version < 9223372036854775807:
         raise CorrectionRejected('VERSION_INVALID')
@@ -81,6 +82,23 @@ def correct_record(
     if any(field.get('value_type') != previous_field.value_type or field.get('concept_code') != previous_field.concept_code
            for field, previous_field in zip(fields, previous_fields)):
         raise CorrectionRejected('CORRECTION_FIELD_IDENTITY_CHANGED')
+    report_id = previous.report_id
+    if report_metadata is not None:
+        from records.input_validation import validate_family_record_input
+
+        if record.kind != 'report' or previous.report_id is None:
+            raise CorrectionRejected('CORRECTION_REPORT_REQUIRED')
+        validate_family_record_input({'kind': 'report', 'capture_method': capture_method,
+            'origin_type': previous.origin_type, 'fields': fields, 'file_ids': [], 'report': report_metadata})
+        prior_report = Report.objects.get(id=previous.report_id, patient_id=patient.id)
+        sample_time = _create_medical_time(patient, report_metadata['sample_time'])
+        result_time = _create_medical_time(patient, report_metadata['result_time'])
+        revised_report = Report.objects.create(patient=patient, source_revision=source_revision,
+            external_ref=report_metadata['external_ref'], report_status=report_metadata['report_status'],
+            source_organization=prior_report.source_organization, file_group_id=prior_report.file_group_id,
+            sample_time_id=sample_time.id if sample_time else None,
+            result_time_id=result_time.id if result_time else None, created_at=now)
+        report_id = revised_report.id
     version = RecordVersion.objects.create(
         patient=patient,
         record_id=record.id,
@@ -91,7 +109,7 @@ def correct_record(
         capture_method=capture_method,
         source_revision=source_revision,
         source_organization=previous.source_organization,
-        report_id=previous.report_id,
+        report_id=report_id,
         use_authorization_id=use_authorization_id,
         quality_status=RecordVersion.QualityStatus.PENDING,
         quality_reasons=[],

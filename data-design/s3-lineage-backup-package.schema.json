@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-consistent-backup-2",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "environment", "source_snapshot", "database_sha256", "payloads", "evidence_source_root", "config_evidence", "content_checkpoint", "completed_at", "restore_lineage"],
+  "properties": {
+    "schema_version": {"const": "s3-consistent-backup-2"},
+    "state": {"const": "COMPLETE", "default": "COMPLETE"},
+    "environment": {"type": "string", "minLength": 1},
+    "source_snapshot": {"$ref": "urn:sjia:schema:s3-backup-source-1"},
+    "database_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "payloads": {"type": "array", "items": {"$ref": "urn:sjia:schema:s3-consistent-backup-1#/$defs/payload"}},
+    "evidence_source_root": {"type": "string", "minLength": 1},
+    "config_evidence": {"type": "array", "items": {"$ref": "urn:sjia:schema:s3-consistent-backup-1#/$defs/evidence"}},
+    "content_checkpoint": {"$ref": "urn:sjia:schema:s3-consistent-backup-1#/$defs/checkpoint"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "automatic_restart": {"const": false, "default": false},
+    "restore_lineage": {"$ref": "urn:sjia:schema:s3-restore-lineage-1"}
+  }
+}

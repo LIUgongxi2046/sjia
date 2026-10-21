@@ -1,6 +1,6 @@
 {
   "doc_id": "SJIA-API-ROUTE-INVENTORY",
-  "source_commit": "f05dbcf106e70d890a5574385fd63b3ddd502146",
+  "source_commit": "b094448d40d53ba675dd5e4a278f3e2deb107a43",
   "last_verified": "2026-10-21",
   "scope": "Django URLResolver 与 DRF 允许的 HTTP 方法；请求响应规范继续查阅 API 目录及对应 Schema",
   "routes": [

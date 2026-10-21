@@ -22,7 +22,7 @@ async function checkedRequest<T>(path: string, schema: string, options: Paramete
 export async function loginSupport(payload: SupportLoginInput, signal?: AbortSignal): Promise<SupportSessionView> {
   validateApiValue('v2-protocol.schema.json#/$defs/SupportLoginInput', payload);
   const session = await checkedRequest<SupportSessionView>('/api/v2/support/session/login',
-    'v2-protocol.schema.json#/$defs/SupportSessionView', { method: 'POST', body: payload, signal });
+    'v2-protocol.schema.json#/$defs/SupportSessionView', { method: 'POST', body: payload, signal, sessionControl: true });
   setSessionCsrfToken(session.csrf_token);
   return session;
 }

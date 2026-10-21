@@ -3,7 +3,7 @@ import json
 from uuid import uuid5, NAMESPACE_URL
 
 from django.conf import settings
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 
 from alerting.models import AlertPresetChoice
@@ -30,18 +30,24 @@ def scope_id(patient_id, environment, purpose):
     return uuid5(NAMESPACE_URL, f'sjia:alert-preset:{patient_id}:{environment}:{purpose}')
 
 
-def lock_scope(actor, patient_id, auth_epoch, audience, *, environment=None):
+def lock_scope(actor, patient_id, auth_epoch, audience, *, environment=None, writing=True):
     environment = environment or settings.SJIA_ENVIRONMENT
-    gate = EnvironmentGate.objects.select_for_update().get(environment=environment)
-    actor = Principal.objects.select_for_update().get(id=actor.id)
-    patient = Patient.objects.select_for_update().get(id=patient_id)
+    from family_content.gate_locks import read_environment_gate_shared
+    gate = (EnvironmentGate.objects.select_for_update().get(environment=environment)
+        if writing else read_environment_gate_shared(environment))
+    principals = Principal.objects.select_for_update() if writing else Principal.objects
+    patients = Patient.objects.select_for_update() if writing else Patient.objects
+    actor = principals.get(id=actor.id)
+    patient = patients.get(id=patient_id)
     if audience != 'family' or patient.status != 'active':
         raise QualificationRejected('PRESET_FAMILY_SCOPE_UNAVAILABLE')
     check_principal_session(actor, auth_epoch)
     decision = evaluate(principal=actor, patient=patient, action='select_alert_preset', purpose=PURPOSE,
-        environment=environment, session_auth_epoch=auth_epoch, require_relation=True, whole_resource=True)
+        environment=environment, session_auth_epoch=auth_epoch, require_relation=True, whole_resource=True,
+        read_only=not writing)
     grant = decision.grant
-    relation = Relation.objects.select_for_update().get(id=grant.relation_id, patient=patient, guardian=actor)
+    relations = Relation.objects.select_for_update() if writing else Relation.objects
+    relation = relations.get(id=grant.relation_id, patient=patient, guardian=actor)
     context = {'schema_version': 'preset-selection-authorization-1', 'actor_id': str(actor.id),
         'auth_epoch': str(actor.auth_epoch), 'patient_id': str(patient.id), 'environment': environment,
         'purpose': PURPOSE, 'audience': audience, 'grant': entity_reference(grant),
@@ -71,7 +77,7 @@ def approved_assignment(patient_id, environment, purpose, *, lock=True):
     return config, policy, configuration_proof(config, environment, now, 'current', lock=lock)
 
 
-def approved_option(assignment, option, *, verify_inputs=True, lock=True):
+def approved_option(assignment, option, *, verify_inputs=True, lock=True, checked_inputs=None):
     """Validate the entire professionally configured schedule, not just its label."""
     environment, now = assignment.environment, timezone.now()
     schedule = qualified_configuration(option.schedule_config_id, kind='provider', schema_version='dynamic-schedule-2',
@@ -81,8 +87,9 @@ def approved_option(assignment, option, *, verify_inputs=True, lock=True):
         raise QualificationRejected('PRESET_SCHEDULE_SCOPE_INVALID')
     trigger = qualified_configuration(plan.policy_id, kind='rule', schema_version='alert-trigger-2',
         environment=environment, known_at=now, mode='current', lock=lock)
-    gates = EnvironmentGate.objects.select_for_update() if lock else EnvironmentGate.objects
-    gate = gates.get(environment=environment)
+    from family_content.gate_locks import read_environment_gate_shared
+    gate = (read_environment_gate_shared(environment) if lock or verify_inputs
+        else EnvironmentGate.objects.get(environment=environment))
     if gate.active_release_id is None:
         raise QualificationRejected('PRESET_PUBLICATION_UNAVAILABLE')
     reason = release_qualification_reason(gate.active_release)
@@ -91,11 +98,14 @@ def approved_option(assignment, option, *, verify_inputs=True, lock=True):
     if not ReleaseComponent.objects.filter(release_id=gate.active_release_id, component_kind='rule', config=trigger).exists():
         raise QualificationRejected('PRESET_PUBLICATION_BINDING_REQUIRED')
     if verify_inputs:
-        if not lock:
-            raise ValueError('Input capture requires the mutation lock path.')
         from alerting.triggers import check_schedule_inputs
-        actor = Principal.objects.select_for_update().get(id=plan.actor_id)
-        check_schedule_inputs(schedule, plan, actor, now.isoformat())
+        signature = compute_checksum(plan.model_dump(mode='json',
+            exclude={'interval_seconds', 'starts_at', 'trigger_deadline_seconds'}))
+        if checked_inputs is None or signature not in checked_inputs:
+            actor = Principal.objects.get(id=plan.actor_id)
+            check_schedule_inputs(schedule, plan, actor, now.isoformat())
+            if checked_inputs is not None:
+                checked_inputs.add(signature)
     return schedule, plan, trigger
 
 
@@ -135,14 +145,17 @@ def choice_is_current(choice, assignment, policy):
 @transaction.atomic
 @artifact_verification_scope()
 def directory(*, actor, patient_id, auth_epoch, audience):
-    _, actor, patient, _ = lock_scope(actor, patient_id, auth_epoch, audience)
-    config, policy, _ = approved_assignment(patient.id, settings.SJIA_ENVIRONMENT, PURPOSE)
+    _, actor, patient, _ = lock_scope(actor, patient_id, auth_epoch, audience, writing=False)
+    # 环境共享行锁保护目录与授权；完整输入核验依次锁定病例、执行人员和配置。
+    config, policy, _ = approved_assignment(patient.id, settings.SJIA_ENVIRONMENT, PURPOSE, lock=False)
     options = []
+    checked_inputs = set()
     for option in policy.options:
-        schedule, _, trigger = approved_option(policy, option)
+        # 同一事务中输入与授权完全相同的方案共用一次核验，全部相关行锁保持到事务结束。
+        schedule, _, trigger = approved_option(policy, option, lock=False, checked_inputs=checked_inputs)
         options.append({'schedule_config_id': str(schedule.id), 'label': option.label, 'description': option.description,
             'preset_key': trigger.payload['sensitivity_preset']['preset_key'], 'config_version': str(schedule.version)})
-    choice = latest_choice(patient.id, settings.SJIA_ENVIRONMENT, PURPOSE)
+    choice = latest_choice(patient.id, settings.SJIA_ENVIRONMENT, PURPOSE, lock=False)
     current = choice_is_current(choice, config, policy)
     selected = (choice.schedule_id if choice else policy.default_schedule_config_id) if current else None
     view = {'schema_version': 'patient-alert-presets-view-1', 'patient_id': str(patient.id),
@@ -236,7 +249,15 @@ def publication_binding_reason(evaluation):
     from family_content.gate_locks import read_environment_gate_shared
     from tasks.models import Task
     from alerting.service import checked_task
-    read_environment_gate_shared(evaluation.environment)
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT current_setting('transaction_read_only'), current_setting('transaction_isolation')")
+        read_only, isolation = cursor.fetchone()
+    if read_only == 'on':
+        # 首页使用一致的只读快照，PostgreSQL 禁止该事务申请行锁。
+        if isolation not in ('repeatable read', 'serializable'):
+            raise ValueError('发布核验的只读事务需要一致快照。')
+    else:
+        read_environment_gate_shared(evaluation.environment)
     # A family read may already hold this shared gate. Every helper below must
     # stay read-only: upgrading to UPDATE would deadlock concurrent readers.
     rows = ConfigVersion.objects.filter(kind='provider', schema_version=SCHEMA, status__in=['enabled', 'disabled'],

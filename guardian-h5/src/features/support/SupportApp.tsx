@@ -6,6 +6,7 @@ import { UI2Frame } from '../../components/UI2Frame';
 import { ApiError, setSessionCsrfToken } from '../../api/client';
 import { bootstrap, logout } from '../../api/endpoints';
 import { loginSupport, readSupportSession } from '../../api/purpose';
+import { assertSessionEpoch, runSessionMutation, runSessionRead } from '../../api/sessionBoundary';
 import type { SupportSessionView } from '../../../../frontend-design/v2-types';
 import { PurposeCopyPage } from './PurposeCopyPage';
 import { DatasetPage } from './DatasetPage';
@@ -46,7 +47,7 @@ export function SupportReadStatus({ state, error, onRefresh }: {
   </section>;
 }
 
-export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: SupportSessionView) => void }) {
+export function SupportLogin({ onAuthenticated, checkingSession }: { onAuthenticated: (session: SupportSessionView) => void; checkingSession: boolean }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -57,17 +58,20 @@ export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: S
   useEffect(() => () => controller.current?.abort(), []);
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (pending || composing.current || controller.current && !controller.current.signal.aborted) return;
+    if (pending || checkingSession || composing.current || controller.current && !controller.current.signal.aborted) return;
     const submittedPassword = password;
     setPassword(''); setPending(true); setError(null);
     const current = new AbortController();
     controller.current = current;
     try {
-      const token = await bootstrap();
+      const { value: session, epoch } = await runSessionMutation(async () => {
+        const token = await bootstrap();
+        current.signal.throwIfAborted();
+        setSessionCsrfToken(token.csrf_token);
+        return loginSupport({ username, password: submittedPassword }, current.signal);
+      });
       current.signal.throwIfAborted();
-      setSessionCsrfToken(token.csrf_token);
-      const session = await loginSupport({ username, password: submittedPassword }, current.signal);
-      current.signal.throwIfAborted();
+      assertSessionEpoch(epoch);
       setPassword(''); onAuthenticated(session); navigate(session.capabilities.some(item => item.capability_id === 'write_professional' && item.state === 'available') ? '/support/professional-records' : '/support/data-use', { replace: true });
     } catch (failure) {
       if (!current.signal.aborted) setError(failure instanceof Error ? failure.message : '登录服务读取失败。');
@@ -84,10 +88,10 @@ export function SupportLogin({ onAuthenticated }: { onAuthenticated: (session: S
     <form className="card form-card" onSubmit={event => void submit(event)}
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}>
       <h3>登录后访问本人获准资料</h3>
-      <label className="field"><span>账号</span><input required disabled={pending} autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} /></label>
-      <label className="field"><span>密码</span><input required disabled={pending} type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
+      <label className="field"><span>账号</span><input required disabled={pending || checkingSession} autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} /></label>
+      <label className="field"><span>密码</span><input required disabled={pending || checkingSession} type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
       {error && <p role="alert">{error}</p>}
-      <button className="button" disabled={pending} type="submit">{pending ? '正在核验身份' : '登录账号'}</button>
+      <button className="button" disabled={pending || checkingSession} type="submit">{pending ? '正在核验身份' : checkingSession ? '正在核验会话' : '登录账号'}</button>
     </form>
     <div className="note"><LockKeyhole size={17} /><p>知道患儿标识不代表已取得资料访问权。</p></div>
   </UI2Frame>;
@@ -103,14 +107,16 @@ export default function SupportApp() {
   const controller = useRef<AbortController>();
   const refresh = useCallback(async () => {
     const current = ++sequence.current;
-    controller.current?.abort(); controller.current = new AbortController();
+    controller.current?.abort();
+    const requestController = new AbortController(); controller.current = requestController;
     setState('loading'); setError(null);
     try {
-      const result = await readSupportSession(controller.current.signal);
+      const { value: result, epoch } = await runSessionRead(() => readSupportSession(requestController.signal));
       if (current !== sequence.current || document.visibilityState !== 'visible') return;
+      assertSessionEpoch(epoch);
       setSession(result); setSessionCsrfToken(result.csrf_token); setState('default');
     } catch (failure) {
-      if (current !== sequence.current || controller.current.signal.aborted) return;
+      if (current !== sequence.current || requestController.signal.aborted) return;
       setSession(null); setSessionCsrfToken(null);
       setState(failure instanceof ApiError && [401, 403].includes(failure.status) ? 'permission' : navigator.onLine ? 'error' : 'offline');
       setError(failure instanceof Error ? failure.message : '访问权限读取失败。');
@@ -127,11 +133,21 @@ export default function SupportApp() {
   }, [refresh]);
   function authenticated(result: SupportSessionView) { setSession(result); setState('default'); setError(null); }
   async function signOut() {
-    await logout(); sequence.current += 1; controller.current?.abort();
-    setSession(null); setSessionCsrfToken(null); setState('permission'); navigate('/support/login', { replace: true });
+    sequence.current += 1; controller.current?.abort();
+    setSession(null); setSessionCsrfToken(null); setState('loading'); setError(null);
+    try {
+      await runSessionMutation(async () => {
+        const token = await bootstrap();
+        await logout(token.csrf_token);
+      });
+      setState('permission'); navigate('/support/login', { replace: true });
+    } catch (failure) {
+      setState(navigator.onLine ? 'error' : 'offline');
+      setError(failure instanceof Error ? failure.message : '退出登录未完成，请重新核验会话。');
+    }
   }
   return <Routes>
-    <Route path="login" element={<SupportLogin onAuthenticated={authenticated} />} />
+    <Route path="login" element={<SupportLogin onAuthenticated={authenticated} checkingSession={state === 'loading'} />} />
     <Route path="data-use" element={<PurposeCopyPage key={session ? `${session.principal_id}:${session.capabilities.map(item => item.capability_id).sort().join(',')}:${parameters.get('copy_id') ?? 'none'}:${parameters.get('file_id') ?? 'none'}` : 'anonymous'}
       session={session} accessState={state} accessError={error} onRefresh={refresh} onLogout={() => void signOut()} />} />
     <Route path="datasets" element={<DatasetPage session={session} accessState={state} accessError={error} onRefresh={refresh} />} />

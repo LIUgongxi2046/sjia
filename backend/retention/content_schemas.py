@@ -1,7 +1,9 @@
 """Bounded erasure contracts. Policies cannot name SQL, columns or JSON paths."""
 from typing import Annotated, Literal
 from uuid import UUID
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, TypeAdapter, model_validator
+
+from files.s3_storage import S3ObjectReference
 
 Digest = Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')]
 Text = Annotated[str, Field(min_length=1, max_length=256, pattern=r'.*\S.*')]
@@ -24,7 +26,15 @@ class LocalObjectTarget(Contract):
     object_version: Text
 
 
-Target = Annotated[DatabaseTarget | LocalObjectTarget, Field(discriminator='kind')]
+class S3ObjectTarget(Contract):
+    kind: Literal['s3_object']
+    file_id: UUID
+    object_version: Text
+
+
+LocalTarget = Annotated[DatabaseTarget | LocalObjectTarget, Field(discriminator='kind')]
+S3Target = Annotated[DatabaseTarget | S3ObjectTarget, Field(discriminator='kind')]
+Target = Annotated[DatabaseTarget | LocalObjectTarget | S3ObjectTarget, Field(discriminator='kind')]
 
 
 class ContentPolicyRules(Contract):
@@ -58,6 +68,26 @@ class ContentPlanInput(Contract):
     hold_version: int = Field(ge=1, strict=True)
 
 
+class S3ContentPolicyRules(ContentPolicyRules):
+    schema_version: Literal['content-disposition-policy-2']
+    local_objects: Literal[False]
+    s3_objects: bool
+    allowed_file_purposes: list[Literal['original', 'thumbnail', 'deidentified', 'ocr_response']] = Field(min_length=1, max_length=4)
+
+    @model_validator(mode='after')
+    def unique_file_purposes(self):
+        if len(set(self.allowed_file_purposes)) != len(self.allowed_file_purposes):
+            raise ValueError('CONTENT_S3_POLICY_PURPOSES_INVALID')
+        return self
+
+
+PolicyRules = Annotated[ContentPolicyRules | S3ContentPolicyRules, Field(discriminator='schema_version')]
+
+
+def parse_policy_rules(value):
+    return TypeAdapter(PolicyRules).validate_python(value)
+
+
 class DatabaseProof(DatabaseTarget):
     row_sha256: Digest
 
@@ -70,6 +100,24 @@ class LocalObjectProof(LocalObjectTarget):
 
 
 Proof = Annotated[DatabaseProof | LocalObjectProof, Field(discriminator='kind')]
+
+
+class S3ObjectProof(S3ObjectTarget):
+    object_key: Text
+    checksum: Digest
+    size_bytes: int = Field(ge=0, strict=True)
+    operation_id: UUID
+    storage_reference: S3ObjectReference
+
+    @model_validator(mode='after')
+    def reference_identity(self):
+        if (self.operation_id.int == 0 or self.object_key != self.storage_reference.object_key
+                or self.checksum != self.storage_reference.checksum or self.size_bytes != self.storage_reference.size_bytes):
+            raise ValueError('CONTENT_S3_OBJECT_IDENTITY_MISMATCH')
+        return self
+
+
+S3Proof = Annotated[DatabaseProof | S3ObjectProof, Field(discriminator='kind')]
 
 
 class ContentManifest(Contract):
@@ -85,10 +133,31 @@ class ContentManifest(Contract):
     environment: Text
     hold_id: UUID
     hold_version: int = Field(ge=1, strict=True)
-    roots: list[Target] = Field(min_length=1, max_length=5000)
+    roots: list[LocalTarget] = Field(min_length=1, max_length=5000)
     items: list[Proof] = Field(min_length=1, max_length=5000)
     obligations: list[Literal['physical_database_storage', 'external_provider_copies', 'backup_copies']]
     created_at: AwareDatetime
+
+
+class S3ContentManifest(ContentManifest):
+    schema_version: Literal['content-disposition-manifest-2']
+    storage_binding_sha256: Digest
+    roots: list[S3Target] = Field(min_length=1, max_length=5000)
+    items: list[S3Proof] = Field(min_length=1, max_length=5000)
+
+    @model_validator(mode='after')
+    def binding_identity(self):
+        if any(item.kind == 's3_object' and item.storage_reference.binding_sha256 != self.storage_binding_sha256
+                for item in self.items):
+            raise ValueError('CONTENT_S3_MANIFEST_BINDING_MISMATCH')
+        return self
+
+
+Manifest = Annotated[ContentManifest | S3ContentManifest, Field(discriminator='schema_version')]
+
+
+def parse_manifest(value):
+    return TypeAdapter(Manifest).validate_python(value)
 
 
 class ContentApproval(Contract):
@@ -129,16 +198,22 @@ class ErasedReceipt(Contract):
     proof_scope: Literal['current_database_payload_and_controlled_local_path_absence']
 
 
+class S3ErasedReceipt(ErasedReceipt):
+    schema_version: Literal['content-disposition-receipt-2']
+    storage_binding_sha256: Digest
+    proof_scope: Literal['current_database_payload_and_controlled_s3_version_absence']
+
+
 class ContentPlanView(Contract):
     schema_version: Literal['content-disposition-plan-view-1']
     plan_id: UUID
     patient_id: UUID
     status: Literal['preview', 'approved', 'retained', 'access_revoked', 'erasing', 'logical_erasure_complete']
-    manifest: ContentManifest
+    manifest: Manifest
     manifest_sha256: Digest
     approved_at: AwareDatetime | None
     completed_at: AwareDatetime | None
-    receipt: RetainedReceipt | RevokedReceipt | ErasedReceipt | None
+    receipt: RetainedReceipt | RevokedReceipt | ErasedReceipt | S3ErasedReceipt | None
     runtime_execution_enabled: bool
 
 

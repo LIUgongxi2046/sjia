@@ -1,6 +1,6 @@
 # 数据字典与来源关系
 
-doc_id：SJIA-DATA-DICTIONARY；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`f05dbcf106e70d890a5574385fd63b3ddd502146`。维护责任：数据模型或正式 migrations 变更时同步核查。
+doc_id：SJIA-DATA-DICTIONARY；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。适用源码：`b094448d40d53ba675dd5e4a278f3e2deb107a43` 及当前文档。维护责任：数据模型或正式 migrations 变更时同步核查。
 
 ## 字段与数据库结构
 
@@ -13,6 +13,8 @@ doc_id：SJIA-DATA-DICTIONARY；status：CURRENT；last_verified：2026-10-21（
 | [QA28](../development/QA28-target-runtime-compatibility.md) | 2026-10-19 目标版本空库迁移与数据库目录逐项比较证据 |
 
 字典中的 `patient_id`、`record_version_id`、`field_id` 保持数据库名称。API 字段以对应响应 Schema 为准。Django Model 中的 UUID 字段不一定声明 ORM ForeignKey，SQL 中的同患儿复合外键仍需查阅正式 migrations。
+
+当前 ORM 字典包含 128 个模型、1525 个字段，源码中共有 105 项正式迁移。S3StoredObject、S3ContentRestoreState、恢复引用及准确存储结构见正式 migrations 与 [S3 数据规范](../../data-design/s3-storage-registration.md)。
 
 ## 主要实体与语义
 

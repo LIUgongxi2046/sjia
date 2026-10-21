@@ -59,7 +59,13 @@ def admission(document, operation):
     if isinstance(timeout, bool) or not isinstance(timeout, int) or not 1 <= timeout <= 86400:
         reject('APPROVED_TIMEOUT_REQUIRED')
     if operation == 'backup':
-        name(document.get('compose_project'))
+        if document.get('storage_kind') == 's3':
+            if document.get('writer_control') == 'compose':
+                name(document.get('compose_project'))
+            elif document.get('writer_control') != 'isolated-native' or document.get('application_and_workers_stopped') is not True:
+                reject('EXPLICIT_S3_WRITER_CONTROL_REQUIRED')
+        else:
+            name(document.get('compose_project'))
         name(document.get('release_reference'))
         if document.get('exclusive_object_writer_scope_confirmed') is not True:
             reject('EXCLUSIVE_WRITER_SCOPE_REQUIRED')
@@ -279,7 +285,20 @@ def backup(document, destination, objects, evidence, *, runner=run, connector=co
     return manifest
 
 
-def verify_backup(directory):
+def verify_backup(directory, *, backup_format=FORMAT):
+    if backup_format in ('s3-consistent-backup-1', 's3-consistent-backup-2'):
+        if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+            reject('RESTORE_EXPLICIT_DJANGO_SETTINGS_REQUIRED')
+        sys.path.insert(0, str(ROOT / 'backend'))
+        import django
+        django.setup()
+        from retention.s3_backup import verify_package
+        package = verify_package(directory)
+        if package.schema_version != backup_format:
+            reject('BACKUP_FORMAT_INVALID')
+        return package.model_dump(mode='json')
+    if backup_format != FORMAT:
+        reject('BACKUP_FORMAT_INVALID')
     directory = Path(directory)
     for name_ in ('manifest.json', 'COMPLETE.json', 'database.dump'):
         path = directory / name_
@@ -397,13 +416,222 @@ def restored_callbacks(document, destination):
         reject('RESTORE_RUNTIME_TARGET_MISMATCH')
     from retention.content_journal import configured_journal
     from files.service import object_store
-    if Path(object_store.root).resolve() != Path(target['object_root']):
+    from files.storage_factory import storage_selection
+    if target.get('storage_kind') == 's3':
+        if (storage_selection.kind != 's3'
+                or object_store.driver.configuration.binding_sha256 != target['storage_binding_sha256']
+                or object_store.control_store.root != Path(target['control_root'])):
+            reject('RESTORE_RUNTIME_OBJECT_STORE_MISMATCH')
+    elif storage_selection.kind != 'local' or Path(object_store.root).resolve() != Path(target['object_root']):
         reject('RESTORE_RUNTIME_OBJECT_STORE_MISMATCH')
     configured = configured_journal()
     explicit = content_journal(document, destination, required=True)
     if (configured.root != explicit.root or configured.checkpoint_path != explicit.checkpoint_path):
         reject('RESTORE_RUNTIME_JOURNAL_MISMATCH')
     return target, replay_manifest, verify_manifest
+
+
+def s3_application(document):
+    if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+        reject('RESTORE_EXPLICIT_DJANGO_SETTINGS_REQUIRED')
+    sys.path.insert(0, str(ROOT / 'backend'))
+    import django
+    django.setup()
+    from django.conf import settings
+    from django.db import connection as database
+    from files.storage_factory import storage_selection
+    from files.s3_registered import S3RegisteredStore
+    if document.get('storage_kind') != 's3' or storage_selection.kind != 's3':
+        reject('EXACT_STORAGE_KIND_ADMISSION_REQUIRED')
+    store = storage_selection.store
+    if (not isinstance(store, S3RegisteredStore)
+            or document.get('storage_binding_sha256') != store.driver.configuration.binding_sha256
+            or document.get('control_root') != str(store.control_store.root)
+            or document.get('environment') != settings.SJIA_ENVIRONMENT):
+        reject('EXACT_S3_RUNTIME_ADMISSION_REQUIRED')
+    database.ensure_connection()
+    check_identity(database.connection, document)
+    return settings, database, store
+
+
+def protected_s3_destination(destination):
+    from retention.content_journal import safe_path
+    destination = safe_path(destination)
+    if destination.is_relative_to(ROOT) or any((parent / '.git').exists() for parent in destination.parents):
+        reject('SENSITIVE_BACKUP_DESTINATION_MUST_BE_OUTSIDE_CHECKOUT')
+    parent = destination.parent
+    if (not parent.is_dir() or parent.stat().st_uid != os.getuid() or parent.stat().st_mode & 0o077):
+        reject('PRIVATE_DESTINATION_PARENT_REQUIRED')
+    return destination
+
+
+def exact_s3_journal(document, *roots):
+    from retention.content_journal import configured_journal
+    configured = configured_journal()
+    explicit = content_journal(document, *roots, required=True)
+    if (configured.root != explicit.root or configured.checkpoint_path != explicit.checkpoint_path):
+        reject('RESTORE_RUNTIME_JOURNAL_MISMATCH')
+    return configured
+
+
+def backup_s3(document, destination, evidence, *, runner=run):
+    admission(document, 'backup')
+    settings, database, store = s3_application(document)
+    from django.db import transaction
+    from retention.content_journal import checksum, durable_create, safe_path
+    from retention.s3_backup import capture_source, create_package, verify_package
+    from retention.s3_lineage import capture_current_lineage
+    destination = protected_s3_destination(destination)
+    evidence = safe_path(evidence)
+    if (document.get('destination') != str(destination) or document.get('evidence_root') != str(evidence)
+            or evidence != safe_path(settings.CONFIG_EVIDENCE_ROOT)):
+        reject('EXACT_PATH_ADMISSION_REQUIRED')
+    distinct_paths(destination, evidence, store.control_store.root)
+    if destination.exists():
+        reject('DESTINATION_ALREADY_EXISTS')
+    journal = exact_s3_journal(document, destination, evidence, store.control_store.root)
+    if document['writer_control'] == 'compose':
+        freeze_writers(document, runner)
+    os.umask(0o077)
+    destination.mkdir(mode=0o700)
+    durable_create(destination.parent / (destination.name + '.WRITE_FREEZE.json'), {
+        'state': 'WRITE_FROZEN', 'storage_kind': 's3', 'writer_control': document['writer_control'],
+        'approval_reference': document['approval_reference'], 'automatic_restart': False})
+    with journal.locked(), transaction.atomic():
+        check_identity(database.connection, document)
+        lock_writes(database.connection)
+        exported = database.connection.execute('SELECT pg_export_snapshot()').fetchone()[0]
+        checkpoint = journal.verify()['checkpoint']
+        snapshot = capture_source(store)
+        history = capture_current_lineage(store, snapshot, checkpoint)
+        if history is not None:
+            if (document.get('backup_format') != 's3-consistent-backup-2'
+                    or document.get('restore_lineage_sha256') != checksum(history.model_dump(mode='json'))):
+                reject('EXACT_S3_BACKUP_LINEAGE_ADMISSION_REQUIRED')
+        elif document.get('backup_format', 's3-consistent-backup-1') != 's3-consistent-backup-1':
+            reject('EXACT_S3_BACKUP_LINEAGE_ADMISSION_REQUIRED')
+        runner(['pg_dump', '--format=custom', '--no-owner', '--no-acl', '--lock-wait-timeout=5000',
+            '--snapshot', exported, '--dbname', 'service=' + document['database_service'] + ' dbname=' + document['database'],
+            '--file', str(destination / 'database.dump')], env=pg_environment(document['database_service']),
+            timeout=document['timeout_seconds'])
+        package = create_package(store, destination, evidence, snapshot, checkpoint, environment=settings.SJIA_ENVIRONMENT)
+        if journal.verify()['checkpoint'] != checkpoint:
+            reject('CONTENT_JOURNAL_CHANGED_DURING_BACKUP')
+    if verify_package(destination) != package:
+        reject('BACKUP_CHECKSUM_MISMATCH')
+    return package.model_dump(mode='json')
+
+
+def empty_restore_database(conn):
+    if database_tables(conn):
+        reject('RESTORE_DATABASE_NOT_EMPTY')
+    namespaces = conn.execute("SELECT nspname FROM pg_namespace WHERE nspname NOT IN "
+        "('pg_catalog','information_schema','public') AND nspname NOT LIKE 'pg_toast%' "
+        "AND nspname NOT LIKE 'pg_temp_%'").fetchall()
+    objects = conn.execute("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace "
+        "WHERE n.nspname='public'").fetchone()[0]
+    functions = conn.execute("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+        "WHERE n.nspname='public'").fetchone()[0]
+    extensions = conn.execute("SELECT count(*) FROM pg_extension WHERE extname<>'plpgsql'").fetchone()[0]
+    if namespaces or objects or functions or extensions:
+        reject('RESTORE_DATABASE_NOT_EMPTY')
+
+
+def upgrade_s3_restore_schema(document, database, destination):
+    from django.db.migrations.executor import MigrationExecutor
+    from retention.content_journal import durable_create
+    executor = MigrationExecutor(database)
+    targets = executor.loader.graph.leaf_nodes()
+    plan = executor.migration_plan(targets)
+    if any(backwards for _, backwards in plan):
+        reject('RESTORE_FORWARD_SCHEMA_UPGRADE_REQUIRED')
+    if plan and document.get('schema_upgrade_approved') is not True:
+        reject('RESTORE_EXACT_SCHEMA_UPGRADE_APPROVAL_REQUIRED')
+    if plan:
+        name(document.get('schema_release_reference'))
+        executor.migrate(targets)
+    check_identity(database.connection, document)
+    durable_create(destination / 'SCHEMA_UPGRADE_VERIFIED.json', {
+        'database': document['database'], 'cluster_id': document['cluster_id'],
+        'approval_reference': document['approval_reference'],
+        'schema_release_reference': document.get('schema_release_reference'),
+        'applied_migrations': [{'app': migration.app_label, 'name': migration.name} for migration, _ in plan],
+        'verified_at': datetime.now(timezone.utc).isoformat(), 'automatic_restart': False})
+
+
+def restore_s3(document, source, destination, *, runner=run, connector=connection):
+    admission(document, 'restore')
+    settings, database, store = s3_application(document)
+    from retention.content_journal import checksum, durable_create, safe_path
+    from retention.s3_backup import file_checksum, inventory_evidence, verify_package
+    from retention.s3_recovery_schemas import S3PreparingTarget
+    from retention.s3_restore import begin_restore, seal_mapping, target_document
+    source = safe_path(source)
+    destination = protected_s3_destination(destination)
+    if (document.get('source') != str(source) or document.get('destination') != str(destination)
+            or safe_path(settings.SJIA_RESTORE_ROOT) != destination
+            or safe_path(settings.CONFIG_EVIDENCE_ROOT) != destination / 'config-evidence'):
+        reject('EXACT_PATH_ADMISSION_REQUIRED')
+    distinct_paths(source, destination)
+    package = verify_package(source)
+    from retention.s3_lineage_schemas import S3LineageBackupPackage
+    if isinstance(package, S3LineageBackupPackage) and (
+            document.get('backup_format') != package.schema_version
+            or document.get('restore_lineage_sha256') != checksum(package.restore_lineage.model_dump(mode='json'))):
+        reject('EXACT_S3_RESTORE_LINEAGE_ADMISSION_REQUIRED')
+    manifest_sha = file_checksum(source / 'manifest.json')
+    if document.get('backup_manifest_sha256') != manifest_sha:
+        reject('EXACT_BACKUP_MANIFEST_ADMISSION_REQUIRED')
+    if (package.source_snapshot.database == document['database']
+            or package.source_snapshot.cluster_id == document['cluster_id']
+            or package.source_snapshot.binding_sha256 == store.driver.configuration.binding_sha256):
+        reject('DISTINCT_ISOLATED_CLUSTER_AND_DATABASE_REQUIRED')
+    if (not destination.is_dir() or destination.stat().st_uid != os.getuid() or destination.stat().st_mode & 0o077
+            or {path.name for path in destination.iterdir()} != {'s3-control'}
+            or store.control_store.root != destination / 's3-control' or any(store.control_store.root.iterdir())):
+        reject('EMPTY_PRIVATE_S3_RESTORE_ROOT_REQUIRED')
+    exact_s3_journal(document, destination, store.control_store.root)
+    store.driver.validate_bucket()
+    inventory = store.driver.client.list_object_versions(Bucket=store.driver.configuration.bucket,
+        Prefix=store.driver.configuration.prefix + '/', MaxKeys=1)
+    if inventory.get('Versions') or inventory.get('DeleteMarkers') or inventory.get('IsTruncated'):
+        reject('RESTORE_S3_PREFIX_NOT_EMPTY')
+    empty_restore_database(database.connection)
+    database.close()
+    with connector(document) as conn:
+        check_identity(conn, document)
+        empty_restore_database(conn)
+    restore_id = uuid4()
+    target = S3PreparingTarget(restore_id=restore_id, database=document['database'], cluster_id=document['cluster_id'],
+        storage_binding_sha256=store.driver.configuration.binding_sha256,
+        control_root=str(store.control_store.root)).model_dump(mode='json')
+    marker = {'state': 'ADOPTION_BLOCKED', 'target': target, 'backup_manifest_sha256': manifest_sha,
+        'content_checkpoint': package.content_checkpoint.model_dump(mode='json'),
+        'replay_deletion_revocation_disabled_configuration_required': True,
+        'external_effect_reconciliation_required': True, 'automatic_restart': False}
+    durable_create(destination / 'ADOPTION_BLOCKED.json', marker)
+    durable_create(destination / 'S3_EMPTY_PREFIX_VERIFIED.json', {
+        'binding_sha256': store.driver.configuration.binding_sha256,
+        'provider_request_id': inventory['ResponseMetadata']['RequestId'],
+        'verified_at': datetime.now(timezone.utc).isoformat(), 'versions': 0, 'delete_markers': 0})
+    shutil.copytree(source / 'config-evidence', destination / 'config-evidence', symlinks=True)
+    if inventory_evidence(destination / 'config-evidence') != package.config_evidence:
+        reject('BACKUP_CHECKSUM_MISMATCH')
+    runner(['pg_restore', '--single-transaction', '--exit-on-error', '--no-owner', '--no-acl',
+        '--dbname', 'service=' + document['database_service'] + ' dbname=' + document['database'],
+        str(source / 'database.dump')], env=pg_environment(document['database_service']), timeout=document['timeout_seconds'])
+    upgrade_s3_restore_schema(document, database, destination)
+    state = begin_restore(source, destination, restore_id=restore_id)
+    mapping = seal_mapping(state.id, source)
+    state.refresh_from_db()
+    result = {'state': 'RESTORED_ADOPTION_BLOCKED', 'target': target_document(state),
+        'approval_reference': document['approval_reference'], 'mapped_objects': len(mapping.objects),
+        'legacy_absences': len(mapping.legacy_file_absences), 'automatic_restart': False, 'outbound_enabled': False}
+    durable_create(destination / 'restore-result.json', result)
+    if document.get('replay_content') is True:
+        replay_result = replay_content({**document, 'operation': 'replay-content'}, destination)
+        result['content_replay'] = replay_result['state']
+    return result
 
 
 def replay_content(document, destination):
@@ -436,6 +664,10 @@ def main():
     parser.add_argument('--destination', type=Path)
     parser.add_argument('--objects', type=Path)
     parser.add_argument('--evidence', type=Path)
+    parser.add_argument('--backup-format', choices=(FORMAT, 's3-consistent-backup-1', 's3-consistent-backup-2'), default=FORMAT,
+        help='verify操作使用的准确备份格式')
+    parser.add_argument('--storage-kind', choices=('local', 's3'), default='local',
+        help='backup和restore操作使用的对象存储')
     parser.add_argument('--execute', action='store_true')
     args = parser.parse_args()
     if not args.execute:
@@ -444,19 +676,30 @@ def main():
         print('restore: admit trusted backup and isolated empty target; verify; copy; restore transaction; verify; remain blocked')
         return
     try:
+        if args.backup_format != FORMAT and args.operation != 'verify':
+            reject('BACKUP_FORMAT_OPTION_REQUIRES_VERIFY')
+        if args.storage_kind != 'local' and args.operation not in ('backup', 'restore'):
+            reject('STORAGE_KIND_OPTION_REQUIRES_BACKUP_OR_RESTORE')
         if args.operation == 'verify':
             if args.source is None:
                 reject('SOURCE_REQUIRED')
-            verify_backup(args.source)
+            verify_backup(args.source, backup_format=args.backup_format)
             print('BACKUP_INTEGRITY_VERIFIED_ONLY')
             return
         if not args.admission or not args.destination:
             reject('ADMISSION_AND_DESTINATION_REQUIRED')
         document = json.loads(args.admission.read_text())
+        if document.get('storage_kind', 'local') != args.storage_kind and args.operation in ('backup', 'restore'):
+            reject('EXACT_STORAGE_KIND_ADMISSION_REQUIRED')
         if args.operation == 'backup':
-            if not args.objects or not args.evidence:
+            if args.storage_kind == 's3':
+                if args.objects is not None or args.evidence is None:
+                    reject('S3_EVIDENCE_SOURCE_REQUIRED_WITHOUT_LOCAL_OBJECT_ROOT')
+                backup_s3(document, args.destination, args.evidence)
+            elif not args.objects or not args.evidence:
                 reject('OBJECT_AND_EVIDENCE_SOURCES_REQUIRED')
-            backup(document, args.destination, args.objects, args.evidence)
+            else:
+                backup(document, args.destination, args.objects, args.evidence)
             print('BACKUP_COMPLETE; SERVICES_REMAIN_FROZEN')
         elif args.operation == 'replay-content':
             replay_content(document, args.destination)
@@ -467,7 +710,10 @@ def main():
         else:
             if not args.source:
                 reject('SOURCE_REQUIRED')
-            restore(document, args.source, args.destination)
+            if args.storage_kind == 's3':
+                restore_s3(document, args.source, args.destination)
+            else:
+                restore(document, args.source, args.destination)
             print('RESTORED_ADOPTION_BLOCKED; SERVICES_NOT_STARTED')
     except RecoveryRejected as error:
         parser.exit(2, str(error) + '\n')

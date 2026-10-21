@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:disposition-object-proof-1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_id", "object_version", "object_key", "checksum", "size_bytes", "retention_policy_id"],
+      "properties": {
+        "file_id": {"type": "string", "format": "uuid"},
+        "object_version": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "object_key": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "retention_policy_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_id", "object_version", "object_key", "checksum", "size_bytes", "retention_policy_id", "storage_reference"],
+      "properties": {
+        "file_id": {"type": "string", "format": "uuid"},
+        "object_version": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "object_key": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "checksum": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "retention_policy_id": {"type": "string", "format": "uuid"},
+        "storage_reference": {"$ref": "urn:sjia:schema:s3-object-reference-1"}
+      }
+    }
+  ]
+}

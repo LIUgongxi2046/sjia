@@ -1,5 +1,6 @@
 import { ApiError, checkRequestGuard, fetchJson } from './client';
 import { validateApiValue } from './schema';
+import { automaticPollingBudgetMs, canContinueTaskPolling, requiredTaskPollingInterval } from './taskPolling';
 
 interface ValidationTask {
   task_id: string; task_type: string; request_id: string | null; accepted_at: string;
@@ -24,15 +25,43 @@ function checkedTask(value: unknown, groupId: string, previous?: ValidationTask)
   }
   return task;
 }
-async function delay(milliseconds: number, signal?: AbortSignal) {
+async function delay(milliseconds: number, signal: AbortSignal) {
   await new Promise<void>((resolve, reject) => {
-    const abort = () => { clearTimeout(timer); reject(new DOMException('原件校验查询已取消。', 'AbortError')); };
-    const timer = setTimeout(() => { signal?.removeEventListener('abort', abort); resolve(); }, Math.min(milliseconds, 2147483647));
-    if (signal?.aborted) abort(); else signal?.addEventListener('abort', abort, {once:true});
+    const abort = () => { clearTimeout(timer); reject(signal.reason); };
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, milliseconds);
+    if (signal.aborted) abort(); else signal.addEventListener('abort', abort, {once:true});
   });
 }
 
-/** The immutable group ID is its completion request identity, including reload. */
+export async function waitForFileValidationTask(initial: unknown, groupId: string, signal?: AbortSignal, isCurrent?: () => boolean) {
+  checkRequestGuard({ signal, isCurrent });
+  let task = checkedTask(initial, groupId);
+  const started = performance.now();
+  const deadline = new AbortController();
+  const expiry = new Error('原件校验自动查询已经结束，可以重新读取原上传组确认当前状态。');
+  const timer = setTimeout(() => deadline.abort(expiry), automaticPollingBudgetMs);
+  const combined = signal ? AbortSignal.any([signal, deadline.signal]) : deadline.signal;
+  const guard = { signal: combined, isCurrent };
+  try {
+    while (['accepted', 'queued', 'running'].includes(task.status)) {
+      const interval = requiredTaskPollingInterval(task.poll_after_ms);
+      if (!canContinueTaskPolling(performance.now() - started, interval)) throw expiry;
+      checkRequestGuard(guard);
+      await delay(interval, combined);
+      checkRequestGuard(guard);
+      if (performance.now() - started >= automaticPollingBudgetMs) throw expiry;
+      const next = checkedTask(await fetchJson(`/api/tasks/${task.task_id}`, guard), groupId, task);
+      checkRequestGuard(guard);
+      if (performance.now() - started >= automaticPollingBudgetMs) throw expiry;
+      task = next;
+    }
+    return task;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// 不可变上传组标识在刷新后继续作为原完成请求的身份。
 export async function completeValidatedFileGroup(groupId: string, csrfToken?: string, signal?: AbortSignal, expectedPatientId?: string, isCurrent?: () => boolean) {
   const guard = { signal, isCurrent };
   checkRequestGuard(guard);
@@ -61,13 +90,7 @@ export async function completeValidatedFileGroup(groupId: string, csrfToken?: st
       else throw new Error('原件校验提交结果仍未明确，请重新读取原上传组。');
     }
   }
-  while(['accepted','queued','running'].includes(task.status)) {
-    if(task.poll_after_ms===null)throw new Error('原件校验任务缺少批准的查询间隔。');
-    checkRequestGuard(guard);
-    await delay(task.poll_after_ms,signal);
-    checkRequestGuard(guard);
-    task=checkedTask(await fetchJson(`/api/tasks/${task.task_id}`,{...guard}),groupId,task);
-  }
+  task = await waitForFileValidationTask(task, groupId, signal, isCurrent);
   if(task.status!=='completed')throw new Error(`原件校验未完成：${task.error_code??task.status}。请保留原上传组并重新选择原件建立新上传组。`);
   checkRequestGuard(guard);
   return {group_id:groupId,status:'available'};

@@ -2,7 +2,7 @@
 
 doc_id：SJIA-ORM-DICTIONARY；status：CURRENT；last_verified：2026-10-21（Asia/Shanghai）。
 
-生成依据：源码 `f05dbcf106e70d890a5574385fd63b3ddd502146` 的 Django Model 元数据；本次仅导入模型，没有连接数据库或读取业务资料。
+生成依据：源码 `b094448d40d53ba675dd5e4a278f3e2deb107a43` 的 Django Model 元数据；本次仅导入模型，没有连接数据库或读取业务资料。
 
 字段类型通过 PostgreSQL backend 的 `db_type()` 获取；自定义 DOMAIN、复合外键、触发器及原生 SQL 约束须结合正式 migrations 与 SQL 查阅。表内约束仅列 ORM 元数据，SQL 约束未在此重复生成。
 
@@ -2409,6 +2409,55 @@ ORM 组合索引：无登记。
 | evidence_ref | text | True | — | — |
 
 ORM 组合约束：('django.db.models.UniqueConstraint', (), {'name': 'retention_policy_key_version_uniq', 'fields': ('policy_key', 'version')})。
+
+ORM 组合索引：无登记。
+
+## `sjia.s3_content_restore_state`
+
+源码：`retention.models.S3ContentRestoreState`。
+
+| 字段名 | PostgreSQL 类型 | 允许 NULL | ORM 约束与关联 | 枚举 |
+| --- | --- | --- | --- | --- |
+| id | uuid | False | PRIMARY KEY | — |
+| generation | bigint | False | UNIQUE | — |
+| parent_id | uuid | True | INDEX; REFERENCES retention.S3ContentRestoreState.id | — |
+| parent_mapping_sha256 | sjia.sha256_hex | True | — | — |
+| ancestor_sha256 | sjia.sha256_hex | True | — | — |
+| database_name | text | False | — | — |
+| cluster_id | text | False | — | — |
+| restore_root | text | False | — | — |
+| source_binding_sha256 | sjia.sha256_hex | False | — | — |
+| target_binding_sha256 | sjia.sha256_hex | False | — | — |
+| source_snapshot_sha256 | sjia.sha256_hex | False | — | — |
+| backup_manifest_sha256 | sjia.sha256_hex | False | — | — |
+| content_checkpoint | jsonb | False | — | — |
+| mapping_sha256 | sjia.sha256_hex | True | — | — |
+| state | varchar(16) | False | — | — |
+| created_at | timestamp with time zone | False | — | — |
+| mapped_at | timestamp with time zone | True | — | — |
+
+ORM 组合约束：('django.db.models.CheckConstraint', (), {'name': 's3_restore_generation_positive', 'condition': <Q: (AND: ('generation__gte', 1))>})；('django.db.models.CheckConstraint', (), {'name': 's3_restore_parent_shape', 'condition': <Q: (OR: (AND: ('ancestor_sha256__isnull', True), ('generation', 1), ('parent__isnull', True), ('parent_mapping_sha256__isnull', True)), (AND: ('ancestor_sha256__isnull', False), ('generation__gt', 1), ('parent__isnull', False), ('parent_mapping_sha256__isnull', False)))>})；('django.db.models.UniqueConstraint', (), {'name': 's3_restore_target_binding_once', 'fields': ('target_binding_sha256',)})；('django.db.models.CheckConstraint', (), {'name': 's3_restore_distinct_binding', 'condition': <Q: (NOT (AND: ('source_binding_sha256', F(target_binding_sha256))))>})；('django.db.models.CheckConstraint', (), {'name': 's3_restore_mapping_state', 'condition': <Q: (OR: (AND: ('mapped_at__isnull', True), ('mapping_sha256__isnull', True), ('state', 'preparing')), (AND: ('mapped_at__gte', F(created_at)), ('mapped_at__isnull', False), ('mapping_sha256__isnull', False), ('state', 'mapped')))>})。
+
+ORM 组合索引：无登记。
+
+## `sjia.s3_stored_object`
+
+源码：`files.models.S3StoredObject`。
+
+| 字段名 | PostgreSQL 类型 | 允许 NULL | ORM 约束与关联 | 枚举 |
+| --- | --- | --- | --- | --- |
+| id | uuid | False | PRIMARY KEY | — |
+| binding_sha256 | sjia.sha256_hex | False | — | — |
+| object_key | text | False | — | — |
+| version_id | text | False | — | — |
+| etag | text | False | — | — |
+| checksum | sjia.sha256_hex | False | — | — |
+| size_bytes | bigint | False | — | — |
+| status | varchar(16) | False | — | available, disposed |
+| created_at | timestamp with time zone | False | — | — |
+| disposed_at | timestamp with time zone | True | — | — |
+
+ORM 组合约束：('django.db.models.UniqueConstraint', (), {'name': 's3_stored_object_binding_key_uniq', 'fields': ('binding_sha256', 'object_key')})；('django.db.models.CheckConstraint', (), {'name': 's3_stored_object_key_check', 'condition': <Q: (AND: (NOT (AND: ('object_key', ''))), (NOT (AND: ('object_key__startswith', '/'))), (NOT (AND: ('object_key__endswith', '/'))), (NOT (AND: ('object_key__contains', '//'))), (NOT (AND: ('object_key__regex', '(^\|/)\\.{1,2}(/\|$)'))))>})；('django.db.models.CheckConstraint', (), {'name': 's3_stored_object_version_check', 'condition': <Q: (AND: (NOT (AND: ('version_id', ''))), (NOT (AND: ('version_id', 'null'))), (NOT (AND: ('etag', ''))))>})；('django.db.models.CheckConstraint', (), {'name': 's3_stored_object_state_check', 'condition': <Q: (OR: (AND: ('disposed_at__isnull', True), ('status', 'available')), (AND: ('disposed_at__gte', F(created_at)), ('disposed_at__isnull', False), ('status', 'disposed')))>})。
 
 ORM 组合索引：无登记。
 

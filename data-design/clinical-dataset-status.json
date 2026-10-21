@@ -10,9 +10,25 @@
   "golden_dataset_status": "BLOCKED",
   "import_status": "NOT_RUN",
   "business_integration": "NOT_RUN",
+  "authorized_originals": {
+    "dataset_kind": "user_approved_original_files",
+    "files": 63,
+    "pages": 290,
+    "bytes": 968528634,
+    "source_groups": 5,
+    "verified_distinct_patient_count": null,
+    "clinical_qualification": "NOT_ESTABLISHED",
+    "software_scope": "用户已经隐私复核，允许指定原件本地软件测试、现有Ark处理及本地候选确认保存",
+    "source_manifest_sha256": "dc7e0d330646a0aaf7e8439e047e4a292c9437ca7f1270b111e69dd23bbac70b",
+    "source_evidence_ref": "../docs/development/QA25-real-evaluation-source-inventory.md",
+    "upgrade_evidence_ref": "../docs/development/QA43-existing-data-upgrade.md",
+    "unknown_ocr_requests": 2,
+    "reserved_cost_cny": "2",
+    "reserved_concurrency": 2
+  },
   "blockers": [
-    {"decision": "D08", "required": "临床验收环境、脱敏检查、逐字段核对和独立参考答案；本地开发用途已由用户提供", "owner": "项目负责人及临床负责人"},
-    {"decision": "D03", "required": "获准原报告、项目清单、OCR Provider 与核对人员", "owner": "项目负责人及临床负责人"},
+    {"decision": "D08", "required": "独立患者单位、专业核对、独立参考答案及正式评价条件；指定63份原件的软件测试已经获准", "owner": "项目负责人及临床负责人"},
+    {"decision": "D03", "required": "准确专业核对人员及证据范围；指定原件的现有Ark处理已经获准", "owner": "项目负责人及临床负责人"},
     {"decision": "D04", "required": "时间窗口、重复选值及临床边界答案", "owner": "临床负责人"},
     {"decision": "D07", "required": "来源字段、批准单位和方法映射", "owner": "数据提供方及技术负责人"},
     {"decision": "D09", "required": "资料保存、删除及供应商副本处理依据", "owner": "项目负责人"}

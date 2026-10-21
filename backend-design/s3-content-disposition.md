@@ -1,0 +1,35 @@
+# S3内容处置清单与准确证明
+
+需求范围为FR-09、NFR-07／09与HLD C09，承接[内容处置规范](content-disposition-engine.md)、[存储选择](s3-storage-selection.md)和[准确删除证明](../data-design/s3-deletion-proof.md)。
+
+## 政策与选择
+
+content-disposition-policy-2明确包含s3_objects和allowed_file_purposes，local_objects必须为false。用途集合只允许original、thumbnail、deidentified及ocr_response中明确列出的用途，禁止重复。政策1保持原有字段及意义，不授予S3处置能力。
+
+处置选择使用实际FileObject身份、业务object_version和s3_object类别。接口选项根据当前实际存储生成，支持页面使用文件说明。请求不能用local_object替代S3对象。数据库对象继续使用登记的adapter、object_id和version。
+
+政策、保留限制、当前服务授权、病例范围、来源依据和准确批准持续执行既有检查。仅允许技术副本的政策不能选择原件，也不能让关联闭包加入政策用途范围之外的文件。
+
+## 清单与批准
+
+content-disposition-manifest-2冻结storage_binding_sha256。每份S3ObjectProof保存file_id、object_version、object_key、checksum、size_bytes、operation_id及完整storage_reference。引用必须与文件键、大小及摘要一致；清单的全部引用必须属于相同实际binding。
+
+预览和批准核验实际登记、准确VersionId、ETag及当前唯一版本。其他FileObject共享相同对象键时拒绝处置。原有manifest-1继续保留本地对象含义；S3负载不能使用本地路径缺失作为清除证明。
+
+准确清单摘要进入现有ContentApproval及独立ContentJournal。批准和实际执行再次核验当前政策、来源及权限；未批准的申请返回CONTENT_APPROVAL_UNAVAILABLE。
+
+## 执行与凭证
+
+独立ContentJournal完成持久写入之后，数据库先提交ContentErasure身份与FileObject的disposed状态，再执行准确S3版本删除。S3RegisteredDeletion继续保存独立journal、receipt及实际提供方请求标识；SQL事务终止后独立证明继续保留，读取持续禁止，继续处理沿准确操作身份进行实际查询。
+
+完成核验必须同时满足业务元数据、处置身份、准确S3登记的disposed状态、持久凭证与实际版本缺失查询。重复批准及执行沿同一清单、操作身份和凭证恢复，不再产生新的内容处置journal记录。
+
+content-disposition-receipt-2明确包含storage_binding_sha256，proof_scope为current_database_payload_and_controlled_s3_version_absence。all_copies_erased保持false，物理数据库存储、备份和实际外部模型副本义务分别保留。
+
+ContentJournal及其独立checkpoint不得与S3控制目录、配置依据、原有本地负载或恢复目录重叠。S3没有本地负载root属性。
+
+## 接口与恢复
+
+ContentPlanView保留原有顶层版本，manifest和receipt分别接收两个明确版本。JSON Schema、前端TypeScript及实际校验共同保留准确S3引用；前端同时核验引用与业务字段和完成凭证的binding一致。
+
+S3恢复需要准确源版本到目标版本的映射、独立恢复身份及实际目标缺失证明。当前没有该映射时，在数据库重放之前返回CONTENT_S3_RESTORE_MAPPING_REQUIRED。完整S3备份、恢复采用和实际队列继续按完整要求验证。

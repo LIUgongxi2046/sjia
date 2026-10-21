@@ -6,8 +6,8 @@ doc_id：SJIA-CURRENT-DELIVERY；status：CURRENT；last_verified：2026-10-21�
 
 | 项目 | 当前依据 |
 | --- | --- |
-| 源码 | `f05dbcf106e70d890a5574385fd63b3ddd502146`，提交时间 2026-10-19 06:00:30 +08:00；本次文档改动未提交 |
-| 本次授权 | 用户于 2026-10-21 要求使用 haonan-s012-docs，根据最新项目情况更新相关文档 |
+| 源码 | 已接收远程 `b094448d40d53ba675dd5e4a278f3e2deb107a43` 的全部改动，包含本次文档及测试资料；实际交付提交以 main 的 Git 记录为准 |
+| 本次授权 | 用户于 2026-10-21 要求更新文档，并明确 commit、push 到 main，包含测试账号测试资料、排除真实数据 |
 | 约束 | 使用文件编辑工具；中间产物保存在项目忽略目录；不创建模拟业务资料，不主动执行视觉操作 |
 | 工作目录 | `/Users/liuhaoxian/Downloads/我的/AI项目/sJIA并发症预警平台` |
 | 本次检查环境 | Node 24.13.0；既有 Python 3.12.7；文档元数据检查另使用 QA28 的 Python 3.13.13 环境 |
@@ -20,11 +20,13 @@ doc_id：SJIA-CURRENT-DELIVERY；status：CURRENT；last_verified：2026-10-21�
 
 ## 当前需求与任务来源
 
-[planning/delivery-ledger.json](planning/delivery-ledger.json) 为 T01—T60 的唯一状态来源。本次读取包含 30 项承诺、60 项实施任务及 60 项验收，任务均为 `IMPLEMENTED`；验收为 `PASS` 2 项、`STALE` 9 项、`NOT_RUN` 49 项，尚有 58 项验收未通过。完整范围继续覆盖 FR-01—FR-22、对应 AC／GRAC 与非功能要求。
+[planning/delivery-ledger.json](planning/delivery-ledger.json) 为 T01—T60 的唯一状态来源。本次读取包含 30 项承诺、60 项实施任务及 60 项验收，任务均为 `IMPLEMENTED`；验收为 `STALE` 11 项、`NOT_RUN` 49 项，当前没有 `PASS` 项，60 项完整验收均未通过。完整范围继续覆盖 FR-01—FR-22、对应 AC／GRAC 与非功能要求。
 
 专项 QA 的状态由[开发索引](docs/development/index.md)中对应主记录维护。专项通过不会自动关闭完整 V 验收。本次文档检查也不修改业务验收状态。
 
 ## 已有真实证据
+
+源码还包含 QA30—QA43 的私有 S3、准确版本处置、恢复引用及既有数据升级能力，具体执行环境与证明见对应主记录。当前测试账号、两位独立模拟患儿、历史时间与实际计算提示分别由 [QA63](docs/development/QA63-local-test-account.md)、[QA65](docs/development/QA65-complete-simulation-account.md)、[QA68](docs/development/QA68-historical-data-calculated-alerts.md)维护；发布到仓库的资料范围见[测试资料快照](test-data/README.md)。
 
 | 范围 | 已有结果与日期 | 来源 |
 | --- | --- | --- |

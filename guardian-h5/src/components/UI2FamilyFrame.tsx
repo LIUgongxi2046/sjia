@@ -3,9 +3,10 @@ import { useLocation, useNavigate, useNavigationType } from 'react-router';
 import { navigationMemory } from '../state/navigation';
 import { readReturnContext } from './ContextLink';
 import { UI2Frame } from './UI2Frame';
+import { localTestAccount } from '../localTestAccount';
 
 export function UI2FamilyFrame({ title, screenId, note, backTo, primary, children, overlay, kicker, subtitle }: {
-  title: string; screenId: string; note: string; backTo: string; children: ReactNode;
+  title: string; screenId: string; note: string; backTo?: string; children: ReactNode;
   primary?: 'home' | 'records' | 'account';
   overlay?: ReactNode; kicker?: string | null; subtitle?: string | null;
 }) {
@@ -16,8 +17,8 @@ export function UI2FamilyFrame({ title, screenId, note, backTo, primary, childre
   return <UI2Frame title={title} screenId={screenId} note={note} audience="family" primary={primary} overlay={overlay} kicker={kicker} subtitle={subtitle}
     scrollKey={location.key} scrollPosition={navigationType === 'POP' ? navigationMemory.readScroll(location.key) : 0}
     onScroll={position => navigationMemory.rememberScroll(location.key, position)}
-    onNavigate={path => navigate(path)} onBack={() => {
+    onNavigate={path => navigate(path)} onBack={backTo ? () => {
       if (origin) { navigationMemory.rememberScroll(origin.key, origin.scroll); navigate(-1); }
       else navigate(backTo);
-    }}>{children}</UI2Frame>;
+    } : undefined}>{localTestAccount?.dataMode === 'simulation' && <aside className="simulation-data-label" role="note">模拟数据 · 仅用于功能体验</aside>}{children}</UI2Frame>;
 }

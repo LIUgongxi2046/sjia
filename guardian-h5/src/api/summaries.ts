@@ -2,6 +2,7 @@ import { fetchJson } from './client';
 import type { RecordFieldView } from './records';
 import type { ApplicationIntent } from './application';
 import type { SummaryInput } from '../../../frontend-design/types';
+import { automaticPollingBudgetMs, canContinueTaskPolling, requiredTaskPollingInterval } from './taskPolling';
 
 export type { SummaryInput };
 export type SummaryKind = SummaryInput['record_kinds'][number];
@@ -124,20 +125,21 @@ export function cancelSummaryTask(taskId: string, csrfToken: string, signal: Abo
 export async function waitForSummaryTask(initial: SummaryTask, requestId: string, signal: AbortSignal,
   onState: (task: SummaryTask) => void): Promise<SummaryTask> {
   let task = initial;
-  const until = Date.now() + 6 * 60_000;
+  const started = performance.now();
   for (;;) {
     if (signal.aborted) throw new DOMException('查询已暂停', 'AbortError');
     if (task.request_id !== requestId) throw new Error('摘要任务与原请求不一致。');
     onState(task);
     if (!['accepted', 'queued', 'running'].includes(task.status)) return task;
-    if (Date.now() >= until) throw new Error('摘要仍在处理中，请稍后查询原请求，不要重复生成。');
+    const interval = requiredTaskPollingInterval(task.poll_after_ms);
+    if (!canContinueTaskPolling(performance.now() - started, interval)) throw new Error('摘要仍在处理中，请稍后查询原请求，不要重复生成。');
     await new Promise<void>((resolve, reject) => {
       const abort = () => { clearTimeout(timer); reject(new DOMException('查询已暂停', 'AbortError')); };
-      const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); },
-        Math.max(250, Math.min(task.poll_after_ms ?? 1500, 5000)));
+      const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, interval);
       signal.addEventListener('abort', abort, { once: true });
       if (signal.aborted) abort();
     });
+    if (performance.now() - started >= automaticPollingBudgetMs) throw new Error('摘要仍在处理中，请稍后查询原请求，不要重复生成。');
     const next = await readSummaryTask(task.task_id, signal);
     if (BigInt(next.status_version) < BigInt(task.status_version)) throw new Error('摘要任务状态版本发生倒退，请重新查询。');
     task = next;

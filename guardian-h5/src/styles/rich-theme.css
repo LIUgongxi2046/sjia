@@ -111,10 +111,16 @@
 .device[data-theme=dark] .sheet :is(.status-panel.warning,.status-panel.urgent) p { color:inherit; }
 .device[data-theme=dark][data-page=UI2-02] .sheet [aria-label=症状语音输入] .voice-icon { background:linear-gradient(145deg,var(--dim-surface-top),var(--tint)); }
 .device[data-theme=dark][data-page=UI2-02] .sheet .voice-error { background:var(--card); color:var(--error); }
-/* Appearance is an ordinary, keyboard-operable account setting. */
-.rich-theme-preference { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; color:var(--ink); font-size:14px; }
-.rich-theme-preference label { font-weight:600; }
-.rich-theme-preference select { min-height:44px; max-width:100%; padding:8px 12px; border:1px solid var(--control); border-radius:12px; background:var(--card); color:var(--ink); }
+/* 原生 radio 保留键盘操作，选项共用主题材质。 */
+.rich-theme-preference { min-inline-size:0; margin:0; padding:0; border:0; color:var(--ink); }
+.rich-theme-preference legend { padding:0; font-size:16px; font-weight:600; }
+.page-content .rich-theme-preference p { margin:8px 0 16px; font-size:13px; color:var(--muted); }
+.rich-theme-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.rich-theme-choice { position:relative; display:flex; align-items:center; justify-content:center; min-width:0; min-height:52px; padding:10px 6px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(155deg,var(--dim-surface-top),var(--dim-surface-bottom)); box-shadow:var(--dim-tile-shadow); color:var(--ink); font-size:13px; text-align:center; cursor:pointer; }
+.rich-theme-choice input { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
+.rich-theme-choice:has(input:checked) { background:var(--tint); color:var(--link); border-color:var(--link); font-weight:600; }
+.rich-theme-choice:has(input:focus-visible) { outline:3px solid var(--link); outline-offset:3px; }
+@media(forced-colors:active) { .rich-theme-choice:has(input:checked) { border:2px solid Highlight; color:Highlight; } }
 .device :focus-visible { outline:3px solid var(--link); outline-offset:4px; }
 .device[data-theme=dark] ::selection { color:#fff; background:#1b70e0; }
 /* Contrast preferences flatten decoration without discarding text or selected semantics. */

@@ -1,6 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Outlet, Route, Routes } from 'react-router';
 import { lazy, Suspense } from 'react';
-import { AccessProvider } from '../state/access';
+import { AccessProvider, useAccess } from '../state/access';
 import { Layout } from './Layout';
 import { UI2HomePage } from '../features/home/UI2HomePage';
 import { LoginPage } from '../features/account/LoginPage';
@@ -48,6 +48,9 @@ function FamilyApp() {
   return (
     <AccessProvider>
     <Routes>
+      <Route path="login" element={<LoginPage />} />
+      <Route path="account/data-use" element={<DataUsePage />} />
+      <Route element={<RequireFamilySession />}>
       <Route path="home" element={<UI2HomePage />} />
       <Route path="register/observations" element={<ObservationsPage ui2 />} />
       <Route path="register/therapies" element={<TherapiesPage />} />
@@ -79,8 +82,6 @@ function FamilyApp() {
       <Route path="records/:recordId/correction-request" element={<Suspense fallback={<main role="status">正在读取更正申请</main>}><CorrectionRequestPage /></Suspense>} />
       <Route path="records/:recordId/correct" element={<CorrectionPage />} />
       <Route path="records/analytes/:analyteId" element={<AnalytePage />} />
-      <Route path="account/data-use" element={<DataUsePage />} />
-      <Route path="login" element={<LoginPage />} />
       <Route path="drafts" element={<DraftsPage />} />
       <Route path="associations" element={<UI2AssociationsPage />} />
       <Route path="associations/new" element={<UI2AssociationApplyPage />} />
@@ -92,7 +93,17 @@ function FamilyApp() {
         <Route path="prototype" element={<PrototypePage />} />
       </Route>
       <Route path="*" element={<UI2StatusPage kind="missing" />} />
+      </Route>
     </Routes>
     </AccessProvider>
   );
+}
+
+function RequireFamilySession() {
+  const access = useAccess();
+  if (!access.principalId) {
+    if (access.loading || access.error) return null;
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
 }

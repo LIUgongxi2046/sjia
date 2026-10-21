@@ -4,14 +4,14 @@
 
 平台用于辅助家庭整理资料与查看提示，不能替代医生诊断、治疗建议或急诊服务。临床内容审核、真实患者使用和生产环境交付状态，请以项目验收文档及正式批准记录为准。
 
-文档核实日期：2026-10-21（Asia/Shanghai）。源码基线：`f05dbcf106e70d890a5574385fd63b3ddd502146`。当前交接见 [CURRENT-DELIVERY-20261021.md](CURRENT-DELIVERY-20261021.md)，文档入口见 [知识索引](docs/knowledge/index.md)。
+文档核实日期：2026-10-21（Asia/Shanghai）。源码包含远程 `b094448d40d53ba675dd5e4a278f3e2deb107a43` 的全部改动及当前文档、测试资料。当前交接见 [CURRENT-DELIVERY-20261021.md](CURRENT-DELIVERY-20261021.md)，文档入口见 [知识索引](docs/knowledge/index.md)。
 
 ## 项目与验收
 
 | 范围 | 当前依据 |
 | --- | --- |
 | 需求 | PRD 2.0 的 FR-01—FR-22、30 项承诺、60 项实施任务；UI2 设计目录包含 39 页及 328 项状态 |
-| 任务状态 | [交付记录](planning/delivery-ledger.json)：60 项任务均为 IMPLEMENTED；验收 PASS 2 项、STALE 9 项、NOT_RUN 49 项 |
+| 任务状态 | [交付记录](planning/delivery-ledger.json)：60 项任务均为 IMPLEMENTED；验收 STALE 11 项、NOT_RUN 49 项，当前没有 PASS 项 |
 | 真实资料专项 | [QA12](docs/development/QA12-real-ocr-validation.md)及 [QA15—QA29](docs/development/index.md)：真实候选保存、档案与来源、提醒、访问恢复、目标版本兼容及原件读取 |
 | 最新软件检查 | 本次文档检查与构建结果见 [DOCS01](docs/development/DOCS01-current-documentation.md)；业务证据保留原日期和数据范围 |
 | 完整验收 | 实际手机、微信、真实音频、独立临床答案、正式容量和生产备份恢复等仍需原任务验收 |
@@ -77,6 +77,7 @@ Vite 默认端口为 `5173`，同源 `/api` 代理到 `127.0.0.1:8000`。已知�
 - [数据字典](docs/reference/data-dictionary.md)、[全部 ORM 字段](docs/reference/orm-data-dictionary.md)
 - [操作说明与 FAQ](docs/operations.md)、[版本说明](docs/release-notes.md)
 - [Agent 设计说明](sJIA合并MAS预警平台Agent设计说明.md)
+- [测试账号资料](test-data/README.md)：独立模拟账号、两位虚构患儿及已有测试记录 |
 - [产品需求文档（PRD）](sJIA合并MAS预警平台PRD.md)
 - [系统高层设计（HLD）](sJIA合并MAS预警平台HLD.md)
 - [前端低层设计（LLD）](sJIA合并MAS预警平台前端LLD.md)

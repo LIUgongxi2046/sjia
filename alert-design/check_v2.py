@@ -1,15 +1,18 @@
+import argparse
 import ast
 import csv
 import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+import subprocess
+from urllib.parse import unquote, urljoin, urlsplit
 from zoneinfo import ZoneInfo
 
 from jsonschema import Draft202012Validator
 from markdown_it import MarkdownIt
 from referencing import Registry, Resource
+from referencing.jsonschema import DRAFT202012
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,18 +23,24 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def references(value):
-    if isinstance(value, dict):
-        if '$ref' in value:
-            yield value['$ref']
-        for child in value.values():
-            yield from references(child)
-    elif isinstance(value, list):
-        for child in value:
-            yield from references(child)
+def resolve_references(resource: Resource, resolver):
+    count = 0
+    if isinstance(resource.contents, dict):
+        for keyword in ('$ref', '$dynamicRef'):
+            if keyword in resource.contents:
+                resolver.lookup(resource.contents[keyword])
+                count += 1
+    for child in resource.subresources():
+        count += resolve_references(child, resolver.in_subresource(child))
+    return count
 
 
 def main():
+    arguments = argparse.ArgumentParser()
+    arguments.add_argument('--node-modules', type=Path, default=ROOT / 'guardian-h5/node_modules')
+    arguments.add_argument('--report-path', type=Path, default=ROOT / '.planning-work/t37-orchestration.json')
+    options = arguments.parse_args()
+    require(not options.report_path.exists(), '检查结果需要全新输出路径')
     sources = {Path(__file__).resolve()}
     manifest_path = ROOT / 'alert-design/design-manifest.json'
     manifest = json.loads(manifest_path.read_text())
@@ -42,27 +51,38 @@ def main():
     require(manifest['recognition']['provider'] == 'Ark', '模型来源与授权不一致')
     schemas = {}
     registry = Registry()
-    schema_names = manifest['schemas'] + [
-        'backend-design/v2-protocol.schema.json', 'backend-design/protocol.schema.json',
-        'data-design/dataset.schema.json', 'data-design/case-extension.schema.json',
-        'backend-design/runtime.schema.json',
-    ]
+    registry_script = ROOT / 'alert-design/read_schema_registry.mjs'
+    registry_sources = sorted(str(path.relative_to(ROOT)) for path in (ROOT / 'guardian-h5/src/api').glob('*.ts'))
+    bindings = json.loads(subprocess.check_output(['node', str(registry_script)],
+        input=json.dumps({'root': str(ROOT), 'node_modules': str(options.node_modules.resolve(strict=True)),
+            'sources': registry_sources}), text=True))
+    sources.update({registry_script, ROOT / 'guardian-h5/package-lock.json', *(ROOT / name for name in registry_sources)})
+    schema_names = sorted(set(manifest['schemas']) | {
+        str(path.relative_to(ROOT)) for directory in ('alert-design', 'backend-design', 'data-design')
+        for path in (ROOT / directory).glob('*.schema.json')} | {
+        str(path.relative_to(ROOT)) for directory in (ROOT / 'backend').iterdir()
+        if directory.is_dir() and not directory.name.startswith('.') for path in directory.rglob('*.schema.json')})
     for name in schema_names:
         path = ROOT / name
         sources.add(path)
         schema = json.loads(path.read_text())
         Draft202012Validator.check_schema(schema)
         schemas[name] = schema
-        resource = Resource.from_contents(schema)
+        resource = DRAFT202012.create_resource(schema)
         registry = registry.with_resource(path.as_uri(), resource)
         if '$id' in schema:
             registry = registry.with_resource(schema['$id'], resource)
+    for binding in bindings['aliases']:
+        path = Path(binding['path']).resolve(strict=True)
+        require(path.is_relative_to(ROOT), '前端Schema来源需要位于项目目录')
+        resource = DRAFT202012.create_resource(schemas[str(path.relative_to(ROOT))])
+        for parent in {Path(name).parent for name in schema_names}:
+            registry = registry.with_resource(urljoin((ROOT / parent).as_uri() + '/', binding['alias']), resource)
     reference_count = 0
     for name, schema in schemas.items():
-        resolver = registry.resolver((ROOT / name).as_uri())
-        for reference in references(schema):
-            resolver.lookup(reference)
-            reference_count += 1
+        resource = DRAFT202012.create_resource(schema)
+        resolver = registry.resolver((ROOT / name).as_uri()).in_subresource(resource)
+        reference_count += resolve_references(resource, resolver)
 
     recognition = schemas['alert-design/v2-recognition.schema.json']
     protected = {'patient_id', 'field_id', 'verification_id', 'available_at', 'concept_code', 'release_id', 'rule_id'}
@@ -126,13 +146,14 @@ def main():
         'checked_at': datetime.now(ZoneInfo('Asia/Shanghai')).isoformat(),
         'status': 'PASS', 'capability': 'DESIGN',
         'counts': {'nodes': len(nodes), 'business_rules': 10, 'schemas': len(schemas), 'resolved_schema_refs': reference_count},
+        'runtime_schema_bindings': bindings,
         'runtime_inventory': inventory, 'local_links': sorted(local_links),
         'provider_called': False, 'clinical_rows_inserted': 0,
         'business_validation': 'NOT_RUN', 'clinical_validation': 'NOT_RUN', 'visual_validation': 'NOT_RUN',
         'source_sha256': {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(sources)},
     }
-    output = ROOT / '.planning-work/t37-orchestration.json'
-    output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    with options.report_path.open('x') as output:
+        output.write(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps(report, ensure_ascii=False, indent=2))
 
 

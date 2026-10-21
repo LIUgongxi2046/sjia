@@ -107,11 +107,12 @@ def locked_scope(recipient_id):
     gate = EnvironmentGate.objects.select_for_update().get(environment=settings.SJIA_ENVIRONMENT)
     runtime, config, policy, retention = native_configuration(gate)
     recipient = AlertRecipient.objects.get(id=recipient_id)
-    patient = Patient.objects.select_for_update().get(id=recipient.patient_id)
+    # 人员与患儿身份保持串行保护，审计外键可以并发引用这些稳定标识。
+    patient = Patient.objects.select_for_update(no_key=True).get(id=recipient.patient_id)
     recipient = AlertRecipient.objects.select_for_update().get(id=recipient.id, patient_id=patient.id)
     event = AlertEvent.objects.select_for_update().get(id=recipient.alert_id, patient=patient)
     relation = lock_relation_for_access(recipient.relation_id, patient_id=patient.id)
-    actors = {row.id: row for row in Principal.objects.select_for_update().filter(
+    actors = {row.id: row for row in Principal.objects.select_for_update(no_key=True).filter(
         id__in=[relation.guardian_id, policy.executor_id]).order_by('id')}
     if policy.executor_id not in actors or relation.guardian_id not in actors:
         raise NotificationRejected('NOTIFICATION_PRINCIPAL_UNAVAILABLE')
@@ -137,7 +138,7 @@ def locked_scope(recipient_id):
     evaluation_task = Task.objects.select_for_update().get(id=evaluation.task_id, schema_version='dynamic-evaluation-task-2')
     if evaluation_task.input_refs['authorization_context']['purpose'] != channels.purpose:
         raise NotificationRejected('NOTIFICATION_CHANNEL_SCOPE_DENIED')
-    evaluation_owner = Principal.objects.select_for_update().get(id=evaluation_task.actor_id)
+    evaluation_owner = Principal.objects.select_for_update(no_key=True).get(id=evaluation_task.actor_id)
     # 实际重新核查当前计算证明和全部字段依赖，不采用历史有效标签作为发送许可。
     result = read_dynamic_evaluation(evaluation_id=evaluation.id, actor=evaluation_owner,
         auth_epoch=int(evaluation_task.input_refs['authorization_context']['auth_epoch']), environment=gate.environment)
@@ -347,7 +348,7 @@ def consume_native(event):
         if (event.schema_version != 'dynamic-family-event-2' or event.resource_refs['alert_id'] != str(alert.id)
                 or event.resource_refs['evaluation_id'] != str(alert.evaluation_id) or event.resource_refs['release_id'] != str(alert.release_id)):
             raise NotificationRejected('NOTIFICATION_EVENT_PROOF_MISMATCH')
-        patient = Patient.objects.select_for_update().get(id=alert.patient_id)
+        patient = Patient.objects.select_for_update(no_key=True).get(id=alert.patient_id)
         component = ReleaseComponent.objects.select_for_update().get(release_id=alert.release_id, component_kind='notification')
         channels = NotificationPolicy.model_validate_json(json.dumps(component.config.payload))
         if channels.environment != gate.environment or channels.purpose not in {policy.purpose, *policy.event_purposes}:
@@ -356,7 +357,7 @@ def consume_native(event):
         relations = list(Relation.objects.select_for_update().filter(patient=patient, status='active').order_by('id'))
         qualified = []
         for relation in relations:
-            owner = Principal.objects.select_for_update().get(id=relation.guardian_id)
+            owner = Principal.objects.select_for_update(no_key=True).get(id=relation.guardian_id)
             if (owner.account_status == 'active' and relation.valid_from <= now and relation.revoked_at is None
                     and (relation.valid_until is None or relation.valid_until > now)
                     and any(row.relation_id == relation.id and row.purpose == channels.purpose and row.evidence_ref.strip()

@@ -2,14 +2,16 @@
 from datetime import datetime, timezone
 
 from django.db import transaction
+from django.utils.functional import SimpleLazyObject
 
 from files.models import FileGroup, FileObject, FilePage, UploadPart
-from files.storage import LocalFileStore, ObjectConflict, build_object_key, digest_bytes
+from files.storage import ObjectConflict, build_object_key, digest_bytes
+from files.storage_factory import configured_object_store
 from files.errors import FileRejected
 from files.source_pages import inspect_source
 
 
-object_store = LocalFileStore()
+object_store = SimpleLazyObject(configured_object_store)
 
 
 @transaction.atomic

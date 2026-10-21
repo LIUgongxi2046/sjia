@@ -8,7 +8,7 @@ from api.base import ApiError, current_principal, handle
 from family_content.models import EnvironmentGate
 from identity.models import Principal
 from identity.service import authenticate_account
-from identity.session import bootstrap_csrf, establish_session
+from identity.session import bootstrap_csrf, establish_session, session_read_metadata
 from identity.support_session import support_capabilities
 
 
@@ -30,8 +30,9 @@ def support_login(request):
     if not capabilities:
         raise ApiError('SUPPORT_ACTION_DENIED', 403)
     establish_session(request, principal_id=principal.id, auth_epoch=principal.auth_epoch, audience='support')
+    metadata = session_read_metadata(request, principal_id=principal.id, auth_epoch=principal.auth_epoch, audience='support')
     return Response({'principal_id': str(principal.id), 'account_status': principal.account_status,
-        'expires_at': request.session.get_expiry_date().isoformat(), 'audience': 'support',
+        'expires_at': metadata['expires_at'], 'audience': 'support',
         'capabilities': capabilities, 'csrf_token': bootstrap_csrf(request)})
 
 
@@ -43,6 +44,7 @@ def support_session_read(request):
         raise ApiError('AUTH_REQUIRED', 401)
     if audience != 'support':
         raise ApiError('SUPPORT_AUDIENCE_REQUIRED', 403)
+    metadata = session_read_metadata(request, principal_id=principal.id, auth_epoch=epoch, audience=audience)
     return Response({'principal_id': str(principal.id), 'account_status': principal.account_status,
-        'expires_at': request.session.get_expiry_date().isoformat(), 'audience': audience,
+        'expires_at': metadata['expires_at'], 'audience': audience,
         'capabilities': support_capabilities(principal), 'csrf_token': bootstrap_csrf(request)})

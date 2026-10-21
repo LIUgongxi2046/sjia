@@ -240,6 +240,14 @@ def persist_evaluation(task, inputs, attempt):
             **{name: signal[name] for name in ('signal_id', 'schema_version', 'state', 'algorithm_version', 'input_field_ids', 'reason_codes', 'pair_results')})
         for item in signal['inputs']:
             ref = item['reference']
+            if ref.get('qualification_basis') == 'simulation_record':
+                from assessment.simulation_inputs import simulation_scope
+
+                if not simulation_scope(environment=context['environment'], patient_id=evaluation.patient_id,
+                        actor_id=inputs.actor.id, rule_id=payload['input_rule_id'], source_id=ref['source_revision_id']):
+                    raise QualificationRejected('SIMULATION_ASSESSMENT_SCOPE_DENIED')
+                # 模拟依据完整保存在任务快照与依赖中，专业核对输入表只保存专业证明。
+                continue
             AlertEvaluationInput.objects.create(evaluation_id=evaluation.id, patient_id=evaluation.patient_id,
                 signal_id=signal['signal_id'], position=item['position'], variable_code=item['variable_code'], input_role=item['input_role'],
                 **{name: ref[name] for name in ('record_version_id', 'field_id', 'verification_id', 'normalization_id', 'medical_time_id', 'source_revision_id')})

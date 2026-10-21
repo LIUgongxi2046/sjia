@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sjia:schema:s3-restore-target-1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["restore_id", "database", "cluster_id", "storage_binding_sha256", "control_root", "mapping_sha256"],
+  "properties": {
+    "schema_version": {"const": "s3-restore-target-1", "default": "s3-restore-target-1"},
+    "storage_kind": {"const": "s3", "default": "s3"},
+    "restore_id": {"type": "string", "format": "uuid"},
+    "database": {"type": "string", "minLength": 1},
+    "cluster_id": {"type": "string", "minLength": 1},
+    "storage_binding_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+    "control_root": {"type": "string", "minLength": 1, "format": "sjia-absolute-control-root"},
+    "mapping_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"}
+  },
+  "$defs": {
+    "preparing": {
+      "type": "object", "additionalProperties": false,
+      "required": ["restore_id", "database", "cluster_id", "storage_binding_sha256", "control_root"],
+      "properties": {
+        "schema_version": {"const": "s3-restore-target-preparing-1", "default": "s3-restore-target-preparing-1"},
+        "storage_kind": {"const": "s3", "default": "s3"},
+        "restore_id": {"type": "string", "format": "uuid"},
+        "database": {"type": "string", "minLength": 1},
+        "cluster_id": {"type": "string", "minLength": 1},
+        "storage_binding_sha256": {"$ref": "urn:sjia:schema:s3-backup-source-1#/$defs/digest"},
+        "control_root": {"type": "string", "minLength": 1, "format": "sjia-absolute-control-root"},
+        "mapping_sha256": {"type": "null", "default": null}
+      }
+    }
+  }
+}
